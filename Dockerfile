@@ -13,6 +13,6 @@ RUN chown -R sunbird:sunbird /home/sunbird
 USER sunbird
 WORKDIR /home/sunbird/learner/
 RUN mkdir -p /home/sunbird/learner/logs/
-RUN touch /home/sunbird/learner/logs/learner_service_mw.log
-RUN ln -sf /dev/stdout /home/sunbird/learner/logs/learner_service_mw.log
+RUN touch /home/sunbird/learner/logs/learning_service_mw.log
+RUN ln -sf /dev/stdout /home/sunbird/learner/logs/learning_service_mw.log
 CMD java  -cp '/home/sunbird/learner/learning-service-1.0-SNAPSHOT/lib/*' play.core.server.ProdServerStart  /home/sunbird/learner/learning-service-1.0-SNAPSHOT

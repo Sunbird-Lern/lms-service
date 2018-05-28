@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout pattern="%d [%t] %-5level %logger{36} - %msg%n" />
+		</Console>
+		<RollingFile name="DefaultLogAppender" fileName="logs/learning_service_mw.log"
+			filePattern="logs/learning_service_mw-%d{MM-dd-yyyy}-%i.log.gz">
+			<PatternLayout>
+				<Pattern>%msg%n</Pattern>
+			</PatternLayout>
+			<Policies>
+				<SizeBasedTriggeringPolicy size="50 MB" />
+			</Policies>
+			<DefaultRolloverStrategy>
+                <Delete basePath="logs/" maxDepth="1" testMode="false">
+                    <IfFileName glob="learning_service_mw-*.log" />
+                    <IfLastModified age="1d" />
+                </Delete>
+            </DefaultRolloverStrategy>
+		</RollingFile>
+		<RollingFile name="PerfLogAppender" fileName="logs/learning_service_perf.log"
+					 filePattern="/data/logs/learning_service_perf-%d{MM-dd-yyyy-hh}-%i.log">
+			<PatternLayout>
+				<Pattern>%msg%n</Pattern>
+			</PatternLayout>
+			<Policies>
+				<SizeBasedTriggeringPolicy size="50 MB" />
+				<TimeBasedTriggeringPolicy interval="24" modulate="true" />
+				<OnStartupTriggeringPolicy />
+			</Policies>
+			<DefaultRolloverStrategy>
+				<Delete basePath="/data/logs/" maxDepth="1" testMode="false">
+					<IfFileName glob="learning_service_perf-*.log" />
+					<IfLastModified age="1d" />
+				</Delete>
+			</DefaultRolloverStrategy>
+		</RollingFile>
+	</Appenders>
+	<Loggers>
+		<Logger name="defaultLogger" level="INFO" additivity="false">
+			<AppenderRef ref="DefaultLogAppender" />
+		</Logger>
+		<Logger name="PerformanceTestLogger" level="INFO" additivity="false">
+				<AppenderRef ref="PerfLogAppender" />
+		</Logger>
+	</Loggers>
+</Configuration>

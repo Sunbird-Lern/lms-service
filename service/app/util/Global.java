@@ -2,11 +2,7 @@
 package util;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.service.SunbirdMWService;
@@ -37,6 +33,7 @@ import play.mvc.Http.Request;
 import play.mvc.Result;
 import play.mvc.Results;
 
+
 /**
  * This class will work as a filter.
  *
@@ -59,7 +56,6 @@ public class Global extends GlobalSettings {
 
     @Override
     public Promise<Result> call(Http.Context ctx) throws java.lang.Throwable {
-      ctx.request().headers();
       Promise<Result> result = null;
       ctx.response().setHeader("Access-Control-Allow-Origin", "*");
       // Unauthorized, Anonymous, UserID
@@ -157,7 +153,7 @@ public class Global extends GlobalSettings {
     }
 
     context.setRequestContext(reqContext);
-    Map<String, Object> map = new HashMap<>();
+    Map<String, Object> map = new HashMap<String, Object>();
     map.put(JsonKey.CONTEXT, TelemetryUtil.getTelemetryContext());
     Map<String, Object> additionalInfo = new HashMap<>();
     additionalInfo.put(JsonKey.URL, url);
@@ -227,14 +223,9 @@ public class Global extends GlobalSettings {
    */
   @Override
   public Promise<Result> onError(Http.RequestHeader request, Throwable t) {
-
-    Response response = null;
     ProjectCommonException commonException = null;
     if (t instanceof ProjectCommonException) {
       commonException = (ProjectCommonException) t;
-      response =
-          BaseController.createResponseOnException(
-              request.path(), request.method(), (ProjectCommonException) t);
     } else if (t instanceof akka.pattern.AskTimeoutException) {
       commonException =
           new ProjectCommonException(
@@ -248,7 +239,7 @@ public class Global extends GlobalSettings {
               ResponseCode.internalError.getErrorMessage(),
               ResponseCode.SERVER_ERROR.getResponseCode());
     }
-    response =
+      Response response =
         BaseController.createResponseOnException(request.path(), request.method(), commonException);
     return Promise.<Result>pure(Results.internalServerError(Json.toJson(response)));
   }

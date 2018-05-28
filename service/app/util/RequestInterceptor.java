@@ -109,7 +109,7 @@ public class RequestInterceptor {
       }
       return clientId;
     } else {
-    		return JsonKey.ANONYMOUS;
+      return JsonKey.ANONYMOUS;
     }
   }
 

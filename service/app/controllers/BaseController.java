@@ -239,7 +239,6 @@ public class BaseController extends Controller {
    * @return Result
    */
   public Result createCommonResponse(Object response, String key, Request request) {
-
     Map<String, Object> requestInfo = Global.requestInfo.get(ctx().flash().get(JsonKey.REQUEST_ID));
     org.sunbird.common.request.Request req = new org.sunbird.common.request.Request();
 
@@ -406,6 +405,7 @@ public class BaseController extends Controller {
         };
     
     if (actorRef instanceof ActorRef) {
+
       return Promise.wrap(Patterns.ask((ActorRef) actorRef, request, timeout))
           .map(function);
     } else {

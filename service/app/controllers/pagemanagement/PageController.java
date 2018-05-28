@@ -16,6 +16,7 @@ import org.sunbird.common.request.Request;
 import org.sunbird.common.request.RequestValidator;
 import play.libs.F.Promise;
 import play.mvc.Result;
+import scala.Option;
 
 /**
  * This controller will handle all the request related to page api's.
@@ -127,6 +128,9 @@ public class PageController extends BaseController {
     try {
       JsonNode requestData = request().body().asJson();
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
+      String requestId = request()._underlyingHeader().headers().get(JsonKey.MESSAGE_ID).get();
+      reqObj.getContext().put(JsonKey.MESSAGE_ID, requestId);
+
       RequestValidator.validateGetPageData(reqObj);
       reqObj.setOperation(ActorOperations.GET_PAGE_DATA.getValue());
       reqObj.setRequestId(ExecutionContext.getRequestId());

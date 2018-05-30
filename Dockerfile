@@ -15,4 +15,5 @@ WORKDIR /home/sunbird/learner/
 RUN mkdir -p /home/sunbird/learner/logs/
 RUN touch /home/sunbird/learner/logs/learning_service_mw.log
 RUN ln -sf /dev/stdout /home/sunbird/learner/logs/learning_service_mw.log
-CMD java  -cp '/home/sunbird/learner/learning-service-1.0-SNAPSHOT/lib/*' play.core.server.ProdServerStart  /home/sunbird/learner/learning-service-1.0-SNAPSHOT
+EXPOSE 9010
+CMD java  -cp '/home/sunbird/learner/learning-service-1.0-SNAPSHOT/lib/*' -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9010 -Dcom.sun.management.jmxremote.rmi.port=9010 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Djava.rmi.server.hostname=learner-service play.core.server.ProdServerStart  /home/sunbird/learner/learning-service-1.0-SNAPSHOT

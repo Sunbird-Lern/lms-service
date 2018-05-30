@@ -24,13 +24,13 @@ class LoggingFilter extends EssentialFilter {
       val newRequest = request.copy(headers = request.headers.add((JsonKey.MESSAGE_ID, requestId)));
       next(newRequest).map {
         result =>
-          val scenario = request.headers.get("X-Scenario-Id").getOrElse("NA");
+          val scenario = request.headers.get(JsonKey.SCENARIO_ID).getOrElse("NA");
           val duration = (System.currentTimeMillis() - startTime);
           PerformanceLogger.log(duration, request.path, LoggingFilter.this.getClass.getCanonicalName, requestId, result.header.status.toString, scenario);
           result;
       }.recover {
         case e: Throwable =>
-          val scenario = request.headers.get("X-Scenario-Id").getOrElse("NA");
+          val scenario = request.headers.get(JsonKey.SCENARIO_ID).getOrElse("NA");
           val duration = (System.currentTimeMillis() - startTime);
           PerformanceLogger.log(duration, request.path, LoggingFilter.this.getClass.getCanonicalName, requestId, "500", scenario);
           throw e;

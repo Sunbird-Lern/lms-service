@@ -130,7 +130,7 @@ public class PageController extends BaseController {
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
       String requestId = request()._underlyingHeader().headers().get(JsonKey.MESSAGE_ID).get();
       reqObj.getContext().put(JsonKey.MESSAGE_ID, requestId);
-      reqObj.getContext().put(JsonKey.SCENARIO_ID, request()._underlyingHeader().headers().get(JsonKey.SCENARIO_ID).getOrElse("NA"));
+      reqObj.getContext().put(JsonKey.SCENARIO_ID, request()._underlyingHeader().headers().get(JsonKey.SCENARIO_ID).get());
       RequestValidator.validateGetPageData(reqObj);
       reqObj.setOperation(ActorOperations.GET_PAGE_DATA.getValue());
       reqObj.setRequestId(ExecutionContext.getRequestId());

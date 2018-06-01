@@ -21,7 +21,8 @@ class LoggingFilter extends EssentialFilter {
     override def apply(request: RequestHeader): Iteratee[Array[Byte], Result] = {
       val startTime = System.currentTimeMillis();
       val requestId = request.headers.get(JsonKey.MESSAGE_ID).getOrElse(UUID.randomUUID().toString);
-      val newRequest = request.copy(headers = request.headers.add((JsonKey.MESSAGE_ID, requestId)));
+      val scenarioId = request.headers.get(JsonKey.SCENARIO_ID).getOrElse("NOSCENARIO");
+      val newRequest = request.copy(headers = request.headers.add((JsonKey.MESSAGE_ID, requestId), (JsonKey.SCENARIO_ID, scenarioId)));
       next(newRequest).map {
         result =>
           val scenario = request.headers.get(JsonKey.SCENARIO_ID).getOrElse("NA");

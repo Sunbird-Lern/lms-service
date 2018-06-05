@@ -38,7 +38,7 @@
 		</RollingFile>
 	</Appenders>
 	<Loggers>
-		<Logger name="defaultLogger" level="INFO" additivity="false">
+		<Logger name="defaultLogger" level="ERROR" additivity="false">
 			<AppenderRef ref="DefaultLogAppender" />
 		</Logger>
 		<Logger name="PerformanceTestLogger" level="INFO" additivity="false">

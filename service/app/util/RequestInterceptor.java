@@ -36,6 +36,7 @@ public class RequestInterceptor {
     apiHeaderIgnoreMap.put("/v1/user/create", var);
     apiHeaderIgnoreMap.put("/v1/org/search", var);
     apiHeaderIgnoreMap.put("/v1/health", var);
+    apiHeaderIgnoreMap.put("/v1/threaddump", var);
     apiHeaderIgnoreMap.put("/v1/page/assemble", var);
     apiHeaderIgnoreMap.put("/health", var);
     apiHeaderIgnoreMap.put("/v1/notification/email", var);

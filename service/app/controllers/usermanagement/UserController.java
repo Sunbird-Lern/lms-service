@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.util.ActorOperations;
@@ -47,11 +48,6 @@ public class UserController extends BaseController {
           " get user registration request data = " + requestData, LoggerEnum.INFO.name());
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
       UserRequestValidator.validateCreateUser(reqObj);
-
-      if (StringUtils.isBlank((String) reqObj.getRequest().get(JsonKey.PROVIDER))) {
-        reqObj.getRequest().put(JsonKey.EMAIL_VERIFIED, false);
-        reqObj.getRequest().put(JsonKey.PHONE_VERIFIED, false);
-      }
       reqObj.setOperation(ActorOperations.CREATE_USER.getValue());
       reqObj.setRequestId(ExecutionContext.getRequestId());
       reqObj.setEnv(getEnvironment());
@@ -77,21 +73,17 @@ public class UserController extends BaseController {
       JsonNode requestData = request().body().asJson();
       ProjectLogger.log(" get user update profile data = " + requestData, LoggerEnum.INFO.name());
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
+      UserRequestValidator.validateUpdateUser(reqObj);
       if (null != ctx().flash().get(JsonKey.IS_AUTH_REQ)
           && Boolean.parseBoolean(ctx().flash().get(JsonKey.IS_AUTH_REQ))) {
         validateAuthenticity(reqObj);
       }
-      UserRequestValidator.validateUpdateUser(reqObj);
+      ProjectUtil.updateMapSomeValueTOLowerCase(reqObj);
       reqObj.setOperation(ActorOperations.UPDATE_USER.getValue());
       reqObj.setRequestId(ExecutionContext.getRequestId());
       reqObj.setEnv(getEnvironment());
       HashMap<String, Object> innerMap = new HashMap<>();
       innerMap.put(JsonKey.USER, reqObj.getRequest());
-
-      if (StringUtils.isBlank((String) reqObj.getRequest().get(JsonKey.PROVIDER))) {
-        reqObj.getRequest().put(JsonKey.EMAIL_VERIFIED, false);
-        reqObj.getRequest().put(JsonKey.PHONE_VERIFIED, false);
-      }
 
       innerMap.put(JsonKey.REQUESTED_BY, ctx().flash().get(JsonKey.USER_ID));
       reqObj.setRequest(innerMap);
@@ -106,18 +98,40 @@ public class UserController extends BaseController {
     if (ctx().flash().containsKey(JsonKey.AUTH_WITH_MASTER_KEY)) {
       validateWithClient(reqObj);
     } else {
+      ProjectLogger.log("Auth token is not master token.");
       validateWithUserId(reqObj);
     }
   }
 
-  private void validateWithClient(Request reqObj) {
-    String clientId = ctx().flash().get(JsonKey.USER_ID);
-    String userId;
+  private String getUserIdFromExtIdAndProvider(Request reqObj) {
+    String userId = "";
     if (null != reqObj.getRequest().get(JsonKey.USER_ID)) {
       userId = (String) reqObj.getRequest().get(JsonKey.USER_ID);
     } else {
       userId = (String) reqObj.getRequest().get(JsonKey.ID);
     }
+    if (StringUtils.isBlank(userId)) {
+      String extId = (String) reqObj.getRequest().get(JsonKey.EXTERNAL_ID);
+      String provider = (String) reqObj.getRequest().get(JsonKey.PROVIDER);
+      Map<String, Object> user =
+          AuthenticationHelper.getUserFromExternalIdAndProvider(extId, provider);
+      if (MapUtils.isNotEmpty(user)) {
+        userId = (String) user.get(JsonKey.ID);
+      } else {
+        throw new ProjectCommonException(
+            ResponseCode.invalidParameter.getErrorCode(),
+            ProjectUtil.formatMessage(
+                ResponseCode.invalidParameter.getErrorMessage(),
+                JsonKey.EXTERNAL_ID + " and " + JsonKey.PROVIDER),
+            ResponseCode.CLIENT_ERROR.getResponseCode());
+      }
+    }
+    return userId;
+  }
+
+  private void validateWithClient(Request reqObj) {
+    String clientId = ctx().flash().get(JsonKey.USER_ID);
+    String userId = getUserIdFromExtIdAndProvider(reqObj);
 
     Map<String, Object> clientDetail = AuthenticationHelper.getClientAccessTokenDetail(clientId);
     // get user detail from cassandra
@@ -154,7 +168,7 @@ public class UserController extends BaseController {
   }
 
   private void validateWithUserId(Request reqObj) {
-    String userId = (String) reqObj.getRequest().get(JsonKey.USER_ID);
+    String userId = getUserIdFromExtIdAndProvider(reqObj);
     if ((!StringUtils.isBlank(userId)) && (!userId.equals(ctx().flash().get(JsonKey.USER_ID)))) {
       throw new ProjectCommonException(
           ResponseCode.unAuthorized.getErrorCode(),

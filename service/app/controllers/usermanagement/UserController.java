@@ -93,6 +93,10 @@ public class UserController extends BaseController {
 
     HashMap<String, Object> map = new HashMap<>();
     map.put(JsonKey.KEY, JsonKey.LOGIN_ID.equalsIgnoreCase(idType) ? JsonKey.LOGIN_ID : idType);
+    if (JsonKey.EMAIL.equalsIgnoreCase(idType)) {
+      // Converting to lower case because all email will be in lower case.
+      id = id.toLowerCase();
+    }
     map.put(JsonKey.VALUE, id);
     return handleRequest(
         ActorOperations.GET_USER_BY_KEY.getValue(),

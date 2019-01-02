@@ -93,7 +93,7 @@ public class UserController extends BaseController {
 
     HashMap<String, Object> map = new HashMap<>();
     map.put(JsonKey.KEY, JsonKey.LOGIN_ID.equalsIgnoreCase(idType) ? JsonKey.LOGIN_ID : idType);
-    if (JsonKey.EMAIL.equalsIgnoreCase(idType)) {
+    if (JsonKey.EMAIL.equalsIgnoreCase(idType) || JsonKey.LOGIN_ID.equalsIgnoreCase(idType)) {
       // Converting to lower case because all email will be in lower case.
       id = id.toLowerCase();
     }

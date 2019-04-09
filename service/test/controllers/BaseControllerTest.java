@@ -99,12 +99,6 @@ public class BaseControllerTest {
 
     PowerMockito.mockStatic(Util.class);
     PowerMockito.mockStatic(Application.class);
-    try {
-      PowerMockito.doNothing().when(Util.class, "checkCassandraDbConnections");
-      PowerMockito.doNothing().when(Application.class, "checkCassandraConnection");
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
   }
 
   public Result performTest(String url, String method, Map map) {

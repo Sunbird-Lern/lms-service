@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
@@ -26,7 +25,7 @@ import util.RequestInterceptor;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(RequestInterceptor.class)
 @PowerMockIgnore("javax.management.*")
-@Ignore
+// @Ignore
 public class SystemSettingsControllerTest extends BaseControllerTest {
 
   @Test

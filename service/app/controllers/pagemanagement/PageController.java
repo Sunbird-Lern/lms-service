@@ -113,34 +113,6 @@ public class PageController extends BaseController {
     }
   }
 
-  /**
-   * This method will provide completed data for a particular page.
-   *
-   * @return Promise<Result>
-   */
-  public Promise<Result> getPageData() {
-
-    try {
-      JsonNode requestData = request().body().asJson();
-      Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
-      RequestValidator.validateGetPageData(reqObj);
-      reqObj.setOperation(ActorOperations.GET_PAGE_DATA.getValue());
-      reqObj.setRequestId(ExecutionContext.getRequestId());
-      reqObj.setEnv(getEnvironment());
-      reqObj.getContext().put(JsonKey.URL_QUERY_STRING, getQueryString(request().queryString()));
-      reqObj.getRequest().put(JsonKey.CREATED_BY, ctx().flash().get(JsonKey.USER_ID));
-      HashMap<String, Object> map = new HashMap<>();
-      map.put(JsonKey.PAGE, reqObj.getRequest());
-      map.put(JsonKey.HEADER, getAllRequestHeaders(request()));
-      reqObj.setRequest(map);
-      return actorResponseHandler(getActorRef(), reqObj, timeout, null, request());
-    } catch (Exception e) {
-      ProjectLogger.log(
-              "PageController:getPageData: Exception occurred with error message = " + e.getMessage(),
-              LoggerEnum.ERROR.name());
-      return Promise.<Result>pure(createCommonExceptionResponse(e, request()));
-    }
-  }
 
   /**
    * Method to get all request headers

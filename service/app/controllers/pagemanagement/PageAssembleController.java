@@ -1,7 +1,6 @@
 package controllers.pagemanagement;
 
 import akka.actor.ActorRef;
-import akka.pattern.FutureRef;
 import akka.pattern.Patterns;
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.BaseController;
@@ -26,10 +25,8 @@ import play.libs.F.Promise;
 import play.libs.Json;
 import play.mvc.Result;
 import play.mvc.Results;
-import reactor.rx.Promises;
 import scala.Tuple2;
 import scala.collection.JavaConverters;
-import scala.collection.immutable.Seq;
 
 import javax.inject.Inject;
 import java.util.Arrays;
@@ -45,7 +42,6 @@ public class PageAssembleController extends BaseController {
 
     public Promise<Result> getPageData() {
 
-        System.out.println("ContentSearch URL: " + ContentSearchUtil.contentSearchURL);
         try {
             JsonNode requestData = request().body().asJson();
             Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
@@ -74,11 +70,13 @@ public class PageAssembleController extends BaseController {
                                 List<Promise<Map<String, Object>>> futures = sections.stream().map(f ->
                                         {
                                             String query = (String) f.get("searchQuery");
-                                            System.out.println("Query: "+ query);
+                                            List<Tuple2<String, String>> headers = Arrays.asList(
+                                                    new Tuple2<String, String>(HttpHeaders.AUTHORIZATION, JsonKey.BEARER + System.getenv(JsonKey.SUNBIRD_AUTHORIZATION)),
+                                                    new Tuple2<String, String>(HttpHeaders.CONTENT_TYPE, "application/json"),
+                                                    new Tuple2<String, String>(HttpHeaders.CONNECTION, "Keep-Alive"));
 
-
-                                            return Promise.wrap(wsClient.url(ContentSearchUtil.contentSearchURL)
-                                                    .withHeaders(JavaConverters.asScalaIteratorConverter(Arrays.asList(new Tuple2<String, String>(HttpHeaders.AUTHORIZATION, JsonKey.BEARER + System.getenv(JsonKey.SUNBIRD_AUTHORIZATION)), new Tuple2<String, String>(HttpHeaders.CONTENT_TYPE, "application/json")).iterator()).asScala().toSeq())
+                                            return Promise.wrap(wsClient.url("http://28.0.3.10:9000/v3/search")
+                                                    .withHeaders(JavaConverters.asScalaIteratorConverter(headers.iterator()).asScala().toSeq())
                                                     .post(query, Writeable.wString(Codec.utf_8()))).map(new Function<WSResponse, Map<String, Object>>() {
                                                 @Override
                                                 public Map<String, Object> apply(WSResponse wsResponse) throws Throwable {

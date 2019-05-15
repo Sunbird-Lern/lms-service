@@ -1,6 +1,7 @@
 package controllers.pagemanagement;
 
 import akka.actor.ActorRef;
+import akka.actor.ActorSystem;
 import akka.pattern.Patterns;
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.BaseController;
@@ -40,6 +41,9 @@ public class PageAssembleController extends BaseController {
     @Inject
     WSClient wsClient;
 
+    @Inject
+    ActorSystem system;
+
     public Promise<Result> getPageData() {
 
         try {
@@ -63,7 +67,7 @@ public class PageAssembleController extends BaseController {
                         Response res = (Response) o;
                         Map<String, Object> resResponse = (Map<String, Object>) res.getResult().get("response");
 
-                        Promise<Result> pageResponse = null;
+
                         if (MapUtils.isNotEmpty(resResponse)) {
                             List<Map<String, Object>> sections = (List<Map<String, Object>>) resResponse.get("sections");
                             if (CollectionUtils.isNotEmpty(sections)) {
@@ -90,14 +94,20 @@ public class PageAssembleController extends BaseController {
                                         }
                                 ).collect(Collectors.toList());
 
-                                pageResponse = Promise.sequence(futures).map(new Function<List<Map<String, Object>>, Result>() {
+//                                return Promise.sequence(futures).map(new Function<List<Map<String, Object>>, Result>() {
+//                                    @Override
+//                                    public Result apply(List<Map<String, Object>> maps) throws Throwable {
+//                                        return Results.ok(Json.toJson(maps));
+//                                    }
+//                                });
+
+                                return futures.get(0).map(new Function<Map<String, Object>, Result>() {
                                     @Override
-                                    public Result apply(List<Map<String, Object>> maps) throws Throwable {
+                                    public Result apply(Map<String, Object> maps) throws Throwable {
                                         return Results.ok(Json.toJson(maps));
                                     }
                                 });
 
-                                return pageResponse;
                             }
                         }
 

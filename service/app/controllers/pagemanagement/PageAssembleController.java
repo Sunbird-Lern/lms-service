@@ -94,19 +94,14 @@ public class PageAssembleController extends BaseController {
                                         }
                                 ).parallel().collect(Collectors.toList());
 
-//                                return Promise.sequence(futures).map(new Function<List<Map<String, Object>>, Result>() {
-//                                    @Override
-//                                    public Result apply(List<Map<String, Object>> maps) throws Throwable {
-//                                        return Results.ok(Json.toJson(maps));
-//                                    }
-//                                });
-
-                                return futures.get(0).map(new Function<Map<String, Object>, Result>() {
+                                return Promise.sequence(futures, system.dispatcher()).map(new Function<List<Map<String, Object>>, Result>() {
                                     @Override
-                                    public Result apply(Map<String, Object> maps) throws Throwable {
+                                    public Result apply(List<Map<String, Object>> maps) throws Throwable {
                                         return Results.ok(Json.toJson(maps));
                                     }
                                 });
+
+//                                return Promise.pure(Results.ok());
 
                             }
                         }

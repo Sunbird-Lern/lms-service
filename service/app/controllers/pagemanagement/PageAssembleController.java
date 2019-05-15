@@ -69,23 +69,24 @@ public class PageAssembleController extends BaseController {
                             if (CollectionUtils.isNotEmpty(sections)) {
                                 List<Promise<Map<String, Object>>> futures = sections.stream().map(f ->
                                         {
-//                                            String query = (String) f.get("searchQuery");
-//                                            List<Tuple2<String, String>> headers = Arrays.asList(
-//                                                    new Tuple2<String, String>(HttpHeaders.AUTHORIZATION, JsonKey.BEARER + System.getenv(JsonKey.SUNBIRD_AUTHORIZATION)),
-//                                                    new Tuple2<String, String>(HttpHeaders.CONTENT_TYPE, "application/json"),
-//                                                    new Tuple2<String, String>(HttpHeaders.CONNECTION, "Keep-Alive"));
-//
-//                                            return Promise.wrap(wsClient.url("http://28.0.3.10:9000/v3/search")
-//                                                    .withHeaders(JavaConverters.asScalaIteratorConverter(headers.iterator()).asScala().toSeq())
-//                                                    .post(query, Writeable.wString(Codec.utf_8()))).map(new Function<WSResponse, Map<String, Object>>() {
-//                                                @Override
-//                                                public Map<String, Object> apply(WSResponse wsResponse) throws Throwable {
-////                                                    System.out.println("Status for search: " + wsResponse.status() + " Body: " + wsResponse.body());
-//                                                    f.put("contents", Json.parse(wsResponse.body()));
-//                                                    return f;
-//                                                }
-//                                            });
-                                            return Promise.pure(f);
+                                            String query = (String) f.get("searchQuery");
+                                            List<Tuple2<String, String>> headers = Arrays.asList(
+                                                    new Tuple2<String, String>(HttpHeaders.AUTHORIZATION, JsonKey.BEARER + System.getenv(JsonKey.SUNBIRD_AUTHORIZATION)),
+                                                    new Tuple2<String, String>(HttpHeaders.CONTENT_TYPE, "application/json"),
+                                                    new Tuple2<String, String>(HttpHeaders.CONNECTION, "Keep-Alive"));
+
+                                            long startTime = System.currentTimeMillis();
+                                            return Promise.wrap(wsClient.url("http://28.0.3.10:9000/v3/search")
+                                                    .withHeaders(JavaConverters.asScalaIteratorConverter(headers.iterator()).asScala().toSeq())
+                                                    .post(query, Writeable.wString(Codec.utf_8()))).map(new Function<WSResponse, Map<String, Object>>() {
+                                                @Override
+                                                public Map<String, Object> apply(WSResponse wsResponse) throws Throwable {
+                                                    System.out.println("Time taken for content-search: " + (System.currentTimeMillis() - startTime));
+                                                    f.put("contents", Json.parse(wsResponse.body()));
+                                                    return f;
+                                                }
+                                            });
+//                                            return Promise.pure(f);
                                         }
                                 ).collect(Collectors.toList());
 

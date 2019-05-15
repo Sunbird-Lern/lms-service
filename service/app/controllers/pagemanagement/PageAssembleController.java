@@ -92,7 +92,7 @@ public class PageAssembleController extends BaseController {
                                             });
 //                                            return Promise.pure(f);
                                         }
-                                ).collect(Collectors.toList());
+                                ).parallel().collect(Collectors.toList());
 
 //                                return Promise.sequence(futures).map(new Function<List<Map<String, Object>>, Result>() {
 //                                    @Override

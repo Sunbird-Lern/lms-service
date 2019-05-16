@@ -38,11 +38,7 @@ import java.util.stream.Collectors;
 
 public class PageAssembleController extends BaseController {
 
-    @Inject
-    WSClient wsClient;
 
-    @Inject
-    ActorSystem system;
 
     public Promise<Result> getPageData() {
 
@@ -66,48 +62,18 @@ public class PageAssembleController extends BaseController {
                     if (o instanceof Response) {
                         Response res = (Response) o;
                         Map<String, Object> resResponse = (Map<String, Object>) res.getResult().get("response");
-
-
-                        if (MapUtils.isNotEmpty(resResponse)) {
+                        if(MapUtils.isNotEmpty(resResponse)){
                             List<Map<String, Object>> sections = (List<Map<String, Object>>) resResponse.get("sections");
-                            if (CollectionUtils.isNotEmpty(sections)) {
-                                List<Promise<Map<String, Object>>> futures = sections.stream().map(f ->
-                                        {
-                                            String query = (String) f.get("searchQuery");
-                                            List<Tuple2<String, String>> headers = Arrays.asList(
-                                                    new Tuple2<String, String>(HttpHeaders.AUTHORIZATION, JsonKey.BEARER + System.getenv(JsonKey.SUNBIRD_AUTHORIZATION)),
-                                                    new Tuple2<String, String>(HttpHeaders.CONTENT_TYPE, "application/json"),
-                                                    new Tuple2<String, String>(HttpHeaders.CONNECTION, "Keep-Alive"));
-
-                                            long startTime = System.currentTimeMillis();
-                                            return Promise.wrap(wsClient.url("http://28.0.3.10:9000/v3/search")
-                                                    .withHeaders(JavaConverters.asScalaIteratorConverter(headers.iterator()).asScala().toSeq())
-                                                    .post(query, Writeable.wString(Codec.utf_8()))).map(new Function<WSResponse, Map<String, Object>>() {
-                                                @Override
-                                                public Map<String, Object> apply(WSResponse wsResponse) throws Throwable {
-                                                    System.out.println("Time taken for content-search: " + (System.currentTimeMillis() - startTime));
-                                                    f.put("contents", Json.parse(wsResponse.body()));
-                                                    return f;
-                                                }
-                                            });
-//                                            return Promise.pure(f);
-                                        }
-                                ).parallel().collect(Collectors.toList());
-
-//                                return Promise.sequence(futures, system.dispatcher()).map(new Function<List<Map<String, Object>>, Result>() {
-//                                    @Override
-//                                    public Result apply(List<Map<String, Object>> maps) throws Throwable {
-//                                        return Results.ok(Json.toJson(maps));
-//                                    }
-//                                });
-
-                                return Promise.pure(Results.ok());
-
-                            }
+                            Request req = new Request();
+                            req.setOperation("getSearchData");
+                            req.setRequestId(ExecutionContext.getRequestId());
+                            req.setEnv(getEnvironment());
+                            req.getRequest().put("sections", sections);
+                            return actorResponseHandler(getActorRef(), reqObj, timeout, null, request());
                         }
-
-                        return Promise.pure(Results.ok(Json.toJson(o)));
-
+                        else{
+                            return Promise.pure(createCommonExceptionResponse(new Exception(), request()));
+                        }
                     } else if (o instanceof Exception) {
                         return Promise.pure(createCommonExceptionResponse((Exception) o, request()));
                     } else {

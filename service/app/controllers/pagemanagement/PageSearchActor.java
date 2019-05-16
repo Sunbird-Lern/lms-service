@@ -1,16 +1,13 @@
 package controllers.pagemanagement;
 
-import akka.actor.ActorSystem;
 import akka.dispatch.Futures;
 import akka.pattern.Patterns;
 import controllers.BaseController;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.http.HttpHeaders;
 import org.sunbird.actor.core.BaseActor;
-import org.sunbird.actor.router.ActorConfig;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
@@ -21,12 +18,9 @@ import play.api.libs.ws.WSResponse;
 import play.api.mvc.Codec;
 import play.libs.F;
 import play.libs.Json;
-import play.mvc.Result;
-import play.mvc.Results;
 import scala.Tuple2;
 import scala.collection.JavaConverters;
 import scala.concurrent.Future;
-import util.Global;
 
 import javax.inject.Inject;
 import java.util.Arrays;
@@ -35,20 +29,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 
-@ActorConfig(
-        tasks = {
-                "getSearchData"
-        },
-        asyncTasks = {},
-        dispatcher = "page-search-actor-dispatcher"
-)
-
 public class PageSearchActor extends BaseActor {
     @Inject
     WSClient wsClient;
-
-    @Inject
-    ActorSystem system;
 
     @Override
     public void onReceive(Request request) throws Throwable {
@@ -64,12 +47,6 @@ public class PageSearchActor extends BaseActor {
 
     private void getSearchData(Request request) {
             List<Map<String, Object>> sections = (List<Map<String, Object>>) request.get("sections");
-            Request req = new Request();
-            req.setOperation("getSearchData");
-            req.setRequestId(ExecutionContext.getRequestId());
-            req.setEnv(getEnvironment());
-            req.getRequest().put("sections", sections);
-
 
             if (CollectionUtils.isNotEmpty(sections)) {
                 List<F.Promise<Map<String, Object>>> futures = sections.stream().map(f ->
@@ -109,14 +86,5 @@ public class PageSearchActor extends BaseActor {
                 Patterns.pipe(response, getContext().dispatcher()).to(sender());
 
             }
-    }
-
-
-    public int getEnvironment() {
-
-        if (Global.env != null) {
-            return Global.env.getValue();
-        }
-        return ProjectUtil.Environment.dev.getValue();
     }
 }

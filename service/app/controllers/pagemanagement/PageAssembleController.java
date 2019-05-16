@@ -2,12 +2,18 @@ package controllers.pagemanagement;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
+import akka.actor.Props;
 import akka.pattern.Patterns;
+import akka.routing.FromConfig;
+import akka.routing.RouterConfig;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import controllers.BaseController;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.http.HttpHeaders;
+import org.sunbird.actor.router.RequestRouter;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
@@ -37,7 +43,18 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class PageAssembleController extends BaseController {
+    @Inject
+    static
+    ActorSystem system;
+    static ActorRef actorRef;
 
+    static{
+        Config config = ConfigFactory.systemEnvironment().withFallback(ConfigFactory.load());
+        Config conf = config.getConfig("SunbirdMWSystem");
+        system = ActorSystem.create("SunbirdMWSystem", conf);
+        actorRef = system.actorOf(FromConfig.getInstance().props(Props.create(PageSearchActor.class).withDispatcher("page-search-actor-dispatcher")),
+                PageSearchActor.class.getSimpleName());
+    }
 
 
     public Promise<Result> getPageData() {
@@ -69,7 +86,7 @@ public class PageAssembleController extends BaseController {
                             req.setRequestId(ExecutionContext.getRequestId());
                             req.setEnv(getEnvironment());
                             req.getRequest().put("sections", sections);
-                            return actorResponseHandler(getActorRef(), reqObj, timeout, null, request());
+                            return actorResponseHandler(actorRef, req, timeout, null, request());
                         }
                         else{
                             return Promise.pure(createCommonExceptionResponse(new Exception(), request()));

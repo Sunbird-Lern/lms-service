@@ -2,6 +2,7 @@ package controllers.pagemanagement;
 
 import akka.dispatch.Futures;
 import akka.pattern.Patterns;
+import com.sun.tools.internal.ws.resources.WscompileMessages;
 import controllers.BaseController;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.http.HttpHeaders;
@@ -11,6 +12,7 @@ import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.learner.util.Util;
 import play.api.http.Writeable;
 import play.api.libs.ws.WSClient;
@@ -18,6 +20,8 @@ import play.api.libs.ws.WSResponse;
 import play.api.mvc.Codec;
 import play.libs.F;
 import play.libs.Json;
+import play.mvc.Result;
+import play.mvc.Results;
 import scala.Tuple2;
 import scala.collection.JavaConverters;
 import scala.concurrent.Future;
@@ -30,8 +34,6 @@ import java.util.stream.Collectors;
 
 
 public class PageSearchActor extends BaseActor {
-    @Inject
-    WSClient wsClient;
 
     @Override
     public void onReceive(Request request) throws Throwable {
@@ -46,45 +48,42 @@ public class PageSearchActor extends BaseActor {
     }
 
     private void getSearchData(Request request) {
-            List<Map<String, Object>> sections = (List<Map<String, Object>>) request.get("sections");
+        System.out.println("Entered PageSearchActor");
+        List<Map<String, Object>> sections = (List<Map<String, Object>>) request.get("sections");
+        WSClient wsClient = (WSClient) request.get("wsclient");
+        if (CollectionUtils.isNotEmpty(sections)) {
+            List<F.Promise<Map<String, Object>>> futures = sections.stream().map(f ->
+                    {
+                        String query = (String) f.get("searchQuery");
+                        List<Tuple2<String, String>> headers = Arrays.asList(
+                                new Tuple2<String, String>(HttpHeaders.AUTHORIZATION, JsonKey.BEARER + System.getenv(JsonKey.SUNBIRD_AUTHORIZATION)),
+                                new Tuple2<String, String>(HttpHeaders.CONTENT_TYPE, "application/json"),
+                                new Tuple2<String, String>(HttpHeaders.CONNECTION, "Keep-Alive"));
 
-            if (CollectionUtils.isNotEmpty(sections)) {
-                List<F.Promise<Map<String, Object>>> futures = sections.stream().map(f ->
-                        {
-                            String query = (String) f.get("searchQuery");
-                            List<Tuple2<String, String>> headers = Arrays.asList(
-                                    new Tuple2<String, String>(HttpHeaders.AUTHORIZATION, JsonKey.BEARER + System.getenv(JsonKey.SUNBIRD_AUTHORIZATION)),
-                                    new Tuple2<String, String>(HttpHeaders.CONTENT_TYPE, "application/json"),
-                                    new Tuple2<String, String>(HttpHeaders.CONNECTION, "Keep-Alive"));
+                        long startTime = System.currentTimeMillis();
+                        return F.Promise.wrap(wsClient.url("https://dev.sunbirded.org/action/composite/v3/search")//"http://28.0.3.10:9000/v3/search")
+                                .withHeaders(JavaConverters.asScalaIteratorConverter(headers.iterator()).asScala().toSeq())
+                                .post(query, Writeable.wString(Codec.utf_8()))).map(new F.Function<WSResponse, Map<String, Object>>() {
+                            @Override
+                            public Map<String, Object> apply(WSResponse wsResponse) throws Throwable {
+                                System.out.println("Time taken for content-search: " + (System.currentTimeMillis() - startTime));
+                                f.put("contents", Json.parse(wsResponse.body()));
+                                return f;
+                            }
+                        });
+                    }
+            ).parallel().collect(Collectors.toList());
 
-                            long startTime = System.currentTimeMillis();
-                            return F.Promise.wrap(wsClient.url("http://28.0.3.10:9000/v3/search")
-                                    .withHeaders(JavaConverters.asScalaIteratorConverter(headers.iterator()).asScala().toSeq())
-                                    .post(query, Writeable.wString(Codec.utf_8()))).map(new F.Function<WSResponse, Map<String, Object>>() {
-                                @Override
-                                public Map<String, Object> apply(WSResponse wsResponse) throws Throwable {
-                                    System.out.println("Time taken for content-search: " + (System.currentTimeMillis() - startTime));
-                                    f.put("contents", Json.parse(wsResponse.body()));
-                                    return f;
-                                }
-                            });
-//                                            return Promise.pure(f);
-                        }
-                ).parallel().collect(Collectors.toList());
 
-                /*Patterns.pipe((Future<Response>) F.Promise.sequence(futures, system.dispatcher()).map(new F.Function<List<Map<String, Object>>, Result>() {
-                                    @Override
-                                    public Response apply(List<Map<String, Object>> maps) throws Throwable {
-                                        return new Response().put();
-                                    }
-                                }), getContext().dispatcher()).to(sender());
-*/
-                Response resp = BaseController.createSuccessResponse(null, new Response());
+            F.Promise<Result> result = F.Promise.sequence(futures).map(new F.Function<List<Map<String, Object>>, Result>() {
+                @Override
+                public Result apply(List<Map<String, Object>> maps) {
+                    return Results.ok(Json.toJson(maps));
+                }
+            });
+            sender().tell(result, self());
+        }
 
-                Future<Response> response = Futures.successful(resp);
-
-                Patterns.pipe(response, getContext().dispatcher()).to(sender());
-
-            }
     }
+
 }

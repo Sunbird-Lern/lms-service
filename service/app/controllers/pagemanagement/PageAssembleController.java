@@ -1,19 +1,10 @@
 package controllers.pagemanagement;
 
 import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
-import akka.actor.Props;
 import akka.pattern.Patterns;
-import akka.routing.FromConfig;
-import akka.routing.RouterConfig;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 import controllers.BaseController;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.http.HttpHeaders;
-import org.sunbird.actor.router.RequestRouter;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
@@ -22,40 +13,20 @@ import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.request.RequestValidator;
-import org.sunbird.learner.util.ContentSearchUtil;
-import play.api.http.Writeable;
 import play.api.libs.ws.WSClient;
-import play.api.libs.ws.WSResponse;
-import play.api.mvc.Codec;
 import play.libs.F.Function;
 import play.libs.F.Promise;
-import play.libs.Json;
 import play.mvc.Result;
-import play.mvc.Results;
-import scala.Tuple2;
-import scala.collection.JavaConverters;
+import util.PageRequestRouter;
 
 import javax.inject.Inject;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class PageAssembleController extends BaseController {
     @Inject
-    static
-    ActorSystem system;
-    static ActorRef actorRef;
-
-    static{
-        Config config = ConfigFactory.systemEnvironment().withFallback(ConfigFactory.load());
-        Config conf = config.getConfig("SunbirdMWSystem");
-        system = ActorSystem.create("SunbirdMWSystem", conf);
-        actorRef = system.actorOf(FromConfig.getInstance().props(Props.create(PageSearchActor.class).withDispatcher("page-search-actor-dispatcher")),
-                PageSearchActor.class.getSimpleName());
-    }
-
+    WSClient wsClient;
 
     public Promise<Result> getPageData() {
 
@@ -81,12 +52,25 @@ public class PageAssembleController extends BaseController {
                         Map<String, Object> resResponse = (Map<String, Object>) res.getResult().get("response");
                         if(MapUtils.isNotEmpty(resResponse)){
                             List<Map<String, Object>> sections = (List<Map<String, Object>>) resResponse.get("sections");
-                            Request req = new Request();
+                            Request req = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);;
                             req.setOperation("getSearchData");
                             req.setRequestId(ExecutionContext.getRequestId());
                             req.setEnv(getEnvironment());
+                            req.setRequestId(ExecutionContext.getRequestId());
                             req.getRequest().put("sections", sections);
-                            return actorResponseHandler(actorRef, req, timeout, null, request());
+                            req.getRequest().put("wsclient", wsClient);
+                            System.out.println("Calling PageSearchActor");
+                            return Promise.wrap(Patterns.ask(PageRequestRouter.getPageActor(), req, timeout)).map(new Function<Object, Promise<Result>>() {
+                                @Override
+                                public Promise<Result> apply(Object o) throws Throwable {
+                                    return (Promise<Result>) o;
+                                }
+                            }).flatMap(new Function<Promise<Result>, Promise<Result>>() {
+                                @Override
+                                public Promise<Result> apply(Promise<Result> resultPromise) throws Throwable {
+                                    return resultPromise;
+                                }
+                            });// actorResponseHandler(PageRequestRouter.getPageActor(), req, timeout, null, request());
                         }
                         else{
                             return Promise.pure(createCommonExceptionResponse(new Exception(), request()));

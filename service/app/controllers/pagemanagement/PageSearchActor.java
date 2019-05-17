@@ -61,7 +61,7 @@ public class PageSearchActor extends BaseActor {
                                 new Tuple2<String, String>(HttpHeaders.CONNECTION, "Keep-Alive"));
 
                         long startTime = System.currentTimeMillis();
-                        return F.Promise.wrap(wsClient.url("https://dev.sunbirded.org/action/composite/v3/search")//"http://28.0.3.10:9000/v3/search")
+                        return F.Promise.wrap(wsClient.url("http://28.0.3.10:9000/v3/search")
                                 .withHeaders(JavaConverters.asScalaIteratorConverter(headers.iterator()).asScala().toSeq())
                                 .post(query, Writeable.wString(Codec.utf_8()))).map(new F.Function<WSResponse, Map<String, Object>>() {
                             @Override

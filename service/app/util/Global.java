@@ -414,4 +414,18 @@ public class Global extends GlobalSettings {
     }
     return null;
   }
+
+  @Override
+  public Promise<Result> onBadRequest(Http.RequestHeader request, String error) {
+
+    ProjectLogger.log("Global:onBadRequest requested data:" + request.headers()+"Error message : "+ error, LoggerEnum.INFO.name());
+    ProjectCommonException commonException =
+            new ProjectCommonException(
+                    ResponseCode.internalError.getErrorCode(),
+                    ResponseCode.internalError.getErrorMessage(),
+                    ResponseCode.SERVER_ERROR.getResponseCode());
+    Response response =
+            BaseController.createResponseOnException(request.path(), request.method(), commonException);
+    return Promise.<Result>pure(Results.internalServerError(Json.toJson(response)));
+  }
 }

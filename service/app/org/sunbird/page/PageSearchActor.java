@@ -1,18 +1,15 @@
-package controllers.pagemanagement;
+package org.sunbird.page;
 
 import akka.dispatch.Futures;
-import akka.pattern.Patterns;
-import com.sun.tools.internal.ws.resources.WscompileMessages;
-import controllers.BaseController;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.http.HttpHeaders;
 import org.sunbird.actor.core.BaseActor;
-import org.sunbird.common.models.response.Response;
+import org.sunbird.actor.router.ActorConfig;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
-import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.learner.util.ContentSearchUtil;
 import org.sunbird.learner.util.Util;
 import play.api.http.Writeable;
 import play.api.libs.ws.WSClient;
@@ -24,15 +21,12 @@ import play.mvc.Result;
 import play.mvc.Results;
 import scala.Tuple2;
 import scala.collection.JavaConverters;
-import scala.concurrent.Future;
-
-import javax.inject.Inject;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-
+@ActorConfig(tasks = {"getSearchData"}, asyncTasks = {}, dispatcher = "page-search-actor-dispatcher")
 public class PageSearchActor extends BaseActor {
 
     @Override
@@ -61,6 +55,7 @@ public class PageSearchActor extends BaseActor {
                                 new Tuple2<String, String>(HttpHeaders.CONNECTION, "Keep-Alive"));
 
                         long startTime = System.currentTimeMillis();
+
                         return F.Promise.wrap(wsClient.url("http://28.0.3.10:9000/v3/search")
                                 .withHeaders(JavaConverters.asScalaIteratorConverter(headers.iterator()).asScala().toSeq())
                                 .post(query, Writeable.wString(Codec.utf_8()))).map(new F.Function<WSResponse, Map<String, Object>>() {
@@ -82,6 +77,8 @@ public class PageSearchActor extends BaseActor {
                 }
             });
             sender().tell(result, self());
+        } else {
+            sender().tell(F.Promise.wrap(Futures.successful(Results.ok("Empty sections."))), self());
         }
 
     }

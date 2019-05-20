@@ -5,6 +5,8 @@ import akka.pattern.Patterns;
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.BaseController;
 import org.apache.commons.collections4.MapUtils;
+import org.sunbird.actor.router.RequestRouter;
+import org.sunbird.actor.service.SunbirdMWService;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
@@ -17,7 +19,6 @@ import play.api.libs.ws.WSClient;
 import play.libs.F.Function;
 import play.libs.F.Promise;
 import play.mvc.Result;
-import util.PageRequestRouter;
 
 import javax.inject.Inject;
 import java.util.HashMap;
@@ -60,7 +61,7 @@ public class PageAssembleController extends BaseController {
                             req.getRequest().put("sections", sections);
                             req.getRequest().put("wsclient", wsClient);
                             System.out.println("Calling PageSearchActor");
-                            return Promise.wrap(Patterns.ask(PageRequestRouter.getPageActor(), req, timeout)).map(new Function<Object, Promise<Result>>() {
+                            return Promise.wrap(Patterns.ask((ActorRef) SunbirdMWService.getRequestRouter(), req, timeout)).map(new Function<Object, Promise<Result>>() {
                                 @Override
                                 public Promise<Result> apply(Object o) throws Throwable {
                                     return (Promise<Result>) o;

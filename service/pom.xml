@@ -91,6 +91,11 @@
 			</exclusions>
 		</dependency>
 		<dependency>
+			<groupId>com.typesafe.play</groupId>
+			<artifactId>play-ws_2.11</artifactId>
+			<version>${play2.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-library</artifactId>
 			<version>${scala.version}</version>

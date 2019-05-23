@@ -147,7 +147,7 @@ public class Global extends GlobalSettings {
     if (request.body() != null && request.body().asJson() != null) {
       JsonNode requestNode =
           request.body().asJson().get("params"); // extracting signup type from request
-      if (requestNode != null && requestNode.get(JsonKey.signupType) != null) {
+      if (requestNode != null) {
         signType = requestNode.get(JsonKey.signupType).asText();
       }
     }

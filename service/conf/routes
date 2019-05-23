@@ -3,90 +3,90 @@
 OPTIONS    /*all                        @controllers.LearnerController.preflight(all)
 
 # User management APIs
-POST	/v1/user/create				            @controllers.usermanagement.UserController.createUser()
+POST	/v3/user/create				            @controllers.usermanagement.UserController.createUser()
 POST	/v2/user/create				            @controllers.usermanagement.UserController.createUserV2()
-PATCH	/v1/user/update					          @controllers.usermanagement.UserController.updateUser()
-PATCH	/private/user/v1/update					          @controllers.usermanagement.UserController.updateUser()
-GET  	/v1/user/read/:uid				        @controllers.usermanagement.UserController.getUserById(uid:String)
+PATCH	/v3/user/update					          @controllers.usermanagement.UserController.updateUser()
+PATCH	/private/user/v3/update					          @controllers.usermanagement.UserController.updateUser()
+GET  	/v3/user/read/:uid				        @controllers.usermanagement.UserController.getUserById(uid:String)
 GET  	/v2/user/read/:uid				        @controllers.usermanagement.UserController.getUserByIdV2(uid:String)
-POST  /v1/user/getuser                  @controllers.usermanagement.UserController.getUserByLoginId()
-GET   /v1/user/get/:idType/:id          @controllers.usermanagement.UserController.getUserByKey(idType:String,id:String)
-POST  /v1/user/search					 @controllers.usermanagement.UserController.searchUser()
-POST  /private/user/v1/search            @controllers.usermanagement.UserController.searchUser()
-GET   /private/user/v1/read/:externalId @controllers.usermanagement.UserController.getUserById(externalId:String)
-GET   /v1/user/mock/read/:externalId @controllers.usermanagement.UserController.getUserByIdMock(externalId:String)
+POST  /v3/user/getuser                  @controllers.usermanagement.UserController.getUserByLoginId()
+GET   /v3/user/get/:idType/:id          @controllers.usermanagement.UserController.getUserByKey(idType:String,id:String)
+POST  /v3/user/search					 @controllers.usermanagement.UserController.searchUser()
+POST  /private/user/v3/search            @controllers.usermanagement.UserController.searchUser()
+GET   /private/user/v3/read/:externalId @controllers.usermanagement.UserController.getUserById(externalId:String)
+GET   /v3/user/mock/read/:externalId @controllers.usermanagement.UserController.getUserByIdMock(externalId:String)
 
-GET   /v1/user/mediatype/list     @controllers.usermanagement.UserProfileController.getProfileSupportedSocialMediaTypes()
-POST  /v1/user/profile/visibility @controllers.usermanagement.UserProfileController.setProfileVisibility()
+GET   /v3/user/mediatype/list     @controllers.usermanagement.UserProfileController.getProfileSupportedSocialMediaTypes()
+POST  /v3/user/profile/visibility @controllers.usermanagement.UserProfileController.setProfileVisibility()
 
-POST  /v1/user/block			        @controllers.usermanagement.UserStatusController.blockUser()
-POST  /v1/user/unblock			      @controllers.usermanagement.UserStatusController.unblockUser()
+POST  /v3/user/block			        @controllers.usermanagement.UserStatusController.blockUser()
+POST  /v3/user/unblock			      @controllers.usermanagement.UserStatusController.unblockUser()
 
-GET   /v1/role/read						    @controllers.usermanagement.UserRoleController.getRoles()
-POST  /v1/user/assign/role			  @controllers.usermanagement.UserRoleController.assignRoles()
-POST  /private/user/v1/assign/role	  @controllers.usermanagement.UserRoleController.assignRoles()
+GET   /v3/role/read						    @controllers.usermanagement.UserRoleController.getRoles()
+POST  /v3/user/assign/role			  @controllers.usermanagement.UserRoleController.assignRoles()
+POST  /private/user/v3/assign/role	  @controllers.usermanagement.UserRoleController.assignRoles()
 
-PATCH /v1/user/update/logintime	  @controllers.usermanagement.UserLoginController.updateLoginTime()
+PATCH /v3/user/update/logintime	  @controllers.usermanagement.UserLoginController.updateLoginTime()
 
-POST  /v1/user/tnc/accept         @controllers.tac.UserTnCController.acceptTnC()
-GET   /v1/user/type/list						    @controllers.usermanagement.UserTypeController.getUserTypes()
+POST  /v3/user/tnc/accept         @controllers.tac.UserTnCController.acceptTnC()
+GET   /v3/user/type/list						    @controllers.usermanagement.UserTypeController.getUserTypes()
 
 # Organisation management APIs
-POST  /v1/org/create		    @controllers.organisationmanagement.OrgController.createOrg()
-PATCH	/v1/org/update		    @controllers.organisationmanagement.OrgController.updateOrg()
-PATCH	/v1/org/status/update @controllers.organisationmanagement.OrgController.updateOrgStatus()
-POST  /v1/org/read          @controllers.organisationmanagement.OrgController.getOrgDetails()
-POST  /v1/org/search		    @controllers.organisationmanagement.OrgController.search()
+POST  /v3/org/create		    @controllers.organisationmanagement.OrgController.createOrg()
+PATCH	/v3/org/update		    @controllers.organisationmanagement.OrgController.updateOrg()
+PATCH	/v3/org/status/update @controllers.organisationmanagement.OrgController.updateOrgStatus()
+POST  /v3/org/read          @controllers.organisationmanagement.OrgController.getOrgDetails()
+POST  /v3/org/search		    @controllers.organisationmanagement.OrgController.search()
 
-POST  /v1/org/member/add		@controllers.organisationmanagement.OrgMemberController.addMemberToOrganisation()
-POST  /v1/org/member/remove	@controllers.organisationmanagement.OrgMemberController.removeMemberFromOrganisation()
+POST  /v3/org/member/add		@controllers.organisationmanagement.OrgMemberController.addMemberToOrganisation()
+POST  /v3/org/member/remove	@controllers.organisationmanagement.OrgMemberController.removeMemberFromOrganisation()
 
-POST	/v1/org/type/create	@controllers.organisationmanagement.OrgTypeController.createOrgType()
-PATCH	/v1/org/type/update	@controllers.organisationmanagement.OrgTypeController.updateOrgType()
-GET		/v1/org/type/list		@controllers.organisationmanagement.OrgTypeController.listOrgType()
+POST	/v3/org/type/create	@controllers.organisationmanagement.OrgTypeController.createOrgType()
+PATCH	/v3/org/type/update	@controllers.organisationmanagement.OrgTypeController.updateOrgType()
+GET		/v3/org/type/list		@controllers.organisationmanagement.OrgTypeController.listOrgType()
 #search
-POST	/v1/search/compositesearch  			@controllers.search.SearchController.compositeSearch()
+POST	/v3/search/compositesearch  			@controllers.search.SearchController.compositeSearch()
 
 #Mock APIs to finish API Gateway onboarding
 GET /threaddump									@controllers.ThreadDumpController.threaddump()
 
 # Bulk upload APIs
-POST /v1/user/upload                    @controllers.bulkapimanagement.BulkUploadController.userBulkUpload()
-POST /v1/bulk/user/upload               @controllers.bulkapimanagement.BulkUploadController.userBulkUpload()
-POST /v1/org/upload                     @controllers.bulkapimanagement.BulkUploadController.orgBulkUpload()
-POST /v1/bulk/location/upload           @controllers.bulkapimanagement.BulkUploadController.locationBulkUpload()
-GET  /v1/upload/status/:pid             @controllers.bulkapimanagement.BulkUploadController.getUploadStatus(pid:String)
-GET  /v1/upload/statusDownloadLink/:pid @controllers.bulkapimanagement.BulkUploadController.getStatusDownloadLink(pid:String)
+POST /v3/user/upload                    @controllers.bulkapimanagement.BulkUploadController.userBulkUpload()
+POST /v3/bulk/user/upload               @controllers.bulkapimanagement.BulkUploadController.userBulkUpload()
+POST /v3/org/upload                     @controllers.bulkapimanagement.BulkUploadController.orgBulkUpload()
+POST /v3/bulk/location/upload           @controllers.bulkapimanagement.BulkUploadController.locationBulkUpload()
+GET  /v3/upload/status/:pid             @controllers.bulkapimanagement.BulkUploadController.getUploadStatus(pid:String)
+GET  /v3/upload/statusDownloadLink/:pid @controllers.bulkapimanagement.BulkUploadController.getStatusDownloadLink(pid:String)
 
-POST  /v1/user/data/encrypt              @controllers.usermanagement.UserDataEncryptionController.encrypt()
-POST  /v1/user/data/decrypt              @controllers.usermanagement.UserDataEncryptionController.decrypt()
+POST  /v3/user/data/encrypt              @controllers.usermanagement.UserDataEncryptionController.encrypt()
+POST  /v3/user/data/decrypt              @controllers.usermanagement.UserDataEncryptionController.decrypt()
 
-POST  /v1/file/upload 						@controllers.storage.FileStorageController.uploadFileService()
+POST  /v3/file/upload 						@controllers.storage.FileStorageController.uploadFileService()
 
 #Sync
-POST /v1/data/sync                          @controllers.search.SearchController.sync()
+POST /v3/data/sync                          @controllers.search.SearchController.sync()
 
 #Email
-POST /v1/notification/email					@controllers.notificationservice.EmailServiceController.sendMail()
+POST /v3/notification/email					@controllers.notificationservice.EmailServiceController.sendMail()
 
 # Badging APIs
-POST /v1/issuer/create                        @controllers.badging.BadgeIssuerController.createBadgeIssuer()
-GET /v1/issuer/read/:issuerId                 @controllers.badging.BadgeIssuerController.getBadgeIssuer(issuerId:String)
-GET /v1/issuer/list                           @controllers.badging.BadgeIssuerController.getAllIssuer()
-DELETE /v1/issuer/delete/:issuerId            @controllers.badging.BadgeIssuerController.deleteBadgeIssuer(issuerId:String)
+POST /v3/issuer/create                        @controllers.badging.BadgeIssuerController.createBadgeIssuer()
+GET /v3/issuer/read/:issuerId                 @controllers.badging.BadgeIssuerController.getBadgeIssuer(issuerId:String)
+GET /v3/issuer/list                           @controllers.badging.BadgeIssuerController.getAllIssuer()
+DELETE /v3/issuer/delete/:issuerId            @controllers.badging.BadgeIssuerController.deleteBadgeIssuer(issuerId:String)
 
-POST   /v1/issuer/badge/create                @controllers.badging.BadgeClassController.createBadgeClass()
-GET    /v1/issuer/badge/read/:badgeId         @controllers.badging.BadgeClassController.getBadgeClass(badgeId:String)
-POST   /v1/issuer/badge/search                @controllers.badging.BadgeClassController.searchBadgeClass()
-DELETE /v1/issuer/badge/delete/:badgeId       @controllers.badging.BadgeClassController.deleteBadgeClass(badgeId:String)
+POST   /v3/issuer/badge/create                @controllers.badging.BadgeClassController.createBadgeClass()
+GET    /v3/issuer/badge/read/:badgeId         @controllers.badging.BadgeClassController.getBadgeClass(badgeId:String)
+POST   /v3/issuer/badge/search                @controllers.badging.BadgeClassController.searchBadgeClass()
+DELETE /v3/issuer/badge/delete/:badgeId       @controllers.badging.BadgeClassController.deleteBadgeClass(badgeId:String)
 
-POST  /v1/issuer/badge/assertion/create       @controllers.badging.BadgeAssertionController.issueBadge()
-GET  /v1/issuer/badge/assertion/read/:assertionId  @controllers.badging.BadgeAssertionController.getAssertionDetails(assertionId:String)
-POST  /v1/issuer/badge/assertion/search      @controllers.badging.BadgeAssertionController.getAssertionList()
-DELETE /v1/issuer/badge/assertion/delete      @controllers.badging.BadgeAssertionController.revokeAssertion()
-POST   /v1/content/link                       @controllers.badging.BadgeAssociationController.createAssociation()
-POST   /v1/content/unlink                     @controllers.badging.BadgeAssociationController.removeAssociation()
-POST   /v1/content/link/search 		              @controllers.badging.BadgeAssociationController.searchAssociation()
+POST  /v3/issuer/badge/assertion/create       @controllers.badging.BadgeAssertionController.issueBadge()
+GET  /v3/issuer/badge/assertion/read/:assertionId  @controllers.badging.BadgeAssertionController.getAssertionDetails(assertionId:String)
+POST  /v3/issuer/badge/assertion/search      @controllers.badging.BadgeAssertionController.getAssertionList()
+DELETE /v3/issuer/badge/assertion/delete      @controllers.badging.BadgeAssertionController.revokeAssertion()
+POST   /v3/content/link                       @controllers.badging.BadgeAssociationController.createAssociation()
+POST   /v3/content/unlink                     @controllers.badging.BadgeAssociationController.removeAssociation()
+POST   /v3/content/link/search 		              @controllers.badging.BadgeAssociationController.searchAssociation()
 
 #Health check
 GET  /health                                  @controllers.healthmanager.HealthController.getHealth()
@@ -94,53 +94,53 @@ GET  /:service/health                      @controllers.healthmanager.HealthCont
 
 
 # Skill tag and endorsement
-POST /v1/user/skill/add                        @controllers.skills.UserSkillController.addSkill()
-POST /v1/user/skill/read                       @controllers.skills.UserSkillController.getSkill()
-GET  /v1/skills                                @controllers.skills.UserSkillController.getSkillsList()
-POST /v1/user/skill/update                     @controllers.skills.UserSkillController.updateSkill()
-POST /v1/user/skill/endorse/add                @controllers.skills.UserSkillEndorsementController.addEndorsement()
+POST /v3/user/skill/add                        @controllers.skills.UserSkillController.addSkill()
+POST /v3/user/skill/read                       @controllers.skills.UserSkillController.getSkill()
+GET  /v3/skills                                @controllers.skills.UserSkillController.getSkillsList()
+POST /v3/user/skill/update                     @controllers.skills.UserSkillController.updateSkill()
+POST /v3/user/skill/endorse/add                @controllers.skills.UserSkillEndorsementController.addEndorsement()
 
 #T&C
-POST  /v1/org/preferences/create 						@controllers.tenantpreference.TenantPreferenceController.createTenantPreference()
-POST  /v1/org/preferences/update 						@controllers.tenantpreference.TenantPreferenceController.updateTenantPreference()
-POST  /v1/org/preferences/read					@controllers.tenantpreference.TenantPreferenceController.getTenantPreference()
+POST  /v3/org/preferences/create 						@controllers.tenantpreference.TenantPreferenceController.createTenantPreference()
+POST  /v3/org/preferences/update 						@controllers.tenantpreference.TenantPreferenceController.updateTenantPreference()
+POST  /v3/org/preferences/read					@controllers.tenantpreference.TenantPreferenceController.getTenantPreference()
 
 #DB Operation API
-POST   /v1/object/read/list                 @controllers.datapersistence.DbOperationController.readAll()
-POST   /v1/object/read                   @controllers.datapersistence.DbOperationController.read()
-POST   /v1/object/create                 @controllers.datapersistence.DbOperationController.create()
-POST   /v1/object/update                 @controllers.datapersistence.DbOperationController.update()
-POST   /v1/object/delete                 @controllers.datapersistence.DbOperationController.delete()
-POST   /v1/object/search                 @controllers.datapersistence.DbOperationController.search()
-POST   /v1/object/metrics                @controllers.datapersistence.DbOperationController.getMetrics()
+POST   /v3/object/read/list                 @controllers.datapersistence.DbOperationController.readAll()
+POST   /v3/object/read                   @controllers.datapersistence.DbOperationController.read()
+POST   /v3/object/create                 @controllers.datapersistence.DbOperationController.create()
+POST   /v3/object/update                 @controllers.datapersistence.DbOperationController.update()
+POST   /v3/object/delete                 @controllers.datapersistence.DbOperationController.delete()
+POST   /v3/object/search                 @controllers.datapersistence.DbOperationController.search()
+POST   /v3/object/metrics                @controllers.datapersistence.DbOperationController.getMetrics()
 
 #Master Key API
-POST   /v1/client/register              @controllers.clientmanagement.ClientController.registerClient()
-PATCH  /v1/client/key/update            @controllers.clientmanagement.ClientController.updateClientKey
-GET    /v1/client/key/read/:clientId    @controllers.clientmanagement.ClientController.getClientKey(clientId:String)
+POST   /v3/client/register              @controllers.clientmanagement.ClientController.registerClient()
+PATCH  /v3/client/key/update            @controllers.clientmanagement.ClientController.updateClientKey
+GET    /v3/client/key/read/:clientId    @controllers.clientmanagement.ClientController.getClientKey(clientId:String)
 
 #GEO LOCATION API
-POST /v1/notification/location/create                @controllers.geolocation.GeoLocationController.createGeoLocation()
-GET  /v1/notification/location/read/:id               @controllers.geolocation.GeoLocationController.getGeoLocation(id:String)
-PATCH  /v1/notification/location/update/:locationId   @controllers.geolocation.GeoLocationController.updateGeoLocation(locationId:String)
-DELETE   /v1/notification/location/delete/:locationId  @controllers.geolocation.GeoLocationController.deleteGeoLocation(locationId:String)
-POST    /v1/notification/send             @controllers.geolocation.GeoLocationController.sendNotification()
-POST    /v1/notification/audience             @controllers.geolocation.GeoLocationController.getUserCount()
+POST /v3/notification/location/create                @controllers.geolocation.GeoLocationController.createGeoLocation()
+GET  /v3/notification/location/read/:id               @controllers.geolocation.GeoLocationController.getGeoLocation(id:String)
+PATCH  /v3/notification/location/update/:locationId   @controllers.geolocation.GeoLocationController.updateGeoLocation(locationId:String)
+DELETE   /v3/notification/location/delete/:locationId  @controllers.geolocation.GeoLocationController.deleteGeoLocation(locationId:String)
+POST    /v3/notification/send             @controllers.geolocation.GeoLocationController.sendNotification()
+POST    /v3/notification/audience             @controllers.geolocation.GeoLocationController.getUserCount()
 
 #Location API
-POST   /v1/location/create                      @controllers.location.LocationController.createLocation()
-PATCH  /v1/location/update                      @controllers.location.LocationController.updateLocation()
-POST   /v1/location/search                      @controllers.location.LocationController.searchLocation()
-DELETE /v1/location/delete/:locationId                      @controllers.location.LocationController.deleteLocation(locationId:String)
+POST   /v3/location/create                      @controllers.location.LocationController.createLocation()
+PATCH  /v3/location/update                      @controllers.location.LocationController.updateLocation()
+POST   /v3/location/search                      @controllers.location.LocationController.searchLocation()
+DELETE /v3/location/delete/:locationId                      @controllers.location.LocationController.deleteLocation(locationId:String)
 
 # System Settings APIs
-GET   /v1/system/settings/get/:field      @controllers.systemsettings.SystemSettingsController.getSystemSetting(field:String)
-GET   /v1/system/settings/list               @controllers.systemsettings.SystemSettingsController.getAllSystemSettings()
-POST  /v1/system/settings/set                 @controllers.systemsettings.SystemSettingsController.setSystemSetting()
+GET   /v3/system/settings/get/:field      @controllers.systemsettings.SystemSettingsController.getSystemSetting(field:String)
+GET   /v3/system/settings/list               @controllers.systemsettings.SystemSettingsController.getAllSystemSettings()
+POST  /v3/system/settings/set                 @controllers.systemsettings.SystemSettingsController.setSystemSetting()
 
 # OTP APIs
-POST /v1/otp/generate @controllers.otp.OtpController.generateOTP()
-POST /v1/otp/verify   @controllers.otp.OtpController.verifyOTP()
+POST /v3/otp/generate @controllers.otp.OtpController.generateOTP()
+POST /v3/otp/verify   @controllers.otp.OtpController.verifyOTP()
 
 # Cache APIs
-DELETE /v1/cache/clear/:mapName @controllers.cache.CacheController.clearCache(mapName:String)
+DELETE /v3/cache/clear/:mapName @controllers.cache.CacheController.clearCache(mapName:String)

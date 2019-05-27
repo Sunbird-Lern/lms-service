@@ -24,81 +24,20 @@ public class RequestInterceptor {
 
   static {
     restrictedUriList = new ArrayList<>();
-    restrictedUriList.add("/v1/user/update");
-    restrictedUriList.add("/v1/note/create");
-    restrictedUriList.add("/v1/note/update");
-    restrictedUriList.add("/v1/note/search");
-    restrictedUriList.add("/v1/note/read");
-    restrictedUriList.add("/v1/note/delete");
     restrictedUriList.add("/v1/content/state/update");
 
     // ---------------------------
     short var = 1;
-    apiHeaderIgnoreMap.put("/v1/user/create", var);
-    apiHeaderIgnoreMap.put("/v2/user/create", var);
-    apiHeaderIgnoreMap.put("/v1/org/search", var);
     apiHeaderIgnoreMap.put("/service/health", var);
     apiHeaderIgnoreMap.put("/v1/page/assemble", var);
     apiHeaderIgnoreMap.put("/health", var);
     apiHeaderIgnoreMap.put("/v1/notification/email", var);
     apiHeaderIgnoreMap.put("/v1/data/sync", var);
-    apiHeaderIgnoreMap.put("/v1/user/data/encrypt", var);
-    apiHeaderIgnoreMap.put("/v1/user/data/decrypt", var);
-    apiHeaderIgnoreMap.put("/v1/file/upload", var);
-    apiHeaderIgnoreMap.put("/v1/user/forgotpassword", var);
-    apiHeaderIgnoreMap.put("/v1/user/login", var);
-    apiHeaderIgnoreMap.put("/v1/user/logout", var);
-    apiHeaderIgnoreMap.put("/v1/object/read/list", var);
-    apiHeaderIgnoreMap.put("/v1/object/read", var);
-    apiHeaderIgnoreMap.put("/v1/object/create", var);
-    apiHeaderIgnoreMap.put("/v1/object/update", var);
-    apiHeaderIgnoreMap.put("/v1/object/delete", var);
-    apiHeaderIgnoreMap.put("/v1/object/search", var);
-    apiHeaderIgnoreMap.put("/v1/object/metrics", var);
-    apiHeaderIgnoreMap.put("/v1/client/register", var);
-    apiHeaderIgnoreMap.put("/v1/client/key/read", var);
-    apiHeaderIgnoreMap.put("/v1/notification/send", var);
-    apiHeaderIgnoreMap.put("/v1/user/getuser", var);
-    apiHeaderIgnoreMap.put("/v1/notification/audience", var);
-    apiHeaderIgnoreMap.put("/v1/org/preferences/read", var);
-    apiHeaderIgnoreMap.put("/v1/org/preferences/create", var);
-    apiHeaderIgnoreMap.put("/v1/org/preferences/update", var);
-    apiHeaderIgnoreMap.put("/v1/telemetry", var);
-    // making badging api's as public access
-    apiHeaderIgnoreMap.put("/v1/issuer/create", var);
-    apiHeaderIgnoreMap.put("/v1/issuer/read", var);
-    apiHeaderIgnoreMap.put("/v1/issuer/list", var);
-    apiHeaderIgnoreMap.put("/v1/issuer/delete", var);
-    apiHeaderIgnoreMap.put("/v1/issuer/badge/create", var);
-    apiHeaderIgnoreMap.put("/v1/issuer/badge/read", var);
-    apiHeaderIgnoreMap.put("/v1/issuer/badge/search", var);
-    apiHeaderIgnoreMap.put("/v1/issuer/badge/delete", var);
-    apiHeaderIgnoreMap.put("/v1/issuer/badge/assertion/create", var);
-    apiHeaderIgnoreMap.put("/v1/issuer/badge/assertion/read", var);
     apiHeaderIgnoreMap.put("/v1/content/link", var);
     apiHeaderIgnoreMap.put("/v1/content/unlink", var);
     apiHeaderIgnoreMap.put("/v1/content/link/search", var);
-    apiHeaderIgnoreMap.put("/v1/issuer/badge/assertion/search", var);
-    apiHeaderIgnoreMap.put("/v1/issuer/badge/assertion/delete", var);
-    // making org read as public access
-    apiHeaderIgnoreMap.put("/v1/org/read", var);
-    // making location APIs public access
-    apiHeaderIgnoreMap.put("/v1/location/create", var);
-    apiHeaderIgnoreMap.put("/v1/location/update", var);
-    apiHeaderIgnoreMap.put("/v1/location/search", var);
-    apiHeaderIgnoreMap.put("/v1/location/delete", var);
-    apiHeaderIgnoreMap.put("/v1/otp/generate", var);
-    apiHeaderIgnoreMap.put("/v1/otp/verify", var);
-    apiHeaderIgnoreMap.put("/v1/user/get/email", var);
-    apiHeaderIgnoreMap.put("/v1/user/get/phone", var);
-    apiHeaderIgnoreMap.put("/v1/user/get/loginId", var);
-    apiHeaderIgnoreMap.put("/v1/user/get/loginid", var);
-    apiHeaderIgnoreMap.put("/v1/system/settings/get", var);
-    apiHeaderIgnoreMap.put("/v1/system/settings/list", var);
     apiHeaderIgnoreMap.put("/v1/course/batch/search", var);
-    apiHeaderIgnoreMap.put("/v1/user/mock/read", var);
     apiHeaderIgnoreMap.put("/v1/cache/clear", var);
-    apiHeaderIgnoreMap.put("/private/user/v1/search", var);
   }
 
   /**

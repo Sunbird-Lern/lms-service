@@ -13,8 +13,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.sunbird.actor.router.RequestRouter;
 import org.sunbird.actor.service.SunbirdMWService;
-import org.sunbird.actorutil.org.OrganisationClient;
-import org.sunbird.actorutil.org.impl.OrganisationClientImpl;
+//import org.sunbird.actorutil.org.OrganisationClient;
+//import org.sunbird.actorutil.org.impl.OrganisationClientImpl;
 import org.sunbird.actorutil.systemsettings.SystemSettingClient;
 import org.sunbird.actorutil.systemsettings.impl.SystemSettingClientImpl;
 import org.sunbird.common.exception.ProjectCommonException;
@@ -132,6 +132,7 @@ public class Global extends GlobalSettings {
       messageId = uuid.toString();
     }
     ExecutionContext.setRequestId(messageId);
+    ProjectLogger.log("onRequest--" + messageId,LoggerEnum.INFO);
     return new ActionWrapper(super.onRequest(request, actionMethod));
   }
 
@@ -155,15 +156,17 @@ public class Global extends GlobalSettings {
     Map<String, Object> reqContext = new HashMap<>();
     // set env and channel to the
     String channel = request.getHeader(HeaderParam.CHANNEL_ID.getName());
-    if (StringUtils.isBlank(channel)) {
-      String custodianOrgHashTagid = getCustodianOrgHashTagId();
-      channel =
-          (StringUtils.isNotEmpty(custodianOrgHashTagid))
-              ? custodianOrgHashTagid
-              : JsonKey.DEFAULT_ROOT_ORG_ID;
-    }
+//    if (StringUtils.isBlank(channel)) {
+//      String custodianOrgHashTagid = getCustodianOrgHashTagId();
+//      channel =
+//          (StringUtils.isNotEmpty(custodianOrgHashTagid))
+//              ? custodianOrgHashTagid
+//              : JsonKey.DEFAULT_ROOT_ORG_ID;
+//    }
     reqContext.put(JsonKey.CHANNEL, channel);
-    ctx.flash().put(JsonKey.CHANNEL, channel);
+    if(StringUtils.isNotBlank(channel)) {
+    	ctx.flash().put(JsonKey.CHANNEL, channel);
+    }
     reqContext.put(JsonKey.ENV, getEnv(request));
     reqContext.put(JsonKey.REQUEST_ID, ExecutionContext.getRequestId());
     String appId = request.getHeader(HeaderParam.X_APP_ID.getName());
@@ -262,6 +265,8 @@ public class Global extends GlobalSettings {
   public Promise<Result> onError(Http.RequestHeader request, Throwable t) {
     ProjectLogger.log(
         "Global: onError called for path = " + request.path(), LoggerEnum.INFO.name());
+    ProjectLogger.log(
+            "Global: onError", t);
     Response response = null;
     ProjectCommonException commonException = null;
     if (t instanceof ProjectCommonException) {
@@ -359,31 +364,31 @@ public class Global extends GlobalSettings {
     new Thread(() -> org.sunbird.common.quartz.scheduler.SchedulerManager.getInstance()).start();
   }
 
-  private static String getCustodianOrgHashTagId() {
-    synchronized (Global.class) {
-      if (custodianOrgHashTagId == null) {
-        try {
-          // Get custodian org ID
-          SystemSettingClient sysSettingClient = SystemSettingClientImpl.getInstance();
-          ActorRef sysSettingActorRef =
-              RequestRouter.getActor(ActorOperations.GET_SYSTEM_SETTING.getValue());
-          SystemSetting systemSetting =
-              sysSettingClient.getSystemSettingByField(
-                  sysSettingActorRef, JsonKey.CUSTODIAN_ORG_ID);
-
-          // Get hash tag ID of custodian org
-          OrganisationClient orgClient = new OrganisationClientImpl();
-          ActorRef orgActorRef = RequestRouter.getActor(ActorOperations.GET_ORG_DETAILS.getValue());
-          custodianOrgHashTagId =
-              orgClient.getOrgById(orgActorRef, systemSetting.getValue()).getHashTagId();
-        } catch (ProjectCommonException e) {
-          if (e.getResponseCode() == HttpStatus.SC_NOT_FOUND) custodianOrgHashTagId = "";
-          else throw e;
-        }
-      }
-    }
-    return custodianOrgHashTagId;
-  }
+//  private static String getCustodianOrgHashTagId() {
+//    synchronized (Global.class) {
+//      if (custodianOrgHashTagId == null) {
+//        try {
+//          // Get custodian org ID
+//          SystemSettingClient sysSettingClient = SystemSettingClientImpl.getInstance();
+//          ActorRef sysSettingActorRef =
+//              RequestRouter.getActor(ActorOperations.GET_SYSTEM_SETTING.getValue());
+//          SystemSetting systemSetting =
+//              sysSettingClient.getSystemSettingByField(
+//                  sysSettingActorRef, JsonKey.CUSTODIAN_ORG_ID);
+//
+//          // Get hash tag ID of custodian org
+//          OrganisationClient orgClient = new OrganisationClientImpl();
+//          ActorRef orgActorRef = RequestRouter.getActor(ActorOperations.GET_ORG_DETAILS.getValue());
+//          custodianOrgHashTagId =
+//              orgClient.getOrgById(orgActorRef, systemSetting.getValue()).getHashTagId();
+//        } catch (ProjectCommonException e) {
+//          if (e.getResponseCode() == HttpStatus.SC_NOT_FOUND) custodianOrgHashTagId = "";
+//          else throw e;
+//        }
+//      }
+//    }
+//    return custodianOrgHashTagId;
+//  }
 
   public Promise<Result> checkForServiceHealth(Http.Context ctx) {
     if (Boolean.parseBoolean((ProjectUtil.getConfigValue(JsonKey.SUNBIRD_HEALTH_CHECK_ENABLE)))

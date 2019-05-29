@@ -83,7 +83,7 @@ public class RequestRouter extends BaseRouter {
             + message.getOperation()
             + " start time "
             + startTime,
-        LoggerEnum.PERF_LOG);
+        LoggerEnum.INFO);
     Timeout timeout = new Timeout(Duration.create(message.getTimeout(), TimeUnit.SECONDS));
     Future<Object> future = Patterns.ask(router, message, timeout);
     ActorRef parent = sender();

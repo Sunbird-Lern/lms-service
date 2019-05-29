@@ -1,9 +1,9 @@
 package org.sunbird.common.models.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.i18n.phonenumbers.NumberParseException;
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
-import com.google.i18n.phonenumbers.Phonenumber;
+//import com.google.i18n.phonenumbers.NumberParseException;
+//import com.google.i18n.phonenumbers.PhoneNumberUtil;
+//import com.google.i18n.phonenumbers.Phonenumber;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
@@ -367,18 +367,9 @@ public class ProjectUtil {
   public enum EsType {
     course("cbatch"),
     content("content"),
-    badgeassociations("badgeassociations"),
     user("user"),
     organisation("org"),
-    usercourses("usercourses"),
-    usernotes("usernotes"),
-    userprofilevisibility("userprofilevisibility"),
-    telemetry("telemetry"),
-    location("location"),
-    announcementType("announcementtype"),
-    announcement("announcement"),
-    metrics("metrics"),
-    cbatchstats("cbatchstats");
+    usercourses("usercourses");
     private String typeName;
 
     private EsType(String name) {
@@ -746,26 +737,26 @@ public class ProjectUtil {
     return headerMap;
   }
 
-  public static boolean validatePhone(String phNumber, String countryCode) {
-    PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
-    String contryCode = countryCode;
-    if (!StringUtils.isBlank(countryCode) && (countryCode.charAt(0) != '+')) {
-      contryCode = "+" + countryCode;
-    }
-    Phonenumber.PhoneNumber phoneNumber = null;
-    try {
-      if (StringUtils.isBlank(countryCode)) {
-        contryCode = PropertiesCache.getInstance().getProperty("sunbird_default_country_code");
-      }
-      String isoCode = phoneNumberUtil.getRegionCodeForCountryCode(Integer.parseInt(contryCode));
-      phoneNumber = phoneNumberUtil.parse(phNumber, isoCode);
-      return phoneNumberUtil.isValidNumber(phoneNumber);
-    } catch (NumberParseException e) {
-      ProjectLogger.log("Exception occurred while validating phone number : ", e);
-      ProjectLogger.log(phNumber + "this phone no. is not a valid one.");
-    }
-    return false;
-  }
+//  public static boolean validatePhone(String phNumber, String countryCode) {
+//    PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
+//    String contryCode = countryCode;
+//    if (!StringUtils.isBlank(countryCode) && (countryCode.charAt(0) != '+')) {
+//      contryCode = "+" + countryCode;
+//    }
+//    Phonenumber.PhoneNumber phoneNumber = null;
+//    try {
+//      if (StringUtils.isBlank(countryCode)) {
+//        contryCode = PropertiesCache.getInstance().getProperty("sunbird_default_country_code");
+//      }
+//      String isoCode = phoneNumberUtil.getRegionCodeForCountryCode(Integer.parseInt(contryCode));
+//      phoneNumber = phoneNumberUtil.parse(phNumber, isoCode);
+//      return phoneNumberUtil.isValidNumber(phoneNumber);
+//    } catch (NumberParseException e) {
+//      ProjectLogger.log("Exception occurred while validating phone number : ", e);
+//      ProjectLogger.log(phNumber + "this phone no. is not a valid one.");
+//    }
+//    return false;
+//  }
 
   public static boolean validateCountryCode(String countryCode) {
     String pattern = "^(?:[+] ?){0,1}(?:[0-9] ?){1,3}";

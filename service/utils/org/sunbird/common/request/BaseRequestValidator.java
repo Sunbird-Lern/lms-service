@@ -454,12 +454,12 @@ public class BaseRequestValidator {
     }
   }
 
-  public void validatePhone(String phone) {
-    if (!ProjectUtil.validatePhone(phone, null)) {
-      throw new ProjectCommonException(
-          ResponseCode.phoneNoFormatError.getErrorCode(),
-          ResponseCode.phoneNoFormatError.getErrorMessage(),
-          ResponseCode.CLIENT_ERROR.getResponseCode());
-    }
-  }
+  //  public void validatePhone(String phone) {
+  //    if (!ProjectUtil.validatePhone(phone, null)) {
+  //      throw new ProjectCommonException(
+  //          ResponseCode.phoneNoFormatError.getErrorCode(),
+  //          ResponseCode.phoneNoFormatError.getErrorMessage(),
+  //          ResponseCode.CLIENT_ERROR.getResponseCode());
+  //    }
+  //  }
 }

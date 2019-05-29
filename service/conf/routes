@@ -47,5 +47,14 @@ POST /v1/notification/email					@controllers.notificationservice.EmailServiceCon
 #Health check
 GET  /health                                  @controllers.healthmanager.HealthController.getHealth()
 
+# System Settings APIs
+GET   /v1/system/settings/get/:field      @controllers.systemsettings.SystemSettingsController.getSystemSetting(field:String)
+GET   /v1/system/settings/list               @controllers.systemsettings.SystemSettingsController.getAllSystemSettings()
+POST  /v1/system/settings/set                 @controllers.systemsettings.SystemSettingsController.setSystemSetting()
+
+# Textbook
+POST    /v1/textbook/toc/upload/:textbookId           @controllers.textbook.TextbookController.uploadTOC(textbookId:String)
+GET    /v1/textbook/toc/download/:textbookId           @controllers.textbook.TextbookController.getTocUrl(textbookId:String)
+
 # Cache APIs
 DELETE /v1/cache/clear/:mapName @controllers.cache.CacheController.clearCache(mapName:String)

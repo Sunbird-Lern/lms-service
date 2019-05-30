@@ -20,9 +20,7 @@ public class PropertiesCache {
     "dbconfig.properties",
     "externalresource.properties",
     "sso.properties",
-    "userencryption.properties",
-    "profilecompleteness.properties",
-    "mailTemplates.properties"
+    "userencryption.properties"
   };
   private final Properties configProp = new Properties();
   public final Map<String, Float> attributePercentageMap = new ConcurrentHashMap<>();

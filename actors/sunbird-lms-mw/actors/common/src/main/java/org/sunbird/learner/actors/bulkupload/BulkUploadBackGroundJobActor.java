@@ -105,38 +105,51 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
 
     Map<String, Object> successListMap = null;
     Map<String, Object> failureListMap = null;
-    for (Map<String, Object> batchMap : jsonList) {
+    Map<String, List<Map<String, Object>>> batchMaps =
+        jsonList.stream().collect(Collectors.groupingBy(map -> (String) map.get(JsonKey.BATCH_ID)));
+    for (Map.Entry<String, List<Map<String, Object>>> batchMapEntry : batchMaps.entrySet()) {
       successListMap = new HashMap<>();
       failureListMap = new HashMap<>();
       Map<String, Object> tempFailList = new HashMap<>();
       Map<String, Object> tempSuccessList = new HashMap<>();
 
-      String batchId = (String) batchMap.get(JsonKey.BATCH_ID);
+      String batchId = (String) batchMapEntry.getKey();
       Future<Map<String, Object>> resultF =
-          esService.getDataByIdentifier(ProjectUtil.EsType.course.getTypeName(), batchId);
+          esService.getDataByIdentifier(ProjectUtil.EsType.courseBatch.getTypeName(), batchId);
       Map<String, Object> courseBatchObject =
           (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
       String msg = validateBatchInfo(courseBatchObject);
       if (msg.equals(JsonKey.SUCCESS)) {
-        try {
-          List<String> userList =
-              new ArrayList<>(
-                  Arrays.asList((((String) batchMap.get(JsonKey.USER_IDs)).split(","))));
-          if (JsonKey.BATCH_LEARNER_ENROL.equalsIgnoreCase(objectType)) {
-            validateBatchUserListAndAdd(
-                courseBatchObject, batchId, userList, tempFailList, tempSuccessList);
-          } else if (JsonKey.BATCH_LEARNER_UNENROL.equalsIgnoreCase(objectType)) {
-            validateBatchUserListAndRemove(
-                courseBatchObject, batchId, userList, tempFailList, tempSuccessList);
+        for (Map<String, Object> batchMap : batchMapEntry.getValue()) {
+          try {
+            List<String> userList =
+                new ArrayList<>(
+                    Arrays.asList((((String) batchMap.get(JsonKey.USER_IDs)).split(","))));
+            if (JsonKey.BATCH_LEARNER_ENROL.equalsIgnoreCase(objectType)) {
+              validateBatchUserListAndAdd(
+                  courseBatchObject, batchId, userList, tempFailList, tempSuccessList);
+            } else if (JsonKey.BATCH_LEARNER_UNENROL.equalsIgnoreCase(objectType)) {
+              validateBatchUserListAndRemove(
+                  courseBatchObject, batchId, userList, tempFailList, tempSuccessList);
+            }
+            failureListMap.put(batchId, tempFailList.get(JsonKey.FAILURE_RESULT));
+            successListMap.put(batchId, tempSuccessList.get(JsonKey.SUCCESS_RESULT));
+          } catch (Exception ex) {
+            ProjectLogger.log("Exception Occurred while bulk enrollment : batchId=" + batchId, ex);
+            batchMap.put(JsonKey.ERROR_MSG, ex.getMessage());
+            failureResultList.add(batchMap);
           }
-          failureListMap.put(batchId, tempFailList.get(JsonKey.FAILURE_RESULT));
-          successListMap.put(batchId, tempSuccessList.get(JsonKey.SUCCESS_RESULT));
-        } catch (Exception ex) {
-          ProjectLogger.log("Exception Occurred while bulk enrollment : batchId=" + batchId, ex);
-          batchMap.put(JsonKey.ERROR_MSG, ex.getMessage());
-          failureResultList.add(batchMap);
         }
       } else {
+        Map<String, Object> batchMap = new HashMap<>();
+        batchMap.put(
+            JsonKey.USER_IDs,
+            batchMapEntry
+                .getValue()
+                .stream()
+                .map(m -> (String) m.get(JsonKey.USER_IDs))
+                .reduce((ids1, ids2) -> String.join(",", ids1, ids2))
+                .get());
         batchMap.put(JsonKey.ERROR_MSG, msg);
         failureResultList.add(batchMap);
       }

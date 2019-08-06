@@ -253,6 +253,7 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
       userCourses.put(JsonKey.DATE_TIME, ProjectUtil.formatDate(ts));
       String id = UserCoursesService.generateUserCourseESId(batchId, userId);
       userCourses.put(JsonKey.ID, id);
+      userCourses.put(JsonKey.IDENTIFIER, id);
       insertUserCoursesToES(userCourses);
       flag = true;
       Map<String, Object> targetObject =
@@ -343,6 +344,7 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
           userCoursesMap.put(JsonKey.DATE_TIME, ProjectUtil.formatDate(ts));
           String id = UserCoursesService.generateUserCourseESId(batchId, userId);
           userCoursesMap.put(JsonKey.ID, id);
+          userCoursesMap.put(JsonKey.IDENTIFIER, id);
           updateUserCoursesToES(userCoursesMap);
         }
       } catch (Exception ex) {

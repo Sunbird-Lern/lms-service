@@ -63,31 +63,31 @@ public class Global extends GlobalSettings {
     @Override
     public Promise<Result> call(Http.Context ctx) throws java.lang.Throwable {
       ctx.request().headers();
-     Promise<Result> result = checkForServiceHealth(ctx);
-     if (result != null) return result;
+      Promise<Result> result = checkForServiceHealth(ctx);
+      if (result != null) return result;
       ctx.response().setHeader("Access-Control-Allow-Origin", "*");
 
       // Unauthorized, Anonymous, UserID
       String message = RequestInterceptor.verifyRequestData(ctx);
       // call method to set all the required params for the telemetry event(log)...
       intializeRequestInfo(ctx, message);
-     if (!USER_UNAUTH_STATES.contains(message)) {
-       ctx.flash().put(JsonKey.USER_ID, message);
-       ctx.flash().put(JsonKey.IS_AUTH_REQ, "false");
-       for (String uri : RequestInterceptor.restrictedUriList) {
-         if (ctx.request().path().contains(uri)) {
-           ctx.flash().put(JsonKey.IS_AUTH_REQ, "true");
-           break;
-         }
-       }
-       result = delegate.call(ctx);
-     } else if (JsonKey.UNAUTHORIZED.equals(message)) {
-       result =
-           onDataValidationError(
-               ctx.request(), message, ResponseCode.UNAUTHORIZED.getResponseCode());
-     } else {
-       result = delegate.call(ctx);
-     }
+      if (!USER_UNAUTH_STATES.contains(message)) {
+        ctx.flash().put(JsonKey.USER_ID, message);
+        ctx.flash().put(JsonKey.IS_AUTH_REQ, "false");
+        for (String uri : RequestInterceptor.restrictedUriList) {
+          if (ctx.request().path().contains(uri)) {
+            ctx.flash().put(JsonKey.IS_AUTH_REQ, "true");
+            break;
+          }
+        }
+        result = delegate.call(ctx);
+      } else if (JsonKey.UNAUTHORIZED.equals(message)) {
+        result =
+            onDataValidationError(
+                ctx.request(), message, ResponseCode.UNAUTHORIZED.getResponseCode());
+      } else {
+        result = delegate.call(ctx);
+      }
       return result;
     }
   }
@@ -366,7 +366,6 @@ public class Global extends GlobalSettings {
 
     Util.checkCassandraDbConnections(JsonKey.SUNBIRD);
     Util.checkCassandraDbConnections(JsonKey.SUNBIRD_PLUGIN);
-    Util.checkCassandraDbConnections(JsonKey.DIAL_CODES);
     Util.checkCassandraDbConnections(Util.COURSE_KEY_SPACE_NAME);
     SchedulerManager.schedule();
 

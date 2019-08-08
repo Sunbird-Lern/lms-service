@@ -8,15 +8,18 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.sunbird.actor.core.BaseActor;
 import org.sunbird.actor.router.ActorConfig;
+import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.common.util.CloudStorageUtil;
+import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.util.ContentSearchUtil;
 import org.sunbird.learner.util.Util;
 
@@ -50,6 +53,9 @@ public class QRCodeDownloadManagementActor extends BaseActor {
         put(JsonKey.STATUS, JsonKey.STATUS);
         put(JsonKey.CONTENT_TYPE, JsonKey.CONTENT_TYPE);
     }};
+    private static Util.DbInfo courseDialCodeInfo =
+            Util.dbInfoMap.get(JsonKey.SUNBIRD_COURSE_DIALCODES_DB);
+    private static CassandraOperation cassandraOperation = ServiceFactory.getInstance();
 
     @Override
     public void onReceive(Request request) throws Throwable {
@@ -168,7 +174,23 @@ public class QRCodeDownloadManagementActor extends BaseActor {
      * @return
      */
     private String getQRCodeImageUrl(String dialCode) {
-        return "https://sunbirddev.blob.core.windows.net/dial/Sunbird/YY7Q9T.png";
+        //TODO: Dialcode as primary key in cassandra
+        Response response = cassandraOperation.getRecordsByProperty(
+                courseDialCodeInfo.getKeySpace(),
+                courseDialCodeInfo.getTableName(),
+                JsonKey.FILE_NAME,
+                "0_" + dialCode,
+                Arrays.asList("url"));
+        if (null != response && response.get(JsonKey.RESPONSE) != null) {
+            Object obj = response.get(JsonKey.RESPONSE);
+            if (null != obj && obj instanceof List) {
+                List<Map<String, Object>> listOfMap = (List<Map<String, Object>>) obj;
+                if (CollectionUtils.isNotEmpty(listOfMap)) {
+                    return (String) listOfMap.get(0).get("url");
+                }
+            }
+        }
+        return "";
     }
 
     /**

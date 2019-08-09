@@ -27,6 +27,8 @@ import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.kafka.client.InstructionEventGenerator;
+import org.sunbird.learner.constants.CourseJsonKey;
+import org.sunbird.learner.constants.InstructionEvent;
 import org.sunbird.learner.util.Util;
 import scala.concurrent.Future;
 
@@ -42,8 +44,6 @@ import scala.concurrent.Future;
 )
 public class LearnerStateUpdateActor extends BaseActor {
 
-  private final String actorId = "Course Batch Updater";
-  private final String actorType = "System";
   private CassandraOperation cassandraOperation = ServiceFactory.getInstance();
 
   private Util.DbInfo consumptionDBInfo = Util.dbInfoMap.get(JsonKey.LEARNER_CONTENT_DB);
@@ -351,24 +351,24 @@ public class LearnerStateUpdateActor extends BaseActor {
     Map<String, Object> data = new HashMap<>();
 
     data.put(
-        "actor",
+        CourseJsonKey.ACTOR,
         new HashMap<String, Object>() {
           {
-            put("id", actorId);
-            put("type", actorType);
+            put(JsonKey.ID, InstructionEvent.BATCH_USER_STATE_UPDATE.getActorId());
+            put(JsonKey.TYPE, InstructionEvent.BATCH_USER_STATE_UPDATE.getActorType());
           }
         });
 
     data.put(
-        "object",
+        CourseJsonKey.OBJECT,
         new HashMap<String, Object>() {
           {
-            put("id", batchId + "_" + userId);
-            put("type", "CourseBatchEnrolment");
+            put(JsonKey.ID, batchId + CourseJsonKey.UNDERSCORE + userId);
+            put(JsonKey.TYPE, InstructionEvent.BATCH_USER_STATE_UPDATE.getType());
           }
         });
 
-    data.put("action", "batch-enrolment-update");
+    data.put(CourseJsonKey.ACTION, InstructionEvent.BATCH_USER_STATE_UPDATE.getAction());
 
     List<Map<String, Object>> contentsMap =
         contents
@@ -377,23 +377,23 @@ public class LearnerStateUpdateActor extends BaseActor {
                 c -> {
                   return new HashMap<String, Object>() {
                     {
-                      put("contentId", c.get("contentId"));
-                      put("status", c.get("status"));
+                      put(JsonKey.CONTENT_ID, c.get(JsonKey.CONTENT_ID));
+                      put(JsonKey.STATUS, c.get(JsonKey.STATUS));
                     }
                   };
                 })
             .collect(Collectors.toList());
 
     data.put(
-        "edata",
+        CourseJsonKey.E_DATA,
         new HashMap<String, Object>() {
           {
-            put("userId", userId);
-            put("batchId", batchId);
-            put("courseId", courseId);
-            put("contents", contentsMap);
-            put("action", "batch-enrolment-update");
-            put("iteration", 1);
+            put(JsonKey.USER_ID, userId);
+            put(JsonKey.BATCH_ID, batchId);
+            put(JsonKey.COURSE_ID, courseId);
+            put(JsonKey.USER_ID, contentsMap);
+            put(CourseJsonKey.ACTION, InstructionEvent.BATCH_USER_STATE_UPDATE.getAction());
+            put(CourseJsonKey.ITERATION, 1);
           }
         });
 

@@ -391,7 +391,7 @@ public class LearnerStateUpdateActor extends BaseActor {
             put(JsonKey.USER_ID, userId);
             put(JsonKey.BATCH_ID, batchId);
             put(JsonKey.COURSE_ID, courseId);
-            put(JsonKey.USER_ID, contentsMap);
+            put(JsonKey.CONTENTS, contentsMap);
             put(CourseJsonKey.ACTION, InstructionEvent.BATCH_USER_STATE_UPDATE.getAction());
             put(CourseJsonKey.ITERATION, 1);
           }

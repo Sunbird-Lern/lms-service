@@ -91,7 +91,11 @@ public class LearnerStateUpdateActorTest {
         .thenReturn(getCassandraRecordById());
 
     PowerMockito.doNothing()
-        .when(InstructionEventGenerator.class, "pushInstructionEvent", Mockito.anyMap());
+        .when(
+            InstructionEventGenerator.class,
+            "pushInstructionEvent",
+            Mockito.anyString(),
+            Mockito.anyMap());
 
     mockEsUtilforCourseBatch();
   }

@@ -155,6 +155,8 @@ public class UserCoursesService {
 
   public static void sync(Map<String, Object> courseMap, String batchId, String userId) {
     String id = generateUserCourseESId(batchId, userId);
+    courseMap.put(JsonKey.ID, id);
+    courseMap.put(JsonKey.IDENTIFIER, id);
     Future<Boolean> responseF =
         esService.upsert(ProjectUtil.EsType.usercourses.getTypeName(), id, courseMap);
     boolean response = (boolean) ElasticSearchHelper.getResponseFromFuture(responseF);

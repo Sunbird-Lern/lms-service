@@ -9,6 +9,7 @@ import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -567,7 +568,7 @@ public class CourseBatchManagementActor extends BaseActor {
             ? (String) req.get(JsonKey.START_DATE)
             : courseBatch.getStartDate());
     courseBatch.setEndDate(
-        requestedEndDate != null ? (String) req.get(JsonKey.END_DATE) : courseBatch.getEndDate());
+        requestedEndDate != null ? null : courseBatch.getEndDate());
     courseBatch.setEnrollmentEndDate(
         requestedEnrollmentEndDate == null ? null : (String) req.get(JsonKey.ENROLLMENT_END_DATE));
   }
@@ -697,7 +698,17 @@ public class CourseBatchManagementActor extends BaseActor {
         return format.parse(format.format(new Date()));
       } else {
         if (StringUtils.isNotBlank((String) map.get(key))) {
-          return format.parse((String) map.get(key));
+          Date d = format.parse((String) map.get(key));
+          if (key.equals(JsonKey.END_DATE) || key.equals(JsonKey.ENROLLMENT_END_DATE)) {
+            Calendar cal =
+                Calendar.getInstance(
+                    TimeZone.getTimeZone(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TIMEZONE)));
+            cal.setTime(d);
+            cal.set(Calendar.HOUR_OF_DAY, 23);
+            cal.set(Calendar.MINUTE, 59);
+            return cal.getTime();
+          }
+          return d;
         } else {
           return null;
         }
@@ -751,7 +762,8 @@ public class CourseBatchManagementActor extends BaseActor {
           ResponseCode.enrollmentEndDateEndError.getErrorMessage(),
           ResponseCode.CLIENT_ERROR.getResponseCode());
     }
-    if (requestedEnrollmentEndDate != null && requestedEnrollmentEndDate.before(todayDate)) {
+    if (requestedEnrollmentEndDate != null && !requestedEnrollmentEndDate.equals(existingEnrollmentEndDate)
+            && requestedEnrollmentEndDate.before(todayDate)) {
       throw new ProjectCommonException(
           ResponseCode.enrollmentEndDateUpdateError.getErrorCode(),
           ResponseCode.enrollmentEndDateUpdateError.getErrorMessage(),

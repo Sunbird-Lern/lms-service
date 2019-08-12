@@ -58,6 +58,7 @@ public final class Util {
   public static final int DEFAULT_ELASTIC_DATA_LIMIT = 10000;
   public static final String KEY_SPACE_NAME = "sunbird";
   public static final String COURSE_KEY_SPACE_NAME = "sunbird_courses";
+  public static final String DIALCODE_KEY_SPACE_NAME = "dialcodes";
   private static Properties prop = new Properties();
   private static Map<String, String> headers = new HashMap<>();
   private static EncryptionService encryptionService =
@@ -136,6 +137,9 @@ public final class Util {
     dbInfoMap.put(
         BadgingJsonKey.CONTENT_BADGE_ASSOCIATION_DB,
         getDbInfoObject(KEY_SPACE_NAME, "content_badge_association"));
+    dbInfoMap.put(
+            JsonKey.SUNBIRD_COURSE_DIALCODES_DB,
+            getDbInfoObject(DIALCODE_KEY_SPACE_NAME, "dialcode_images"));
   }
 
   /**

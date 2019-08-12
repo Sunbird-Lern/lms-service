@@ -215,7 +215,6 @@ public class QRCodeDownloadManagementActor extends BaseActor {
                             ResponseCode.errorUploadQRCodeCSVfailed.getErrorMessage(),
                             ResponseCode.SERVER_ERROR.getResponseCode());
                 response.put("file", fileUrl);
-                response.put(JsonKey.MESSAGE, "Successfully uploaded file to cloud.");
             }
             return response;
         } catch (Exception e) {

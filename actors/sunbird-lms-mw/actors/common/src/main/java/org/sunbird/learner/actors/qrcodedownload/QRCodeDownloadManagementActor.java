@@ -100,13 +100,13 @@ public class QRCodeDownloadManagementActor extends BaseActor {
                     ResponseCode.errorProcessingFile.getErrorMessage(),
                     ResponseCode.SERVER_ERROR.getResponseCode());
 
-        response = uploadToAws(file);
+        response = uploadFile(file);
         response.put(JsonKey.USER_IDs, requestMap.get("userIds"));
         sender().tell(response, self());
     }
 
     /**
-     * Search call to LP composite search engine
+     * Search call to Learning Platform composite search engine
      * @param requestMap
      * @param headers
      * @return
@@ -118,7 +118,7 @@ public class QRCodeDownloadManagementActor extends BaseActor {
     }
 
     /**
-     * Request Preparation for search Request
+     * Request Preparation for search Request for getting courses created by user and dialcodes linked to them.
      * @param requestMap
      * @return
      */
@@ -128,6 +128,7 @@ public class QRCodeDownloadManagementActor extends BaseActor {
                     .filter(key -> filtersHelperMap.containsKey(key))
                     .collect(Collectors.toMap(key -> filtersHelperMap.get(key), key -> requestMap.get(key))));
             put(JsonKey.FIELDS, fields);
+            put(JsonKey.EXISTS, JsonKey.DIAL_CODES);
             put(JsonKey.LIMIT, 200);
         }};
         Map<String, Object> request = new HashMap<String, Object>() {{
@@ -149,21 +150,24 @@ public class QRCodeDownloadManagementActor extends BaseActor {
      */
     private File generateCSVFile(Map<String, List<String>> dialCodeMap) {
         File file = null;
-        if (MapUtils.isNotEmpty(dialCodeMap)) {
-            try {
-                file = new File(UUID.randomUUID().toString() + ".csv");
-                StringBuilder csvFile = new StringBuilder();
-                csvFile.append("Course Name,Dialcodes,Image Url");
-                dialCodeMap.keySet().forEach(name -> {
-                    dialCodeMap.get(name).forEach(dialCode -> {
-                        csvFile.append("\n");
-                        csvFile.append(name.split("<<<")[1]).append(",").append(dialCode).append(",").append(getQRCodeImageUrl(dialCode));
-                    });
+        if (MapUtils.isEmpty(dialCodeMap))
+            throw new ProjectCommonException(
+                    ResponseCode.errorNoDialcodesLinked.getErrorCode(),
+                    ResponseCode.errorNoDialcodesLinked.getErrorMessage(),
+                    ResponseCode.CLIENT_ERROR.getResponseCode());
+        try {
+            file = new File(UUID.randomUUID().toString() + ".csv");
+            StringBuilder csvFile = new StringBuilder();
+            csvFile.append("Course Name,Dialcodes,Image Url");
+            dialCodeMap.keySet().forEach(name -> {
+                dialCodeMap.get(name).forEach(dialCode -> {
+                    csvFile.append("\n");
+                    csvFile.append(name.split("<<<")[1]).append(",").append(dialCode).append(",").append(getQRCodeImageUrl(dialCode));
                 });
-                FileUtils.writeStringToFile(file, csvFile.toString());
-            } catch (IOException e) {
-                ProjectLogger.log("QRCodeDownloadManagement:createHtmlFile: Exception occurred with error message = " + e.getMessage(), e);
-            }
+            });
+            FileUtils.writeStringToFile(file, csvFile.toString());
+        } catch (IOException e) {
+            ProjectLogger.log("QRCodeDownloadManagement:createCSVFile: Exception occurred with error message = " + e.getMessage(), e);
         }
         return file;
     }
@@ -198,7 +202,7 @@ public class QRCodeDownloadManagementActor extends BaseActor {
      * @param file
      * @return
      */
-    private Response uploadToAws(File file) {
+    private Response uploadFile(File file) {
         String objectKey = getConfigValue(CLOUD_FOLDER_CONTENT) + separator + "textbook" + separator + "toc" + separator;
         Response response = new Response();
         try {
@@ -207,17 +211,18 @@ public class QRCodeDownloadManagementActor extends BaseActor {
                 String fileUrl = CloudStorageUtil.upload(CloudStorageUtil.CloudStorageType.AZURE, getConfigValue(CONTENT_AZURE_STORAGE_CONTAINER), objectKey, file.getAbsolutePath());
                 if (StringUtils.isBlank(fileUrl))
                     throw new ProjectCommonException(
-                            ResponseCode.errorUploadQRCodeHTMLfailed.getErrorCode(),
-                            ResponseCode.errorUploadQRCodeHTMLfailed.getErrorMessage(),
+                            ResponseCode.errorUploadQRCodeCSVfailed.getErrorCode(),
+                            ResponseCode.errorUploadQRCodeCSVfailed.getErrorMessage(),
                             ResponseCode.SERVER_ERROR.getResponseCode());
-                response.put("qrCodeHtmlFile", fileUrl);
+                response.put("file", fileUrl);
                 response.put(JsonKey.MESSAGE, "Successfully uploaded file to cloud.");
             }
-            FileUtils.deleteQuietly(file);
             return response;
         } catch (Exception e) {
-            FileUtils.deleteQuietly(file);
+            ProjectLogger.log("QRCodeDownloadManagement:uploadFile: Exception occurred with error message = " + e.getMessage(), e);
             throw e;
+        }finally {
+            FileUtils.deleteQuietly(file);
         }
     }
 }

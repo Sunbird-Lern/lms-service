@@ -101,7 +101,6 @@ public class QRCodeDownloadManagementActor extends BaseActor {
                     ResponseCode.SERVER_ERROR.getResponseCode());
 
         response = uploadFile(file);
-        response.put(JsonKey.USER_IDs, requestMap.get("userIds"));
         sender().tell(response, self());
     }
 
@@ -214,7 +213,7 @@ public class QRCodeDownloadManagementActor extends BaseActor {
                             ResponseCode.errorUploadQRCodeCSVfailed.getErrorCode(),
                             ResponseCode.errorUploadQRCodeCSVfailed.getErrorMessage(),
                             ResponseCode.SERVER_ERROR.getResponseCode());
-                response.put("file", fileUrl);
+                response.put("fileUrl", fileUrl);
             }
             return response;
         } catch (Exception e) {

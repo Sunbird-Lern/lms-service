@@ -17,6 +17,7 @@ import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.ProjectUtil.EsType;
 import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.models.util.datasecurity.OneWayHashing;
@@ -212,7 +213,7 @@ public class CertificateActor extends BaseActor {
             }
           }
         });
-
-    InstructionEventGenerator.pushInstructionEvent(data);
+    String topic = ProjectUtil.getConfigValue("kafka_topics_certificate_instruction");
+    InstructionEventGenerator.pushInstructionEvent(topic, data);
   }
 }

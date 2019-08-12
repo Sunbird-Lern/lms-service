@@ -396,7 +396,7 @@ public class LearnerStateUpdateActor extends BaseActor {
             put(CourseJsonKey.ITERATION, 1);
           }
         });
-
-    InstructionEventGenerator.pushInstructionEvent(data);
+    String topic = ProjectUtil.getConfigValue("kafka_topics_instruction");
+    InstructionEventGenerator.pushInstructionEvent(topic, data);
   }
 }

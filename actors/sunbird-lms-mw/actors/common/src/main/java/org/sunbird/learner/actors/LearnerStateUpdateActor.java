@@ -235,6 +235,8 @@ public class LearnerStateUpdateActor extends BaseActor {
         inputContent.put(JsonKey.COMPLETED_COUNT, 1);
         inputContent.put(JsonKey.PROGRESS, 100);
         inputContent.put(JsonKey.LAST_COMPLETED_TIME, compareTime(null, inputCompletedDate));
+      } else {
+        inputContent.put(JsonKey.PROGRESS, getInteger(inputContent.get(JsonKey.PROGRESS), 0));
       }
       inputContent.put(JsonKey.VIEW_COUNT, 1);
       inputContent.put(JsonKey.LAST_ACCESS_TIME, compareTime(null, inputAccessTime));

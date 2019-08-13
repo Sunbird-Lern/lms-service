@@ -79,24 +79,7 @@ public class CertificateActor extends BaseActor {
     final String certificateName = (String) request.getRequest().get(CourseJsonKey.CERTIFICATE);
     final boolean reIssue = isReissue(request.getContext().get(CourseJsonKey.REISSUE));
     validateCourseBatch(courseId, batchId);
-    Map<String, Object> filters =
-        request.getRequest().containsKey(JsonKey.FILTERS)
-            ? (Map<String, Object>) request.getRequest().get(JsonKey.FILTERS)
-            : new HashMap<>();
-    filters.put(JsonKey.BATCH_ID, batchId);
-    filters.put(JsonKey.ACTIVE, true);
-    SearchDTO searchDTO = new SearchDTO();
-    searchDTO.getAdditionalProperties().put(JsonKey.FILTERS, filters);
-    searchDTO.setLimit(ES_MAX_LIMIT);
-    searchDTO.setFields(Arrays.asList(JsonKey.USER_ID));
-    List<Map<String, Object>> esContents = null;
-    Future<Map<String, Object>> resultF =
-        esService.search(searchDTO, EsType.usercourses.getTypeName());
-    Map<String, Object> result =
-        (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
-    if (MapUtils.isNotEmpty(result)) {
-      esContents = (List<Map<String, Object>>) result.get(JsonKey.CONTENT);
-    }
+    List<Map<String, Object>> esContents = getEnrollments(request, batchId);
     Response response = new Response();
     Map<String, Object> resultData = new HashMap<>();
     resultData.put(
@@ -155,6 +138,28 @@ public class CertificateActor extends BaseActor {
       ProjectCommonException.throwClientErrorException(
           ResponseCode.CLIENT_ERROR, "batchId is not linked with courseId");
     }
+  }
+
+  private List<Map<String, Object>> getEnrollments(Request request, String batchId) {
+    Map<String, Object> filters =
+        request.getRequest().containsKey(JsonKey.FILTERS)
+            ? (Map<String, Object>) request.getRequest().get(JsonKey.FILTERS)
+            : new HashMap<>();
+    filters.put(JsonKey.BATCH_ID, batchId);
+    filters.put(JsonKey.ACTIVE, true);
+    SearchDTO searchDTO = new SearchDTO();
+    searchDTO.getAdditionalProperties().put(JsonKey.FILTERS, filters);
+    searchDTO.setLimit(ES_MAX_LIMIT);
+    searchDTO.setFields(Arrays.asList(JsonKey.USER_ID));
+    List<Map<String, Object>> esContents = null;
+    Future<Map<String, Object>> resultF =
+        esService.search(searchDTO, EsType.usercourses.getTypeName());
+    Map<String, Object> result =
+        (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
+    if (MapUtils.isNotEmpty(result)) {
+      esContents = (List<Map<String, Object>>) result.get(JsonKey.CONTENT);
+    }
+    return esContents;
   }
 
   /**

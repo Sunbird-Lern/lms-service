@@ -79,7 +79,11 @@ public class CertificateActor extends BaseActor {
     final String certificateName = (String) request.getRequest().get(CourseJsonKey.CERTIFICATE);
     final boolean reIssue = isReissue(request.getContext().get(CourseJsonKey.REISSUE));
     validateCourseBatch(courseId, batchId);
-    List<Map<String, Object>> esContents = getEnrollments(request, batchId);
+    Map<String, Object> filters =
+        request.getRequest().containsKey(JsonKey.FILTERS)
+            ? (Map<String, Object>) request.getRequest().get(JsonKey.FILTERS)
+            : new HashMap<>();
+    List<Map<String, Object>> esContents = getEnrollments(filters, batchId);
     Response response = new Response();
     Map<String, Object> resultData = new HashMap<>();
     resultData.put(
@@ -140,11 +144,7 @@ public class CertificateActor extends BaseActor {
     }
   }
 
-  private List<Map<String, Object>> getEnrollments(Request request, String batchId) {
-    Map<String, Object> filters =
-        request.getRequest().containsKey(JsonKey.FILTERS)
-            ? (Map<String, Object>) request.getRequest().get(JsonKey.FILTERS)
-            : new HashMap<>();
+  private List<Map<String, Object>> getEnrollments(Map<String, Object> filters, String batchId) {
     filters.put(JsonKey.BATCH_ID, batchId);
     filters.put(JsonKey.ACTIVE, true);
     SearchDTO searchDTO = new SearchDTO();

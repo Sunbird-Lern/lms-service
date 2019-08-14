@@ -38,7 +38,6 @@ import org.sunbird.common.util.CloudStorageUtil;
 import org.sunbird.common.util.CloudStorageUtil.CloudStorageType;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.learner.util.ContentSearchUtil;
-import org.sunbird.learner.util.UserUtility;
 import org.sunbird.userorg.UserOrgService;
 import org.sunbird.userorg.UserOrgServiceImpl;
 import scala.concurrent.Future;
@@ -160,10 +159,6 @@ public class CourseMetricsActor extends BaseMetricsActor {
     response.put(JsonKey.RESPONSE, JsonKey.SUCCESS);
     response.getResult().putAll(courseProgressResult);
     sender().tell(response, self());
-  }
-
-  private String decryptAndMaskPhone(String phone) {
-    return UserUtility.maskEmailOrPhone(phone, JsonKey.PHONE);
   }
 
   private void formatEnrolledOn(Map<String, Object> batchMap) {

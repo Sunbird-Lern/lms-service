@@ -90,7 +90,7 @@ public class LearnerStateUpdateActor extends BaseActor {
                         x -> {
                           return (String) x.get("batchId");
                         }));
-        Map<String, List<Object>> respMessages = new HashMap<>();
+        Map<String, Object> respMessages = new HashMap<>();
         for (Map.Entry<String, List<Map<String, Object>>> input : batchContentList.entrySet()) {
           String batchId = input.getKey();
           if (batches.containsKey(batchId)) {
@@ -134,8 +134,10 @@ public class LearnerStateUpdateActor extends BaseActor {
                   userCourseDBInfo.getKeySpace(), userCourseDBInfo.getTableName(), updatedBatch);
               // Generate Instruction event. Send userId, batchId, courseId, contents.
               pushInstructionEvent(userId, batchId, courseId, contents);
-              updateMessages(
-                  respMessages, ContentUpdateResponseKeys.SUCCESS_CONTENTS.name(), contentIds);
+              contentIds.forEach(
+                  contentId -> {
+                    updateMessages(respMessages, contentId, JsonKey.SUCCESS);
+                  });
             } else {
               updateMessages(
                   respMessages, ContentUpdateResponseKeys.NOT_A_ON_GOING_BATCH.name(), batchId);
@@ -235,6 +237,8 @@ public class LearnerStateUpdateActor extends BaseActor {
         inputContent.put(JsonKey.COMPLETED_COUNT, 1);
         inputContent.put(JsonKey.PROGRESS, 100);
         inputContent.put(JsonKey.LAST_COMPLETED_TIME, compareTime(null, inputCompletedDate));
+      } else {
+        inputContent.put(JsonKey.PROGRESS, getInteger(inputContent.get(JsonKey.PROGRESS), 0));
       }
       inputContent.put(JsonKey.VIEW_COUNT, 1);
       inputContent.put(JsonKey.LAST_ACCESS_TIME, compareTime(null, inputAccessTime));
@@ -268,15 +272,12 @@ public class LearnerStateUpdateActor extends BaseActor {
     return courseBatch;
   }
 
-  private void updateMessages(Map<String, List<Object>> messages, String key, Object value) {
-    if (!messages.containsKey(key)) {
-      messages.put(key, new ArrayList<Object>());
-    }
+  private void updateMessages(Map<String, Object> messages, String key, Object value) {
     if (value instanceof List) {
       List list = (List) value;
-      messages.get(key).addAll(list);
+      messages.put(key, list);
     } else {
-      messages.get(key).add(value);
+      messages.put(key, value);
     }
   }
 

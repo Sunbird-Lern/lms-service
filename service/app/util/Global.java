@@ -368,6 +368,7 @@ public class Global extends GlobalSettings {
     Util.checkCassandraDbConnections(JsonKey.SUNBIRD_PLUGIN);
     Util.checkCassandraDbConnections(Util.COURSE_KEY_SPACE_NAME);
     Util.checkCassandraDbConnections(Util.DIALCODE_KEY_SPACE_NAME);
+    SchedulerManager.schedule();
   }
 
   public Promise<Result> checkForServiceHealth(Http.Context ctx) {

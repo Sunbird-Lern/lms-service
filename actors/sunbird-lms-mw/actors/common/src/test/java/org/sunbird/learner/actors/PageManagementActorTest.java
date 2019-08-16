@@ -1,11 +1,9 @@
 package org.sunbird.learner.actors;
 
 import static akka.testkit.JavaTestKit.duration;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
-import static org.powermock.api.mockito.PowerMockito.*;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
@@ -24,7 +22,6 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
@@ -40,10 +37,8 @@ import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.util.ContentSearchUtil;
-import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.DataCacheHandler;
 import org.sunbird.learner.util.Util;
-import org.sunbird.userorg.UserOrgService;
 import org.sunbird.userorg.UserOrgServiceImpl;
 import scala.concurrent.Future;
 
@@ -57,7 +52,7 @@ import scala.concurrent.Future;
         PageCacheLoaderService.class,
         UserOrgServiceImpl.class
 })
-
+@Ignore
 @PowerMockIgnore({"javax.management.*"})
 public class PageManagementActorTest {
 
@@ -103,6 +98,7 @@ public class PageManagementActorTest {
         PowerMockito.whenNew(UserOrgServiceImpl.class).withNoArguments().thenReturn(userOrgService);
         when(userOrgService.getOrganisationById(Mockito.anyString())).thenReturn(result);
         PowerMockito.mockStatic(DataCacheHandler.class);
+        PowerMockito.mockStatic(DataCacheHandler.class);
         PowerMockito.when(DataCacheHandler.getPageMap()).thenReturn(pageMap);
         PowerMockito.when(DataCacheHandler.getSectionMap()).thenReturn(sectionMap);
 
@@ -131,7 +127,7 @@ public class PageManagementActorTest {
 
         subject.tell(reqObj, probe.getRef());
         NullPointerException exc =
-                probe.expectMsgClass(Duration.ofSeconds(10 ), NullPointerException.class);
+                probe.expectMsgClass(Duration.ofSeconds(10 ), NullPointerException.class);;
         assertTrue(null != exc);
     }
 
@@ -187,7 +183,7 @@ public class PageManagementActorTest {
                 Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
                 .thenReturn(getRecordByPropMap(false));
         subject.tell(reqObj, probe.getRef());
-        Response response = probe.expectMsgClass(Duration.ofSeconds(10 ), Response.class);
+        Response response  = probe.expectMsgClass(Duration.ofSeconds(10 ), Response.class);
         pageIdWithOrg = (String) response.get(JsonKey.PAGE_ID);
         assertTrue(null != pageIdWithOrg);
     }
@@ -384,7 +380,7 @@ public class PageManagementActorTest {
         Request reqObj = new Request();
         reqObj.setOperation(ActorOperations.GET_ALL_SECTION.getValue());
         subject.tell(reqObj, probe.getRef());
-        Response response = probe.expectMsgClass(Duration.ofSeconds(10 ), Response.class);
+        Response response = probe.expectMsgClass(duration("10 second"), Response.class);
         Map<String, Object> result = response.getResult();
         List<Map<String, Object>> sectionList =
                 (List<Map<String, Object>>) result.get(JsonKey.RESPONSE);
@@ -397,23 +393,28 @@ public class PageManagementActorTest {
     }
 
     @Test
-    public void testGetSectionSuccess() throws Exception {
+    @Ignore
+    public void testGetSectionSuccess() {
 
         TestKit probe = new TestKit(system);
         ActorRef subject = system.actorOf(props);
 
+        boolean section = false;
         Request reqObj = new Request();
         reqObj.setOperation(ActorOperations.GET_SECTION.getValue());
         reqObj.getRequest().put(JsonKey.ID, sectionId);
-        PageCacheLoaderService mock = spy(new PageCacheLoaderService());
-        doReturn(new HashMap<>()).when(mock, "getDCMap", Matchers.anyString());
         subject.tell(reqObj, probe.getRef());
-        Response response = probe.expectMsgClass(Duration.ofSeconds(10 ), Response.class);
+        Response response = probe.expectMsgClass(Response.class);
         Map<String, Object> result = response.getResult();
-        Map<String, Object> section =
-                ((List<Map<String, Object>>) result.get(JsonKey.SECTION)).get(0);
+        List<Map<String, Object>> sectionList =
+                (List<Map<String, Object>>) result.get(JsonKey.RESPONSE);
 
-        assertNotNull(section);
+        for (Map<String, Object> sec : sectionList) {
+            if (null != sec.get(JsonKey.SECTIONS)) {
+                section = true;
+            }
+        }
+        assertTrue(section);
     }
 
     @Test
@@ -463,7 +464,7 @@ public class PageManagementActorTest {
 
         subject.tell(reqObj, probe.getRef());
         ProjectCommonException exc =
-                probe.expectMsgClass(Duration.ofSeconds(10 ), ProjectCommonException.class);
+                probe.expectMsgClass(duration("10 second"), ProjectCommonException.class);
         assertTrue(exc.getCode().equals(ResponseCode.pageAlreadyExist.getErrorCode()));
     }
 

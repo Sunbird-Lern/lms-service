@@ -11,6 +11,7 @@ public class Application {
   public static void main(String[] args) {
     SunbirdMWService.init();
     checkCassandraConnection();
+    SchedulerManager.schedule();
   }
 
   public static void checkCassandraConnection() {

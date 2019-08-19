@@ -2,12 +2,8 @@ package org.sunbird.learner.actors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -83,7 +79,7 @@ public class LearnerStateActor extends BaseActor {
     Map<String, Object> result = userCoursesService.getActiveUserCourses(userId);
     List<Map<String, Object>> updatedCourses = calculateProgressForUserCourses(request, result);
     if (MapUtils.isNotEmpty(result)) {
-      addCourseDetails(request, result);
+      addCourseDetails(request, updatedCourses);
     } else {
       ProjectLogger.log(
           "LearnerStateActor:getCourse: returning batch without course details",
@@ -95,9 +91,7 @@ public class LearnerStateActor extends BaseActor {
   }
 
   @SuppressWarnings("unchecked")
-  private void addCourseDetails(Request request, Map<String, Object> userCoursesResult) {
-    List<Map<String, Object>> batches =
-        (List<Map<String, Object>>) userCoursesResult.get(JsonKey.CONTENT);
+  private void addCourseDetails(Request request, List<Map<String, Object>> batches) {
 
     ProjectLogger.log(
         "LearnerStateActor:addCourseDetails: batches size = " + batches.size(),
@@ -253,12 +247,12 @@ public class LearnerStateActor extends BaseActor {
             .stream()
             .map(batch -> (String) batch.get(JsonKey.COURSE_ID))
             .collect(Collectors.toSet());
-
     Map<String, Object> filters = new HashMap<String, Object>();
     filters.put(JsonKey.CONTENT_TYPE, new String[] {JsonKey.COURSE});
     filters.put(JsonKey.IDENTIFIER, courseIds);
+    filters.put(JsonKey.STATUS,"Live");
     ProjectLogger.log(
-        "LearnerStateActor:prepareCourseSearchRequest: courseIds = " + courseIds,
+        "LearnerStateActor:prepareCourseSearchRequest:Requested courseIds = " + courseIds,
         LoggerEnum.INFO.name());
     Map<String, Object> requestMap = new HashMap<>();
     requestMap.put(JsonKey.FILTERS, filters);
@@ -343,7 +337,17 @@ public class LearnerStateActor extends BaseActor {
     List<Map<String, Object>> activeCourses =
         (List<Map<String, Object>>) (result.get(JsonKey.CONTENT));
     List<Map<String, Object>> contentsForCourses = getcontentsForCourses(request, activeCourses);
-
+    Set<String> courseIds =new HashSet<>();
+    if(contentsForCourses!=null) {
+      courseIds =
+              contentsForCourses
+                      .stream()
+                      .map(course -> (String) course.get(JsonKey.IDENTIFIER))
+                      .collect(Collectors.toSet());
+    }
+    ProjectLogger.log(
+            "LearnerStateActor:prepareCourseSearchRequest:Response courseIds = " + courseIds,
+            LoggerEnum.INFO.name());
     Map<String, Map<String, Object>> contentIdsMapForCourses =
         contentsForCourses
             .stream()

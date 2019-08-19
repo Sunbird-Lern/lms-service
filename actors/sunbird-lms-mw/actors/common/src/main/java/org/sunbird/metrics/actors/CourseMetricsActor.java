@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.router.ActorConfig;
 import org.sunbird.common.ElasticSearchHelper;
@@ -37,6 +38,7 @@ import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.common.util.CloudStorageUtil;
 import org.sunbird.common.util.CloudStorageUtil.CloudStorageType;
 import org.sunbird.dto.SearchDTO;
+import org.sunbird.learner.constants.CourseJsonKey;
 import org.sunbird.learner.util.ContentSearchUtil;
 import org.sunbird.userorg.UserOrgService;
 import org.sunbird.userorg.UserOrgServiceImpl;
@@ -132,22 +134,35 @@ public class CourseMetricsActor extends BaseMetricsActor {
     List<Map<String, Object>> esContents = (List<Map<String, Object>>) result.get(JsonKey.CONTENT);
     Map<String, Object> courseProgressResult = new HashMap<>();
     List<Map<String, Object>> userData = new ArrayList<>();
+    Map<String, Object> usersCertificates = new HashMap<>();
     if (CollectionUtils.isEmpty(esContents)) {
       courseProgressResult.put(JsonKey.SHOW_DOWNLOAD_LINK, false);
     } else {
       courseProgressResult.put(JsonKey.SHOW_DOWNLOAD_LINK, true);
-    }
-    for (Map<String, Object> esContent : esContents) {
-      Map<String, Object> map = new HashMap<>();
-      map.put(JsonKey.USER_NAME, esContent.get(JsonKey.NAME));
-      map.put(JsonKey.MASKED_PHONE, esContent.get(JsonKey.MASKED_PHONE));
-      map.put(JsonKey.ORG_NAME, esContent.get(JsonKey.ROOT_ORG_NAME));
-      map.put(JsonKey.PROGRESS, esContent.get(JsonKey.COMPLETED_PERCENT));
-      map.put(JsonKey.ENROLLED_ON, esContent.get(JsonKey.ENROLLED_ON));
-      userData.add(map);
+      List<String> userIds =
+          esContents
+              .stream()
+              .map(statUser -> (String) statUser.get(JsonKey.USER_ID))
+              .collect(Collectors.toList());
+      usersCertificates = getUsersCertificates(batchId, userIds);
+      for (Map<String, Object> esContent : esContents) {
+        Map<String, Object> map = new HashMap<>();
+        map.put(JsonKey.USER_NAME, esContent.get(JsonKey.NAME));
+        map.put(JsonKey.MASKED_PHONE, esContent.get(JsonKey.MASKED_PHONE));
+        map.put(JsonKey.ORG_NAME, esContent.get(JsonKey.ROOT_ORG_NAME));
+        map.put(JsonKey.PROGRESS, esContent.get(JsonKey.COMPLETED_PERCENT));
+        map.put(JsonKey.ENROLLED_ON, esContent.get(JsonKey.ENROLLED_ON));
+        if (MapUtils.isNotEmpty(usersCertificates)
+            && usersCertificates.containsKey(esContent.get(JsonKey.USER_ID))) {
+          map.put(
+              CourseJsonKey.CERTIFICATES, usersCertificates.get(esContent.get(JsonKey.USER_ID)));
+        }
+        userData.add(map);
+      }
     }
 
     courseProgressResult.put(JsonKey.COUNT, courseBatchResult.get(JsonKey.PARTICIPANT_COUNT));
+    courseProgressResult.put(CourseJsonKey.CERTIFICATE_COUNT, usersCertificates.size());
     courseProgressResult.put(JsonKey.DATA, userData);
     courseProgressResult.put(JsonKey.START_DATE, courseBatchResult.get(JsonKey.START_DATE));
     courseProgressResult.put(JsonKey.END_DATE, courseBatchResult.get(JsonKey.END_DATE));
@@ -159,6 +174,40 @@ public class CourseMetricsActor extends BaseMetricsActor {
     response.put(JsonKey.RESPONSE, JsonKey.SUCCESS);
     response.getResult().putAll(courseProgressResult);
     sender().tell(response, self());
+  }
+
+  private Map<String, Object> getUsersCertificates(String batchId, List<String> userIds) {
+    SearchDTO searchDTO = new SearchDTO();
+    searchDTO.setLimit(userIds.size());
+    Map<String, Object> filter = new HashMap<>();
+    filter.put(JsonKey.BATCH_ID, batchId);
+    filter.put(JsonKey.USER_ID, userIds);
+    Map<String, Object> nestedFilter = new HashMap<>();
+    nestedFilter.put(
+        CourseJsonKey.CERTIFICATES_DOT_NAME,
+        ProjectUtil.getConfigValue(CourseJsonKey.COURSE_COMPLETION_CERTIFICATE));
+    searchDTO.getAdditionalProperties().put(JsonKey.FILTERS, filter);
+    searchDTO.getAdditionalProperties().put(JsonKey.NESTED_KEY_FILTER, nestedFilter);
+    searchDTO.setFields(Arrays.asList(JsonKey.USER_ID, CourseJsonKey.CERTIFICATES));
+    Future<Map<String, Object>> resultF =
+        esService.search(searchDTO, EsType.usercourses.getTypeName());
+    Map<String, Object> result =
+        (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
+    ProjectLogger.log(
+        "CourseMetricsActor:getUsersCertificates: result=" + result, LoggerEnum.INFO.name());
+    Map<String, Object> resultMap = new HashMap<>();
+    if (MapUtils.isNotEmpty(result)
+        && CollectionUtils.isNotEmpty((List<Map<String, Object>>) result.get(JsonKey.CONTENT))) {
+      List<Map<String, Object>> contents = (List<Map<String, Object>>) result.get(JsonKey.CONTENT);
+      resultMap =
+          contents
+              .stream()
+              .collect(
+                  Collectors.toMap(
+                      user -> (String) user.get(JsonKey.USER_ID),
+                      user -> user.get(CourseJsonKey.CERTIFICATES)));
+    }
+    return resultMap;
   }
 
   private void formatEnrolledOn(Map<String, Object> batchMap) {
@@ -283,7 +332,6 @@ public class CourseMetricsActor extends BaseMetricsActor {
     String batchId = (String) actorMessage.getRequest().get(JsonKey.BATCH_ID);
 
     String requestedBy = (String) actorMessage.get(JsonKey.REQUESTED_BY);
-
     Map<String, Object> requestedByInfo = userOrgService.getUserById(requestedBy);
 
     if (isNull(requestedByInfo)
@@ -293,7 +341,6 @@ public class CourseMetricsActor extends BaseMetricsActor {
           ResponseCode.invalidUserId.getErrorMessage(),
           ResponseCode.CLIENT_ERROR.getResponseCode());
     }
-
     if (StringUtils.isBlank(batchId)) {
       ProjectLogger.log(
           "CourseMetricsActor:courseProgressMetrics: batchId is invalid (blank).",

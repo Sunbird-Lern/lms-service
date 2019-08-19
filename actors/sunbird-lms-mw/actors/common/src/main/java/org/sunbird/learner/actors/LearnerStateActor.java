@@ -2,12 +2,8 @@ package org.sunbird.learner.actors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -343,11 +339,14 @@ public class LearnerStateActor extends BaseActor {
     List<Map<String, Object>> activeCourses =
         (List<Map<String, Object>>) (result.get(JsonKey.CONTENT));
     List<Map<String, Object>> contentsForCourses = getcontentsForCourses(request, activeCourses);
-    Set<String> courseIds =
-            contentsForCourses
-                    .stream()
-                    .map(course -> (String) course.get(JsonKey.COURSE_ID))
-                    .collect(Collectors.toSet());
+    Set<String> courseIds =new HashSet<>();
+    if(contentsForCourses!=null) {
+      courseIds =
+              contentsForCourses
+                      .stream()
+                      .map(course -> (String) course.get(JsonKey.IDENTIFIER))
+                      .collect(Collectors.toSet());
+    }
     ProjectLogger.log(
             "LearnerStateActor:prepareCourseSearchRequest:Response courseIds = " + courseIds,
             LoggerEnum.INFO.name());

@@ -79,7 +79,7 @@ public class LearnerStateActor extends BaseActor {
     Map<String, Object> result = userCoursesService.getActiveUserCourses(userId);
     List<Map<String, Object>> updatedCourses = calculateProgressForUserCourses(request, result);
     if (MapUtils.isNotEmpty(result)) {
-      addCourseDetails(request, result);
+      addCourseDetails(request, updatedCourses);
     } else {
       ProjectLogger.log(
           "LearnerStateActor:getCourse: returning batch without course details",
@@ -91,9 +91,7 @@ public class LearnerStateActor extends BaseActor {
   }
 
   @SuppressWarnings("unchecked")
-  private void addCourseDetails(Request request, Map<String, Object> userCoursesResult) {
-    List<Map<String, Object>> batches =
-        (List<Map<String, Object>>) userCoursesResult.get(JsonKey.CONTENT);
+  private void addCourseDetails(Request request, List<Map<String, Object>> batches) {
 
     ProjectLogger.log(
         "LearnerStateActor:addCourseDetails: batches size = " + batches.size(),

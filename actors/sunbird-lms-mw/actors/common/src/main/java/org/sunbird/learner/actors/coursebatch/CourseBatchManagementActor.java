@@ -568,9 +568,9 @@ public class CourseBatchManagementActor extends BaseActor {
             ? (String) req.get(JsonKey.START_DATE)
             : courseBatch.getStartDate());
     courseBatch.setEndDate(
-        requestedEndDate != null ? null : courseBatch.getEndDate());
+            (String) req.get(JsonKey.END_DATE));
     courseBatch.setEnrollmentEndDate(
-        requestedEnrollmentEndDate == null ? null : (String) req.get(JsonKey.ENROLLMENT_END_DATE));
+            (String) req.get(JsonKey.ENROLLMENT_END_DATE));
   }
 
   private void validateUserPermission(CourseBatch courseBatch, String requestedBy) {

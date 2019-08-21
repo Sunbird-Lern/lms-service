@@ -10,4 +10,9 @@ public abstract class CourseJsonKey {
   public static final String CERTIFICATE = "certificate";
   public static final String REISSUE = "reIssue";
   public static final String UNDERSCORE = "_";
+  public static final String CERTIFICATES = "certificates";
+  public static final String CERTIFICATE_COUNT = "certificateCount";
+  public static final String CERTIFICATES_DOT_NAME = "certificates.name";
+  public static final String COURSE_COMPLETION_CERTIFICATE =
+      "sunbird_course_completion_certificate_name";
 }

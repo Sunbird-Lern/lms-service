@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.core.BaseActor;
@@ -92,13 +93,18 @@ public class CourseEnrollmentActor extends BaseActor {
     Map<String, Object> filter = new HashMap<>();
     filter.put(JsonKey.USER_ID, requestMap.get(JsonKey.USER_ID));
     filter.put(JsonKey.COURSE_ID, requestMap.get(JsonKey.COURSE_ID));
+    filter.put(JsonKey.ACTIVE, ProjectUtil.ActiveStatus.ACTIVE.getValue());
     SearchDTO searchDto = new SearchDTO();
     searchDto.getAdditionalProperties().put(JsonKey.FILTERS, filter);
+    List<Map<String, Object>> esContents = null;
     Future<Map<String, Object>> resultF =
             esService.search(searchDto, ProjectUtil.EsType.usercourses.getTypeName());
-    Map<String, Object> enrolledBatch =
+    Map<String, Object> resultMap =
             (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
-    if(MapUtils.isNotEmpty(enrolledBatch)){
+    if (MapUtils.isNotEmpty(resultMap)) {
+      esContents = (List<Map<String, Object>>) resultMap.get(JsonKey.CONTENT);
+    }
+    if(CollectionUtils.isNotEmpty(esContents)){
       ProjectLogger.log("User Already Enrolled Course ");
       ProjectCommonException.throwClientErrorException(
               ResponseCode.userAlreadyEnrolledCourse,

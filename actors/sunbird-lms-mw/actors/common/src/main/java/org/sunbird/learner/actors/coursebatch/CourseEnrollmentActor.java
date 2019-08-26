@@ -90,7 +90,7 @@ public class CourseEnrollmentActor extends BaseActor {
         courseBatchDao.readById(
             (String) courseMap.get(JsonKey.COURSE_ID), (String) courseMap.get(JsonKey.BATCH_ID));
     Map<String, Object> filter = new HashMap<>();
-    filter.put(JsonKey.USER_ID, requestMap.get(JsonKey.COURSE_ID));
+    filter.put(JsonKey.USER_ID, requestMap.get(JsonKey.USER_ID));
     filter.put(JsonKey.COURSE_ID, requestMap.get(JsonKey.COURSE_ID));
     SearchDTO searchDto = new SearchDTO();
     searchDto.getAdditionalProperties().put(JsonKey.FILTERS, filter);

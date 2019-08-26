@@ -9,10 +9,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.core.BaseActor;
 import org.sunbird.actor.router.ActorConfig;
+import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.exception.ProjectCommonException;
+import org.sunbird.common.factory.EsClientFactory;
+import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
@@ -26,6 +31,7 @@ import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.dto.SearchDTO;
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao;
 import org.sunbird.learner.actors.coursebatch.dao.UserCoursesDao;
 import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl;
@@ -36,6 +42,7 @@ import org.sunbird.learner.util.Util;
 import org.sunbird.models.course.batch.CourseBatch;
 import org.sunbird.models.user.courses.UserCourses;
 import org.sunbird.telemetry.util.TelemetryUtil;
+import scala.concurrent.Future;
 
 @ActorConfig(
   tasks = {"enrollCourse", "unenrollCourse"},
@@ -48,6 +55,7 @@ public class CourseEnrollmentActor extends BaseActor {
 
   private CourseBatchDao courseBatchDao = new CourseBatchDaoImpl();
   private UserCoursesDao userCourseDao = UserCoursesDaoImpl.getInstance();
+  private static ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private ObjectMapper mapper = new ObjectMapper();
 
   @Override
@@ -81,6 +89,21 @@ public class CourseEnrollmentActor extends BaseActor {
     CourseBatch courseBatch =
         courseBatchDao.readById(
             (String) courseMap.get(JsonKey.COURSE_ID), (String) courseMap.get(JsonKey.BATCH_ID));
+    Map<String, Object> filter = new HashMap<>();
+    filter.put(JsonKey.USER_ID, requestMap.get(JsonKey.COURSE_ID));
+    filter.put(JsonKey.COURSE_ID, requestMap.get(JsonKey.COURSE_ID));
+    SearchDTO searchDto = new SearchDTO();
+    searchDto.getAdditionalProperties().put(JsonKey.FILTERS, filter);
+    Future<Map<String, Object>> resultF =
+            esService.search(searchDto, ProjectUtil.EsType.usercourses.getTypeName());
+    Map<String, Object> enrolledBatch =
+            (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
+    if(MapUtils.isNotEmpty(enrolledBatch)){
+      ProjectLogger.log("User Already Enrolled Course ");
+      ProjectCommonException.throwClientErrorException(
+              ResponseCode.userAlreadyEnrolledCourse,
+              ResponseCode.userAlreadyEnrolledCourse.getErrorMessage());
+    }
     validateCourseBatch(
         courseBatch, courseMap, (String) actorMessage.getContext().get(JsonKey.REQUESTED_BY), ActorOperations.ENROLL_COURSE.getValue());
 

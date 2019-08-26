@@ -4,11 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -90,26 +86,7 @@ public class CourseEnrollmentActor extends BaseActor {
     CourseBatch courseBatch =
         courseBatchDao.readById(
             (String) courseMap.get(JsonKey.COURSE_ID), (String) courseMap.get(JsonKey.BATCH_ID));
-    Map<String, Object> filter = new HashMap<>();
-    filter.put(JsonKey.USER_ID, requestMap.get(JsonKey.USER_ID));
-    filter.put(JsonKey.COURSE_ID, requestMap.get(JsonKey.COURSE_ID));
-    filter.put(JsonKey.ACTIVE, ProjectUtil.ActiveStatus.ACTIVE.getValue());
-    SearchDTO searchDto = new SearchDTO();
-    searchDto.getAdditionalProperties().put(JsonKey.FILTERS, filter);
-    List<Map<String, Object>> esContents = null;
-    Future<Map<String, Object>> resultF =
-            esService.search(searchDto, ProjectUtil.EsType.usercourses.getTypeName());
-    Map<String, Object> resultMap =
-            (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
-    if (MapUtils.isNotEmpty(resultMap)) {
-      esContents = (List<Map<String, Object>>) resultMap.get(JsonKey.CONTENT);
-    }
-    if(CollectionUtils.isNotEmpty(esContents)){
-      ProjectLogger.log("User Already Enrolled Course ");
-      ProjectCommonException.throwClientErrorException(
-              ResponseCode.userAlreadyEnrolledCourse,
-              ResponseCode.userAlreadyEnrolledCourse.getErrorMessage());
-    }
+    checkUserEnrollementStatus((String) courseMap.get(JsonKey.COURSE_ID), (String) courseMap.get(JsonKey.USER_ID));
     validateCourseBatch(
         courseBatch, courseMap, (String) actorMessage.getContext().get(JsonKey.REQUESTED_BY), ActorOperations.ENROLL_COURSE.getValue());
 
@@ -348,4 +325,30 @@ public class CourseEnrollmentActor extends BaseActor {
         userCourseUpdateAttributes, userCourses.getBatchId(), userCourses.getUserId());
     return result;
   }
+
+  private void checkUserEnrollementStatus(String courseId,String userId)
+  {
+    Map<String, Object> filter = new HashMap<>();
+    filter.put(JsonKey.USER_ID, userId);
+    filter.put(JsonKey.COURSE_ID, courseId);
+    filter.put(JsonKey.ACTIVE, ProjectUtil.ActiveStatus.ACTIVE.getValue());
+    SearchDTO searchDto = new SearchDTO();
+    searchDto.getAdditionalProperties().put(JsonKey.FILTERS, filter);
+    searchDto.setFields(Arrays.asList(JsonKey.BATCH_ID));
+    List<Map<String, Object>> esContents = null;
+    Future<Map<String, Object>> resultF =
+            esService.search(searchDto, ProjectUtil.EsType.usercourses.getTypeName());
+    Map<String, Object> resultMap =
+            (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
+    if (MapUtils.isNotEmpty(resultMap)) {
+      esContents = (List<Map<String, Object>>) resultMap.get(JsonKey.CONTENT);
+    }
+    if(CollectionUtils.isNotEmpty(esContents)){
+      ProjectLogger.log("User Already Enrolled Course for batches :"+esContents,LoggerEnum.INFO);
+      ProjectCommonException.throwClientErrorException(
+              ResponseCode.userAlreadyEnrolledCourse,
+              ResponseCode.userAlreadyEnrolledCourse.getErrorMessage());
+    }
+  }
 }
+

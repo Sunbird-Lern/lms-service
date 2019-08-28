@@ -86,7 +86,6 @@ public class CourseEnrollmentActor extends BaseActor {
     CourseBatch courseBatch =
         courseBatchDao.readById(
             (String) courseMap.get(JsonKey.COURSE_ID), (String) courseMap.get(JsonKey.BATCH_ID));
-    checkUserEnrollementStatus((String) courseMap.get(JsonKey.COURSE_ID), (String) courseMap.get(JsonKey.USER_ID));
     validateCourseBatch(
         courseBatch, courseMap, (String) actorMessage.getContext().get(JsonKey.REQUESTED_BY), ActorOperations.ENROLL_COURSE.getValue());
 

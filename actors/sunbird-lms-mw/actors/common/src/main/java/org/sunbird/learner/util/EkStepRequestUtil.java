@@ -16,6 +16,7 @@ import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.PropertiesCache;
+import org.sunbird.header.HeaderBuilder;
 
 /**
  * This class will make the call to EkStep content search
@@ -37,23 +38,16 @@ public final class EkStepRequestUtil {
     Map<String, Object> resMap = new HashMap<>();
     try {
       String baseSearchUrl = ProjectUtil.getConfigValue(JsonKey.SEARCH_SERVICE_API_BASE_URL);
-      headers.put(
-          JsonKey.AUTHORIZATION, JsonKey.BEARER + System.getenv(JsonKey.EKSTEP_AUTHORIZATION));
-      headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
       headers.remove(HttpHeaders.ACCEPT_ENCODING.toLowerCase());
       headers.put(HttpHeaders.ACCEPT_ENCODING.toLowerCase(), "UTF-8");
-      if (StringUtils.isBlank(headers.get(JsonKey.AUTHORIZATION))) {
-        headers.put(
-            JsonKey.AUTHORIZATION,
-            PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_AUTHORIZATION));
-      }
+      Map<String,String> requestHeaders=new HeaderBuilder(headers).build();
       ProjectLogger.log("making call for content search ==" + params, LoggerEnum.INFO.name());
       String response =
           HttpUtil.sendPostRequest(
-              baseSearchUrl
-                  + PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_CONTENT_SEARCH_URL),
+                  baseSearchUrl
+                          + PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_CONTENT_SEARCH_URL),
               params,
-              headers);
+                  requestHeaders);
       ProjectLogger.log("Content serach response is ==" + response, LoggerEnum.INFO.name());
       Map<String, Object> data = mapper.readValue(response, Map.class);
       if (MapUtils.isNotEmpty(data)) {

@@ -191,6 +191,8 @@ public class BaseController extends Controller {
       } else {
         request = createAndInitRequest(operation, requestBodyJson);
       }
+      if(request.getParams().getMsgid()==null)
+        request.getParams().setMsgid(ExecutionContext.getRequestId());
       if (pathId != null) {
         request.getRequest().put(pathVariable, pathId);
         request.getContext().put(pathVariable, pathId);

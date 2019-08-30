@@ -84,6 +84,7 @@ import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.content.textbook.FileExtension;
 import org.sunbird.content.textbook.TextBookTocUploader;
 import org.sunbird.content.util.TextBookTocUtil;
+import org.sunbird.header.HeaderBuilder;
 import org.sunbird.services.sso.SSOManager;
 import org.sunbird.services.sso.SSOServiceFactory;
 
@@ -241,7 +242,7 @@ public class TextbookTocActor extends BaseActor {
     try {
       updateResponse =
           Unirest.post(requestUrl)
-              .headers(getDefaultHeaders())
+              .headers(new HeaderBuilder().build())
               .body(mapper.writeValueAsString(requestMap))
               .asString();
       if (null != updateResponse) {
@@ -502,7 +503,7 @@ public class TextbookTocActor extends BaseActor {
     List<String> resDialcodes = new ArrayList<>();
     try {
       Map<String, String> headers = new HashMap<>();
-      headers.putAll(getDefaultHeaders());
+      headers.putAll(new HeaderBuilder().build());
       headers.put("X-Channel-Id", channel);
       headers.put(
           "x-authenticated-user-token",
@@ -1395,7 +1396,7 @@ public class TextbookTocActor extends BaseActor {
             + tbId;
     HttpResponse<String> updateResponse = null;
     try {
-      Map<String, String> headers = getDefaultHeaders();
+      Map<String, String> headers = new HeaderBuilder().build();
       headers.put("X-Channel-Id", channel);
       updateResponse =
           Unirest.post(requestUrl)
@@ -1458,7 +1459,7 @@ public class TextbookTocActor extends BaseActor {
 
     String requestUrl =
         getConfigValue(JsonKey.EKSTEP_BASE_URL) + getConfigValue(JsonKey.UPDATE_HIERARCHY_API);
-    Map<String, String> headers = getDefaultHeaders();
+    Map<String, String> headers = new HeaderBuilder().build();
     HttpResponse<String> updateResponse = null;
     try {
       ProjectLogger.log(
@@ -1535,13 +1536,6 @@ public class TextbookTocActor extends BaseActor {
     }
   }
 
-  private Map<String, String> getDefaultHeaders() {
-    Map<String, String> headers = new HashMap<>();
-    headers.put("Content-Type", "application/json");
-    headers.put(
-        JsonKey.AUTHORIZATION, JsonKey.BEARER + getConfigValue(JsonKey.SUNBIRD_AUTHORIZATION));
-    return headers;
-  }
 
   @SuppressWarnings("unchecked")
   private void populateNodeModified(

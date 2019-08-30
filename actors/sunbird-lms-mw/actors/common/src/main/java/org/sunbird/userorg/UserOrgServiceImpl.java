@@ -21,6 +21,7 @@ import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.header.HeaderBuilder;
 import org.sunbird.services.sso.SSOManager;
 import org.sunbird.services.sso.SSOServiceFactory;
 
@@ -29,13 +30,6 @@ public class UserOrgServiceImpl implements UserOrgService {
   private SSOManager ssoManager = SSOServiceFactory.getInstance();
   private ObjectMapper mapper = new ObjectMapper();
   private static final String FORWARD_SLASH = "/";
-
-  private static Map<String, String> getdefaultHeaders() {
-    Map<String, String> headers = new HashMap<>();
-    headers.put(AUTHORIZATION, BEARER + getConfigValue(SUNBIRD_AUTHORIZATION));
-    headers.put("Content-Type", "application/json");
-    return headers;
-  }
 
   private Response getUserOrgResponse(
       String requestAPI,
@@ -114,7 +108,7 @@ public class UserOrgServiceImpl implements UserOrgService {
     Map<String, Object> filterlist = new HashMap<>();
     filterlist.put(ID, id);
     Map<String, Object> requestMap = getRequestMap(filterlist);
-    Map<String, String> headers = getdefaultHeaders();
+    Map<String, String> headers =  new HeaderBuilder().build();
     Response response =
         getUserOrgResponse(
             getConfigValue(SUNBIRD_GET_ORGANISATION_API), HttpMethod.POST, requestMap, headers);
@@ -128,7 +122,7 @@ public class UserOrgServiceImpl implements UserOrgService {
     Map<String, Object> filterlist = new HashMap<>();
     filterlist.put(ID, ids);
     Map<String, Object> requestMap = getRequestMap(filterlist);
-    Map<String, String> headers = getdefaultHeaders();
+    Map<String, String> headers = new HeaderBuilder().build();
     Response response =
         getUserOrgResponse(
             getConfigValue(SUNBIRD_GET_ORGANISATION_API), HttpMethod.POST, requestMap, headers);
@@ -142,7 +136,7 @@ public class UserOrgServiceImpl implements UserOrgService {
     Map<String, Object> filterlist = new HashMap<>();
     filterlist.put(ID, id);
     Map<String, Object> requestMap = getRequestMap(filterlist);
-    Map<String, String> headers = getdefaultHeaders();
+    Map<String, String> headers =  new HeaderBuilder().build();
     headers.put(
         "x-authenticated-user-token",
         ssoManager.login(
@@ -159,7 +153,7 @@ public class UserOrgServiceImpl implements UserOrgService {
     Map<String, Object> filterlist = new HashMap<>();
     filterlist.put(ID, ids);
     Map<String, Object> requestMap = getRequestMap(filterlist);
-    Map<String, String> headers = getdefaultHeaders();
+    Map<String, String> headers = new HeaderBuilder().build();
     headers.put(
         "x-authenticated-user-token",
         ssoManager.login(
@@ -176,7 +170,7 @@ public class UserOrgServiceImpl implements UserOrgService {
   public List<Map<String, Object>> getUsers(Map<String, Object> request) {
     Map<String, Object> requestMap = new HashMap<>();
     requestMap.put(JsonKey.REQUEST, request);
-    Map<String, String> headers = getdefaultHeaders();
+    Map<String, String> headers =  new HeaderBuilder().build();
     headers.put(
         "x-authenticated-user-token",
         ssoManager.login(

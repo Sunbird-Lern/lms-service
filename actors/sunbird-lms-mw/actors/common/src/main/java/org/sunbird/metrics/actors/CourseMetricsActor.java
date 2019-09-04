@@ -56,7 +56,7 @@ public class CourseMetricsActor extends BaseMetricsActor {
 
   private static final String COURSE_PROGRESS_REPORT = "Course Progress Report";
   protected static final String CONTENT_ID = "content_id";
-  private UserOrgService userOrgService = new UserOrgServiceImpl();
+  private UserOrgService userOrgService = UserOrgServiceImpl.getInstance();
   private static ObjectMapper mapper = new ObjectMapper();
   private static final String COMPLETE_PERCENT = "completionPercentage";
 

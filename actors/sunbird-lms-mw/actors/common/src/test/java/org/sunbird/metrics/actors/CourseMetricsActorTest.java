@@ -37,6 +37,7 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.cassandraimpl.CassandraOperationImpl;
+import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.ElasticSearchRestHighImpl;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
@@ -44,11 +45,14 @@ import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.ProjectUtil.EsType;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.common.util.CloudStorageUtil;
 import org.sunbird.helper.ServiceFactory;
+import org.sunbird.learner.util.ContentSearchUtil;
+import org.sunbird.userorg.UserOrgService;
+import org.sunbird.userorg.UserOrgServiceImpl;
+import scala.concurrent.Future;
 import scala.concurrent.Promise;
 
 /**
@@ -59,13 +63,16 @@ import scala.concurrent.Promise;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
   ElasticSearchRestHighImpl.class,
+  ElasticSearchHelper.class,
   HttpClientBuilder.class,
   ServiceFactory.class,
   CloudStorageUtil.class,
-  EsClientFactory.class
+  EsClientFactory.class,
+  UserOrgServiceImpl.class,
+  ContentSearchUtil.class,
+  HttpClientBuilder.class
 })
 @PowerMockIgnore("javax.management.*")
-@Ignore
 public class CourseMetricsActorTest {
 
   private static ActorSystem system;
@@ -78,28 +85,104 @@ public class CourseMetricsActorTest {
   private static final String orgId = "vdckcyigc68569";
   private static Map<String, Object> infoMap = new HashMap<>();
   private static Map<String, Object> userOrgMap = new HashMap<>();
+  private static Map<String, Object> userMap = new HashMap<>();
   private static final String HTTP_POST = "POST";
   private static ObjectMapper mapper = new ObjectMapper();
   private static CassandraOperationImpl cassandraOperation = mock(CassandraOperationImpl.class);
   private static ElasticSearchService esService;
   private static final String SIGNED_URL = "SIGNED_URL";
+  private static UserOrgService userOrgService;
+  private static CloseableHttpClient httpClient;
 
   @BeforeClass
   public static void setUp() {
     system = ActorSystem.create("system");
     infoMap.put(JsonKey.FIRST_NAME, "user_first_name");
     infoMap.put(JsonKey.BATCH_ID, "batch_123");
+    userMap.put(JsonKey.FIRST_NAME, "user_first_name");
+    userMap.put(JsonKey.IDENTIFIER, "user_123");
   }
 
   @Before
   public void before() {
     esService = mock(ElasticSearchRestHighImpl.class);
     PowerMockito.mockStatic(EsClientFactory.class);
+    PowerMockito.mockStatic(ElasticSearchHelper.class);
+    PowerMockito.mockStatic(UserOrgServiceImpl.class);
+    userOrgService = mock(UserOrgServiceImpl.class);
+    when(UserOrgServiceImpl.getInstance()).thenReturn(userOrgService);
     when(EsClientFactory.getInstance(Mockito.anyString())).thenReturn(esService);
     mockESComplexSearch();
     mockESGetDataByIdentifier();
     PowerMockito.mockStatic(ServiceFactory.class);
     when(ServiceFactory.getInstance()).thenReturn(cassandraOperation);
+    when(userOrgService.getUserById(Mockito.anyString())).thenReturn(userMap);
+    PowerMockito.mockStatic(ContentSearchUtil.class);
+    when(ContentSearchUtil.searchContentSync(
+            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
+        .thenReturn(getContentMap());
+    mockCourseBatch(false);
+    //    PowerMockito.mockStatic(HttpClientBuilder.class);
+    //    httpClient = mock(CloseableHttpClient.class);
+    //    when(HttpClientBuilder.create().build()).thenReturn(httpClient);
+    //    when(httpClient.execute(Mockito.any())).thenReturn(getHttpResponse());
+  }
+
+  private void mockCourseBatch(boolean isEmpty) {
+    Map<String, Object> cbMap = new HashMap<>();
+    if (!isEmpty) {
+      cbMap.put(JsonKey.BATCH_ID, batchId);
+    }
+    Promise<Map<String, Object>> promiseCourseBatch = Futures.promise();
+    promiseCourseBatch.success(cbMap);
+    Future<Map<String, Object>> cbf = promiseCourseBatch.future();
+    when(esService.getDataByIdentifier(Mockito.anyString(), Mockito.anyString())).thenReturn(cbf);
+    when(ElasticSearchHelper.getResponseFromFuture(cbf)).thenReturn(cbMap);
+  }
+
+  private void mockCourseBatchStats(boolean isEmpty) {
+    Map<String, Object> cbMap = new HashMap<>();
+    if (!isEmpty) {
+      cbMap.put(JsonKey.BATCH_ID, batchId);
+      cbMap.put(JsonKey.USER_ID, userId);
+    }
+    Promise<Map<String, Object>> promiseCourseBatchStats = Futures.promise();
+    promiseCourseBatchStats.success(cbMap);
+    Future<Map<String, Object>> cbs = promiseCourseBatchStats.future();
+    when(esService.getDataByIdentifier(Mockito.anyString(), Mockito.anyString())).thenReturn(cbs);
+    when(ElasticSearchHelper.getResponseFromFuture(cbs)).thenReturn(cbMap);
+  }
+
+  private void mockUserCoursesEsResponse(boolean isEmpty) {
+    Map<String, Object> userCourses = new HashMap<>();
+    List<Map<String, Object>> l1 = new ArrayList<>();
+    if (!isEmpty) {
+      l1.add(getMapforUserCourses(batchId, "batch1"));
+    }
+    userCourses.put(JsonKey.CONTENT, l1);
+    Promise<Map<String, Object>> promiseUserCourses = Futures.promise();
+    promiseUserCourses.success(userCourses);
+    Future<Map<String, Object>> ucf = promiseUserCourses.future();
+    when(esService.search(Mockito.any(), Mockito.any())).thenReturn(ucf);
+    when(ElasticSearchHelper.getResponseFromFuture(ucf)).thenReturn(userCourses);
+  }
+
+  private Map<String, Object> getMapforUserCourses(String batchId, String userId) {
+    Map<String, Object> result = new HashMap<>();
+    result.put(JsonKey.BATCH_ID, batchId);
+    result.put(JsonKey.USER_ID, userId);
+    return result;
+  }
+
+  private Map<String, Object> getContentMap() {
+    Map<String, Object> contentMap = new HashMap<>();
+    List<Map<String, Object>> contentList = new ArrayList<>();
+    Map<String, Object> content = new HashMap<>();
+    content.put(JsonKey.IDENTIFIER, "contentId");
+    content.put(JsonKey.NAME, "dummy Course");
+    contentList.add(content);
+    contentMap.put(JsonKey.CONTENTS, contentList);
+    return contentMap;
   }
 
   @Test
@@ -152,26 +235,26 @@ public class CourseMetricsActorTest {
   @Test
   public void testCourseProgressMetricsV2WithInvalidBatchId() {
     ProjectCommonException e =
-        (ProjectCommonException) getResponseOfCourseMetrics(true, false, false, false, true);
+        (ProjectCommonException) getResponseOfCourseMetrics(true, false, true);
     Assert.assertEquals(ResponseCode.invalidCourseBatchId.getErrorCode(), e.getCode());
   }
 
   @Test
   public void testCourseProgressMetricsV2WithNoUser() {
     ProjectCommonException e =
-        (ProjectCommonException) getResponseOfCourseMetrics(false, false, false, false, true);
+        (ProjectCommonException) getResponseOfCourseMetrics(false, true, true);
     Assert.assertEquals(ResponseCode.invalidUserId.getErrorCode(), e.getCode());
   }
 
   @Test
   public void testCourseProgressMetricsV2WithUser() {
-    Response res = (Response) getResponseOfCourseMetrics(true, true, true, false, false);
+    Response res = (Response) getResponseOfCourseMetrics(true, true, false);
     Assert.assertEquals(ResponseCode.OK, res.getResponseCode());
   }
 
   @Test
   public void testCourseProgressMetricsV2WithCompletedCount() {
-    Response res = (Response) getResponseOfCourseMetrics(true, true, true, true, false);
+    Response res = (Response) getResponseOfCourseMetrics(true, true, false);
     Assert.assertEquals(1, res.getResult().get(JsonKey.COMPLETED_COUNT));
   }
 
@@ -180,15 +263,7 @@ public class CourseMetricsActorTest {
 
     TestKit probe = new TestKit(system);
     ActorRef subject = system.actorOf(props);
-    Promise<Map<String, Object>> promise = Futures.promise();
-    promise.success(userOrgMap);
-    when(esService.getDataByIdentifier(EsType.user.getTypeName(), userId))
-        .thenReturn(promise.future());
-    Promise<Map<String, Object>> promise_null = Futures.promise();
-    promise_null.success(null);
-    when(esService.getDataByIdentifier(EsType.course.getTypeName(), batchId))
-        .thenReturn(promise_null.future());
-
+    mockCourseBatch(true);
     Request actorMessage = new Request();
     actorMessage.put(JsonKey.REQUESTED_BY, userId);
     actorMessage.put(JsonKey.BATCH_ID, batchId);
@@ -263,16 +338,6 @@ public class CourseMetricsActorTest {
 
     TestKit probe = new TestKit(system);
     ActorRef subject = system.actorOf(props);
-    Promise<Map<String, Object>> promise = Futures.promise();
-    Promise<Map<String, Object>> promise_null = Futures.promise();
-    promise.success(userOrgMap);
-
-    when(esService.getDataByIdentifier(EsType.user.getTypeName(), userId))
-        .thenReturn(promise.future());
-
-    promise_null.success(null);
-    when(esService.getDataByIdentifier(EsType.course.getTypeName(), batchId))
-        .thenReturn(promise_null.future());
 
     Request actorMessage = new Request();
     actorMessage.put(JsonKey.REQUESTED_BY, userId);
@@ -293,6 +358,10 @@ public class CourseMetricsActorTest {
     TestKit probe = new TestKit(system);
     ActorRef subject = system.actorOf(props);
 
+    Promise<Map<String, Object>> promise = Futures.promise();
+    promise.success(null);
+    when(esService.getDataByIdentifier(Mockito.anyString(), Mockito.anyString()))
+        .thenReturn(promise.future());
     Request actorMessage = new Request();
     actorMessage.put(JsonKey.REQUESTED_BY, userId);
     actorMessage.put(JsonKey.BATCH_ID, "");
@@ -513,11 +582,7 @@ public class CourseMetricsActorTest {
   }
 
   private Object getResponseOfCourseMetrics(
-      boolean isUserValid,
-      boolean isBatchValid,
-      boolean isUserMock,
-      boolean isGetCompltetedCount,
-      boolean errorCode) {
+      boolean isUserValid, boolean isBatchValid, boolean errorCode) {
     Request actorMessage = new Request();
     actorMessage.getContext().put(JsonKey.REQUESTED_BY, userId);
     actorMessage.getContext().put(JsonKey.BATCH_ID, batchId);
@@ -528,41 +593,13 @@ public class CourseMetricsActorTest {
     ActorRef subject = system.actorOf(props);
 
     if (!isUserValid) {
-      Promise<Map<String, Object>> promise = Futures.promise();
-      promise.success(null);
-      when(esService.getDataByIdentifier(Mockito.anyString(), Mockito.anyString()))
-          .thenReturn(promise.future());
+      when(userOrgService.getUserById(Mockito.anyString())).thenReturn(null);
     } else if (isUserValid && !isBatchValid) {
-      Promise<Map<String, Object>> promise = Futures.promise();
-      Promise<Map<String, Object>> promise_null = Futures.promise();
-      promise.success(getMockUser());
-      promise_null.success(null);
-      when(esService.getDataByIdentifier(Mockito.anyString(), Mockito.anyString()))
-          .thenReturn(promise.future())
-          .thenReturn(promise_null.future());
+      mockCourseBatch(true);
     } else {
-      Promise<Map<String, Object>> promise = Futures.promise();
-      promise.success(getMockUser());
-      Promise<Map<String, Object>> promise_ = Futures.promise();
-      promise_.success(getBatchData());
-      when(esService.getDataByIdentifier(Mockito.anyString(), Mockito.anyString()))
-          .thenReturn(promise.future())
-          .thenReturn(promise_.future());
+      mockCourseBatch(false);
     }
-    if (isUserMock && !isGetCompltetedCount) {
-      Promise<Map<String, Object>> promise = Futures.promise();
-      promise.success(mockUserData());
-      when(esService.search(Mockito.any(), Mockito.anyString())).thenReturn(promise.future());
-    } else {
-      Promise<Map<String, Object>> promise = Futures.promise();
-      promise.success(mockUserData());
-      Promise<Map<String, Object>> promise_ = Futures.promise();
-      promise_.success(getCompleteUserCount());
-      when(esService.search(Mockito.any(), Mockito.anyString()))
-          .thenReturn(promise.future())
-          .thenReturn(promise_.future());
-    }
-
+    mockCourseBatchStats(false);
     subject.tell(actorMessage, probe.getRef());
     if (!errorCode) {
       Response res = probe.expectMsgClass(duration("10 second"), Response.class);

@@ -334,7 +334,7 @@ public class CourseEnrollmentActor extends BaseActor {
     userCoursefilter.put(JsonKey.USER_ID, userId);
     userCoursefilter.put(JsonKey.COURSE_ID, courseId);
     userCoursefilter.put(JsonKey.ACTIVE, ProjectUtil.ActiveStatus.ACTIVE.getValue());
-    List<Map<String, Object>> userCoursesList = searchFromES(ProjectUtil.EsType.usercourses.getTypeName(),userCoursefilter);
+    List<Map<String, Object>> userCoursesList = searchFromES(ProjectUtil.EsType.usercourses.getTypeName(),userCoursefilter,Arrays.asList(JsonKey.BATCH_ID) );
     if(CollectionUtils.isNotEmpty(userCoursesList)) {
       ProjectLogger.log("User Enrolled batches :" + userCoursesList, LoggerEnum.INFO);
       List<String> batchIds =
@@ -342,11 +342,10 @@ public class CourseEnrollmentActor extends BaseActor {
                       .stream()
                       .map(usercourse -> (String) usercourse.get(JsonKey.BATCH_ID))
                       .collect(Collectors.toList());
-      String status[] = { "0","1" };
       Map<String, Object> courseBatchfilter = new HashMap<>();
       courseBatchfilter.put(JsonKey.BATCH_ID,batchIds);
-      courseBatchfilter.put(JsonKey.STATUS,Arrays.asList(status));
-      List<Map<String, Object>> batchList = searchFromES(ProjectUtil.EsType.courseBatch.getTypeName(),courseBatchfilter);
+      courseBatchfilter.put(JsonKey.STATUS,Arrays.asList(ProgressStatus.NOT_STARTED.getValue(), ProgressStatus.STARTED.getValue()) );
+      List<Map<String, Object>> batchList = searchFromES(ProjectUtil.EsType.courseBatch.getTypeName(),courseBatchfilter, Arrays.asList(JsonKey.BATCH_ID));
         if (CollectionUtils.isNotEmpty(batchList)) {
           ProjectLogger.log(" User currently Enrolled for batches :" + batchList, LoggerEnum.INFO);
           ProjectCommonException.throwClientErrorException(
@@ -357,10 +356,12 @@ public class CourseEnrollmentActor extends BaseActor {
     }
   }
 
-  private List<Map<String, Object>> searchFromES(String index, Map<String, Object> filter){
+  private List<Map<String, Object>> searchFromES(String index, Map<String, Object> filter, List<String> fields){
 
     SearchDTO searchDto = new SearchDTO();
-    searchDto.setFields(Arrays.asList(JsonKey.BATCH_ID));
+    if(CollectionUtils.isNotEmpty(fields)) {
+      searchDto.setFields(fields);
+    }
     searchDto.getAdditionalProperties().put(JsonKey.FILTERS, filter);
     List<Map<String, Object>> esContents = null;
     Future<Map<String, Object>> resultF =

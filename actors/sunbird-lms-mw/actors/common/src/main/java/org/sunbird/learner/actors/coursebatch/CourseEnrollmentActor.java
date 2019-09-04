@@ -54,6 +54,7 @@ public class CourseEnrollmentActor extends BaseActor {
   private UserCoursesDao userCourseDao = UserCoursesDaoImpl.getInstance();
   private static ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private ObjectMapper mapper = new ObjectMapper();
+  private SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 
   @Override
   public void onReceive(Request request) throws Throwable {
@@ -86,6 +87,7 @@ public class CourseEnrollmentActor extends BaseActor {
     CourseBatch courseBatch =
         courseBatchDao.readById(
             (String) courseMap.get(JsonKey.COURSE_ID), (String) courseMap.get(JsonKey.BATCH_ID));
+    checkUserEnrollementStatus((String) courseMap.get(JsonKey.COURSE_ID), (String) courseMap.get(JsonKey.USER_ID));
     validateCourseBatch(
         courseBatch, courseMap, (String) actorMessage.getContext().get(JsonKey.REQUESTED_BY), ActorOperations.ENROLL_COURSE.getValue());
 
@@ -271,7 +273,6 @@ public class CourseEnrollmentActor extends BaseActor {
       ProjectCommonException.throwClientErrorException(
           ResponseCode.invalidCourseBatchId, ResponseCode.invalidCourseBatchId.getErrorMessage());
     }
-    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
     try {
       Date todaydate = format.parse(format.format(new Date()));
       // there might be chance end date is not present
@@ -342,11 +343,18 @@ public class CourseEnrollmentActor extends BaseActor {
     if (MapUtils.isNotEmpty(resultMap)) {
       esContents = (List<Map<String, Object>>) resultMap.get(JsonKey.CONTENT);
     }
-    if(CollectionUtils.isNotEmpty(esContents)){
-      ProjectLogger.log("User Already Enrolled Course for batches :"+esContents,LoggerEnum.INFO);
-      ProjectCommonException.throwClientErrorException(
-              ResponseCode.userAlreadyEnrolledCourse,
-              ResponseCode.userAlreadyEnrolledCourse.getErrorMessage());
+    if(CollectionUtils.isNotEmpty(esContents)) {
+      ProjectLogger.log("User Already Enrolled Course for batches :" + esContents, LoggerEnum.INFO);
+      for (Map<String, Object> userCourse : esContents) {
+        CourseBatch courseBatch =
+                courseBatchDao.readById(
+                        courseId, (String) userCourse.get(JsonKey.BATCH_ID));
+        if (courseBatch.getStatus() == 0 || courseBatch.getStatus() == 1) {
+          ProjectCommonException.throwClientErrorException(
+                  ResponseCode.userAlreadyEnrolledCourse,
+                  ResponseCode.userAlreadyEnrolledCourse.getErrorMessage());
+        }
+      }
     }
   }
 }

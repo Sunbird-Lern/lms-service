@@ -5,10 +5,12 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.stringtemplate.v4.ST;
 import org.sunbird.actor.core.BaseActor;
 import org.sunbird.actor.router.ActorConfig;
 import org.sunbird.common.ElasticSearchHelper;
@@ -328,34 +330,52 @@ public class CourseEnrollmentActor extends BaseActor {
 
   private void checkUserEnrollementStatus(String courseId,String userId)
   {
+
+    List<Map<String, Object>> userCoursesList = searchFromES(ProjectUtil.EsType.usercourses.getTypeName(),courseId,userId,null);
+    if(CollectionUtils.isNotEmpty(userCoursesList)) {
+      ProjectLogger.log("User Already Enrolled Course for batches :" + userCoursesList, LoggerEnum.INFO);
+      List<String> batchIds =
+              userCoursesList
+                      .stream()
+                      .map(usercourse -> (String) usercourse.get(JsonKey.BATCH_ID))
+                      .collect(Collectors.toList());
+      List<Map<String, Object>> batchList = searchFromES(ProjectUtil.EsType.courseBatch.getTypeName(),null,null,batchIds);
+        if (CollectionUtils.isNotEmpty(batchList)) {
+          ProjectCommonException.throwClientErrorException(
+                  ResponseCode.userAlreadyEnrolledCourse,
+                  ResponseCode.userAlreadyEnrolledCourse.getErrorMessage());
+        }
+
+    }
+  }
+
+  private List<Map<String, Object>> searchFromES(String index, String courseId, String userId, List<String> ids){
     Map<String, Object> filter = new HashMap<>();
-    filter.put(JsonKey.USER_ID, userId);
-    filter.put(JsonKey.COURSE_ID, courseId);
-    filter.put(JsonKey.ACTIVE, ProjectUtil.ActiveStatus.ACTIVE.getValue());
     SearchDTO searchDto = new SearchDTO();
+    if(index.equals("user-courses"))
+    {
+      filter.put(JsonKey.USER_ID, userId);
+      filter.put(JsonKey.COURSE_ID, courseId);
+      filter.put(JsonKey.ACTIVE, ProjectUtil.ActiveStatus.ACTIVE.getValue());
+      searchDto.setFields(Arrays.asList(JsonKey.BATCH_ID));
+    }
+    if(index.equals("course-batch")){
+      List<String> status = new ArrayList<>();
+      status.add("1");
+      status.add("0");
+      filter.put(JsonKey.BATCH_ID,ids);
+      filter.put(JsonKey.STATUS,status);
+    }
     searchDto.getAdditionalProperties().put(JsonKey.FILTERS, filter);
-    searchDto.setFields(Arrays.asList(JsonKey.BATCH_ID));
     List<Map<String, Object>> esContents = null;
     Future<Map<String, Object>> resultF =
-            esService.search(searchDto, ProjectUtil.EsType.usercourses.getTypeName());
+            esService.search(searchDto, index);
     Map<String, Object> resultMap =
             (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
     if (MapUtils.isNotEmpty(resultMap)) {
       esContents = (List<Map<String, Object>>) resultMap.get(JsonKey.CONTENT);
     }
-    if(CollectionUtils.isNotEmpty(esContents)) {
-      ProjectLogger.log("User Already Enrolled Course for batches :" + esContents, LoggerEnum.INFO);
-      for (Map<String, Object> userCourse : esContents) {
-        CourseBatch courseBatch =
-                courseBatchDao.readById(
-                        courseId, (String) userCourse.get(JsonKey.BATCH_ID));
-        if (courseBatch.getStatus() == 0 || courseBatch.getStatus() == 1) {
-          ProjectCommonException.throwClientErrorException(
-                  ResponseCode.userAlreadyEnrolledCourse,
-                  ResponseCode.userAlreadyEnrolledCourse.getErrorMessage());
-        }
-      }
-    }
+    return  esContents;
   }
 }
 

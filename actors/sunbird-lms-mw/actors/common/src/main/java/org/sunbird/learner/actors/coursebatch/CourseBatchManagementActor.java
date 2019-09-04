@@ -77,7 +77,6 @@ public class CourseBatchManagementActor extends BaseActor {
   public void onReceive(Request request) throws Throwable {
 
     Util.initializeContext(request, TelemetryEnvKey.BATCH);
-    System.out.println("niharika"+request.getRequestId());
     ExecutionContext.setRequestId(request.getRequestId());
 
     String requestedOperation = request.getOperation();
@@ -124,8 +123,8 @@ public class CourseBatchManagementActor extends BaseActor {
     CourseBatch courseBatch = new ObjectMapper().convertValue(request, CourseBatch.class);
     courseBatch.setStatus(setCourseBatchStatus((String) request.get(JsonKey.START_DATE)));
     String courseId = (String) request.get(JsonKey.COURSE_ID);
-   Map<String, Object> contentDetails = getContentDetails(courseId, headers);
-   courseBatch.setContentDetails(contentDetails, requestedBy);
+    Map<String, Object> contentDetails = getContentDetails(courseId, headers);
+    courseBatch.setContentDetails(contentDetails, requestedBy);
     validateContentOrg(courseBatch.getCreatedFor());
     validateMentors(courseBatch);
     courseBatch.setBatchId(courseBatchId);
@@ -215,9 +214,9 @@ public class CourseBatchManagementActor extends BaseActor {
         courseBatchDao.readById((String) request.get(JsonKey.COURSE_ID), batchId);
     CourseBatch courseBatch = getUpdateCourseBatch(request);
     courseBatch.setUpdatedDate(ProjectUtil.getFormattedDate());
-   // checkBatchStatus(courseBatch);
-    //validateUserPermission(courseBatch, requestedBy);
-    //validateContentOrg(courseBatch.getCreatedFor());
+    checkBatchStatus(courseBatch);
+    validateUserPermission(courseBatch, requestedBy);
+    validateContentOrg(courseBatch.getCreatedFor());
     validateMentors(courseBatch);
     participantsMap = getMentorLists(participantsMap, oldBatch, courseBatch);
     Map<String, Object> courseBatchMap = new ObjectMapper().convertValue(courseBatch, Map.class);

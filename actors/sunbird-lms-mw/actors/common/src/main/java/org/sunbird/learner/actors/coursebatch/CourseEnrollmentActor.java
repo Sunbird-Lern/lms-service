@@ -330,17 +330,25 @@ public class CourseEnrollmentActor extends BaseActor {
 
   private void checkUserEnrollementStatus(String courseId,String userId)
   {
-
-    List<Map<String, Object>> userCoursesList = searchFromES(ProjectUtil.EsType.usercourses.getTypeName(),courseId,userId,null);
+    Map<String, Object> userCoursefilter = new HashMap<>();
+    userCoursefilter.put(JsonKey.USER_ID, userId);
+    userCoursefilter.put(JsonKey.COURSE_ID, courseId);
+    userCoursefilter.put(JsonKey.ACTIVE, ProjectUtil.ActiveStatus.ACTIVE.getValue());
+    List<Map<String, Object>> userCoursesList = searchFromES(ProjectUtil.EsType.usercourses.getTypeName(),userCoursefilter);
     if(CollectionUtils.isNotEmpty(userCoursesList)) {
-      ProjectLogger.log("User Already Enrolled Course for batches :" + userCoursesList, LoggerEnum.INFO);
+      ProjectLogger.log("User Enrolled batches :" + userCoursesList, LoggerEnum.INFO);
       List<String> batchIds =
               userCoursesList
                       .stream()
                       .map(usercourse -> (String) usercourse.get(JsonKey.BATCH_ID))
                       .collect(Collectors.toList());
-      List<Map<String, Object>> batchList = searchFromES(ProjectUtil.EsType.courseBatch.getTypeName(),null,null,batchIds);
+      String status[] = { "0","1" };
+      Map<String, Object> courseBatchfilter = new HashMap<>();
+      courseBatchfilter.put(JsonKey.BATCH_ID,batchIds);
+      courseBatchfilter.put(JsonKey.STATUS,Arrays.asList(status));
+      List<Map<String, Object>> batchList = searchFromES(ProjectUtil.EsType.courseBatch.getTypeName(),courseBatchfilter);
         if (CollectionUtils.isNotEmpty(batchList)) {
+          ProjectLogger.log(" User currently Enrolled for batches :" + batchList, LoggerEnum.INFO);
           ProjectCommonException.throwClientErrorException(
                   ResponseCode.userAlreadyEnrolledCourse,
                   ResponseCode.userAlreadyEnrolledCourse.getErrorMessage());
@@ -349,23 +357,10 @@ public class CourseEnrollmentActor extends BaseActor {
     }
   }
 
-  private List<Map<String, Object>> searchFromES(String index, String courseId, String userId, List<String> ids){
-    Map<String, Object> filter = new HashMap<>();
+  private List<Map<String, Object>> searchFromES(String index, Map<String, Object> filter){
+
     SearchDTO searchDto = new SearchDTO();
-    if(index.equals("user-courses"))
-    {
-      filter.put(JsonKey.USER_ID, userId);
-      filter.put(JsonKey.COURSE_ID, courseId);
-      filter.put(JsonKey.ACTIVE, ProjectUtil.ActiveStatus.ACTIVE.getValue());
-      searchDto.setFields(Arrays.asList(JsonKey.BATCH_ID));
-    }
-    if(index.equals("course-batch")){
-      List<String> status = new ArrayList<>();
-      status.add("1");
-      status.add("0");
-      filter.put(JsonKey.BATCH_ID,ids);
-      filter.put(JsonKey.STATUS,status);
-    }
+    searchDto.setFields(Arrays.asList(JsonKey.BATCH_ID));
     searchDto.getAdditionalProperties().put(JsonKey.FILTERS, filter);
     List<Map<String, Object>> esContents = null;
     Future<Map<String, Object>> resultF =

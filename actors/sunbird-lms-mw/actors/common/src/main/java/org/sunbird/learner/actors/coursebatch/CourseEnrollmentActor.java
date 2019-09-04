@@ -4,15 +4,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.core.BaseActor;
 import org.sunbird.actor.router.ActorConfig;
+import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.exception.ProjectCommonException;
+import org.sunbird.common.factory.EsClientFactory;
+import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
@@ -26,6 +27,7 @@ import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.dto.SearchDTO;
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao;
 import org.sunbird.learner.actors.coursebatch.dao.UserCoursesDao;
 import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl;
@@ -36,6 +38,7 @@ import org.sunbird.learner.util.Util;
 import org.sunbird.models.course.batch.CourseBatch;
 import org.sunbird.models.user.courses.UserCourses;
 import org.sunbird.telemetry.util.TelemetryUtil;
+import scala.concurrent.Future;
 
 @ActorConfig(
   tasks = {"enrollCourse", "unenrollCourse"},
@@ -48,6 +51,7 @@ public class CourseEnrollmentActor extends BaseActor {
 
   private CourseBatchDao courseBatchDao = new CourseBatchDaoImpl();
   private UserCoursesDao userCourseDao = UserCoursesDaoImpl.getInstance();
+  private static ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private ObjectMapper mapper = new ObjectMapper();
 
   @Override
@@ -82,7 +86,10 @@ public class CourseEnrollmentActor extends BaseActor {
         courseBatchDao.readById(
             (String) courseMap.get(JsonKey.COURSE_ID), (String) courseMap.get(JsonKey.BATCH_ID));
     validateCourseBatch(
-        courseBatch, courseMap, (String) actorMessage.getContext().get(JsonKey.REQUESTED_BY), ActorOperations.ENROLL_COURSE.getValue());
+        courseBatch,
+        courseMap,
+        (String) actorMessage.getContext().get(JsonKey.REQUESTED_BY),
+        ActorOperations.ENROLL_COURSE.getValue());
 
     UserCourses userCourseResult =
         userCourseDao.read(
@@ -161,7 +168,10 @@ public class CourseEnrollmentActor extends BaseActor {
         courseBatchDao.readById(
             (String) request.get(JsonKey.COURSE_ID), (String) request.get(JsonKey.BATCH_ID));
     validateCourseBatch(
-        courseBatch, request, (String) actorMessage.getContext().get(JsonKey.REQUESTED_BY), ActorOperations.UNENROLL_COURSE.getValue());
+        courseBatch,
+        request,
+        (String) actorMessage.getContext().get(JsonKey.REQUESTED_BY),
+        ActorOperations.UNENROLL_COURSE.getValue());
     UserCourses userCourseResult =
         userCourseDao.read(
             (String) request.get(JsonKey.BATCH_ID), (String) request.get(JsonKey.USER_ID));
@@ -247,7 +257,10 @@ public class CourseEnrollmentActor extends BaseActor {
    * @Params
    */
   private void validateCourseBatch(
-      CourseBatch courseBatchDetails, Map<String, Object> request, String requestedBy, String actorOperation) {
+      CourseBatch courseBatchDetails,
+      Map<String, Object> request,
+      String requestedBy,
+      String actorOperation) {
 
     if (ProjectUtil.isNull(courseBatchDetails)) {
       ProjectCommonException.throwClientErrorException(
@@ -279,8 +292,8 @@ public class CourseEnrollmentActor extends BaseActor {
         courseBatchEnrollmentEndDate = format.parse(courseBatchDetails.getEnrollmentEndDate());
       }
       if (ActorOperations.ENROLL_COURSE.getValue().equals(actorOperation)
-              && courseBatchEnrollmentEndDate != null
-              && courseBatchEnrollmentEndDate.before(todaydate)) {
+          && courseBatchEnrollmentEndDate != null
+          && courseBatchEnrollmentEndDate.before(todaydate)) {
         ProjectLogger.log(
             "CourseEnrollmentActor validateCourseBatch Enrollment Date has ended.",
             LoggerEnum.INFO.name());
@@ -318,5 +331,29 @@ public class CourseEnrollmentActor extends BaseActor {
     UserCoursesService.sync(
         userCourseUpdateAttributes, userCourses.getBatchId(), userCourses.getUserId());
     return result;
+  }
+
+  private void checkUserEnrollementStatus(String courseId, String userId) {
+    Map<String, Object> filter = new HashMap<>();
+    filter.put(JsonKey.USER_ID, userId);
+    filter.put(JsonKey.COURSE_ID, courseId);
+    filter.put(JsonKey.ACTIVE, ProjectUtil.ActiveStatus.ACTIVE.getValue());
+    SearchDTO searchDto = new SearchDTO();
+    searchDto.getAdditionalProperties().put(JsonKey.FILTERS, filter);
+    searchDto.setFields(Arrays.asList(JsonKey.BATCH_ID));
+    List<Map<String, Object>> esContents = null;
+    Future<Map<String, Object>> resultF =
+        esService.search(searchDto, ProjectUtil.EsType.usercourses.getTypeName());
+    Map<String, Object> resultMap =
+        (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
+    if (MapUtils.isNotEmpty(resultMap)) {
+      esContents = (List<Map<String, Object>>) resultMap.get(JsonKey.CONTENT);
+    }
+    if (CollectionUtils.isNotEmpty(esContents)) {
+      ProjectLogger.log("User Already Enrolled Course for batches :" + esContents, LoggerEnum.INFO);
+      ProjectCommonException.throwClientErrorException(
+          ResponseCode.userAlreadyEnrolledCourse,
+          ResponseCode.userAlreadyEnrolledCourse.getErrorMessage());
+    }
   }
 }

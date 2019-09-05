@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.stringtemplate.v4.ST;
 import org.sunbird.actor.core.BaseActor;
 import org.sunbird.actor.router.ActorConfig;
 import org.sunbird.common.ElasticSearchHelper;
@@ -56,7 +55,6 @@ public class CourseEnrollmentActor extends BaseActor {
   private UserCoursesDao userCourseDao = UserCoursesDaoImpl.getInstance();
   private static ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private ObjectMapper mapper = new ObjectMapper();
-  private SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 
   @Override
   public void onReceive(Request request) throws Throwable {
@@ -276,6 +274,7 @@ public class CourseEnrollmentActor extends BaseActor {
           ResponseCode.invalidCourseBatchId, ResponseCode.invalidCourseBatchId.getErrorMessage());
     }
     try {
+      SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
       Date todaydate = format.parse(format.format(new Date()));
       // there might be chance end date is not present
       Date courseBatchEndDate = null;
@@ -345,6 +344,7 @@ public class CourseEnrollmentActor extends BaseActor {
       Map<String, Object> courseBatchfilter = new HashMap<>();
       courseBatchfilter.put(JsonKey.BATCH_ID,batchIds);
       courseBatchfilter.put(JsonKey.STATUS,Arrays.asList(ProgressStatus.NOT_STARTED.getValue(), ProgressStatus.STARTED.getValue()) );
+      courseBatchfilter.put(JsonKey.ENROLMENTTYPE,JsonKey.OPEN);
       List<Map<String, Object>> batchList = searchFromES(ProjectUtil.EsType.courseBatch.getTypeName(),courseBatchfilter, Arrays.asList(JsonKey.BATCH_ID));
         if (CollectionUtils.isNotEmpty(batchList)) {
           ProjectLogger.log(" User currently Enrolled for batches :" + batchList, LoggerEnum.INFO);

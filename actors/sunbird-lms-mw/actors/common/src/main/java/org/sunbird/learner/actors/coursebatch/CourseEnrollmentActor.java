@@ -344,7 +344,7 @@ public class CourseEnrollmentActor extends BaseActor {
       Map<String, Object> courseBatchfilter = new HashMap<>();
       courseBatchfilter.put(JsonKey.BATCH_ID,batchIds);
       courseBatchfilter.put(JsonKey.STATUS,Arrays.asList(ProgressStatus.NOT_STARTED.getValue(), ProgressStatus.STARTED.getValue()) );
-      courseBatchfilter.put(JsonKey.ENROLMENTTYPE,JsonKey.OPEN);
+      courseBatchfilter.put(JsonKey.ENROLLMENT_TYPE,JsonKey.OPEN);
       List<Map<String, Object>> batchList = searchFromES(ProjectUtil.EsType.courseBatch.getTypeName(),courseBatchfilter, Arrays.asList(JsonKey.BATCH_ID));
         if (CollectionUtils.isNotEmpty(batchList)) {
           ProjectLogger.log(" User currently Enrolled for batches :" + batchList, LoggerEnum.INFO);

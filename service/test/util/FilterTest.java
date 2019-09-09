@@ -11,8 +11,11 @@ import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import play.mvc.Http;
 import play.mvc.Http.RequestBuilder;
 import play.mvc.Result;
+
+import java.util.Arrays;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(System.class)
@@ -26,10 +29,10 @@ public class FilterTest extends BaseControllerTest {
   @Test
   public void testApiResponseWithGzipDisabledSuccess() {
     mockSystemSetting(false);
-    headerMap.put("Accept-Encoding", new String[] {"gzip"});
+    headerMap.put("Accept-Encoding", Arrays.asList("gzip"));
     RequestBuilder req = new RequestBuilder().uri("/v1/user/type/list").method("GET");
-    req.headers(headerMap);
-    Result result = route(req);
+    req.headers(new Http.Headers(headerMap));
+    Result result = route(app, req);
     assertEquals("application/json", result.contentType());
   }
 
@@ -37,8 +40,8 @@ public class FilterTest extends BaseControllerTest {
   public void testApiResponseWithGzipDisabledSuccessForGzippedResponse() {
     mockSystemSetting(false);
     RequestBuilder req = new RequestBuilder().uri("/v1/user/type/list").method("GET");
-    req.headers(headerMap);
-    Result result = route(req);
+    req.headers(new Http.Headers(headerMap));
+    Result result = route(app, req);
     assertEquals("application/json", result.contentType());
   }
 
@@ -46,8 +49,8 @@ public class FilterTest extends BaseControllerTest {
   public void testApiResponseFailureGzipEnabledAndRequestedGzipResponse() {
     mockSystemSetting(true);
     RequestBuilder req = new RequestBuilder().uri("/v1/user/type/list").method("GET");
-    req.headers(headerMap);
-    Result result = route(req);
+    req.headers(new Http.Headers(headerMap));
+    Result result = route(app, req);
     assertEquals("application/json", result.contentType());
   }
 

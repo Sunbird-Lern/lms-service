@@ -1,0 +1,70 @@
+package modules;
+
+import com.typesafe.config.Config;
+import controllers.BaseController;
+import org.sunbird.common.exception.ProjectCommonException;
+import org.sunbird.common.models.response.Response;
+import org.sunbird.common.models.util.LoggerEnum;
+import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.responsecode.ResponseCode;
+import play.Environment;
+import play.api.OptionalSourceMapper;
+import play.api.routing.Router;
+import play.http.DefaultHttpErrorHandler;
+import play.libs.Json;
+import play.mvc.Http;
+import play.mvc.Result;
+import play.mvc.Results;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.inject.Singleton;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+
+@Singleton
+public class ErrorHandler extends DefaultHttpErrorHandler {
+
+    @Inject
+    public ErrorHandler(Config config, Environment environment, OptionalSourceMapper sourceMapper, Provider<Router> routes) {
+        super(config, environment, sourceMapper, routes);
+    }
+
+    @Override
+    public CompletionStage<Result> onServerError(Http.RequestHeader request, Throwable t) {
+        ProjectLogger.log(
+                "Global: onError called for path = " + request.path(), LoggerEnum.INFO.name());
+        Response response = null;
+        ProjectCommonException commonException = null;
+        if (t instanceof ProjectCommonException) {
+            ProjectLogger.log(
+                    "Global:onError: ProjectCommonException occurred for path = " + request.path(),
+                    LoggerEnum.INFO.name());
+            commonException = (ProjectCommonException) t;
+            response =
+                    BaseController.createResponseOnException(
+                            request.path(), request.method(), (ProjectCommonException) t);
+        } else if (t instanceof akka.pattern.AskTimeoutException) {
+            ProjectLogger.log(
+                    "Global:onError: AskTimeoutException occurred for path = " + request.path(),
+                    LoggerEnum.INFO.name());
+            commonException =
+                    new ProjectCommonException(
+                            ResponseCode.actorConnectionError.getErrorCode(),
+                            ResponseCode.actorConnectionError.getErrorMessage(),
+                            ResponseCode.SERVER_ERROR.getResponseCode());
+        } else {
+            ProjectLogger.log(
+                    "Global:onError: Unknown exception occurred for path = " + request.path(),
+                    LoggerEnum.INFO.name());
+            commonException =
+                    new ProjectCommonException(
+                            ResponseCode.internalError.getErrorCode(),
+                            ResponseCode.internalError.getErrorMessage(),
+                            ResponseCode.SERVER_ERROR.getResponseCode());
+        }
+        response =
+                BaseController.createResponseOnException(request.path(), request.method(), commonException);
+        return CompletableFuture.completedFuture(Results.internalServerError(Json.toJson(response)));
+    }
+}

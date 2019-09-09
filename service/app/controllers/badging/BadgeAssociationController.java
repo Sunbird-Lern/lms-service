@@ -7,48 +7,53 @@ import org.sunbird.common.models.util.BadgingActorOperations;
 import org.sunbird.common.models.util.ProjectUtil.EsType;
 import org.sunbird.common.request.BaseRequestValidator;
 import org.sunbird.common.request.Request;
-import play.libs.F.Promise;
+import java.util.concurrent.CompletionStage;
+
+import play.mvc.Http;
 import play.mvc.Result;
 
 public class BadgeAssociationController extends BaseController {
 
-  public Promise<Result> createAssociation() {
+  public CompletionStage<Result> createAssociation(Http.Request httpRequest) {
     return handleRequest(
         BadgingActorOperations.CREATE_BADGE_ASSOCIATION.getValue(),
-        request().body().asJson(),
+        httpRequest.body().asJson(),
         (request) -> {
           new BadgeAssociationValidator().validateCreateBadgeAssociationRequest((Request) request);
           return null;
         },
         null,
         null,
-        true);
+        true,
+            httpRequest);
   }
 
-  public Promise<Result> removeAssociation() {
+  public CompletionStage<Result> removeAssociation(Http.Request httpRequest) {
     return handleRequest(
         BadgingActorOperations.REMOVE_BADGE_ASSOCIATION.getValue(),
-        request().body().asJson(),
+        httpRequest.body().asJson(),
         (request) -> {
           new BadgeAssociationValidator().validateRemoveBadgeAssociationRequest((Request) request);
           return null;
         },
         null,
         null,
-        true);
+        true,
+            httpRequest);
   }
 
-  public Promise<Result> searchAssociation() {
+  public CompletionStage<Result> searchAssociation(Http.Request httpRequest) {
     return handleSearchRequest(
         ActorOperations.COMPOSITE_SEARCH.getValue(),
-        request().body().asJson(),
+        httpRequest.body().asJson(),
         request -> {
           new BaseRequestValidator().validateSearchRequest((Request) request);
           return null;
         },
         null,
         null,
-        getAllRequestHeaders(request()),
-        EsType.badgeassociations.getTypeName());
+        getAllRequestHeaders(httpRequest),
+        EsType.badgeassociations.getTypeName(),
+            httpRequest);
   }
 }

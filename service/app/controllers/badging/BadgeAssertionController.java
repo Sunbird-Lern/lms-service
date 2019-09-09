@@ -11,8 +11,10 @@ import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
-import play.libs.F.Promise;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 import play.mvc.BodyParser;
+import play.mvc.Http;
 import play.mvc.Result;
 
 /**
@@ -29,11 +31,11 @@ public class BadgeAssertionController extends BaseController {
    * "recipientEmail":"email","evidence":"url , basically it is badge class public url"
    * ,"notify":boolean}
    *
-   * @return Promise<Result>
+   * @return CompletionStage<Result>
    */
-  public Promise<Result> issueBadge() {
+  public CompletionStage<Result> issueBadge(Http.Request httpRequest) {
     try {
-      JsonNode requestData = request().body().asJson();
+      JsonNode requestData = httpRequest.body().asJson();
       ProjectLogger.log(" Issue badge method called = " + requestData, LoggerEnum.DEBUG.name());
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
       BadgeAssertionValidator.validateBadgeAssertion(reqObj);
@@ -42,22 +44,21 @@ public class BadgeAssertionController extends BaseController {
               reqObj,
               ExecutionContext.getRequestId(),
               BadgingActorOperations.CREATE_BADGE_ASSERTION.getValue(),
-              ctx().flash().get(JsonKey.USER_ID),
+              httpRequest.flash().get(JsonKey.USER_ID),
               getEnvironment());
-      return actorResponseHandler(getActorRef(), reqObj, timeout, null, request());
+      return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
-      return Promise.<Result>pure(createCommonExceptionResponse(e, request()));
+      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
   }
 
   /**
    * This controller will provide assertion details.based on assertionSlug.
    *
-   * @param badgeSlug String
-   * @param assertionSlug
-   * @return Promise<Result>
+   * @param assertionId String
+   * @return CompletionStage<Result>
    */
-  public Promise<Result> getAssertionDetails(String assertionId) {
+  public CompletionStage<Result> getAssertionDetails(String assertionId, Http.Request httpRequest) {
     try {
       ProjectLogger.log(
           " get badge assertion details api called = " + assertionId, LoggerEnum.DEBUG.name());
@@ -69,22 +70,22 @@ public class BadgeAssertionController extends BaseController {
               reqObj,
               ExecutionContext.getRequestId(),
               BadgingActorOperations.GET_BADGE_ASSERTION.getValue(),
-              ctx().flash().get(JsonKey.USER_ID),
+              httpRequest.flash().get(JsonKey.USER_ID),
               getEnvironment());
-      return actorResponseHandler(getActorRef(), reqObj, timeout, null, request());
+      return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
-      return Promise.<Result>pure(createCommonExceptionResponse(e, request()));
+      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
   }
 
   /**
    * This controller will provide list of assertions based on issuerSlug,badgeSlug and assertionSlug
    *
-   * @return Promise<Result>
+   * @return CompletionStage<Result>
    */
-  public Promise<Result> getAssertionList() {
+  public CompletionStage<Result> getAssertionList(Http.Request httpRequest) {
     try {
-      JsonNode requestData = request().body().asJson();
+      JsonNode requestData = httpRequest.body().asJson();
       ProjectLogger.log(" get assertion list api called = " + requestData, LoggerEnum.DEBUG.name());
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
       BadgeAssertionValidator.validateGetAssertionList(reqObj);
@@ -93,25 +94,23 @@ public class BadgeAssertionController extends BaseController {
               reqObj,
               ExecutionContext.getRequestId(),
               BadgingActorOperations.GET_BADGE_ASSERTION_LIST.getValue(),
-              ctx().flash().get(JsonKey.USER_ID),
+              httpRequest.flash().get(JsonKey.USER_ID),
               getEnvironment());
-      return actorResponseHandler(getActorRef(), reqObj, timeout, null, request());
+      return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
-      return Promise.<Result>pure(createCommonExceptionResponse(e, request()));
+      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
   }
 
   /**
    * This controller will revoke user assertion based on issuerSlug, badgeSlug and assertionSlug
    *
-   * @param badgeSlug String
-   * @param assertionSlug
-   * @return Promise<Result>
+   * @return CompletionStage<Result>
    */
   @BodyParser.Of(BodyParser.Json.class)
-  public Promise<Result> revokeAssertion() {
+  public CompletionStage<Result> revokeAssertion(Http.Request httpRequest) {
     try {
-      JsonNode requestData = request().body().asJson();
+      JsonNode requestData = httpRequest.body().asJson();
       ProjectLogger.log(" Revoke badge method called = " + requestData, LoggerEnum.DEBUG.name());
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
       BadgeAssertionValidator.validateRevokeAssertion(reqObj);
@@ -120,11 +119,11 @@ public class BadgeAssertionController extends BaseController {
               reqObj,
               ExecutionContext.getRequestId(),
               BadgingActorOperations.REVOKE_BADGE.getValue(),
-              ctx().flash().get(JsonKey.USER_ID),
+              httpRequest.flash().get(JsonKey.USER_ID),
               getEnvironment());
-      return actorResponseHandler(getActorRef(), reqObj, timeout, null, request());
+      return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
-      return Promise.<Result>pure(createCommonExceptionResponse(e, request()));
+      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
   }
 }

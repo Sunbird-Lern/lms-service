@@ -11,7 +11,10 @@ import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.LearnerStateRequestValidator;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.request.RequestValidator;
-import play.libs.F.Promise;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+
+import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Results;
 
@@ -30,15 +33,15 @@ public class LearnerController extends BaseController {
      *
      * @return Result
      */
-    public Promise<Result> getContentState() {
+    public CompletionStage<Result> getContentState(Http.Request httpRequest) {
         try {
-            JsonNode requestJson = request().body().asJson();
-            Request request = createAndInitRequest(ActorOperations.GET_CONTENT.getValue(), requestJson);
+            JsonNode requestJson = httpRequest.body().asJson();
+            Request request = createAndInitRequest(ActorOperations.GET_CONTENT.getValue(), requestJson, httpRequest);
             validator.validateGetContentState(request);
             request = transformUserId(request);
-            return actorResponseHandler(getActorRef(), request, timeout, JsonKey.CONTENT_LIST, request());
+            return actorResponseHandler(getActorRef(), request, timeout, JsonKey.CONTENT_LIST, httpRequest);
         } catch (Exception e) {
-            return Promise.<Result>pure(createCommonExceptionResponse(e, request()));
+            return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
         }
     }
 
@@ -47,9 +50,9 @@ public class LearnerController extends BaseController {
      *
      * @return Result
      */
-    public Promise<Result> updateContentState() {
+    public CompletionStage<Result> updateContentState(Http.Request httpRequest) {
         try {
-            JsonNode requestData = request().body().asJson();
+            JsonNode requestData = httpRequest.body().asJson();
             ProjectLogger.log(" updateContentState request data=" + requestData, LoggerEnum.INFO.name());
             Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
             RequestValidator.validateUpdateContent(reqObj);
@@ -59,12 +62,12 @@ public class LearnerController extends BaseController {
             reqObj.setEnv(getEnvironment());
             HashMap<String, Object> innerMap = new HashMap<>();
             innerMap.put(JsonKey.CONTENTS, reqObj.getRequest().get(JsonKey.CONTENTS));
-            innerMap.put(JsonKey.REQUESTED_BY, ctx().flash().get(JsonKey.USER_ID));
+            innerMap.put(JsonKey.REQUESTED_BY, httpRequest.flash().get(JsonKey.USER_ID));
             innerMap.put(JsonKey.USER_ID, reqObj.getRequest().get(JsonKey.USER_ID));
             reqObj.setRequest(innerMap);
-            return actorResponseHandler(getActorRef(), reqObj, timeout, null, request());
+            return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
         } catch (Exception e) {
-            return Promise.<Result>pure(createCommonExceptionResponse(e, request()));
+            return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
         }
     }
 
@@ -77,13 +80,9 @@ public class LearnerController extends BaseController {
      * @return
      */
     public Result preflight(String all) {
-        response().setHeader("Access-Control-Allow-Origin", "*");
-        response().setHeader("Allow", "*");
-        response().setHeader("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS");
-        response()
-                .setHeader(
-                        "Access-Control-Allow-Headers",
-                        "Origin, X-Requested-With, Content-Type, Accept, Referer, User-Agent,X-Consumer-ID,cid,ts,X-Device-ID,X-Authenticated-Userid,X-msgid,id,X-Access-TokenId");
-        return ok();
+        return ok().withHeader("Access-Control-Allow-Origin", "*")
+                .withHeader("Allow", "*")
+                .withHeader("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS")
+                .withHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Referer, User-Agent,X-Consumer-ID,cid,ts,X-Device-ID,X-Authenticated-Userid,X-msgid,id,X-Access-TokenId");
     }
 }

@@ -53,6 +53,7 @@ public class LearnerStateUpdateActor extends BaseActor {
   private Util.DbInfo userCourseDBInfo = Util.dbInfoMap.get(JsonKey.LEARNER_COURSE_DB);
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private SimpleDateFormat simpleDateFormat = ProjectUtil.getDateFormatter();
+  private ObjectMapper mapper = new ObjectMapper();
 
   private enum ContentUpdateResponseKeys {
     SUCCESS_CONTENTS,
@@ -74,7 +75,7 @@ public class LearnerStateUpdateActor extends BaseActor {
       String userId = (String) request.getRequest().get(JsonKey.USER_ID);
       List<Map<String, Object>> assessments =
               (List<Map<String, Object>>) request.getRequest().get(JsonKey.ASSESSMENT_EVENTS);
-      if (null != assessments && !assessments.isEmpty()) {
+      if (!CollectionUtils.isEmpty(assessments)) {
         assessments.stream().filter(x -> StringUtils.isNotBlank((String) x.get("batchId"))).forEach(
                 data -> {
                   try {
@@ -418,7 +419,6 @@ public class LearnerStateUpdateActor extends BaseActor {
   }
 
   private void syncAssessmentData(Map<String, Object> assessmentData) throws Exception {
-    ObjectMapper mapper = new ObjectMapper();
     String topic = ProjectUtil.getConfigValue("kafka_assessment_topic");
     if (StringUtils.isNotBlank(topic)) {
       KafkaClient.send(mapper.writeValueAsString(assessmentData), topic);

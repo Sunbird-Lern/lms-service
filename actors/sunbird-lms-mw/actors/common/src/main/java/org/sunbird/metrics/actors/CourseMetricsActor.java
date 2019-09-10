@@ -210,17 +210,6 @@ public class CourseMetricsActor extends BaseMetricsActor {
     return resultMap;
   }
 
-  private void formatEnrolledOn(Map<String, Object> batchMap) {
-    String timeStamp = (String) batchMap.get(JsonKey.LAST_ACCESSED_ON);
-    try {
-      SimpleDateFormat sdf = new SimpleDateFormat(ProjectUtil.ELASTIC_DATE_FORMAT);
-      Date parsedDate = sdf.parse(timeStamp);
-      batchMap.put(JsonKey.LAST_ACCESSED_ON, ProjectUtil.formatDate(parsedDate));
-    } catch (Exception e) {
-      ProjectLogger.log("formatEnrolledOn : " + e.getMessage(), LoggerEnum.INFO);
-    }
-  }
-
   private Map<String, Object> validateAndGetCourseBatch(String batchId) {
     if (StringUtils.isBlank(batchId)) {
       ProjectLogger.log(

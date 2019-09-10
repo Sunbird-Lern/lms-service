@@ -1,7 +1,5 @@
 package org.sunbird.builder.mocker;
 
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.powermock.api.mockito.PowerMockito;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.inf.ElasticSearchService;
@@ -17,7 +15,6 @@ public class MockerBuilder {
     Mocker<CassandraOperation> cassandraMocker;
     Mocker<ElasticSearchService> esMocker;
     Mocker<UserOrgService> userOrgMocker;
-    CloseableHttpClient client;
 
     public MockersGroup withCassandraMock(Mocker<CassandraOperation> mocker) {
       cassandraMocker = mocker;
@@ -61,19 +58,6 @@ public class MockerBuilder {
 
     public UserOrgService getUserOrgMockerService() {
       return userOrgMocker.getServiceMock();
-    }
-
-    public MockersGroup withHttpClientMock() {
-      PowerMockito.mockStatic(HttpClientBuilder.class);
-      HttpClientBuilder httpClientBuilder = PowerMockito.mock(HttpClientBuilder.class);
-      client = PowerMockito.mock(CloseableHttpClient.class);
-      PowerMockito.when(HttpClientBuilder.create()).thenReturn(httpClientBuilder);
-      PowerMockito.when(httpClientBuilder.build()).thenReturn(client);
-      return this;
-    }
-
-    public CloseableHttpClient getCloseableHttpClient() {
-      return client;
     }
   }
 }

@@ -11,10 +11,11 @@ import org.sunbird.common.request.Request;
 /** @author rahul */
 public class SunbirdApplicationActorTest {
 
-  private ActorSystem system = ActorSystem.create("system");
+  private ActorSystem system;
   private Props props;
 
   public void init(Class clazz) {
+    system = ActorSystem.create("system");
     props = Props.create(clazz);
   }
 

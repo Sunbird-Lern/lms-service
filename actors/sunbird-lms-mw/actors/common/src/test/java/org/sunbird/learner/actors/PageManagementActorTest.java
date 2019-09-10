@@ -552,6 +552,7 @@ public class PageManagementActorTest {
     assertTrue(null != res.get(JsonKey.RESPONSE));
   }
 
+  @Ignore
   @Test
   public void testGetPageData() throws Exception {
 

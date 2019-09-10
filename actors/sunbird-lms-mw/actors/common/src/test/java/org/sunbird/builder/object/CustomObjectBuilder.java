@@ -40,6 +40,15 @@ public class CustomObjectBuilder {
     return new CustomObjectWrapper<Map<String, Object>>(userMap);
   }
 
+  public static CustomObjectWrapper<Map<String, Object>> getRandomOrg() {
+    Map<String, Object> orgMap = new HashMap<>();
+    orgMap.put(JsonKey.ID, "randomOrgId");
+    orgMap.put(JsonKey.CHANNEL, "randomChannel");
+    orgMap.put(JsonKey.ROOT_ORG_ID, "randomOrgId");
+    orgMap.put(JsonKey.IS_ROOT_ORG, true);
+    return new CustomObjectWrapper<Map<String, Object>>(orgMap);
+  }
+
   public static CustomObjectWrapper<Map<String, Object>> getRandomCourse() {
     Map<String, Object> courseMap = new HashMap<>();
     courseMap.put(JsonKey.IDENTIFIER, "randomCourseId");
@@ -49,7 +58,6 @@ public class CustomObjectBuilder {
     courseMapList.add(courseMap);
     Map<String, Object> courseMapContent = new HashMap<>();
     courseMapContent.put(JsonKey.CONTENTS, courseMapList);
-    System.out.println("returning=>" + courseMapContent);
     return new CustomObjectWrapper<Map<String, Object>>(courseMapContent);
   }
 
@@ -57,7 +65,23 @@ public class CustomObjectBuilder {
     return new CustomObjectWrapper<Map<String, Object>>(new HashMap<>());
   }
 
-  public static void getHttpResponse() {}
+  public static CustomObjectWrapper<List<Map<String, Object>>> getEmptyContentList() {
+    return new CustomObjectWrapper<List<Map<String, Object>>>(new ArrayList<>());
+  }
+
+  public static CustomObjectWrapper<List<Map<String, Object>>> getRandomUsersWithIds(
+      List<String> ids, String rootOrgId) {
+    List<Map<String, Object>> userList = new ArrayList<>();
+    for (String id : ids) {
+      Map<String, Object> userMap = new HashMap<>();
+      userMap.put(JsonKey.ID, id);
+      userMap.put(JsonKey.IDENTIFIER, id);
+      userMap.put(JsonKey.FIRST_NAME, "Random");
+      userMap.put(JsonKey.ROOT_ORG_ID, rootOrgId == null ? "randomRootOrgId" : rootOrgId);
+      userList.add(userMap);
+    }
+    return new CustomObjectWrapper<List<Map<String, Object>>>(userList);
+  }
 
   public static CustomObjectWrapper<List<Map<String, Object>>> getRandomCourseBatchStats(int size) {
     List<Map<String, Object>> userList = new ArrayList<>();
@@ -117,6 +141,7 @@ public class CustomObjectBuilder {
       courseBatch.put(JsonKey.COURSE_ID, "someCourseId");
       courseBatch.put(JsonKey.COURSE_CREATED_FOR, Arrays.asList("randomOrgId"));
       courseBatch.put(JsonKey.MENTORS, Arrays.asList("randomMentorId"));
+      courseBatch.put(JsonKey.CREATED_BY, "randomUserId");
       withStatus(1);
       return this;
     }
@@ -226,6 +251,16 @@ public class CustomObjectBuilder {
         userCourses.put(JsonKey.COMPLETED_PERCENT, 100);
       }
       userCourses.put(JsonKey.STATUS, status);
+      return this;
+    }
+
+    public UserCoursesBuilder wrapToList() {
+      userCoursesList.add(userCourses);
+      return this;
+    }
+
+    public UserCoursesBuilder refreshUserCourses() {
+      userCourses = new HashMap<>();
       return this;
     }
 

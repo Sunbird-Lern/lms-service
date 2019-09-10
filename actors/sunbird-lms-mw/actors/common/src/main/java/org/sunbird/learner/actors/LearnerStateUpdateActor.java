@@ -4,6 +4,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -27,6 +29,7 @@ import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.kafka.client.InstructionEventGenerator;
+import org.sunbird.kafka.client.KafkaClient;
 import org.sunbird.learner.constants.CourseJsonKey;
 import org.sunbird.learner.constants.InstructionEvent;
 import org.sunbird.learner.util.Util;
@@ -69,6 +72,19 @@ public class LearnerStateUpdateActor extends BaseActor {
 
     if (request.getOperation().equalsIgnoreCase(ActorOperations.ADD_CONTENT.getValue())) {
       String userId = (String) request.getRequest().get(JsonKey.USER_ID);
+      List<Map<String, Object>> assessments =
+              (List<Map<String, Object>>) request.getRequest().get(JsonKey.ASSESSMENT_EVENTS);
+      if (null != assessments && !assessments.isEmpty()) {
+        assessments.stream().filter(x -> StringUtils.isNotBlank((String) x.get("batchId"))).forEach(
+                data -> {
+                  try {
+                    syncAssessmentData(data);
+                  }
+                  catch (Exception e) {
+                    ProjectLogger.log("Error syncing assessment data: " + e.getMessage(), e);
+                  }
+                });
+      }
       List<Map<String, Object>> contentList =
           (List<Map<String, Object>>) request.getRequest().get(JsonKey.CONTENTS);
       if (CollectionUtils.isNotEmpty(contentList)) {
@@ -399,5 +415,18 @@ public class LearnerStateUpdateActor extends BaseActor {
         });
     String topic = ProjectUtil.getConfigValue("kafka_topics_instruction");
     InstructionEventGenerator.pushInstructionEvent(topic, data);
+  }
+
+  private void syncAssessmentData(Map<String, Object> assessmentData) throws Exception {
+    ObjectMapper mapper = new ObjectMapper();
+    String topic = ProjectUtil.getConfigValue("kafka_assessment_topic");
+    if (StringUtils.isNotBlank(topic)) {
+      KafkaClient.send(mapper.writeValueAsString(assessmentData), topic);
+    } else {
+      throw new ProjectCommonException(
+              "BE_JOB_REQUEST_EXCEPTION",
+              "Invalid topic id.",
+              ResponseCode.CLIENT_ERROR.getResponseCode());
+    }
   }
 }

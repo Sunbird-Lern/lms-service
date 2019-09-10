@@ -36,6 +36,7 @@ import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.kafka.client.InstructionEventGenerator;
+import org.sunbird.kafka.client.KafkaClient;
 import org.sunbird.learner.util.ContentSearchUtil;
 import scala.concurrent.Promise;
 
@@ -46,7 +47,8 @@ import scala.concurrent.Promise;
   ElasticSearchHelper.class,
   ElasticSearchRestHighImpl.class,
   EsClientFactory.class,
-  InstructionEventGenerator.class
+  InstructionEventGenerator.class,
+  KafkaClient.class
 })
 @PowerMockIgnore({"javax.management.*"})
 public class LearnerStateUpdateActorTest {
@@ -75,6 +77,7 @@ public class LearnerStateUpdateActorTest {
     PowerMockito.mockStatic(ElasticSearchHelper.class);
     PowerMockito.mockStatic(EsClientFactory.class);
     PowerMockito.mockStatic(InstructionEventGenerator.class);
+    PowerMockito.mockStatic(KafkaClient.class);
     esService = mock(ElasticSearchRestHighImpl.class);
     when(EsClientFactory.getInstance(Mockito.anyString())).thenReturn(esService);
     when(ServiceFactory.getInstance()).thenReturn(cassandraOperation);
@@ -96,6 +99,13 @@ public class LearnerStateUpdateActorTest {
             "pushInstructionEvent",
             Mockito.anyString(),
             Mockito.anyMap());
+
+    PowerMockito.doNothing()
+        .when(
+            KafkaClient.class,
+            "send",
+            Mockito.anyString(),
+            Mockito.anyString());
 
     mockEsUtilforCourseBatch();
   }
@@ -160,6 +170,7 @@ public class LearnerStateUpdateActorTest {
     req.setRequest(innerMap);
     subject.tell(req, probe.getRef());
     Response response = probe.expectMsgClass(duration("10 second"), Response.class);
+    System.out.println(response.getResult());
     Assert.assertNotNull(response);
   }
 
@@ -256,5 +267,38 @@ public class LearnerStateUpdateActorTest {
     content.put(JsonKey.BATCH_ID, batchId);
     content.put(JsonKey.PROGRESS, new BigInteger("100"));
     return content;
+  }
+
+  @Test
+  public void pushAssessmentsDataTest() {
+
+    TestKit probe = new TestKit(system);
+    ActorRef subject = system.actorOf(props);
+    Request req = new Request();
+    List<Map<String, Object>> contentList = new ArrayList<Map<String, Object>>();
+    Map<String, Object> content1 = createContent();
+    content1.put(JsonKey.STATUS, new BigInteger("2"));
+    contentList.add(content1);
+
+    List<Map<String, Object>> assData = new ArrayList<Map<String, Object>>();
+    Map<String, Object> assData1 = new HashMap<String, Object>();
+    assData1.put("courseId", courseId);
+    assData1.put("batchId", batchId);
+    assData1.put("contentId", contentId);
+    Map<String, Object> assEvents1 = new HashMap<String, Object>();
+    List<Map<String, Object>> eventsArray = new ArrayList();
+    eventsArray.add(assEvents1);
+    assData1.put("events", eventsArray);
+    assData.add(assData1);
+
+    HashMap<String, Object> innerMap = new HashMap<>();
+    innerMap.put(JsonKey.CONTENTS, contentList);
+    innerMap.put(JsonKey.ASSESSMENT_EVENTS, assData);
+    innerMap.put(JsonKey.USER_ID, userId);
+    req.setOperation(ActorOperations.ADD_CONTENT.getValue());
+    req.setRequest(innerMap);
+    subject.tell(req, probe.getRef());
+    Response response = probe.expectMsgClass(duration("10 second"), Response.class);
+    Assert.assertNotNull(response);
   }
 }

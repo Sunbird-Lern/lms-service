@@ -47,7 +47,6 @@
             <groupId>com.typesafe.play</groupId>
             <artifactId>play-logback_${scala.major.version}</artifactId>
             <version>${play2.version}</version>
-            <scope>runtime</scope>
         </dependency>
 		<dependency>
 			<groupId>com.typesafe.play</groupId>
@@ -124,7 +123,6 @@
 			<groupId>com.typesafe.play</groupId>
 			<artifactId>play-akka-http-server_${scala.major.version}</artifactId>
 			<version>${play2.version}</version>
-			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.typesafe.play</groupId>

@@ -5,6 +5,11 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+<<<<<<< HEAD
+=======
+import java.util.stream.Collectors;
+
+>>>>>>> bfb249e8f6031670b6b73c42bc618123561976ab
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -85,6 +90,7 @@ public class CourseEnrollmentActor extends BaseActor {
     CourseBatch courseBatch =
         courseBatchDao.readById(
             (String) courseMap.get(JsonKey.COURSE_ID), (String) courseMap.get(JsonKey.BATCH_ID));
+    checkUserEnrollementStatus((String) courseMap.get(JsonKey.COURSE_ID), (String) courseMap.get(JsonKey.USER_ID));
     validateCourseBatch(
         courseBatch,
         courseMap,
@@ -279,8 +285,8 @@ public class CourseEnrollmentActor extends BaseActor {
       ProjectCommonException.throwClientErrorException(
           ResponseCode.invalidCourseBatchId, ResponseCode.invalidCourseBatchId.getErrorMessage());
     }
-    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
     try {
+      SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
       Date todaydate = format.parse(format.format(new Date()));
       // there might be chance end date is not present
       Date courseBatchEndDate = null;
@@ -333,17 +339,45 @@ public class CourseEnrollmentActor extends BaseActor {
     return result;
   }
 
-  private void checkUserEnrollementStatus(String courseId, String userId) {
-    Map<String, Object> filter = new HashMap<>();
-    filter.put(JsonKey.USER_ID, userId);
-    filter.put(JsonKey.COURSE_ID, courseId);
-    filter.put(JsonKey.ACTIVE, ProjectUtil.ActiveStatus.ACTIVE.getValue());
+  private void checkUserEnrollementStatus(String courseId,String userId)
+  {
+    Map<String, Object> userCoursefilter = new HashMap<>();
+    userCoursefilter.put(JsonKey.USER_ID, userId);
+    userCoursefilter.put(JsonKey.COURSE_ID, courseId);
+    userCoursefilter.put(JsonKey.ACTIVE, ProjectUtil.ActiveStatus.ACTIVE.getValue());
+    List<Map<String, Object>> userCoursesList = searchFromES(ProjectUtil.EsType.usercourses.getTypeName(),userCoursefilter,Arrays.asList(JsonKey.BATCH_ID) );
+    if(CollectionUtils.isNotEmpty(userCoursesList)) {
+      ProjectLogger.log("User Enrolled batches :" + userCoursesList, LoggerEnum.INFO);
+      List<String> batchIds =
+              userCoursesList
+                      .stream()
+                      .map(usercourse -> (String) usercourse.get(JsonKey.BATCH_ID))
+                      .collect(Collectors.toList());
+      Map<String, Object> courseBatchfilter = new HashMap<>();
+      courseBatchfilter.put(JsonKey.BATCH_ID,batchIds);
+      courseBatchfilter.put(JsonKey.STATUS,Arrays.asList(ProgressStatus.NOT_STARTED.getValue(), ProgressStatus.STARTED.getValue()) );
+      courseBatchfilter.put(JsonKey.ENROLLMENT_TYPE,JsonKey.OPEN);
+      List<Map<String, Object>> batchList = searchFromES(ProjectUtil.EsType.courseBatch.getTypeName(),courseBatchfilter, Arrays.asList(JsonKey.BATCH_ID));
+        if (CollectionUtils.isNotEmpty(batchList)) {
+          ProjectLogger.log(" User currently Enrolled for batches :" + batchList, LoggerEnum.INFO);
+          ProjectCommonException.throwClientErrorException(
+                  ResponseCode.userAlreadyEnrolledCourse,
+                  ResponseCode.userAlreadyEnrolledCourse.getErrorMessage());
+        }
+
+    }
+  }
+
+  private List<Map<String, Object>> searchFromES(String index, Map<String, Object> filter, List<String> fields){
     SearchDTO searchDto = new SearchDTO();
+    if(CollectionUtils.isNotEmpty(fields)) {
+      searchDto.setFields(fields);
+    }
     searchDto.getAdditionalProperties().put(JsonKey.FILTERS, filter);
-    searchDto.setFields(Arrays.asList(JsonKey.BATCH_ID));
     List<Map<String, Object>> esContents = null;
     Future<Map<String, Object>> resultF =
-        esService.search(searchDto, ProjectUtil.EsType.usercourses.getTypeName());
+
+            esService.search(searchDto, index);
     Map<String, Object> resultMap =
         (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
     if (MapUtils.isNotEmpty(resultMap)) {
@@ -355,5 +389,6 @@ public class CourseEnrollmentActor extends BaseActor {
           ResponseCode.userAlreadyEnrolledCourse,
           ResponseCode.userAlreadyEnrolledCourse.getErrorMessage());
     }
+    return  esContents;
   }
 }

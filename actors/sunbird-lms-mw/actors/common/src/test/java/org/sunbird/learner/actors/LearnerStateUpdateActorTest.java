@@ -23,6 +23,7 @@ import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.cassandraimpl.CassandraOperationImpl;
 import org.sunbird.common.ElasticSearchHelper;
@@ -41,6 +42,7 @@ import org.sunbird.learner.util.ContentSearchUtil;
 import scala.concurrent.Promise;
 
 @RunWith(PowerMockRunner.class)
+@SuppressStaticInitializationFor("org.sunbird.kafka.client.KafkaClient")
 @PrepareForTest({
   ServiceFactory.class,
   ContentSearchUtil.class,
@@ -170,7 +172,6 @@ public class LearnerStateUpdateActorTest {
     req.setRequest(innerMap);
     subject.tell(req, probe.getRef());
     Response response = probe.expectMsgClass(duration("10 second"), Response.class);
-    System.out.println(response.getResult());
     Assert.assertNotNull(response);
   }
 

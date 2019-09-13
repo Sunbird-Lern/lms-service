@@ -8,6 +8,7 @@ import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil;
+import org.sunbird.learner.util.SchedulerManager;
 import org.sunbird.learner.util.Util;
 import play.api.Environment;
 import play.api.inject.ApplicationLifecycle;
@@ -39,6 +40,7 @@ public class ApplicationStart {
         ssoPublicKey = System.getenv(JsonKey.SSO_PUBLIC_KEY);
         ProjectLogger.log("Server started.. with environment: " + env.name(), LoggerEnum.INFO.name());
         checkCassandraConnections();
+        SchedulerManager.schedule();
         SunbirdMWService.init();
         lifecycle.addStopHook(
                 () -> {

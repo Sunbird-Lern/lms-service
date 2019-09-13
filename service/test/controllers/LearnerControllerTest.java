@@ -129,8 +129,8 @@ public class LearnerControllerTest extends BaseControllerTest {
     JsonNode json = Json.parse(data);
     RequestBuilder req =
             new RequestBuilder().bodyJson(json).uri("/v1/content/state/update").method("PATCH");
-    req.headers(headerMap);
-    Result result = route(req);
+    req.headers(new Http.Headers(headerMap));
+    Result result = route(app, req);
     String response = Helpers.contentAsString(result);
     System.out.println(response);
     assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), result.status());

@@ -63,6 +63,7 @@ public class LearnerController extends BaseController {
             HashMap<String, Object> innerMap = new HashMap<>();
             innerMap.put(JsonKey.CONTENTS, reqObj.getRequest().get(JsonKey.CONTENTS));
             innerMap.put(JsonKey.REQUESTED_BY, httpRequest.flash().get(JsonKey.USER_ID));
+            innerMap.put(JsonKey.ASSESSMENT_EVENTS, reqObj.getRequest().get(JsonKey.ASSESSMENT_EVENTS));
             innerMap.put(JsonKey.USER_ID, reqObj.getRequest().get(JsonKey.USER_ID));
             reqObj.setRequest(innerMap);
             return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);

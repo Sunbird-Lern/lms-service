@@ -9,7 +9,7 @@ public class Common {
     public static Map<String, String[]> getRequestHeadersInArray(Map<String, List<String>> requestHeaders) {
         Map<String, String[]> requestHeadersArray = new HashMap();
         requestHeaders.entrySet().forEach(entry -> {
-            requestHeadersArray.put(entry.getKey(), (String[]) entry.getValue().toArray());
+            requestHeadersArray.put(entry.getKey(), (String[]) entry.getValue().toArray(new String[0]));
         });
         return requestHeadersArray;
     }

@@ -14,8 +14,12 @@ import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.request.RequestValidator;
-import play.libs.F.Promise;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+
+import play.mvc.Http;
 import play.mvc.Result;
+import util.Common;
 
 /**
  * This controller will handle all the request related to page api's.
@@ -29,22 +33,22 @@ public class PageController extends BaseController {
    *
    * @return Promise<Result>
    */
-  public Promise<Result> createPage() {
+  public CompletionStage<Result> createPage(Http.Request httpRequest) {
 
     try {
-      JsonNode requestData = request().body().asJson();
+      JsonNode requestData = httpRequest.body().asJson();
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
       RequestValidator.validateCreatePage(reqObj);
       reqObj.setOperation(ActorOperations.CREATE_PAGE.getValue());
       reqObj.setRequestId(ExecutionContext.getRequestId());
-      reqObj.getRequest().put(JsonKey.CREATED_BY, ctx().flash().get(JsonKey.USER_ID));
+      reqObj.getRequest().put(JsonKey.CREATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
       reqObj.setEnv(getEnvironment());
       HashMap<String, Object> map = new HashMap<>();
       map.put(JsonKey.PAGE, reqObj.getRequest());
       reqObj.setRequest(map);
-      return actorResponseHandler(getActorRef(), reqObj, timeout, null, request());
+      return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
-      return Promise.<Result>pure(createCommonExceptionResponse(e, request()));
+      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
   }
 
@@ -53,22 +57,22 @@ public class PageController extends BaseController {
    *
    * @return Promise<Result>
    */
-  public Promise<Result> updatePage() {
+  public CompletionStage<Result> updatePage(Http.Request httpRequest) {
 
     try {
-      JsonNode requestData = request().body().asJson();
+      JsonNode requestData = httpRequest.body().asJson();
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
       RequestValidator.validateUpdatepage(reqObj);
       reqObj.setOperation(ActorOperations.UPDATE_PAGE.getValue());
       reqObj.setRequestId(ExecutionContext.getRequestId());
-      reqObj.getRequest().put(JsonKey.UPDATED_BY, ctx().flash().get(JsonKey.USER_ID));
+      reqObj.getRequest().put(JsonKey.UPDATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
       reqObj.setEnv(getEnvironment());
       HashMap<String, Object> map = new HashMap<>();
       map.put(JsonKey.PAGE, reqObj.getRequest());
       reqObj.setRequest(map);
-      return actorResponseHandler(getActorRef(), reqObj, timeout, null, request());
+      return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
-      return Promise.<Result>pure(createCommonExceptionResponse(e, request()));
+      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
   }
 
@@ -78,7 +82,7 @@ public class PageController extends BaseController {
    * @param pageId String
    * @return Promise<Result>
    */
-  public Promise<Result> getPageSetting(String pageId) {
+  public CompletionStage<Result> getPageSetting(String pageId, String organisationId, Http.Request httpRequest) {
 
     try {
       ProjectLogger.log(
@@ -88,9 +92,10 @@ public class PageController extends BaseController {
       reqObj.setRequestId(ExecutionContext.getRequestId());
       reqObj.setEnv(getEnvironment());
       reqObj.getRequest().put(JsonKey.ID, pageId);
-      return actorResponseHandler(getActorRef(), reqObj, timeout, null, request());
+      reqObj.getRequest().put(JsonKey.ORGANISATION_ID, organisationId);
+      return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
-      return Promise.<Result>pure(createCommonExceptionResponse(e, request()));
+      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
   }
 
@@ -99,7 +104,7 @@ public class PageController extends BaseController {
    *
    * @return Promise<Result>
    */
-  public Promise<Result> getPageSettings() {
+  public CompletionStage<Result> getPageSettings(Http.Request httpRequest) {
 
     try {
       ProjectLogger.log("getting page settings api called = ", LoggerEnum.INFO.name());
@@ -107,9 +112,9 @@ public class PageController extends BaseController {
       reqObj.setOperation(ActorOperations.GET_PAGE_SETTINGS.getValue());
       reqObj.setRequestId(ExecutionContext.getRequestId());
       reqObj.setEnv(getEnvironment());
-      return actorResponseHandler(getActorRef(), reqObj, timeout, null, request());
+      return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
-      return Promise.<Result>pure(createCommonExceptionResponse(e, request()));
+      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
   }
 
@@ -118,27 +123,27 @@ public class PageController extends BaseController {
    *
    * @return Promise<Result>
    */
-  public Promise<Result> getPageData() {
+  public CompletionStage<Result> getPageData(Http.Request httpRequest) {
 
     try {
-      JsonNode requestData = request().body().asJson();
+      JsonNode requestData = httpRequest.body().asJson();
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
       RequestValidator.validateGetPageData(reqObj);
       reqObj.setOperation(ActorOperations.GET_PAGE_DATA.getValue());
       reqObj.setRequestId(ExecutionContext.getRequestId());
       reqObj.setEnv(getEnvironment());
-      reqObj.getContext().put(JsonKey.URL_QUERY_STRING, getQueryString(request().queryString()));
-      reqObj.getRequest().put(JsonKey.CREATED_BY, ctx().flash().get(JsonKey.USER_ID));
+      reqObj.getContext().put(JsonKey.URL_QUERY_STRING, getQueryString(httpRequest.queryString()));
+      reqObj.getRequest().put(JsonKey.CREATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
       HashMap<String, Object> map = new HashMap<>();
       map.put(JsonKey.PAGE, reqObj.getRequest());
-      map.put(JsonKey.HEADER, getAllRequestHeaders(request()));
+      map.put(JsonKey.HEADER, getAllRequestHeaders(httpRequest));
       reqObj.setRequest(map);
-      return actorResponseHandler(getActorRef(), reqObj, timeout, null, request());
+      return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
       ProjectLogger.log(
               "PageController:getPageData: Exception occurred with error message = " + e.getMessage(),
               LoggerEnum.ERROR.name());
-      return Promise.<Result>pure(createCommonExceptionResponse(e, request()));
+      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
   }
 
@@ -149,7 +154,7 @@ public class PageController extends BaseController {
    * @return Map<String, String>
    */
   public Map<String, String> getAllRequestHeaders(play.mvc.Http.Request request) {
-    Map<String, String[]> headers = request.headers();
+    Map<String, String[]> headers = Common.getRequestHeadersInArray(request.getHeaders().toMap());
     Map<String, String> filtered =
         headers
             .entrySet()
@@ -164,24 +169,24 @@ public class PageController extends BaseController {
    *
    * @return Promise<Result>
    */
-  public Promise<Result> createPageSection() {
+  public CompletionStage<Result> createPageSection(Http.Request httpRequest) {
 
     try {
-      JsonNode requestData = request().body().asJson();
+      JsonNode requestData = httpRequest.body().asJson();
       ProjectLogger.log(
           "getting create page section data request=" + requestData, LoggerEnum.INFO.name());
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
       RequestValidator.validateCreateSection(reqObj);
       reqObj.setOperation(ActorOperations.CREATE_SECTION.getValue());
       reqObj.setRequestId(ExecutionContext.getRequestId());
-      reqObj.getRequest().put(JsonKey.CREATED_BY, ctx().flash().get(JsonKey.USER_ID));
+      reqObj.getRequest().put(JsonKey.CREATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
       reqObj.setEnv(getEnvironment());
       HashMap<String, Object> map = new HashMap<>();
       map.put(JsonKey.SECTION, reqObj.getRequest());
       reqObj.setRequest(map);
-      return actorResponseHandler(getActorRef(), reqObj, timeout, null, request());
+      return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
-      return Promise.<Result>pure(createCommonExceptionResponse(e, request()));
+      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
   }
 
@@ -190,10 +195,10 @@ public class PageController extends BaseController {
    *
    * @return Promise<Result>
    */
-  public Promise<Result> updatePageSection() {
+  public CompletionStage<Result> updatePageSection(Http.Request httpRequest) {
 
     try {
-      JsonNode requestData = request().body().asJson();
+      JsonNode requestData = httpRequest.body().asJson();
       ProjectLogger.log(
           "getting update page section data request=" + requestData, LoggerEnum.INFO.name());
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
@@ -202,12 +207,12 @@ public class PageController extends BaseController {
       reqObj.setRequestId(ExecutionContext.getRequestId());
       reqObj.setEnv(getEnvironment());
       HashMap<String, Object> innerMap = new HashMap<>();
-      reqObj.getRequest().put(JsonKey.UPDATED_BY, ctx().flash().get(JsonKey.USER_ID));
+      reqObj.getRequest().put(JsonKey.UPDATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
       innerMap.put(JsonKey.SECTION, reqObj.getRequest());
       reqObj.setRequest(innerMap);
-      return actorResponseHandler(getActorRef(), reqObj, timeout, null, request());
+      return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
-      return Promise.<Result>pure(createCommonExceptionResponse(e, request()));
+      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
   }
 
@@ -217,7 +222,7 @@ public class PageController extends BaseController {
    * @param sectionId String
    * @return Promise<Result>
    */
-  public Promise<Result> getSection(String sectionId) {
+  public CompletionStage<Result> getSection(String sectionId, Http.Request httpRequest) {
 
     try {
       ProjectLogger.log(
@@ -227,9 +232,9 @@ public class PageController extends BaseController {
       reqObj.setRequestId(ExecutionContext.getRequestId());
       reqObj.setEnv(getEnvironment());
       reqObj.getRequest().put(JsonKey.ID, sectionId);
-      return actorResponseHandler(getActorRef(), reqObj, timeout, null, request());
+      return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
-      return Promise.<Result>pure(createCommonExceptionResponse(e, request()));
+      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
   }
 
@@ -238,7 +243,7 @@ public class PageController extends BaseController {
    *
    * @return Promise<Result>
    */
-  public Promise<Result> getSections() {
+  public CompletionStage<Result> getSections(Http.Request httpRequest) {
 
     try {
       ProjectLogger.log("get page all section method called = ", LoggerEnum.INFO.name());
@@ -246,9 +251,9 @@ public class PageController extends BaseController {
       reqObj.setOperation(ActorOperations.GET_ALL_SECTION.getValue());
       reqObj.setRequestId(ExecutionContext.getRequestId());
       reqObj.setEnv(getEnvironment());
-      return actorResponseHandler(getActorRef(), reqObj, timeout, null, request());
+      return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
-      return Promise.<Result>pure(createCommonExceptionResponse(e, request()));
+      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
   }
 }

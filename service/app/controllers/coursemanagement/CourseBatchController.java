@@ -15,62 +15,82 @@ import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil.EsType;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
-import play.libs.F.Promise;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+
+import play.mvc.Http;
 import play.mvc.Result;
 
 public class CourseBatchController extends BaseController {
 
-  public Promise<Result> createBatch() {
+  public CompletionStage<Result> createBatch(Http.Request httpRequest) {
     return handleRequest(
         ActorOperations.CREATE_BATCH.getValue(),
-        request().body().asJson(),
+        httpRequest.body().asJson(),
         (request) -> {
           new CourseBatchRequestValidator().validateCreateCourseBatchRequest((Request) request);
           return null;
         },
-        getAllRequestHeaders(request()));
+        getAllRequestHeaders(httpRequest),
+        httpRequest);
   }
 
-  public Promise<Result> getBatch(String batchId) {
-    return handleRequest(ActorOperations.GET_BATCH.getValue(), batchId, JsonKey.BATCH_ID, false);
+  public CompletionStage<Result> getBatch(String batchId, Http.Request httpRequest) {
+    return handleRequest(ActorOperations.GET_BATCH.getValue(), batchId, JsonKey.BATCH_ID, false, httpRequest);
   }
 
-  public Promise<Result> updateBatch() {
+  public CompletionStage<Result> updateBatch(Http.Request httpRequest) {
     return handleRequest(
         ActorOperations.UPDATE_BATCH.getValue(),
-        request().body().asJson(),
+        httpRequest.body().asJson(),
         (request) -> {
           new CourseBatchRequestValidator().validateUpdateCourseBatchRequest((Request) request);
           return null;
-        });
+        },
+        httpRequest);
   }
 
-  public Promise<Result> addUserToCourseBatch(String batchId) {
+  public CompletionStage<Result> addUserToCourseBatch(String batchId, Http.Request httpRequest) {
     return handleRequest(
         ActorOperations.ADD_USER_TO_BATCH.getValue(),
-        request().body().asJson(),
+        httpRequest.body().asJson(),
         (request) -> {
           new CourseBatchRequestValidator().validateAddUserToCourseBatchRequest((Request) request);
           return null;
         },
         batchId,
-        JsonKey.BATCH_ID);
+        JsonKey.BATCH_ID,
+        httpRequest);
   }
 
-  public Promise<Result> deleteBatch() {
+  public CompletionStage<Result> removeUserFromCourseBatch(String batchId, Http.Request httpRequest) {
+    return handleRequest(
+        ActorOperations.REMOVE_USER_FROM_BATCH.getValue(),
+        httpRequest.body().asJson(),
+        (request) -> {
+          new CourseBatchRequestValidator().validateAddUserToCourseBatchRequest((Request) request);
+          return null;
+        },
+        batchId,
+        JsonKey.BATCH_ID,
+        httpRequest);
+  }
+
+  public CompletionStage<Result> deleteBatch(Http.Request httpRequest) {
     return handleRequest(
         ActorOperations.REMOVE_BATCH.getValue(),
-        request().body().asJson(),
+        httpRequest.body().asJson(),
         (request) -> {
           new CourseBatchRequestValidator().validateDeleteCourseBatchRequest((Request) request);
           return null;
-        });
+        },
+        httpRequest);
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
-  public Promise<Result> search() {
+  public CompletionStage<Result> search(Http.Request httpRequest) {
     try {
-      JsonNode requestData = request().body().asJson();
+      JsonNode requestData = httpRequest.body().asJson();
       ProjectLogger.log(
           "CourseBatchController: search called with data = " + requestData,
           LoggerEnum.DEBUG.name());
@@ -78,11 +98,11 @@ public class CourseBatchController extends BaseController {
       reqObj.setOperation(ActorOperations.COMPOSITE_SEARCH.getValue());
       reqObj.setRequestId(ExecutionContext.getRequestId());
       reqObj.setEnv(getEnvironment());
-      reqObj.put(JsonKey.REQUESTED_BY, ctx().flash().get(JsonKey.USER_ID));
-      String requestedField = request().getQueryString(JsonKey.FIELDS);
+      reqObj.put(JsonKey.REQUESTED_BY, httpRequest.flash().get(JsonKey.USER_ID));
+      String requestedField = httpRequest.getQueryString(JsonKey.FIELDS);
       reqObj.getContext().put(JsonKey.PARTICIPANTS, requestedField);
       List<String> esObjectType = new ArrayList<>();
-      esObjectType.add(EsType.course.getTypeName());
+      esObjectType.add(EsType.courseBatch.getTypeName());
       if (reqObj.getRequest().containsKey(JsonKey.FILTERS)
           && reqObj.getRequest().get(JsonKey.FILTERS) != null
           && reqObj.getRequest().get(JsonKey.FILTERS) instanceof Map) {
@@ -93,9 +113,21 @@ public class CourseBatchController extends BaseController {
         dataMap.put(JsonKey.OBJECT_TYPE, esObjectType);
         filtermap.put(JsonKey.FILTERS, dataMap);
       }
-      return actorResponseHandler(getActorRef(), reqObj, timeout, null, request());
+      return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
-      return Promise.<Result>pure(createCommonExceptionResponse(e, request()));
+      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
+  }
+
+  public CompletionStage<Result> getParticipants(Http.Request httpRequest) {
+    return handleRequest(
+        ActorOperations.GET_PARTICIPANTS.getValue(),
+        httpRequest.body().asJson(),
+        (request) -> {
+          new CourseBatchRequestValidator().validateGetParticipantsRequest((Request) request);
+          return null;
+        },
+        getAllRequestHeaders(httpRequest),
+        httpRequest);
   }
 }

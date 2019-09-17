@@ -1,9 +1,13 @@
 package controllers.coursemanagement.validator;
 
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.util.JsonKey;
@@ -29,13 +33,19 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
     validateEnrolmentType(request);
     String startDate = (String) request.getRequest().get(JsonKey.START_DATE);
     String endDate = (String) request.getRequest().get(JsonKey.END_DATE);
+    String enrollmentEndDate = (String) request.getRequest().get(JsonKey.ENROLLMENT_END_DATE);
     validateStartDate(startDate);
     validateEndDate(startDate, endDate);
+    validateEnrollmentEndDate(enrollmentEndDate, startDate, endDate);
     validateCreatedForAndMentors(request);
     validateParticipants(request);
   }
 
   public void validateUpdateCourseBatchRequest(Request request) {
+    validateParam(
+        (String) request.getRequest().get(JsonKey.COURSE_ID),
+        ResponseCode.mandatoryParamsMissing,
+        JsonKey.COURSE_ID);
     if (null != request.getRequest().get(JsonKey.STATUS)) {
       boolean status = validateBatchStatus(request);
       if (!status) {
@@ -188,6 +198,45 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
     }
   }
 
+  private static void validateEnrollmentEndDate(
+      String enrollmentEndDate, String startDate, String endDate) {
+    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+    format.setLenient(false);
+    Date batchEndDate = null;
+    Date batchStartDate = null;
+    Date batchenrollmentEndDate = null;
+    try {
+      if (StringUtils.isNotEmpty(enrollmentEndDate)) {
+        batchenrollmentEndDate = format.parse(enrollmentEndDate);
+        batchStartDate = format.parse(startDate);
+      }
+      if (StringUtils.isNotEmpty(endDate)) {
+        batchEndDate = format.parse(endDate);
+      }
+
+    } catch (Exception e) {
+      throw new ProjectCommonException(
+          ResponseCode.dateFormatError.getErrorCode(),
+          ResponseCode.dateFormatError.getErrorMessage(),
+          ResponseCode.CLIENT_ERROR.getResponseCode());
+    }
+    if (StringUtils.isNotEmpty(enrollmentEndDate)
+        && batchStartDate.getTime() > batchenrollmentEndDate.getTime()) {
+      throw new ProjectCommonException(
+          ResponseCode.enrollmentEndDateStartError.getErrorCode(),
+          ResponseCode.enrollmentEndDateStartError.getErrorMessage(),
+          ResponseCode.CLIENT_ERROR.getResponseCode());
+    }
+    if (StringUtils.isNotEmpty(enrollmentEndDate)
+        && StringUtils.isNotEmpty(endDate)
+        && batchEndDate.getTime() < batchenrollmentEndDate.getTime()) {
+      throw new ProjectCommonException(
+          ResponseCode.enrollmentEndDateEndError.getErrorCode(),
+          ResponseCode.enrollmentEndDateEndError.getErrorMessage(),
+          ResponseCode.CLIENT_ERROR.getResponseCode());
+    }
+  }
+
   private void validateCreatedForAndMentors(Request request) {
     if (request.getRequest().containsKey(JsonKey.COURSE_CREATED_FOR)
         && !(request.getRequest().get(JsonKey.COURSE_CREATED_FOR) instanceof List)) {
@@ -295,5 +344,18 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
       }
     }
     return false;
+  }
+
+  public void validateGetParticipantsRequest(Request request) {
+    if(MapUtils.isEmpty((Map) request.getRequest().get(JsonKey.BATCH))){
+        throw new ProjectCommonException(
+                ResponseCode.invalidRequestData.getErrorCode(),
+                MessageFormat.format(ResponseCode.invalidRequestData.getErrorMessage(), JsonKey.BATCH),
+                ResponseCode.CLIENT_ERROR.getResponseCode());
+    }
+    validateParam(
+            (String) ((Map<String, Object>)request.getRequest().get(JsonKey.BATCH)).get(JsonKey.BATCH_ID),
+            ResponseCode.mandatoryParamsMissing,
+            JsonKey.BATCH_ID);
   }
 }

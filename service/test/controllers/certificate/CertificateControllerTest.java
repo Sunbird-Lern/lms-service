@@ -10,6 +10,8 @@ import controllers.DummyActor;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+import modules.OnRequestHandler;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -26,12 +28,11 @@ import org.sunbird.common.models.util.ProjectLogger;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
-import play.test.FakeApplication;
+import play.inject.guice.GuiceApplicationBuilder;
 import play.test.Helpers;
-import util.Global;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({Global.class})
+@PrepareForTest({OnRequestHandler.class})
 @SuppressStaticInitializationFor({"util.AuthenticationHelper", "util.Global"})
 @PowerMockIgnore("javax.management.*")
 public class CertificateControllerTest {
@@ -40,14 +41,14 @@ public class CertificateControllerTest {
   private static final String CERTIFICATE = "certificate";
   private static final String ISSUE_CERTIFICATE_URL = "/v1/course/batch/cert/issue";
 
-  public static FakeApplication app;
+  public static play.Application app;
   public static Map<String, String[]> headerMap;
   public static ActorSystem system;
   public static final Props props = Props.create(DummyActor.class);
 
   @BeforeClass
   public static void startApp() {
-    app = Helpers.fakeApplication(Helpers.fakeGlobal());
+    app = Helpers.fakeApplication();
     Helpers.start(app);
     system = ActorSystem.create("system");
     ActorRef subject = system.actorOf(props);
@@ -56,14 +57,14 @@ public class CertificateControllerTest {
 
   @Before
   public void before() {
-    PowerMockito.mockStatic(Global.class);
+    PowerMockito.mockStatic(OnRequestHandler.class);
     Map<String, Object> inner = new HashMap<>();
     Map<String, Object> aditionalInfo = new HashMap<String, Object>();
     aditionalInfo.put(JsonKey.START_TIME, System.currentTimeMillis());
     inner.put(JsonKey.ADDITIONAL_INFO, aditionalInfo);
     Map outer = PowerMockito.mock(HashMap.class);
-    Global.requestInfo = outer;
-    PowerMockito.when(Global.requestInfo.get(Mockito.anyString())).thenReturn(inner);
+    OnRequestHandler.requestInfo = outer;
+    PowerMockito.when(OnRequestHandler.requestInfo.get(Mockito.anyString())).thenReturn(inner);
   }
 
   @Test

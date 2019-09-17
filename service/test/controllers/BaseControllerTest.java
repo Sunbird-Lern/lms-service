@@ -9,8 +9,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.*;
 import org.junit.runner.RunWith;
@@ -36,7 +38,7 @@ import org.sunbird.services.sso.impl.KeyCloakServiceImpl;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
-import play.test.FakeApplication;
+import play.inject.guice.GuiceApplicationBuilder;
 import play.test.Helpers;
 import util.AuthenticationHelper;
 import util.RequestInterceptor;
@@ -54,8 +56,8 @@ import util.RequestInterceptor;
 @PowerMockIgnore("javax.management.*")
 public class BaseControllerTest {
 
-  public static FakeApplication app;
-  public static Map<String, String[]> headerMap;
+  public static play.Application app;
+  public static Map<String, List<String>> headerMap;
   public static ActorSystem system;
   public static final Props props = Props.create(DummyActor.class);
 
@@ -64,12 +66,12 @@ public class BaseControllerTest {
     app = Helpers.fakeApplication();
     Helpers.start(app);
     headerMap = new HashMap<>();
-    headerMap.put(HeaderParam.X_Consumer_ID.getName(), new String[] {"Some consumer ID"});
-    headerMap.put(HeaderParam.X_Device_ID.getName(), new String[] {"Some device ID"});
+    headerMap.put(HeaderParam.X_Consumer_ID.getName(), Arrays.asList("Some consumer ID"));
+    headerMap.put(HeaderParam.X_Device_ID.getName(), Arrays.asList("Some device ID"));
     headerMap.put(
-        HeaderParam.X_Authenticated_Userid.getName(), new String[] {"Some authenticated user ID"});
-    headerMap.put(JsonKey.MESSAGE_ID, new String[] {"Some message ID"});
-    headerMap.put(HeaderParam.X_APP_ID.getName(), new String[] {"Some app Id"});
+        HeaderParam.X_Authenticated_Userid.getName(), Arrays.asList("Some authenticated user ID"));
+    headerMap.put(JsonKey.MESSAGE_ID, Arrays.asList("Some message ID"));
+    headerMap.put(HeaderParam.X_APP_ID.getName(), Arrays.asList("Some app Id"));
 
     system = ActorSystem.create("system");
     ActorRef subject = system.actorOf(props);
@@ -114,8 +116,8 @@ public class BaseControllerTest {
     } else {
       req = new Http.RequestBuilder().uri(url).method(method);
     }
-    req.headers(headerMap);
-    Result result = route(req);
+    req.headers(new Http.Headers(headerMap));
+    Result result = route(app, req);
     return result;
   }
 

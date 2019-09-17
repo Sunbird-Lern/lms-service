@@ -9,43 +9,46 @@ import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
-import play.libs.F.Promise;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+
+import play.mvc.Http;
 import play.mvc.Result;
 
 public class CourseMetricsController extends BaseController {
   private static final String DEFAULT_LIMIT = "200";
   private static final String DEFAULT_OFFSET = "0";
 
-  public Promise<Result> courseProgress(String batchId) {
+  public CompletionStage<Result> courseProgress(String batchId, Http.Request httpRequest) {
     try {
-      String periodStr = request().getQueryString("period");
+      String periodStr = httpRequest.getQueryString("period");
       Map<String, Object> map = new HashMap<>();
       Request request = new Request();
       request.setEnv(getEnvironment());
       map.put(JsonKey.BATCH_ID, batchId);
       map.put(JsonKey.PERIOD, periodStr);
-      map.put(JsonKey.REQUESTED_BY, ctx().flash().get(JsonKey.USER_ID));
+      map.put(JsonKey.REQUESTED_BY, httpRequest.flash().get(JsonKey.USER_ID));
       request.setRequest(map);
       request.setOperation(ActorOperations.COURSE_PROGRESS_METRICS.getValue());
       request.setRequest(map);
       request.setRequestId(ExecutionContext.getRequestId());
-      return actorResponseHandler(getActorRef(), request, timeout, null, request());
+      return actorResponseHandler(getActorRef(), request, timeout, null, httpRequest);
     } catch (Exception e) {
-      return Promise.<Result>pure(createCommonExceptionResponse(e, request()));
+      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
   }
 
-  public Promise<Result> courseProgressV2(String batchId) {
-    String limit = request().getQueryString(JsonKey.LIMIT);
+  public CompletionStage<Result> courseProgressV2(String batchId, Http.Request httpRequest) {
+    String limit = httpRequest.getQueryString(JsonKey.LIMIT);
     limit = StringUtils.isEmpty(limit) ? DEFAULT_LIMIT : limit;
 
-    String offset = request().getQueryString(JsonKey.OFFSET);
+    String offset = httpRequest.getQueryString(JsonKey.OFFSET);
     offset =
-        StringUtils.isEmpty(offset) ? DEFAULT_OFFSET : request().getQueryString(JsonKey.OFFSET);
+        StringUtils.isEmpty(offset) ? DEFAULT_OFFSET : httpRequest.getQueryString(JsonKey.OFFSET);
 
-    final String sortOrder = request().getQueryString(JsonKey.SORT_ORDER);
-    final String sortBy = request().getQueryString(JsonKey.SORTBY);
-    final String userName = request().getQueryString(JsonKey.USERNAME);
+    final String sortOrder = httpRequest.getQueryString(JsonKey.SORT_ORDER);
+    final String sortBy = httpRequest.getQueryString(JsonKey.SORTBY);
+    final String userName = httpRequest.getQueryString(JsonKey.USERNAME);
     new CourseMetricsProgressValidator()
         .validateCourseProgressMetricsV2Request(limit, offset, sortOrder);
     final int dataLimit = Integer.parseInt(limit);
@@ -62,31 +65,32 @@ public class CourseMetricsController extends BaseController {
           req.getContext().put(JsonKey.USERNAME, userName);
           req.getContext().put(JsonKey.SORT_ORDER, sortOrder);
           return null;
-        });
+        },
+        httpRequest);
   }
 
-  public Promise<Result> courseCreation(String courseId) {
+  public CompletionStage<Result> courseCreation(String courseId, Http.Request httpRequest) {
     try {
-      String periodStr = request().getQueryString("period");
+      String periodStr = httpRequest.getQueryString("period");
       Map<String, Object> map = new HashMap<>();
       Request request = new Request();
       request.setEnv(getEnvironment());
       request.setOperation(ActorOperations.COURSE_CREATION_METRICS.getValue());
       map.put(JsonKey.COURSE_ID, courseId);
       map.put(JsonKey.PERIOD, periodStr);
-      map.put(JsonKey.REQUESTED_BY, ctx().flash().get(JsonKey.USER_ID));
+      map.put(JsonKey.REQUESTED_BY, httpRequest.flash().get(JsonKey.USER_ID));
       request.setRequest(map);
       request.setRequestId(ExecutionContext.getRequestId());
-      return actorResponseHandler(getActorRef(), request, timeout, null, request());
+      return actorResponseHandler(getActorRef(), request, timeout, null, httpRequest);
     } catch (Exception e) {
-      return Promise.<Result>pure(createCommonExceptionResponse(e, request()));
+      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
   }
 
-  public Promise<Result> courseProgressReport(String batchId) {
+  public CompletionStage<Result> courseProgressReport(String batchId, Http.Request httpRequest) {
     try {
-      String periodStr = request().getQueryString(JsonKey.PERIOD);
-      String reportType = request().getQueryString(JsonKey.FORMAT);
+      String periodStr = httpRequest.getQueryString(JsonKey.PERIOD);
+      String reportType = httpRequest.getQueryString(JsonKey.FORMAT);
       if (StringUtils.isEmpty(periodStr)) {
         periodStr = JsonKey.FROM_BEGINING;
       }
@@ -96,20 +100,20 @@ public class CourseMetricsController extends BaseController {
       map.put(JsonKey.BATCH_ID, batchId);
       map.put(JsonKey.PERIOD, periodStr);
       map.put(JsonKey.FORMAT, reportType);
-      map.put(JsonKey.REQUESTED_BY, ctx().flash().get(JsonKey.USER_ID));
+      map.put(JsonKey.REQUESTED_BY, httpRequest.flash().get(JsonKey.USER_ID));
       request.setRequest(map);
       request.setOperation(ActorOperations.COURSE_PROGRESS_METRICS_REPORT.getValue());
       request.setRequest(map);
       request.setRequestId(ExecutionContext.getRequestId());
-      return actorResponseHandler(getActorRef(), request, timeout, null, request());
+      return actorResponseHandler(getActorRef(), request, timeout, null, httpRequest);
     } catch (Exception e) {
-      return Promise.<Result>pure(createCommonExceptionResponse(e, request()));
+      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
   }
 
-  public Promise<Result> courseCreationReport(String courseId) {
+  public CompletionStage<Result> courseCreationReport(String courseId, Http.Request httpRequest) {
     try {
-      String periodStr = request().getQueryString("period");
+      String periodStr = httpRequest.getQueryString("period");
       Map<String, Object> map = new HashMap<>();
       Request request = new Request();
       request.setEnv(getEnvironment());
@@ -118,9 +122,9 @@ public class CourseMetricsController extends BaseController {
       map.put(JsonKey.PERIOD, periodStr);
       request.setRequest(map);
       request.setRequestId(ExecutionContext.getRequestId());
-      return actorResponseHandler(getActorRef(), request, timeout, null, request());
+      return actorResponseHandler(getActorRef(), request, timeout, null, httpRequest);
     } catch (Exception e) {
-      return Promise.<Result>pure(createCommonExceptionResponse(e, request()));
+      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
   }
 }

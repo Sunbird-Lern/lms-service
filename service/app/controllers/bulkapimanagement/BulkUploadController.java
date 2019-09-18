@@ -4,52 +4,57 @@ import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.request.BaseRequestValidator;
 import org.sunbird.common.request.Request;
-import play.libs.F.Promise;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
+
+import play.mvc.Http;
 import play.mvc.Result;
 
 public class BulkUploadController extends BaseBulkUploadController {
 
   BaseRequestValidator baseRequestValidator = new BaseRequestValidator();
 
-  public Promise<Result> batchEnrollmentBulkUpload() {
+  public CompletionStage<Result> batchEnrollmentBulkUpload(Http.Request httpRequest) {
     try {
       Request request =
           createAndInitBulkRequest(
-              ActorOperations.BULK_UPLOAD.getValue(), JsonKey.BATCH_LEARNER_ENROL, false);
-      return actorResponseHandler(getActorRef(), request, timeout, null, request());
+              ActorOperations.BULK_UPLOAD.getValue(), JsonKey.BATCH_LEARNER_ENROL, false, httpRequest);
+      return actorResponseHandler(getActorRef(), request, timeout, null, httpRequest);
     } catch (Exception e) {
-      return Promise.<Result>pure(createCommonExceptionResponse(e, request()));
+      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
   }
 
-  public Promise<Result> batchUnEnrollmentBulkUpload() {
+  public CompletionStage<Result> batchUnEnrollmentBulkUpload(Http.Request httpRequest) {
     try {
       Request request =
           createAndInitBulkRequest(
-              ActorOperations.BULK_UPLOAD.getValue(), JsonKey.BATCH_LEARNER_UNENROL, false);
-      return actorResponseHandler(getActorRef(), request, timeout, null, request());
+              ActorOperations.BULK_UPLOAD.getValue(), JsonKey.BATCH_LEARNER_UNENROL, false, httpRequest);
+      return actorResponseHandler(getActorRef(), request, timeout, null, httpRequest);
     } catch (Exception e) {
-      return Promise.<Result>pure(createCommonExceptionResponse(e, request()));
+      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
   }
 
-  public Promise<Result> getUploadStatus(String processId) {
+  public CompletionStage<Result> getUploadStatus(String processId, Http.Request httpRequest) {
     return handleRequest(
         ActorOperations.GET_BULK_OP_STATUS.getValue(),
         null,
         null,
         processId,
         JsonKey.PROCESS_ID,
-        false);
+        false,
+            httpRequest);
   }
 
-  public Promise<Result> getStatusDownloadLink(String processId) {
+  public CompletionStage<Result> getStatusDownloadLink(String processId, Http.Request httpRequest) {
     return handleRequest(
         ActorOperations.GET_BULK_UPLOAD_STATUS_DOWNLOAD_LINK.getValue(),
         null,
         null,
         processId,
         JsonKey.PROCESS_ID,
-        false);
+        false,
+            httpRequest);
   }
 }

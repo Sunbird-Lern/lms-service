@@ -307,6 +307,10 @@ public class CourseMetricsActor extends BaseMetricsActor {
         ProjectUtil.getConfigValue(JsonKey.SUNBIRD_COURSE_METRICS_REPORT_FOLDER);
     String reportPath = courseMetricsReportFolder + File.separator + "report-" + batchId + ".csv";
 
+    String courseAssessmentsReportFolder =
+            ProjectUtil.getConfigValue(JsonKey.SUNBIRD_ASSESSMENT_REPORT_FOLDER);
+    String courseAssessmentsreportPath = courseAssessmentsReportFolder + File.separator + "report-" + batchId + ".csv";
+
     ProjectLogger.log(
         "CourseMetricsActor:courseProgressMetricsReport: courseMetricsContainer="
             + courseMetricsContainer
@@ -317,8 +321,24 @@ public class CourseMetricsActor extends BaseMetricsActor {
         CloudStorageUtil.getAnalyticsSignedUrl(
             CloudStorageType.AZURE, courseMetricsContainer, reportPath);
 
+    ProjectLogger.log(
+        "CourseMetricsActor:courseProgressMetricsReport: courseMetricsContainer="
+            + courseMetricsContainer
+            + ", courseAssessmentsreportPath="
+            + courseAssessmentsreportPath,
+        LoggerEnum.INFO.name());
+
+    String assessmentReportSignedUrl =
+            CloudStorageUtil.getAnalyticsSignedUrl(
+                    CloudStorageType.AZURE, courseMetricsContainer, courseAssessmentsreportPath);
+
+
     Response response = new Response();
     response.put(JsonKey.SIGNED_URL, signedUrl);
+    Map<String, Object> reports = new HashMap<>();
+    reports.put(JsonKey.PROGRESS_REPORT_SIGNED_URL, signedUrl);
+    reports.put(JsonKey.ASSESSMENT_REPORT_SIGNED_URL, assessmentReportSignedUrl);
+    response.put(JsonKey.REPORTS, reports);
     response.put(
         JsonKey.DURATION, ProjectUtil.getConfigValue(JsonKey.DOWNLOAD_LINK_EXPIRY_TIMEOUT));
     sender().tell(response, self());

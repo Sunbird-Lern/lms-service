@@ -6,7 +6,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -87,9 +86,13 @@ public class CourseEnrollmentActor extends BaseActor {
     CourseBatch courseBatch =
         courseBatchDao.readById(
             (String) courseMap.get(JsonKey.COURSE_ID), (String) courseMap.get(JsonKey.BATCH_ID));
-    checkUserEnrollementStatus((String) courseMap.get(JsonKey.COURSE_ID), (String) courseMap.get(JsonKey.USER_ID));
+    checkUserEnrollementStatus(
+        (String) courseMap.get(JsonKey.COURSE_ID), (String) courseMap.get(JsonKey.USER_ID));
     validateCourseBatch(
-        courseBatch, courseMap, (String) actorMessage.getContext().get(JsonKey.REQUESTED_BY), ActorOperations.ENROLL_COURSE.getValue());
+        courseBatch,
+        courseMap,
+        (String) actorMessage.getContext().get(JsonKey.REQUESTED_BY),
+        ActorOperations.ENROLL_COURSE.getValue());
 
     UserCourses userCourseResult =
         userCourseDao.read(
@@ -168,7 +171,10 @@ public class CourseEnrollmentActor extends BaseActor {
         courseBatchDao.readById(
             (String) request.get(JsonKey.COURSE_ID), (String) request.get(JsonKey.BATCH_ID));
     validateCourseBatch(
-        courseBatch, request, (String) actorMessage.getContext().get(JsonKey.REQUESTED_BY), ActorOperations.UNENROLL_COURSE.getValue());
+        courseBatch,
+        request,
+        (String) actorMessage.getContext().get(JsonKey.REQUESTED_BY),
+        ActorOperations.UNENROLL_COURSE.getValue());
     UserCourses userCourseResult =
         userCourseDao.read(
             (String) request.get(JsonKey.BATCH_ID), (String) request.get(JsonKey.USER_ID));
@@ -254,7 +260,10 @@ public class CourseEnrollmentActor extends BaseActor {
    * @Params
    */
   private void validateCourseBatch(
-      CourseBatch courseBatchDetails, Map<String, Object> request, String requestedBy, String actorOperation) {
+      CourseBatch courseBatchDetails,
+      Map<String, Object> request,
+      String requestedBy,
+      String actorOperation) {
 
     if (ProjectUtil.isNull(courseBatchDetails)) {
       ProjectCommonException.throwClientErrorException(
@@ -286,8 +295,8 @@ public class CourseEnrollmentActor extends BaseActor {
         courseBatchEnrollmentEndDate = format.parse(courseBatchDetails.getEnrollmentEndDate());
       }
       if (ActorOperations.ENROLL_COURSE.getValue().equals(actorOperation)
-              && courseBatchEnrollmentEndDate != null
-              && courseBatchEnrollmentEndDate.before(todaydate)) {
+          && courseBatchEnrollmentEndDate != null
+          && courseBatchEnrollmentEndDate.before(todaydate)) {
         ProjectLogger.log(
             "CourseEnrollmentActor validateCourseBatch Enrollment Date has ended.",
             LoggerEnum.INFO.name());
@@ -327,51 +336,64 @@ public class CourseEnrollmentActor extends BaseActor {
     return result;
   }
 
-  private void checkUserEnrollementStatus(String courseId,String userId)
-  {
+  private void checkUserEnrollementStatus(String courseId, String userId) {
     Map<String, Object> userCoursefilter = new HashMap<>();
     userCoursefilter.put(JsonKey.USER_ID, userId);
     userCoursefilter.put(JsonKey.COURSE_ID, courseId);
     userCoursefilter.put(JsonKey.ACTIVE, ProjectUtil.ActiveStatus.ACTIVE.getValue());
-    List<Map<String, Object>> userCoursesList = searchFromES(ProjectUtil.EsType.usercourses.getTypeName(),userCoursefilter,Arrays.asList(JsonKey.BATCH_ID) );
-    if(CollectionUtils.isNotEmpty(userCoursesList)) {
+    List<Map<String, Object>> userCoursesList =
+        searchFromES(
+            ProjectUtil.EsType.usercourses.getTypeName(),
+            userCoursefilter,
+            Arrays.asList(JsonKey.BATCH_ID));
+    if (CollectionUtils.isNotEmpty(userCoursesList)) {
       ProjectLogger.log("User Enrolled batches :" + userCoursesList, LoggerEnum.INFO);
       List<String> batchIds =
-              userCoursesList
-                      .stream()
-                      .map(usercourse -> (String) usercourse.get(JsonKey.BATCH_ID))
-                      .collect(Collectors.toList());
+          userCoursesList
+              .stream()
+              .map(usercourse -> (String) usercourse.get(JsonKey.BATCH_ID))
+              .collect(Collectors.toList());
       Map<String, Object> courseBatchfilter = new HashMap<>();
-      courseBatchfilter.put(JsonKey.BATCH_ID,batchIds);
-      courseBatchfilter.put(JsonKey.STATUS,Arrays.asList(ProgressStatus.NOT_STARTED.getValue(), ProgressStatus.STARTED.getValue()) );
-      courseBatchfilter.put(JsonKey.ENROLLMENT_TYPE,JsonKey.OPEN);
-      List<Map<String, Object>> batchList = searchFromES(ProjectUtil.EsType.courseBatch.getTypeName(),courseBatchfilter, Arrays.asList(JsonKey.BATCH_ID));
-        if (CollectionUtils.isNotEmpty(batchList)) {
-          ProjectLogger.log(" User currently Enrolled for batches :" + batchList, LoggerEnum.INFO);
-          ProjectCommonException.throwClientErrorException(
-                  ResponseCode.userAlreadyEnrolledCourse,
-                  ResponseCode.userAlreadyEnrolledCourse.getErrorMessage());
-        }
-
+      courseBatchfilter.put(JsonKey.BATCH_ID, batchIds);
+      courseBatchfilter.put(
+          JsonKey.STATUS,
+          Arrays.asList(ProgressStatus.NOT_STARTED.getValue(), ProgressStatus.STARTED.getValue()));
+      courseBatchfilter.put(JsonKey.ENROLLMENT_TYPE, JsonKey.OPEN);
+      List<Map<String, Object>> batchList =
+          searchFromES(
+              ProjectUtil.EsType.courseBatch.getTypeName(),
+              courseBatchfilter,
+              Arrays.asList(JsonKey.BATCH_ID));
+      if (CollectionUtils.isNotEmpty(batchList)) {
+        ProjectLogger.log(" User currently Enrolled for batches :" + batchList, LoggerEnum.INFO);
+        ProjectCommonException.throwClientErrorException(
+            ResponseCode.userAlreadyEnrolledCourse,
+            ResponseCode.userAlreadyEnrolledCourse.getErrorMessage());
+      }
     }
   }
 
-  private List<Map<String, Object>> searchFromES(String index, Map<String, Object> filter, List<String> fields){
-
+  private List<Map<String, Object>> searchFromES(
+      String index, Map<String, Object> filter, List<String> fields) {
     SearchDTO searchDto = new SearchDTO();
-    if(CollectionUtils.isNotEmpty(fields)) {
+    if (CollectionUtils.isNotEmpty(fields)) {
       searchDto.setFields(fields);
     }
     searchDto.getAdditionalProperties().put(JsonKey.FILTERS, filter);
     List<Map<String, Object>> esContents = null;
-    Future<Map<String, Object>> resultF =
-            esService.search(searchDto, index);
+    Future<Map<String, Object>> resultF = esService.search(searchDto, index);
+
     Map<String, Object> resultMap =
-            (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
+        (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
     if (MapUtils.isNotEmpty(resultMap)) {
       esContents = (List<Map<String, Object>>) resultMap.get(JsonKey.CONTENT);
     }
-    return  esContents;
+    if (CollectionUtils.isNotEmpty(esContents)) {
+      ProjectLogger.log("User Already Enrolled Course for batches :" + esContents, LoggerEnum.INFO);
+      ProjectCommonException.throwClientErrorException(
+          ResponseCode.userAlreadyEnrolledCourse,
+          ResponseCode.userAlreadyEnrolledCourse.getErrorMessage());
+    }
+    return esContents;
   }
 }
-

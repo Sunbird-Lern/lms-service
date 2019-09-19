@@ -58,7 +58,7 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
   private ObjectMapper mapper = new ObjectMapper();
   private static ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private UserCoursesDao userCourseDao = UserCoursesDaoImpl.getInstance();
-  private UserOrgService userOrgService = new UserOrgServiceImpl();
+  private UserOrgService userOrgService = UserOrgServiceImpl.getInstance();
 
   @Override
   public void onReceive(Request request) throws Throwable {

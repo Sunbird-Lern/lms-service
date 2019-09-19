@@ -58,7 +58,7 @@ public class CourseMetricsActor extends BaseMetricsActor {
 
   private static final String COURSE_PROGRESS_REPORT = "Course Progress Report";
   protected static final String CONTENT_ID = "content_id";
-  private UserOrgService userOrgService = new UserOrgServiceImpl();
+  private UserOrgService userOrgService = UserOrgServiceImpl.getInstance();
   private static ObjectMapper mapper = new ObjectMapper();
   private static final String COMPLETE_PERCENT = "completionPercentage";
 
@@ -208,17 +208,6 @@ public class CourseMetricsActor extends BaseMetricsActor {
                       user -> user.get(CourseJsonKey.CERTIFICATES)));
     }
     return resultMap;
-  }
-
-  private void formatEnrolledOn(Map<String, Object> batchMap) {
-    String timeStamp = (String) batchMap.get(JsonKey.LAST_ACCESSED_ON);
-    try {
-      SimpleDateFormat sdf = new SimpleDateFormat(ProjectUtil.ELASTIC_DATE_FORMAT);
-      Date parsedDate = sdf.parse(timeStamp);
-      batchMap.put(JsonKey.LAST_ACCESSED_ON, ProjectUtil.formatDate(parsedDate));
-    } catch (Exception e) {
-      ProjectLogger.log("formatEnrolledOn : " + e.getMessage(), LoggerEnum.INFO);
-    }
   }
 
   private Map<String, Object> validateAndGetCourseBatch(String batchId) {

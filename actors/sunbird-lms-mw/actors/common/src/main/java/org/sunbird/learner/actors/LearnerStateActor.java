@@ -2,7 +2,6 @@ package org.sunbird.learner.actors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
@@ -250,7 +249,7 @@ public class LearnerStateActor extends BaseActor {
     Map<String, Object> filters = new HashMap<String, Object>();
     filters.put(JsonKey.CONTENT_TYPE, new String[] {JsonKey.COURSE});
     filters.put(JsonKey.IDENTIFIER, courseIds);
-    filters.put(JsonKey.STATUS,"Live");
+    filters.put(JsonKey.STATUS, "Live");
     ProjectLogger.log(
         "LearnerStateActor:prepareCourseSearchRequest:Requested courseIds = " + courseIds,
         LoggerEnum.INFO.name());
@@ -337,17 +336,17 @@ public class LearnerStateActor extends BaseActor {
     List<Map<String, Object>> activeCourses =
         (List<Map<String, Object>>) (result.get(JsonKey.CONTENT));
     List<Map<String, Object>> contentsForCourses = getcontentsForCourses(request, activeCourses);
-    Set<String> courseIds =new HashSet<>();
-    if(contentsForCourses!=null) {
+    Set<String> courseIds = new HashSet<>();
+    if (contentsForCourses != null) {
       courseIds =
-              contentsForCourses
-                      .stream()
-                      .map(course -> (String) course.get(JsonKey.IDENTIFIER))
-                      .collect(Collectors.toSet());
+          contentsForCourses
+              .stream()
+              .map(course -> (String) course.get(JsonKey.IDENTIFIER))
+              .collect(Collectors.toSet());
     }
     ProjectLogger.log(
-            "LearnerStateActor:prepareCourseSearchRequest:Response courseIds = " + courseIds,
-            LoggerEnum.INFO.name());
+        "LearnerStateActor:prepareCourseSearchRequest:Response courseIds = " + courseIds,
+        LoggerEnum.INFO.name());
     Map<String, Map<String, Object>> contentIdsMapForCourses =
         contentsForCourses
             .stream()

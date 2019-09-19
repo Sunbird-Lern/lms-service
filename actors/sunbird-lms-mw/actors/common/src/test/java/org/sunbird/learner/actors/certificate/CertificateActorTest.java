@@ -59,6 +59,8 @@ public class CertificateActorTest {
     PowerMockito.mockStatic(InstructionEventGenerator.class);
     esService = mock(ElasticSearchRestHighImpl.class);
     when(EsClientFactory.getInstance(Mockito.anyString())).thenReturn(esService);
+    //    PowerMockito.doNothing()
+    //    .when(InstructionEventGenerator.class);
     PowerMockito.doNothing()
         .when(
             InstructionEventGenerator.class,

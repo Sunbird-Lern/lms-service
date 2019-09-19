@@ -30,6 +30,21 @@ public class UserOrgServiceImpl implements UserOrgService {
   private ObjectMapper mapper = new ObjectMapper();
   private static final String FORWARD_SLASH = "/";
 
+  private static UserOrgService instance = null;
+
+  public static UserOrgService getInstance() {
+    if (instance == null) {
+      synchronized (UserOrgServiceImpl.class) {
+        if (instance == null) {
+          instance = new UserOrgServiceImpl();
+        }
+      }
+    }
+    return instance;
+  }
+
+  private UserOrgServiceImpl() {}
+
   private static Map<String, String> getdefaultHeaders() {
     Map<String, String> headers = new HashMap<>();
     headers.put(AUTHORIZATION, BEARER + getConfigValue(SUNBIRD_AUTHORIZATION));

@@ -63,7 +63,7 @@ import scala.concurrent.Future;
 public class CourseBatchManagementActor extends BaseActor {
 
   private CourseBatchDao courseBatchDao = new CourseBatchDaoImpl();
-  private UserOrgService userOrgService = new UserOrgServiceImpl();
+  private UserOrgService userOrgService = UserOrgServiceImpl.getInstance();
   private UserCoursesService userCoursesService = new UserCoursesService();
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
@@ -567,10 +567,8 @@ public class CourseBatchManagementActor extends BaseActor {
         requestedStartDate != null
             ? (String) req.get(JsonKey.START_DATE)
             : courseBatch.getStartDate());
-    courseBatch.setEndDate(
-            (String) req.get(JsonKey.END_DATE));
-    courseBatch.setEnrollmentEndDate(
-            (String) req.get(JsonKey.ENROLLMENT_END_DATE));
+    courseBatch.setEndDate((String) req.get(JsonKey.END_DATE));
+    courseBatch.setEnrollmentEndDate((String) req.get(JsonKey.ENROLLMENT_END_DATE));
   }
 
   private void validateUserPermission(CourseBatch courseBatch, String requestedBy) {
@@ -762,8 +760,9 @@ public class CourseBatchManagementActor extends BaseActor {
           ResponseCode.enrollmentEndDateEndError.getErrorMessage(),
           ResponseCode.CLIENT_ERROR.getResponseCode());
     }
-    if (requestedEnrollmentEndDate != null && !requestedEnrollmentEndDate.equals(existingEnrollmentEndDate)
-            && requestedEnrollmentEndDate.before(todayDate)) {
+    if (requestedEnrollmentEndDate != null
+        && !requestedEnrollmentEndDate.equals(existingEnrollmentEndDate)
+        && requestedEnrollmentEndDate.before(todayDate)) {
       throw new ProjectCommonException(
           ResponseCode.enrollmentEndDateUpdateError.getErrorCode(),
           ResponseCode.enrollmentEndDateUpdateError.getErrorMessage(),

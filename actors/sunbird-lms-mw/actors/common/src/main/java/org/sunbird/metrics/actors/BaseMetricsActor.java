@@ -3,9 +3,7 @@ package org.sunbird.metrics.actors;
 import static org.sunbird.common.models.util.ProjectUtil.isNotNull;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -17,15 +15,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.sunbird.actor.core.BaseActor;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.HttpUtil;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
@@ -33,6 +25,7 @@ import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.PropertiesCache;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
+import org.sunbird.learner.util.EkStepRequestUtil;
 
 public abstract class BaseMetricsActor extends BaseActor {
 
@@ -54,18 +47,6 @@ public abstract class BaseMetricsActor extends BaseActor {
   protected static final String USER_ID = "user_id";
   protected static final String FOLDERPATH = "/data/";
   protected static final String FILENAMESEPARATOR = "_";
-  private static final String CHARSETS_UTF_8 = "UTF-8";
-
-  protected Map<String, Object> addSnapshot(
-      String keyName, String name, Object value, String timeUnit) {
-    Map<String, Object> snapshot = new LinkedHashMap<>();
-    snapshot.put(JsonKey.NAME, name);
-    snapshot.put(VALUE, value);
-    if (!StringUtils.isBlank(timeUnit)) {
-      snapshot.put(JsonKey.TIME_UNIT, timeUnit);
-    }
-    return snapshot;
-  }
 
   /**
    * This method will provide date day range period. It will take parameter as "xd" where x is an
@@ -291,64 +272,6 @@ public abstract class BaseMetricsActor extends BaseActor {
     return bucket;
   }
 
-  protected static String postDataEkstep(String apiUrl, String request) {
-    Map<String, String> headers = new HashMap<>();
-    String response = null;
-    try {
-      String baseSearchUrl = System.getenv(JsonKey.EKSTEP_BASE_URL);
-      if (StringUtils.isBlank(baseSearchUrl)) {
-        baseSearchUrl = PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_BASE_URL);
-      }
-      headers.put(
-          JsonKey.AUTHORIZATION, JsonKey.BEARER + System.getenv(JsonKey.EKSTEP_AUTHORIZATION));
-      if (StringUtils.isBlank(headers.get(JsonKey.AUTHORIZATION))) {
-        headers.put(
-            JsonKey.AUTHORIZATION,
-            PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_AUTHORIZATION));
-        headers.put("Content_Type", "application/json; charset=utf-8");
-      }
-      response =
-          HttpUtil.sendPostRequest(
-              baseSearchUrl + PropertiesCache.getInstance().getProperty(apiUrl), request, headers);
-
-    } catch (Exception e) {
-      ProjectLogger.log("Error occurred", e);
-      throw new ProjectCommonException(
-          ResponseCode.unableToConnect.getErrorCode(),
-          ResponseCode.unableToConnect.getErrorMessage(),
-          ResponseCode.SERVER_ERROR.getResponseCode());
-    }
-    return response;
-  }
-
-  protected static String getDataFromEkstep(String apiUrl) {
-    Map<String, String> headers = new HashMap<>();
-    String response = null;
-    try {
-      String baseSearchUrl = System.getenv(JsonKey.EKSTEP_BASE_URL);
-      if (StringUtils.isBlank(baseSearchUrl)) {
-        baseSearchUrl = PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_BASE_URL);
-      }
-      headers.put(
-          JsonKey.AUTHORIZATION, JsonKey.BEARER + System.getenv(JsonKey.EKSTEP_AUTHORIZATION));
-      if (StringUtils.isBlank(headers.get(JsonKey.AUTHORIZATION))) {
-        headers.put(
-            JsonKey.AUTHORIZATION,
-            PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_AUTHORIZATION));
-        headers.put("Content_Type", "application/json; charset=utf-8");
-      }
-      response = HttpUtil.sendGetRequest(baseSearchUrl + apiUrl, headers);
-
-    } catch (Exception e) {
-      ProjectLogger.log("Error occurred", e);
-      throw new ProjectCommonException(
-          ResponseCode.unableToConnect.getErrorCode(),
-          ResponseCode.unableToConnect.getErrorMessage(),
-          ResponseCode.SERVER_ERROR.getResponseCode());
-    }
-    return response;
-  }
-
   public static String makePostRequest(String baseURL, String apiURL, String body)
       throws IOException {
     ProjectLogger.log("Request to Ekstep for Metrics" + body);
@@ -358,91 +281,7 @@ public abstract class BaseMetricsActor extends BaseActor {
     } else {
       authKey = JsonKey.BEARER + authKey;
     }
-    HttpClient client = HttpClientBuilder.create().build();
-    HttpPost post = new HttpPost(baseURL + PropertiesCache.getInstance().getProperty(apiURL));
-    post.addHeader("Content-Type", "application/json; charset=utf-8");
-    post.addHeader(JsonKey.AUTHORIZATION, authKey);
-    post.setEntity(new StringEntity(body, CHARSETS_UTF_8));
-    ProjectLogger.log(
-        "BaseMetricsActor:makePostRequest completed requested data : " + body,
-        LoggerEnum.INFO.name());
-    ProjectLogger.log(
-        "BaseMetricsActor:makePostRequest completed Url : "
-            + baseURL
-            + PropertiesCache.getInstance().getProperty(apiURL),
-        LoggerEnum.INFO.name());
-    HttpResponse response = client.execute(post);
-    if (response.getStatusLine().getStatusCode() != 200) {
-      ProjectLogger.log(
-          "BaseMetricsActor:makePostRequest: Status code from analytics is not 200 ",
-          LoggerEnum.INFO.name());
-      throw new ProjectCommonException(
-          ResponseCode.unableToConnect.getErrorCode(),
-          ResponseCode.unableToConnect.getErrorMessage(),
-          ResponseCode.SERVER_ERROR.getResponseCode());
-    }
-    BufferedReader rd =
-        new BufferedReader(
-            new InputStreamReader(response.getEntity().getContent(), CHARSETS_UTF_8));
-
-    StringBuilder result = new StringBuilder();
-    String line = "";
-    while ((line = rd.readLine()) != null) {
-      result.append(line);
-    }
-    ProjectLogger.log(
-        "BaseMetricsActor:makePostRequest: Response from analytics store for metrics = "
-            + response.toString(),
-        LoggerEnum.INFO.name());
-    return result.toString();
-  }
-
-  public static String makePostRequest(String apiURL, String body) throws IOException {
-    String baseSearchUrl = System.getenv(JsonKey.EKSTEP_BASE_URL);
-    if (StringUtils.isBlank(baseSearchUrl)) {
-      baseSearchUrl = PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_BASE_URL);
-    }
-    return makePostRequest(baseSearchUrl, apiURL, body);
-  }
-
-  @SuppressWarnings({"rawtypes"})
-  protected List<Map<String, Object>> getBucketData(Map aggKeyMap, String period) {
-    if (null == aggKeyMap || aggKeyMap.isEmpty()) {
-      return new ArrayList<>();
-    }
-    if ("5w".equalsIgnoreCase(period)) {
-      return getBucketDataForWeeks(aggKeyMap);
-    } else {
-      return getBucketDataForDays(aggKeyMap);
-    }
-  }
-
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  protected List<Map<String, Object>> getBucketDataForDays(Map aggKeyMap) {
-    List<Map<String, Object>> parentGroupList = new ArrayList<>();
-    List<Map<String, Double>> aggKeyList = (List<Map<String, Double>>) aggKeyMap.get("buckets");
-    for (Map aggKeyListMap : aggKeyList) {
-      Map<String, Object> parentCountObject = new LinkedHashMap<>();
-      parentCountObject.put(KEY, aggKeyListMap.get(KEY));
-      parentCountObject.put(KEYNAME, aggKeyListMap.get("key_as_string"));
-      parentCountObject.put(VALUE, aggKeyListMap.get("doc_count"));
-      parentGroupList.add(parentCountObject);
-    }
-    return parentGroupList;
-  }
-
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  protected List<Map<String, Object>> getBucketDataForWeeks(Map aggKeyMap) {
-    List<Map<String, Object>> parentGroupList = new ArrayList<>();
-    List<Map<String, Double>> aggKeyList = (List<Map<String, Double>>) aggKeyMap.get("buckets");
-    for (Map aggKeyListMap : aggKeyList) {
-      Map<String, Object> parentCountObject = new LinkedHashMap<>();
-      parentCountObject.put(KEY, formatKeyString((String) aggKeyListMap.get("key_as_string")));
-      parentCountObject.put(KEYNAME, formatKeyNameString(aggKeyListMap.get(KEY)));
-      parentCountObject.put(VALUE, aggKeyListMap.get("doc_count"));
-      parentGroupList.add(parentCountObject);
-    }
-    return parentGroupList;
+    return EkStepRequestUtil.ekStepCall(baseURL, apiURL, authKey, body);
   }
 
   protected String formatKeyString(String key) {

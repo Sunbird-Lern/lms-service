@@ -75,7 +75,7 @@ public class LearnerStateUpdateActor extends BaseActor {
       String userId = (String) request.getRequest().get(JsonKey.USER_ID);
       List<Map<String, Object>> assessments =
               (List<Map<String, Object>>) request.getRequest().get(JsonKey.ASSESSMENT_EVENTS);
-      if (!CollectionUtils.isEmpty(assessments)) {
+      if (CollectionUtils.isNotEmpty(assessments)) {
         assessments.stream().filter(x -> StringUtils.isNotBlank((String) x.get("batchId"))).forEach(
                 data -> {
                   try {
@@ -167,11 +167,6 @@ public class LearnerStateUpdateActor extends BaseActor {
         Response response = new Response();
         response.getResult().putAll(respMessages);
         sender().tell(response, self());
-      } else {
-        throw new ProjectCommonException(
-            ResponseCode.emptyContentsForUpdateBatchStatus.getErrorCode(),
-            ResponseCode.emptyContentsForUpdateBatchStatus.getErrorMessage(),
-            ResponseCode.CLIENT_ERROR.getResponseCode());
       }
     } else {
       onReceiveUnsupportedOperation(request.getOperation());

@@ -7,11 +7,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import controllers.BaseController;
 import controllers.DummyActor;
+
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import modules.OnRequestHandler;
+import modules.StartModule;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -25,11 +28,14 @@ import org.powermock.core.classloader.annotations.SuppressStaticInitializationFo
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectLogger;
+import play.Application;
+import play.Mode;
+import play.inject.guice.GuiceApplicationBuilder;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
-import play.inject.guice.GuiceApplicationBuilder;
 import play.test.Helpers;
+
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({OnRequestHandler.class})
@@ -40,23 +46,26 @@ public class CertificateControllerTest {
   private static final String BATCH_ID = "batchId";
   private static final String CERTIFICATE = "certificate";
   private static final String ISSUE_CERTIFICATE_URL = "/v1/course/batch/cert/issue";
-
-  public static play.Application app;
+  private  static final String TEST="Test";
+  public static Application application;
   public static Map<String, String[]> headerMap;
   public static ActorSystem system;
   public static final Props props = Props.create(DummyActor.class);
 
-  @BeforeClass
-  public static void startApp() {
-    app = Helpers.fakeApplication();
-    Helpers.start(app);
-    system = ActorSystem.create("system");
-    ActorRef subject = system.actorOf(props);
-    BaseController.setActorRef(subject);
-  }
 
   @Before
   public void before() {
+    application =
+            new GuiceApplicationBuilder()
+                    .in(new File("path/to/app"))
+                    .in(Mode.TEST)
+                    .disable(StartModule.class)
+                    .build();
+
+    Helpers.start(application);
+    system = ActorSystem.create("system");
+    ActorRef subject = system.actorOf(props);
+    BaseController.setActorRef(subject);
     PowerMockito.mockStatic(OnRequestHandler.class);
     Map<String, Object> inner = new HashMap<>();
     Map<String, Object> aditionalInfo = new HashMap<String, Object>();
@@ -74,8 +83,8 @@ public class CertificateControllerTest {
             .uri(ISSUE_CERTIFICATE_URL)
             .bodyJson(getIssueCertificateRequest(COURSE_ID, BATCH_ID, CERTIFICATE))
             .method("POST");
-    Result result = Helpers.route(app, req);
-    Assert.assertEquals(200, result.status());
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 200, result.status());
   }
 
   @Test
@@ -85,7 +94,7 @@ public class CertificateControllerTest {
             .uri(ISSUE_CERTIFICATE_URL + "?reIssue=true")
             .bodyJson(getIssueCertificateRequest(COURSE_ID, BATCH_ID, CERTIFICATE))
             .method("POST");
-    Result result = Helpers.route(app, req);
+    Result result = Helpers.route(application, req);
     Assert.assertEquals(200, result.status());
   }
 
@@ -96,7 +105,7 @@ public class CertificateControllerTest {
             .uri(ISSUE_CERTIFICATE_URL)
             .bodyJson(getIssueCertificateRequest(null, BATCH_ID, CERTIFICATE))
             .method("POST");
-    Result result = Helpers.route(app, req);
+    Result result = Helpers.route(application, req);
     Assert.assertEquals(400, result.status());
   }
 
@@ -107,7 +116,7 @@ public class CertificateControllerTest {
             .uri(ISSUE_CERTIFICATE_URL)
             .bodyJson(getIssueCertificateRequest(COURSE_ID, null, CERTIFICATE))
             .method("POST");
-    Result result = Helpers.route(app, req);
+    Result result = Helpers.route(application, req);
     Assert.assertEquals(400, result.status());
   }
 
@@ -118,7 +127,7 @@ public class CertificateControllerTest {
             .uri(ISSUE_CERTIFICATE_URL)
             .bodyJson(getIssueCertificateRequest(COURSE_ID, BATCH_ID, null))
             .method("POST");
-    Result result = Helpers.route(app, req);
+    Result result = Helpers.route(application, req);
     Assert.assertEquals(400, result.status());
   }
 

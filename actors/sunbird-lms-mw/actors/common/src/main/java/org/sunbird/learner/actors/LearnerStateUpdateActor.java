@@ -76,17 +76,52 @@ public class LearnerStateUpdateActor extends BaseActor {
       List<Map<String, Object>> assessments =
               (List<Map<String, Object>>) request.getRequest().get(JsonKey.ASSESSMENT_EVENTS);
       if (CollectionUtils.isNotEmpty(assessments)) {
+        Map<String, List<Map<String, Object>>> batchAssessmentList =
+          assessments
+            .stream()
+            .filter(x -> StringUtils.isNotBlank((String) x.get("batchId")))
+            .collect(
+              Collectors.groupingBy(
+                x -> {
+                  return (String) x.get("batchId");
+                }));
+        List<String> batchIds = batchAssessmentList.keySet().stream().collect(Collectors.toList());
+        Map<String, List<Map<String, Object>>> batches =
+          getBatches(batchIds)
+            .stream()
+              .collect(
+                Collectors.groupingBy(
+                  x -> {
+                    return (String) x.get("batchId");
+                  }));
         Map<String, Object> respMessages = new HashMap<>();
-        assessments.stream().filter(x -> StringUtils.isNotBlank((String) x.get("batchId"))).forEach(
+        for (Map.Entry<String, List<Map<String, Object>>> input : batchAssessmentList.entrySet()) {
+          String batchId = input.getKey();
+          if (batches.containsKey(batchId)) {
+            Map<String, Object> batchDetails = batches.get(batchId).get(0);
+            int status = getInteger(batchDetails.get("status"), 0);
+            if (status == 1) {
+              input.getValue().stream().forEach(
                 data -> {
                   try {
                     syncAssessmentData(data);
-                    updateMessages(respMessages, (String)data.get("contentId"), JsonKey.SUCCESS);
+                    updateMessages(respMessages, batchId, JsonKey.SUCCESS);
                   }
                   catch (Exception e) {
                     ProjectLogger.log("Error syncing assessment data: " + e.getMessage(), e);
                   }
                 });
+            }
+            else {
+              updateMessages(
+                      respMessages, ContentUpdateResponseKeys.NOT_A_ON_GOING_BATCH.name(), batchId);
+            }
+          }
+          else {
+            updateMessages(
+                    respMessages, ContentUpdateResponseKeys.BATCH_NOT_EXISTS.name(), batchId);
+          }
+        }
         Response response = new Response();
         response.getResult().putAll(respMessages);
         sender().tell(response, self());

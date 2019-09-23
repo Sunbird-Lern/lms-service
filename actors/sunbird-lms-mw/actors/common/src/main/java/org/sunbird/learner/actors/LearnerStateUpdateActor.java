@@ -76,15 +76,20 @@ public class LearnerStateUpdateActor extends BaseActor {
       List<Map<String, Object>> assessments =
               (List<Map<String, Object>>) request.getRequest().get(JsonKey.ASSESSMENT_EVENTS);
       if (CollectionUtils.isNotEmpty(assessments)) {
+        Map<String, Object> respMessages = new HashMap<>();
         assessments.stream().filter(x -> StringUtils.isNotBlank((String) x.get("batchId"))).forEach(
                 data -> {
                   try {
                     syncAssessmentData(data);
+                    updateMessages(respMessages, (String)data.get("contentId"), JsonKey.SUCCESS);
                   }
                   catch (Exception e) {
                     ProjectLogger.log("Error syncing assessment data: " + e.getMessage(), e);
                   }
                 });
+        Response response = new Response();
+        response.getResult().putAll(respMessages);
+        sender().tell(response, self());
       }
       List<Map<String, Object>> contentList =
           (List<Map<String, Object>>) request.getRequest().get(JsonKey.CONTENTS);

@@ -1,17 +1,38 @@
 package controllers;
 
+import static controllers.TestUtil.mapToJson;
 import static org.junit.Assert.assertEquals;
 import static play.test.Helpers.route;
 
+import akka.actor.ActorRef;
+import akka.actor.ActorSystem;
+import akka.actor.Props;
 import com.fasterxml.jackson.databind.JsonNode;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import modules.OnRequestHandler;
+import modules.StartModule;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
+import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.responsecode.ResponseCode;
+import play.Application;
+import play.Mode;
+import play.inject.guice.GuiceApplicationBuilder;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Http.RequestBuilder;
@@ -19,14 +40,44 @@ import play.mvc.Result;
 import play.test.Helpers;
 
 /** @author arvind */
-@Ignore
-public class LearnerControllerTest extends BaseControllerTest {
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({OnRequestHandler.class})
+@SuppressStaticInitializationFor({"util.AuthenticationHelper", "util.Global"})
+@PowerMockIgnore("javax.management.*")
+public class LearnerControllerTest  {
 
   private static final String COURSE_ID = "course-123";
   private static final String USER_ID = "user-123";
   private static final String CONTENT_ID = "content-123";
   private static final String BATCH_ID = "batch-123";
+  public static Application application;
+  public static ActorSystem system;
+  public static final Props props = Props.create(DummyActor.class);
+  private static final String CONTENT_STATE_UPDATE_URL = "/v1/content/state/update";
+  private static final String CONTENT_STATE_READ_URL = "/v1/content/state/read";
 
+  @Before
+  public void before() {
+    application =
+            new GuiceApplicationBuilder()
+                    .in(new File("path/to/app"))
+                    .in(Mode.TEST)
+                    .disable(StartModule.class)
+                    .build();
+
+    Helpers.start(application);
+    system = ActorSystem.create("system");
+    ActorRef subject = system.actorOf(props);
+    BaseController.setActorRef(subject);
+    PowerMockito.mockStatic(OnRequestHandler.class);
+    Map<String, Object> inner = new HashMap<>();
+    Map<String, Object> aditionalInfo = new HashMap<String, Object>();
+    aditionalInfo.put(JsonKey.START_TIME, System.currentTimeMillis());
+    inner.put(JsonKey.ADDITIONAL_INFO, aditionalInfo);
+    Map outer = PowerMockito.mock(HashMap.class);
+    OnRequestHandler.requestInfo = outer;
+    PowerMockito.when(OnRequestHandler.requestInfo.get(Mockito.anyString())).thenReturn(inner);
+  }
   @Test
   public void testUpdateContentStateSuccess() {
     Map<String, Object> requestMap = new HashMap<>();
@@ -35,20 +86,21 @@ public class LearnerControllerTest extends BaseControllerTest {
     Map<String, Object> map = new HashMap<>();
     map.put(JsonKey.CONTENT_ID, CONTENT_ID);
     map.put(JsonKey.STATUS, "Active");
-    map.put(JsonKey.LAST_UPDATED_TIME, "2017-12-18 10:47:30:707+0530");
+    map.put(JsonKey.LAST_UPDATED_TIME, "2019-08-18 10:47:30:707+0530");
     list.add(map);
     innerMap.put("contents", list);
     innerMap.put("courseId", COURSE_ID);
     requestMap.put(JsonKey.REQUEST, innerMap);
     String data = mapToJson(requestMap);
     JsonNode json = Json.parse(data);
-    RequestBuilder req =
-        new RequestBuilder().bodyJson(json).uri("/v1/content/state/update").method("PATCH");
-    req.headers(new Http.Headers(headerMap));
-    Result result = route(app, req);
-    String response = Helpers.contentAsString(result);
-    System.out.println(response);
-    assertEquals(200, result.status());
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(CONTENT_STATE_UPDATE_URL)
+                    .bodyJson(json)
+                    .method("PATCH");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 200, result.status());
+
   }
 
   @Test
@@ -57,14 +109,17 @@ public class LearnerControllerTest extends BaseControllerTest {
     Map<String, Object> innerMap = new HashMap<>();
     innerMap.put(JsonKey.BATCH_ID, BATCH_ID);
     innerMap.put(JsonKey.USER_ID, USER_ID);
+    innerMap.put(JsonKey.COURSE_ID,COURSE_ID);
     requestMap.put(JsonKey.REQUEST, innerMap);
     String data = mapToJson(requestMap);
     JsonNode json = Json.parse(data);
-    RequestBuilder req =
-        new RequestBuilder().bodyJson(json).uri("/v1/content/state/read").method("POST");
-    req.headers(new Http.Headers(headerMap));
-    Result result = route(app, req);
-    assertEquals(200, result.status());
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(CONTENT_STATE_READ_URL)
+                    .bodyJson(json)
+                    .method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 200, result.status());
   }
 
   @Test
@@ -77,12 +132,13 @@ public class LearnerControllerTest extends BaseControllerTest {
     String data = mapToJson(requestMap);
 
     JsonNode json = Json.parse(data);
-    RequestBuilder req =
-        new RequestBuilder().bodyJson(json).uri("/v1/content/state/read").method("POST");
-
-    req.headers(new Http.Headers(headerMap));
-    Result result = route(app, req);
-    assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), result.status());
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(CONTENT_STATE_READ_URL)
+                    .bodyJson(json)
+                    .method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 400, result.status());
   }
 
   @Test
@@ -93,13 +149,32 @@ public class LearnerControllerTest extends BaseControllerTest {
     requestMap.put(JsonKey.REQUEST, innerMap);
     String data = mapToJson(requestMap);
     JsonNode json = Json.parse(data);
-    RequestBuilder req =
-        new RequestBuilder().bodyJson(json).uri("/v1/content/state/read").method("POST");
-    req.headers(new Http.Headers(headerMap));
-    Result result = route(app, req);
-    assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), result.status());
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(CONTENT_STATE_READ_URL)
+                    .bodyJson(json)
+                    .method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 400, result.status());
   }
 
+
+  @Test
+  public void testGetContentStateFailureWithoutCourseId() {
+    Map<String, Object> requestMap = new HashMap<>();
+    Map<String, Object> innerMap = new HashMap<>();
+    innerMap.put("userId", USER_ID);
+    requestMap.put(JsonKey.REQUEST, innerMap);
+    String data = mapToJson(requestMap);
+    JsonNode json = Json.parse(data);
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(CONTENT_STATE_READ_URL)
+                    .bodyJson(json)
+                    .method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 400, result.status());
+  }
   @Test
   public void testUpdateContentStateFailureForMissingCourseId() {
     Map<String, Object> requestMap = new HashMap<>();
@@ -127,12 +202,88 @@ public class LearnerControllerTest extends BaseControllerTest {
     requestMap.put(JsonKey.REQUEST, innerMap);
     String data = mapToJson(requestMap);
     JsonNode json = Json.parse(data);
-    RequestBuilder req =
-            new RequestBuilder().bodyJson(json).uri("/v1/content/state/update").method("PATCH");
-    req.headers(new Http.Headers(headerMap));
-    Result result = route(app, req);
-    String response = Helpers.contentAsString(result);
-    System.out.println(response);
-    assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), result.status());
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(CONTENT_STATE_UPDATE_URL)
+                    .bodyJson(json)
+                    .method("PATCH");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 400, result.status());
+
+  }
+
+  @Test
+  public void testUpdateContentStateFailureWithoutContentId() {
+    Map<String, Object> requestMap = new HashMap<>();
+    Map<String, Object> innerMap = new HashMap<>();
+    List<Object> list = new ArrayList<>();
+    Map<String, Object> map = new HashMap<>();
+    map.put(JsonKey.CONTENT_ID, null);
+    map.put(JsonKey.STATUS, "Active");
+    map.put(JsonKey.LAST_UPDATED_TIME, "2017-12-18 10:47:30:707+0530");
+    list.add(map);
+    innerMap.put("contents", list);
+    innerMap.put("courseId", COURSE_ID);
+    requestMap.put(JsonKey.REQUEST, innerMap);
+    String data = mapToJson(requestMap);
+    JsonNode json = Json.parse(data);
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(CONTENT_STATE_UPDATE_URL)
+                    .bodyJson(json)
+                    .method("PATCH");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 400, result.status());
+
+  }
+
+  @Test
+  public void testUpdateContentStateFailureWithoutStatus() {
+    Map<String, Object> requestMap = new HashMap<>();
+    Map<String, Object> innerMap = new HashMap<>();
+    List<Object> list = new ArrayList<>();
+    Map<String, Object> map = new HashMap<>();
+    map.put(JsonKey.CONTENT_ID, CONTENT_ID);
+    map.put(JsonKey.STATUS, null);
+    map.put(JsonKey.LAST_UPDATED_TIME, "2017-12-18 10:47:30:707+0530");
+    list.add(map);
+    innerMap.put("contents", list);
+    innerMap.put("courseId", COURSE_ID);
+    requestMap.put(JsonKey.REQUEST, innerMap);
+    String data = mapToJson(requestMap);
+    JsonNode json = Json.parse(data);
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(CONTENT_STATE_UPDATE_URL)
+                    .bodyJson(json)
+                    .method("PATCH");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 400, result.status());
+
+  }
+
+  @Test
+  public void testUpdateContentStateFailureWithIncorextDateFormat() {
+    Map<String, Object> requestMap = new HashMap<>();
+    Map<String, Object> innerMap = new HashMap<>();
+    List<Object> list = new ArrayList<>();
+    Map<String, Object> map = new HashMap<>();
+    map.put(JsonKey.CONTENT_ID, CONTENT_ID);
+    map.put(JsonKey.STATUS, "Active");
+    map.put(JsonKey.LAST_UPDATED_TIME, "08-08-2019 10:47:30:707+0530");
+    list.add(map);
+    innerMap.put("contents", list);
+    innerMap.put("courseId", COURSE_ID);
+    requestMap.put(JsonKey.REQUEST, innerMap);
+    String data = mapToJson(requestMap);
+    JsonNode json = Json.parse(data);
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(CONTENT_STATE_UPDATE_URL)
+                    .bodyJson(json)
+                    .method("PATCH");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 400, result.status());
+
   }
 }

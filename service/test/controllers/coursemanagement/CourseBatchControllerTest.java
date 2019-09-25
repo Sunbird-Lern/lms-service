@@ -269,7 +269,7 @@ public class CourseBatchControllerTest  {
     Http.RequestBuilder req =
             new Http.RequestBuilder()
                     .uri(SEARCH_BATCH_URL)
-                    .bodyJson(searchCourseBatchRequest(false,true))
+                    .bodyJson(searchCourseBatchRequest(true,true))
                     .method("POST");
     Result result = Helpers.route(application, req);
     Assert.assertEquals( 200, result.status());
@@ -290,7 +290,7 @@ public class CourseBatchControllerTest  {
   public void testAddUserToBatchFailureWithoutUserIds() {
     Http.RequestBuilder req =
             new Http.RequestBuilder()
-                    .uri(REMOVE_USERS_BATCH_URL)
+                    .uri(ADD_USERS_BATCH_URL)
                     .bodyJson(addAndRemoveUserToBatchRequest(false))
                     .method("POST");
     Result result = Helpers.route(application, req);
@@ -301,7 +301,7 @@ public class CourseBatchControllerTest  {
   public void testRemoveUserFromBatchSuccess() {
     Http.RequestBuilder req =
             new Http.RequestBuilder()
-                    .uri(ADD_USERS_BATCH_URL)
+                    .uri(REMOVE_USERS_BATCH_URL)
                     .bodyJson(addAndRemoveUserToBatchRequest(true))
                     .method("POST");
     Result result = Helpers.route(application, req);
@@ -312,7 +312,7 @@ public class CourseBatchControllerTest  {
   public void testRemoveUserToBatchFailureWithoutUserIds() {
     Http.RequestBuilder req =
             new Http.RequestBuilder()
-                    .uri(ADD_USERS_BATCH_URL)
+                    .uri(REMOVE_USERS_BATCH_URL)
                     .bodyJson(addAndRemoveUserToBatchRequest(false))
                     .method("POST");
     Result result = Helpers.route(application, req);

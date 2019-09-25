@@ -76,17 +76,6 @@ public class CourseBatchController extends BaseController {
         httpRequest);
   }
 
-  public CompletionStage<Result> deleteBatch(Http.Request httpRequest) {
-    return handleRequest(
-        ActorOperations.REMOVE_BATCH.getValue(),
-        httpRequest.body().asJson(),
-        (request) -> {
-          new CourseBatchRequestValidator().validateDeleteCourseBatchRequest((Request) request);
-          return null;
-        },
-        httpRequest);
-  }
-
   @SuppressWarnings({"unchecked", "rawtypes"})
   public CompletionStage<Result> search(Http.Request httpRequest) {
     try {

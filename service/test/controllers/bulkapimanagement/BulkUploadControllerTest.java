@@ -50,7 +50,7 @@ import util.RequestInterceptor;
 @PrepareForTest({OnRequestHandler.class})
 @SuppressStaticInitializationFor({"util.AuthenticationHelper", "util.Global"})
 @PowerMockIgnore("javax.management.*")
-@Ignore
+
 public class BulkUploadControllerTest {
 
   public static Application application;

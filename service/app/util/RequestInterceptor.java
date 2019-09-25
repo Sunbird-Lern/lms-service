@@ -1,5 +1,7 @@
 package util;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang3.StringUtils;
@@ -15,11 +17,15 @@ import play.mvc.Http;
  */
 public class RequestInterceptor {
 
+  public static List<String> restrictedUriList = null;
   private static ConcurrentHashMap<String, Short> apiHeaderIgnoreMap = new ConcurrentHashMap<>();
 
   private RequestInterceptor() {}
 
   static {
+    restrictedUriList = new ArrayList<>();
+    restrictedUriList.add("/v1/content/state/update");
+
     short var = 1;
     apiHeaderIgnoreMap.put("/service/health", var);
     apiHeaderIgnoreMap.put("/v1/page/assemble", var);

@@ -35,7 +35,10 @@ public class ErrorHandler extends DefaultHttpErrorHandler {
   @Override
   public CompletionStage<Result> onServerError(Http.RequestHeader request, Throwable t) {
     ProjectLogger.log(
-        "Global: onError called for path = " + request.path() + ", headers = " + request.headers(),
+        "Global: onError called for path = "
+            + request.path()
+            + ", headers = "
+            + request.getHeaders().toMap(),
         t);
     Response response = null;
     ProjectCommonException commonException = null;

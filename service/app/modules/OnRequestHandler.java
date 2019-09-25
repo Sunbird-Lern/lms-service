@@ -186,35 +186,15 @@ public class OnRequestHandler implements ActionCreator {
 
         String uri = request.uri();
         String env;
-        if (uri.startsWith("/v1/user") || uri.startsWith("/v2/user")) {
-            env = JsonKey.USER;
-        } else if (uri.startsWith("/v1/org")) {
-            env = JsonKey.ORGANISATION;
-        } else if (uri.startsWith("/v1/object")) {
-            env = JsonKey.ANNOUNCEMENT;
-        } else if (uri.startsWith("/v1/page")) {
+        if (uri.startsWith("/v1/page")) {
             env = JsonKey.PAGE;
         } else if (uri.startsWith("/v1/course/batch")) {
             env = JsonKey.BATCH;
-        } else if (uri.startsWith("/v1/notification")) {
-            env = JsonKey.NOTIFICATION;
         } else if (uri.startsWith("/v1/dashboard")) {
             env = JsonKey.DASHBOARD;
-        } else if (uri.startsWith("/v1/badges")) {
-            env = JsonKey.BADGES;
-        } else if (uri.startsWith("/v1/issuer")) {
-            env = BadgingJsonKey.BADGES;
         } else if (uri.startsWith("/v1/content")) {
             env = JsonKey.BATCH;
-        } else if (uri.startsWith("/v1/role")) {
-            env = JsonKey.ROLE;
-        } else if (uri.startsWith("/v1/note")) {
-            env = JsonKey.NOTE;
-        } else if (uri.startsWith("/v1/location")) {
-            env = JsonKey.LOCATION;
-        } else if (uri.startsWith("/v1/otp")) {
-            env = "otp";
-        } else {
+        }else {
             env = "miscellaneous";
         }
         return env;

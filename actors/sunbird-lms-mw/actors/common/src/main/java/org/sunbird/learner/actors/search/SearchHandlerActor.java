@@ -1,5 +1,6 @@
 package org.sunbird.learner.actors.search;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,6 +50,7 @@ public class SearchHandlerActor extends BaseActor {
     ExecutionContext.setRequestId(request.getRequestId());
 
     if (request.getOperation().equalsIgnoreCase(ActorOperations.COMPOSITE_SEARCH.getValue())) {
+      Instant instant = Instant.now();
       Map<String, Object> searchQueryMap = request.getRequest();
       Object objectType =
           ((Map<String, Object>) searchQueryMap.get(JsonKey.FILTERS)).get(JsonKey.OBJECT_TYPE);
@@ -72,10 +74,23 @@ public class SearchHandlerActor extends BaseActor {
 
       Map<String, Object> result = null;
       ProjectLogger.log(
-          "SearchHandlerActor:onReceive  searchDto=" + searchDto, LoggerEnum.INFO.name());
+          "SearchHandlerActor:onReceive  searchDto="
+              + searchDto
+              + "instant "
+              + (Instant.now().toEpochMilli() - instant.toEpochMilli()),
+          LoggerEnum.INFO.name());
       Future<Map<String, Object>> resultF = esService.search(searchDto, types[0]);
+      ProjectLogger.log(
+          "SearchHandlerActor:onReceive after es call before resolving instant "
+              + (Instant.now().toEpochMilli() - instant.toEpochMilli()),
+          LoggerEnum.INFO.name());
       result = (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
-      ProjectLogger.log("SearchHandlerActor:onReceive  result=" + result, LoggerEnum.INFO.name());
+      ProjectLogger.log(
+          "SearchHandlerActor:onReceive  result="
+              + result
+              + "instant "
+              + (Instant.now().toEpochMilli() - instant.toEpochMilli()),
+          LoggerEnum.INFO.name());
       if (EsType.courseBatch.getTypeName().equalsIgnoreCase(filterObjectType)) {
         ProjectLogger.log(
             "SearchHandlerActor:onReceive participants "
@@ -91,7 +106,10 @@ public class SearchHandlerActor extends BaseActor {
                 getParticipantList((String) courseBatch.get(JsonKey.BATCH_ID)));
           }
         }
-        ProjectLogger.log("SearchHandlerActor:onReceive before response", LoggerEnum.INFO.name());
+        ProjectLogger.log(
+            "SearchHandlerActor:onReceive before response instant "
+                + (Instant.now().toEpochMilli() - instant.toEpochMilli()),
+            LoggerEnum.INFO.name());
         Response response = new Response();
         if (result != null) {
           response.put(JsonKey.RESPONSE, result);

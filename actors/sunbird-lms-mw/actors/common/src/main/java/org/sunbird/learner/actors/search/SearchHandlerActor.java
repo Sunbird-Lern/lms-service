@@ -74,7 +74,8 @@ public class SearchHandlerActor extends BaseActor {
 
       Map<String, Object> result = null;
       ProjectLogger.log(
-          "SearchHandlerActor:onReceive  searchDto="
+          "SearchHandlerActor:onReceive  request="
+              + request.getRequestId()
               + searchDto
               + "instant "
               + (Instant.now().toEpochMilli() - instant.toEpochMilli()),

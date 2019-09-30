@@ -432,45 +432,54 @@ public class BaseController extends Controller {
    * @return Result
    */
   public Result createCommonResponse(Object response, String key, Http.Request request) {
-    Map<String, Object> requestInfo =
-        OnRequestHandler.requestInfo.get(request.flash().get(JsonKey.REQUEST_ID));
-    org.sunbird.common.request.Request req = new org.sunbird.common.request.Request();
-    try {
-      Map<String, Object> params = (Map<String, Object>) requestInfo.get(JsonKey.ADDITIONAL_INFO);
+    String requestId = request.flash().getOptional(JsonKey.REQUEST_ID).orElse(null);
+    if (requestId != null && OnRequestHandler.requestInfo.containsKey(requestId)) {
+      Map<String, Object> requestInfo = OnRequestHandler.requestInfo.get(requestId);
+      org.sunbird.common.request.Request req = new org.sunbird.common.request.Request();
+      try {
+        Map<String, Object> params = (Map<String, Object>) requestInfo.get(JsonKey.ADDITIONAL_INFO);
 
-      params.put(JsonKey.LOG_TYPE, JsonKey.API_ACCESS);
-      params.put(JsonKey.MESSAGE, "");
-      params.put(JsonKey.METHOD, request.method());
-      // calculate  the total time consume
-      long startTime = (Long) params.get(JsonKey.START_TIME);
-      params.put(JsonKey.DURATION, calculateApiTimeTaken(startTime));
-      removeFields(params, JsonKey.START_TIME);
-      params.put(
-          JsonKey.STATUS,
-          String.valueOf(((Response) response).getResponseCode().getResponseCode()));
-      params.put(JsonKey.LOG_LEVEL, JsonKey.INFO);
-      req.setRequest(
-          generateTelemetryRequestForController(
-              TelemetryEvents.LOG.getName(),
-              params,
-              (Map<String, Object>) requestInfo.get(JsonKey.CONTEXT)));
-      // if any request is coming form /v1/telemetry/save then don't generate the telemetry log
-      // for it.
-      lmaxWriter.submitMessage(req);
-    } catch (Exception ex) {
+        params.put(JsonKey.LOG_TYPE, JsonKey.API_ACCESS);
+        params.put(JsonKey.MESSAGE, "");
+        params.put(JsonKey.METHOD, request.method());
+        // calculate  the total time consume
+        long startTime = (Long) params.get(JsonKey.START_TIME);
+        params.put(JsonKey.DURATION, calculateApiTimeTaken(startTime));
+        ProjectLogger.log(
+            "BaseController:createCommonResponse api taken time="
+                + params.get(JsonKey.DURATION)
+                + " for messageId="
+                + requestId,
+            LoggerEnum.INFO);
+        removeFields(params, JsonKey.START_TIME);
+        params.put(
+            JsonKey.STATUS,
+            String.valueOf(((Response) response).getResponseCode().getResponseCode()));
+        params.put(JsonKey.LOG_LEVEL, JsonKey.INFO);
+        req.setRequest(
+            generateTelemetryRequestForController(
+                TelemetryEvents.LOG.getName(),
+                params,
+                (Map<String, Object>) requestInfo.get(JsonKey.CONTEXT)));
+        // if any request is coming form /v1/telemetry/save then don't generate the telemetry log
+        // for it.
+        lmaxWriter.submitMessage(req);
+      } catch (Exception ex) {
+        ProjectLogger.log(
+            "BaseController:createCommonResponse Exception in writing telemetry for request "
+                + requestId,
+            ex);
+      } finally {
+        // remove request info from map
+        OnRequestHandler.requestInfo.remove(requestId);
+        ProjectLogger.log(
+            "BaseController:createCommonResponse removed details for messageId=" + requestId,
+            LoggerEnum.INFO);
+      }
+    } else {
       ProjectLogger.log(
-          "BaseController:createCommonResponse Exception in writing telemetry for request "
-              + request.flash().get(JsonKey.REQUEST_ID)
-              + ", requestInfo="
-              + OnRequestHandler.requestInfo,
-          ex);
-    } finally {
-      // remove request info from map
-      OnRequestHandler.requestInfo.remove(request.flash().get(JsonKey.REQUEST_ID));
-      ProjectLogger.log(
-          "BaseController:createCommonResponse added details for messageId="
-              + request.flash().get(JsonKey.REQUEST_ID),
-          LoggerEnum.INFO);
+          "BaseController:createCommonResponse request details not found requestId=" + requestId,
+          LoggerEnum.ERROR);
     }
     Response courseResponse = (Response) response;
     if (!StringUtils.isBlank(key)) {

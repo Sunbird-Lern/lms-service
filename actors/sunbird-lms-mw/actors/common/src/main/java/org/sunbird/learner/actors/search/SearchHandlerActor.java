@@ -74,29 +74,16 @@ public class SearchHandlerActor extends BaseActor {
 
       Map<String, Object> result = null;
       ProjectLogger.log(
-          "SearchHandlerActor:onReceive  request="
-              + request.getRequestId()
-              + searchDto
-              + "instant "
+          "SearchHandlerActor:onReceive  request search instant duration="
               + (Instant.now().toEpochMilli() - instant.toEpochMilli()),
           LoggerEnum.INFO.name());
       Future<Map<String, Object>> resultF = esService.search(searchDto, types[0]);
-      ProjectLogger.log(
-          "SearchHandlerActor:onReceive after es call before resolving instant "
-              + (Instant.now().toEpochMilli() - instant.toEpochMilli()),
-          LoggerEnum.INFO.name());
       result = (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
       ProjectLogger.log(
-          "SearchHandlerActor:onReceive  result="
-              + result
-              + "instant "
+          "SearchHandlerActor:onReceive search complete instant duration="
               + (Instant.now().toEpochMilli() - instant.toEpochMilli()),
           LoggerEnum.INFO.name());
       if (EsType.courseBatch.getTypeName().equalsIgnoreCase(filterObjectType)) {
-        ProjectLogger.log(
-            "SearchHandlerActor:onReceive participants "
-                + (String) request.getContext().get(JsonKey.PARTICIPANTS),
-            LoggerEnum.INFO.name());
         if (JsonKey.PARTICIPANTS.equalsIgnoreCase(
             (String) request.getContext().get(JsonKey.PARTICIPANTS))) {
           List<Map<String, Object>> courseBatchList =
@@ -107,10 +94,6 @@ public class SearchHandlerActor extends BaseActor {
                 getParticipantList((String) courseBatch.get(JsonKey.BATCH_ID)));
           }
         }
-        ProjectLogger.log(
-            "SearchHandlerActor:onReceive before response instant "
-                + (Instant.now().toEpochMilli() - instant.toEpochMilli()),
-            LoggerEnum.INFO.name());
         Response response = new Response();
         if (result != null) {
           response.put(JsonKey.RESPONSE, result);

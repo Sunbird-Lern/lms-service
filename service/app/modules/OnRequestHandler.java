@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.BadgingJsonKey;
@@ -30,7 +31,7 @@ public class OnRequestHandler implements ActionCreator {
   public static boolean isServiceHealthy = true;
   private final List<String> USER_UNAUTH_STATES =
       Arrays.asList(JsonKey.UNAUTHORIZED, JsonKey.ANONYMOUS);
-  public static Map<String, Map<String, Object>> requestInfo = new HashMap<>();
+  public static Map<String, Map<String, Object>> requestInfo = new ConcurrentHashMap<>();
 
   @Override
   public Action createAction(Http.Request request, Method actionMethod) {
@@ -163,7 +164,7 @@ public class OnRequestHandler implements ActionCreator {
       request.flash().put(JsonKey.ACTOR_TYPE, JsonKey.CONSUMER);
     }
     context.setRequestContext(reqContext);
-    Map<String, Object> map = new HashMap<>();
+    Map<String, Object> map = new ConcurrentHashMap<>();
     map.put(JsonKey.CONTEXT, TelemetryUtil.getTelemetryContext());
     Map<String, Object> additionalInfo = new HashMap<>();
     additionalInfo.put(JsonKey.URL, url);
@@ -177,7 +178,7 @@ public class OnRequestHandler implements ActionCreator {
     }
     request.flash().put(JsonKey.REQUEST_ID, messageId);
     if (requestInfo == null) {
-      requestInfo = new HashMap<>();
+      requestInfo = new ConcurrentHashMap<>();
     }
     requestInfo.put(messageId, map);
     ProjectLogger.log(

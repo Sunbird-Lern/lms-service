@@ -1,5 +1,6 @@
 package org.sunbird.learner.actors.search;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,6 +13,8 @@ import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.LoggerEnum;
+import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil.EsType;
 import org.sunbird.common.models.util.PropertiesCache;
 import org.sunbird.common.models.util.TelemetryEnvKey;
@@ -47,6 +50,7 @@ public class SearchHandlerActor extends BaseActor {
     ExecutionContext.setRequestId(request.getRequestId());
 
     if (request.getOperation().equalsIgnoreCase(ActorOperations.COMPOSITE_SEARCH.getValue())) {
+      Instant instant = Instant.now();
       Map<String, Object> searchQueryMap = request.getRequest();
       Object objectType =
           ((Map<String, Object>) searchQueryMap.get(JsonKey.FILTERS)).get(JsonKey.OBJECT_TYPE);
@@ -69,10 +73,30 @@ public class SearchHandlerActor extends BaseActor {
       SearchDTO searchDto = Util.createSearchDto(searchQueryMap);
 
       Map<String, Object> result = null;
-
+      ProjectLogger.log(
+          "SearchHandlerActor:onReceive  request="
+              + request.getRequestId()
+              + searchDto
+              + "instant "
+              + (Instant.now().toEpochMilli() - instant.toEpochMilli()),
+          LoggerEnum.INFO.name());
       Future<Map<String, Object>> resultF = esService.search(searchDto, types[0]);
+      ProjectLogger.log(
+          "SearchHandlerActor:onReceive after es call before resolving instant "
+              + (Instant.now().toEpochMilli() - instant.toEpochMilli()),
+          LoggerEnum.INFO.name());
       result = (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
+      ProjectLogger.log(
+          "SearchHandlerActor:onReceive  result="
+              + result
+              + "instant "
+              + (Instant.now().toEpochMilli() - instant.toEpochMilli()),
+          LoggerEnum.INFO.name());
       if (EsType.courseBatch.getTypeName().equalsIgnoreCase(filterObjectType)) {
+        ProjectLogger.log(
+            "SearchHandlerActor:onReceive participants "
+                + (String) request.getContext().get(JsonKey.PARTICIPANTS),
+            LoggerEnum.INFO.name());
         if (JsonKey.PARTICIPANTS.equalsIgnoreCase(
             (String) request.getContext().get(JsonKey.PARTICIPANTS))) {
           List<Map<String, Object>> courseBatchList =
@@ -83,7 +107,10 @@ public class SearchHandlerActor extends BaseActor {
                 getParticipantList((String) courseBatch.get(JsonKey.BATCH_ID)));
           }
         }
-
+        ProjectLogger.log(
+            "SearchHandlerActor:onReceive before response instant "
+                + (Instant.now().toEpochMilli() - instant.toEpochMilli()),
+            LoggerEnum.INFO.name());
         Response response = new Response();
         if (result != null) {
           response.put(JsonKey.RESPONSE, result);

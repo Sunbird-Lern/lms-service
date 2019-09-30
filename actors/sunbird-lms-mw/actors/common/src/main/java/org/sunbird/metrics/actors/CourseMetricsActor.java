@@ -296,9 +296,28 @@ public class CourseMetricsActor extends BaseMetricsActor {
         ProjectUtil.getConfigValue(JsonKey.SUNBIRD_COURSE_METRICS_REPORT_FOLDER);
     String reportPath = courseMetricsReportFolder + File.separator + "report-" + batchId + ".csv";
 
-    String courseAssessmentsReportFolder =
-            ProjectUtil.getConfigValue(JsonKey.SUNBIRD_ASSESSMENT_REPORT_FOLDER);
-    String courseAssessmentsreportPath = courseAssessmentsReportFolder + File.separator + "report-" + batchId + ".csv";
+    // check assessment report location exist in ES or not
+    Future<Map<String, Object>> assessmentBatchResultF =
+            esService.getDataByIdentifier(EsType.cbatchassessment.getTypeName(), batchId);
+    Map<String, Object> assessmentBatchResult =
+            (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(assessmentBatchResultF);
+    String assessmentReportSignedUrl = null ;
+    if (isNotNull(assessmentBatchResult) || assessmentBatchResult.size() != 0) {
+      String reportLocation = (String) assessmentBatchResult.get(JsonKey.ASSESSMENT_REPORT_BLOB_URL);
+      if (isNotNull(reportLocation)) {
+        String courseAssessmentsReportFolder =
+                ProjectUtil.getConfigValue(JsonKey.SUNBIRD_ASSESSMENT_REPORT_FOLDER);
+        String courseAssessmentsreportPath = courseAssessmentsReportFolder + File.separator + "report-" + batchId + ".csv";
+        ProjectLogger.log(
+                "CourseMetricsActor:courseProgressMetricsReport: courseMetricsContainer="
+                        + courseMetricsContainer
+                        + ", courseAssessmentsreportPath="
+                        + courseAssessmentsreportPath,
+                LoggerEnum.INFO.name());
+        assessmentReportSignedUrl = CloudStorageUtil.getAnalyticsSignedUrl(
+                CloudStorageType.AZURE, courseMetricsContainer, courseAssessmentsreportPath);
+      }
+    }
 
     ProjectLogger.log(
         "CourseMetricsActor:courseProgressMetricsReport: courseMetricsContainer="
@@ -310,23 +329,13 @@ public class CourseMetricsActor extends BaseMetricsActor {
         CloudStorageUtil.getAnalyticsSignedUrl(
             CloudStorageType.AZURE, courseMetricsContainer, reportPath);
 
-    ProjectLogger.log(
-        "CourseMetricsActor:courseProgressMetricsReport: courseMetricsContainer="
-            + courseMetricsContainer
-            + ", courseAssessmentsreportPath="
-            + courseAssessmentsreportPath,
-        LoggerEnum.INFO.name());
-
-    String assessmentReportSignedUrl =
-            CloudStorageUtil.getAnalyticsSignedUrl(
-                    CloudStorageType.AZURE, courseMetricsContainer, courseAssessmentsreportPath);
-
-
     Response response = new Response();
     response.put(JsonKey.SIGNED_URL, signedUrl);
     Map<String, Object> reports = new HashMap<>();
     reports.put(JsonKey.PROGRESS_REPORT_SIGNED_URL, signedUrl);
-    reports.put(JsonKey.ASSESSMENT_REPORT_SIGNED_URL, assessmentReportSignedUrl);
+    if (isNotNull(assessmentReportSignedUrl)) {
+      reports.put(JsonKey.ASSESSMENT_REPORT_SIGNED_URL, assessmentReportSignedUrl);
+    }
     response.put(JsonKey.REPORTS, reports);
     response.put(
         JsonKey.DURATION, ProjectUtil.getConfigValue(JsonKey.DOWNLOAD_LINK_EXPIRY_TIMEOUT));

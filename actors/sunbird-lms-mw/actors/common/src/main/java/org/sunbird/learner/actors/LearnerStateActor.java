@@ -337,20 +337,22 @@ public class LearnerStateActor extends BaseActor {
         (List<Map<String, Object>>) (result.get(JsonKey.CONTENT));
     List<Map<String, Object>> contentsForCourses = getcontentsForCourses(request, activeCourses);
     Set<String> courseIds = new HashSet<>();
+    Map<String, Map<String, Object>> contentIdsMapForCourses = new HashMap<>();
     if (contentsForCourses != null) {
       courseIds =
           contentsForCourses
               .stream()
               .map(course -> (String) course.get(JsonKey.IDENTIFIER))
               .collect(Collectors.toSet());
+      ProjectLogger.log(
+          "LearnerStateActor:prepareCourseSearchRequest:Response courseIds = " + courseIds,
+          LoggerEnum.INFO.name());
+      contentIdsMapForCourses =
+          contentsForCourses
+              .stream()
+              .collect(
+                  Collectors.toMap(cMap -> (String) cMap.get(JsonKey.IDENTIFIER), cMap -> cMap));
     }
-    ProjectLogger.log(
-        "LearnerStateActor:prepareCourseSearchRequest:Response courseIds = " + courseIds,
-        LoggerEnum.INFO.name());
-    Map<String, Map<String, Object>> contentIdsMapForCourses =
-        contentsForCourses
-            .stream()
-            .collect(Collectors.toMap(cMap -> (String) cMap.get(JsonKey.IDENTIFIER), cMap -> cMap));
 
     List<Map<String, Object>> updatedCourses = new ArrayList<>();
     for (Map<String, Object> course : activeCourses) {

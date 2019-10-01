@@ -165,8 +165,8 @@ public class CourseMetricsAdvActorTest extends SunbirdApplicationActorTest {
         .thenReturn(CustomObjectBuilder.getRandomCourseBatch().asESIdentifierResult());
     when(group
             .getESMockerService()
-            .getDataByIdentifier(Mockito.eq(EsType.cbatchassessment.getTypeName()), Mockito.anyString()))
-            .thenReturn(CustomObjectBuilder.getRandomCourseBatch().asESIdentifierResult());
+            .search(Mockito.any(), Mockito.eq(EsType.cbatchassessment.getTypeName())))
+            .thenReturn(CustomObjectBuilder.getRandomCourseBatchStats(5).asESSearchResult());
     when(CloudStorageUtil.getAnalyticsSignedUrl(
             Mockito.any(), Mockito.anyString(), Mockito.anyString()))
         .thenReturn("https://dummy-signed-url.com");

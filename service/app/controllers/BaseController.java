@@ -6,26 +6,24 @@ import akka.pattern.PatternsCS;
 import akka.util.Timeout;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
-
-import modules.OnRequestHandler;
+import java.util.function.Function;
 import modules.ApplicationStart;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
+import modules.OnRequestHandler;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.service.SunbirdMWService;
@@ -42,23 +40,14 @@ import org.sunbird.common.request.HeaderParam;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.telemetry.util.TelemetryEvents;
 import org.sunbird.telemetry.util.TelemetryLmaxWriter;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.function.Function;
-
-import play.libs.Files;
-import play.libs.Json;
 import play.libs.Files.TemporaryFile;
+import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
-import play.mvc.Http.Context;
 import play.mvc.Http.Request;
 import play.mvc.Result;
 import play.mvc.Results;
 import util.AuthenticationHelper;
-
-import static org.sunbird.common.exception.ProjectCommonException.throwClientErrorException;
 
 /**
  * This controller we can use for writing some common method.
@@ -94,10 +83,10 @@ public class BaseController extends Controller {
     /**
      * Helper method for creating and initialising a request for given operation and request body.
      *
-     * @param operation       A defined actor operation
+     * @param operation A defined actor operation
      * @param requestBodyJson Optional information received in request body (JSON)
      * @return Created and initialised Request (@see {@link org.sunbird.common.request.Request})
-     * instance.
+     *     instance.
      */
     protected org.sunbird.common.request.Request createAndInitRequest(
             String operation, JsonNode requestBodyJson, Http.Request httpRequest) {
@@ -113,11 +102,21 @@ public class BaseController extends Controller {
      *
      * @param operation A defined actor operation
      * @return Created and initialised Request (@see {@link org.sunbird.common.request.Request})
-     * instance.
+     *     instance.
      */
-    protected org.sunbird.common.request.Request createAndInitRequest(String operation, Http.Request httpRequest) {
+    protected org.sunbird.common.request.Request createAndInitRequest(
+            String operation, Http.Request httpRequest) {
         org.sunbird.common.request.Request request = new org.sunbird.common.request.Request();
         return initRequest(request, operation, httpRequest);
+    }
+
+    protected CompletionStage<Result> handleRequest(String operation, Http.Request httpRequest) {
+        return handleRequest(operation, null, null, null, null, false, httpRequest);
+    }
+
+    protected CompletionStage<Result> handleRequest(
+            String operation, JsonNode requestBodyJson, Http.Request httpRequest) {
+        return handleRequest(operation, requestBodyJson, null, null, null, true, httpRequest);
     }
 
     protected CompletionStage<Result> handleRequest(
@@ -126,17 +125,27 @@ public class BaseController extends Controller {
     }
 
     protected CompletionStage<Result> handleRequest(
-            String operation, JsonNode requestBodyJson, java.util.function.Function requestValidatorFn, Http.Request httpRequest) {
-        return handleRequest(operation, requestBodyJson, requestValidatorFn, null, null, true, httpRequest);
+            String operation,
+            JsonNode requestBodyJson,
+            java.util.function.Function requestValidatorFn,
+            Http.Request httpRequest) {
+        return handleRequest(
+                operation, requestBodyJson, requestValidatorFn, null, null, true, httpRequest);
     }
 
-    protected CompletionStage<Result> handleRequest(String operation, String pathId, String pathVariable, Http.Request httpRequest) {
+    protected CompletionStage<Result> handleRequest(
+            String operation, String pathId, String pathVariable, Http.Request httpRequest) {
         return handleRequest(operation, null, null, pathId, pathVariable, false, httpRequest);
     }
 
     protected CompletionStage<Result> handleRequest(
-            String operation, String pathId, String pathVariable, boolean isJsonBodyRequired, Http.Request httpRequest) {
-        return handleRequest(operation, null, null, pathId, pathVariable, isJsonBodyRequired, httpRequest);
+            String operation,
+            String pathId,
+            String pathVariable,
+            boolean isJsonBodyRequired,
+            Http.Request httpRequest) {
+        return handleRequest(
+                operation, null, null, pathId, pathVariable, isJsonBodyRequired, httpRequest);
     }
 
     protected CompletionStage<Result> handleRequest(
@@ -145,7 +154,8 @@ public class BaseController extends Controller {
             java.util.function.Function requestValidatorFn,
             Map<String, String> headers,
             Http.Request httpRequest) {
-        return handleRequest(operation, requestBodyJson, requestValidatorFn, null, null, headers, true, httpRequest);
+        return handleRequest(
+                operation, requestBodyJson, requestValidatorFn, null, null, headers, true, httpRequest);
     }
 
     protected CompletionStage<Result> handleRequest(
@@ -154,7 +164,8 @@ public class BaseController extends Controller {
             String pathId,
             String pathVariable,
             Http.Request httpRequest) {
-        return handleRequest(operation, null, requestValidatorFn, pathId, pathVariable, false, httpRequest);
+        return handleRequest(
+                operation, null, requestValidatorFn, pathId, pathVariable, false, httpRequest);
     }
 
     protected CompletionStage<Result> handleRequest(
@@ -270,8 +281,8 @@ public class BaseController extends Controller {
     /**
      * This method will create failure response
      *
-     * @param request    Request
-     * @param code       ResponseCode
+     * @param request Request
+     * @param code ResponseCode
      * @param headerCode ResponseCode
      * @return Response
      */
@@ -312,7 +323,7 @@ public class BaseController extends Controller {
     /**
      * This method will create data for success response.
      *
-     * @param request  play.mvc.Http.Request
+     * @param request play.mvc.Http.Request
      * @param response Response
      * @return Result
      */
@@ -339,7 +350,8 @@ public class BaseController extends Controller {
             value = "0.0";
         }
 
-        return Results.ok(Json.toJson(response)).withHeader(HeaderParam.X_Response_Length.getName(), value);
+        return Results.ok(Json.toJson(response))
+                .withHeader(HeaderParam.X_Response_Length.getName(), value);
     }
 
     /**
@@ -356,7 +368,7 @@ public class BaseController extends Controller {
     /**
      * This method will handle response in case of exception
      *
-     * @param request   play.mvc.Http.Request
+     * @param request play.mvc.Http.Request
      * @param exception ProjectCommonException
      * @return Response
      */
@@ -394,8 +406,8 @@ public class BaseController extends Controller {
     }
 
     /**
-     * @param path      String
-     * @param method    String
+     * @param path String
+     * @param method String
      * @param exception ProjectCommonException
      * @return Response
      */
@@ -415,53 +427,67 @@ public class BaseController extends Controller {
      * This method will create common response for all controller method
      *
      * @param response Object
-     * @param key      String
-     * @param request  play.mvc.Http.Request
+     * @param key String
+     * @param request play.mvc.Http.Request
      * @return Result
      */
     public Result createCommonResponse(Object response, String key, Http.Request request) {
-        Map<String, Object> requestInfo = OnRequestHandler.requestInfo.get(request.flash().get(JsonKey.REQUEST_ID));
-        org.sunbird.common.request.Request req = new org.sunbird.common.request.Request();
+        String requestId = request.flash().getOptional(JsonKey.REQUEST_ID).orElse(null);
+        if (requestId != null && OnRequestHandler.requestInfo.containsKey(requestId)) {
+            Map<String, Object> requestInfo = OnRequestHandler.requestInfo.get(requestId);
+            org.sunbird.common.request.Request req = new org.sunbird.common.request.Request();
+            try {
+                Map<String, Object> params = (Map<String, Object>) requestInfo.get(JsonKey.ADDITIONAL_INFO);
 
-        Map<String, Object> params = (Map<String, Object>) requestInfo.get(JsonKey.ADDITIONAL_INFO);
-
-        params.put(JsonKey.LOG_TYPE, JsonKey.API_ACCESS);
-        params.put(JsonKey.MESSAGE, "");
-        params.put(JsonKey.METHOD, request.method());
-        // calculate  the total time consume
-        long startTime = (Long) params.get(JsonKey.START_TIME);
-        params.put(JsonKey.DURATION, calculateApiTimeTaken(startTime));
-        removeFields(params, JsonKey.START_TIME);
-        params.put(
-                JsonKey.STATUS, String.valueOf(((Response) response).getResponseCode().getResponseCode()));
-        params.put(JsonKey.LOG_LEVEL, JsonKey.INFO);
-        req.setRequest(
-                generateTelemetryRequestForController(
-                        TelemetryEvents.LOG.getName(),
-                        params,
-                        (Map<String, Object>) requestInfo.get(JsonKey.CONTEXT)));
-        // if any request is coming form /v1/telemetry/save then don't generate the telemetry log
-        // for it.
-        lmaxWriter.submitMessage(req);
-
+                params.put(JsonKey.LOG_TYPE, JsonKey.API_ACCESS);
+                params.put(JsonKey.MESSAGE, "");
+                params.put(JsonKey.METHOD, request.method());
+                // calculate  the total time consume
+                long startTime = (Long) params.get(JsonKey.START_TIME);
+                params.put(JsonKey.DURATION, calculateApiTimeTaken(startTime));
+                ProjectLogger.log(
+                        "BaseController:createCommonResponse api taken time="
+                                + params.get(JsonKey.DURATION)
+                                + " for messageId="
+                                + requestId,
+                        LoggerEnum.INFO);
+                removeFields(params, JsonKey.START_TIME);
+                params.put(
+                        JsonKey.STATUS,
+                        String.valueOf(((Response) response).getResponseCode().getResponseCode()));
+                params.put(JsonKey.LOG_LEVEL, JsonKey.INFO);
+                req.setRequest(
+                        generateTelemetryRequestForController(
+                                TelemetryEvents.LOG.getName(),
+                                params,
+                                (Map<String, Object>) requestInfo.get(JsonKey.CONTEXT)));
+                // if any request is coming form /v1/telemetry/save then don't generate the telemetry log
+                // for it.
+                lmaxWriter.submitMessage(req);
+            } catch (Exception ex) {
+                ProjectLogger.log(
+                        "BaseController:createCommonResponse Exception in writing telemetry for request "
+                                + requestId,
+                        ex);
+            } finally {
+                // remove request info from map
+                OnRequestHandler.requestInfo.remove(requestId);
+                ProjectLogger.log(
+                        "BaseController:createCommonResponse removed details for messageId=" + requestId,
+                        LoggerEnum.INFO);
+            }
+        } else {
+            ProjectLogger.log(
+                    "BaseController:createCommonResponse request details not found requestId=" + requestId,
+                    LoggerEnum.ERROR);
+        }
         Response courseResponse = (Response) response;
         if (!StringUtils.isBlank(key)) {
             Object value = courseResponse.getResult().get(JsonKey.RESPONSE);
             courseResponse.getResult().remove(JsonKey.RESPONSE);
             courseResponse.getResult().put(key, value);
         }
-
-        // remove request info from map
-        OnRequestHandler.requestInfo.remove(request.flash().get(JsonKey.REQUEST_ID));
         return BaseController.createSuccessResponse(request, courseResponse);
-        // }
-        /*
-         * else {
-         *
-         * ProjectCommonException exception = (ProjectCommonException) response; return
-         * Results.status(exception.getResponseCode(),
-         * Json.toJson(BaseController.createResponseOnException(request, exception))); }
-         */
     }
 
     /**
@@ -503,7 +529,7 @@ public class BaseController extends Controller {
     /**
      * Common exception response handler method.
      *
-     * @param e       Exception
+     * @param e Exception
      * @param request play.mvc.Http.Request
      * @return Result
      */
@@ -521,7 +547,8 @@ public class BaseController extends Controller {
                             ResponseCode.SERVER_ERROR.getResponseCode());
         }
 
-        Map<String, Object> requestInfo = OnRequestHandler.requestInfo.get(request.flash().get(JsonKey.REQUEST_ID));
+        Map<String, Object> requestInfo =
+                OnRequestHandler.requestInfo.get(request.flash().get(JsonKey.REQUEST_ID));
         org.sunbird.common.request.Request reqForTelemetry = new org.sunbird.common.request.Request();
         Map<String, Object> params = (Map<String, Object>) requestInfo.get(JsonKey.ADDITIONAL_INFO);
         params.put(JsonKey.LOG_TYPE, JsonKey.API_ACCESS);
@@ -559,11 +586,11 @@ public class BaseController extends Controller {
     /**
      * This method will make a call to Akka actor and return promise.
      *
-     * @param actorRef    ActorSelection
-     * @param request     Request
-     * @param timeout     Timeout
+     * @param actorRef ActorSelection
+     * @param request Request
+     * @param timeout Timeout
      * @param responseKey String
-     * @param httpReq     play.mvc.Http.Request
+     * @param httpReq play.mvc.Http.Request
      * @return CompletionStage<Result>
      */
     public CompletionStage<Result> actorResponseHandler(
@@ -599,7 +626,6 @@ public class BaseController extends Controller {
                         }
                     }
                 };
-
 
         if (actorRef instanceof ActorRef) {
             return PatternsCS.ask((ActorRef) actorRef, request, timeout).thenApply(function);
@@ -668,7 +694,7 @@ public class BaseController extends Controller {
     /**
      * Method to get API response Id
      *
-     * @param path   String
+     * @param path String
      * @param method String
      * @return String
      */
@@ -711,7 +737,8 @@ public class BaseController extends Controller {
     private static Map<String, Object> genarateTelemetryInfoForError(Http.Request request) {
 
         Map<String, Object> map = new HashMap<>();
-        Map<String, Object> requestInfo = OnRequestHandler.requestInfo.get(request.flash().get(JsonKey.REQUEST_ID));
+        Map<String, Object> requestInfo =
+                OnRequestHandler.requestInfo.get(request.flash().get(JsonKey.REQUEST_ID));
         Map<String, Object> contextInfo = (Map<String, Object>) requestInfo.get(JsonKey.CONTEXT);
         Map<String, Object> params = new HashMap<>();
         params.put(JsonKey.ERR_TYPE, JsonKey.API_ACCESS);
@@ -721,7 +748,8 @@ public class BaseController extends Controller {
         return map;
     }
 
-    public void setChannelAndActorInfo(Http.Request httpReq, org.sunbird.common.request.Request reqObj) {
+    public void setChannelAndActorInfo(
+            Http.Request httpReq, org.sunbird.common.request.Request reqObj) {
 
         reqObj.getContext().put(JsonKey.CHANNEL, httpReq.flash().get(JsonKey.CHANNEL));
         reqObj.getContext().put(JsonKey.ACTOR_ID, httpReq.flash().get(JsonKey.ACTOR_ID));
@@ -744,11 +772,11 @@ public class BaseController extends Controller {
     /**
      * This method will set extra param to request body which is required for actor layer.
      *
-     * @param request         Request
-     * @param requestId       String
-     * @param actorOpName     String
+     * @param request Request
+     * @param requestId String
+     * @param actorOpName String
      * @param requestedUserId String
-     * @param env             int
+     * @param env int
      * @return Request
      */
     public org.sunbird.common.request.Request setExtraParam(
@@ -781,62 +809,60 @@ public class BaseController extends Controller {
      * @return
      * @throws IOException
      */
-
-    public org.sunbird.common.request.Request createAndInitUploadRequest(String operation, String objectType, Http.Request httpRequest)
-            throws IOException {
-        ProjectLogger.log("API call for operation : " + operation);
+    protected org.sunbird.common.request.Request createAndInitUploadRequest(
+            String operation, String objectType, Http.Request httpRequest) throws IOException {
+        ProjectLogger.log(
+                "BaseController: createAndInitUploadRequest called with operation = " + operation);
         org.sunbird.common.request.Request reqObj = new org.sunbird.common.request.Request();
         Map<String, Object> map = new HashMap<>();
-        InputStream inputStream = null;
-
-        String fileUrl = httpRequest.getQueryString(JsonKey.FILE_URL);
-        if (StringUtils.isNotBlank(fileUrl)) {
-            ProjectLogger.log("Got fileUrl from path parameter: " + fileUrl, LoggerEnum.INFO.name());
-            URL url = new URL(fileUrl.trim());
-            inputStream = url.openStream();
+        byte[] byteArray = null;
+        Http.MultipartFormData<TemporaryFile> body = httpRequest.body().asMultipartFormData();
+        Map<String, String[]> formUrlEncodeddata = httpRequest.body().asFormUrlEncoded();
+        JsonNode requestData = httpRequest.body().asJson();
+        if (body != null) {
+            Map<String, String[]> data = body.asFormUrlEncoded();
+            for (Map.Entry<String, String[]> entry : data.entrySet()) {
+                map.put(entry.getKey(), entry.getValue()[0]);
+            }
+            List<Http.MultipartFormData.FilePart<TemporaryFile>> filePart = body.getFiles();
+            if (filePart != null && !filePart.isEmpty()) {
+                InputStream is = new FileInputStream(filePart.get(0).getRef().path().toFile());
+                byteArray = IOUtils.toByteArray(is);
+            }
+        } else if (null != formUrlEncodeddata) {
+            for (Map.Entry<String, String[]> entry : formUrlEncodeddata.entrySet()) {
+                map.put(entry.getKey(), entry.getValue()[0]);
+            }
+            InputStream is =
+                    new ByteArrayInputStream(
+                            ((String) map.get(JsonKey.DATA)).getBytes(StandardCharsets.UTF_8));
+            byteArray = IOUtils.toByteArray(is);
+        } else if (null != requestData) {
+            reqObj =
+                    (org.sunbird.common.request.Request)
+                            mapper.RequestMapper.mapRequest(
+                                    httpRequest.body().asJson(), org.sunbird.common.request.Request.class);
+            InputStream is =
+                    new ByteArrayInputStream(
+                            ((String) reqObj.getRequest().get(JsonKey.DATA)).getBytes(StandardCharsets.UTF_8));
+            byteArray = IOUtils.toByteArray(is);
+            reqObj.getRequest().remove(JsonKey.DATA);
+            map.putAll(reqObj.getRequest());
         } else {
-            Http.MultipartFormData body = httpRequest.body().asMultipartFormData();
-            if (body != null) {
-                Map<String, String[]> data = body.asFormUrlEncoded();
-                if (MapUtils.isNotEmpty(data) && data.containsKey(JsonKey.FILE_URL)) {
-                    fileUrl = data.getOrDefault(JsonKey.FILE_URL, new String[] {""})[0];
-                    if (StringUtils.isBlank(fileUrl) || !StringUtils.endsWith(fileUrl, ".csv")) {
-                        throwClientErrorException(
-                                ResponseCode.csvError, ResponseCode.csvError.getErrorMessage());
-                    }
-                    URL url = new URL(fileUrl.trim());
-                    inputStream = url.openStream();
-                } else {
-                    List<Http.MultipartFormData.FilePart<Files.TemporaryFile>> filePart = body.getFiles();
-                    if (CollectionUtils.isEmpty(filePart)) {
-                        throwClientErrorException(
-                                ResponseCode.fileNotFound, ResponseCode.fileNotFound.getErrorMessage());
-                    }
-                    inputStream = new FileInputStream(filePart.get(0).getRef().path().toFile());
-                }
-            } else {
-                ProjectLogger.log("Textbook toc upload request body is empty", LoggerEnum.INFO.name());
-                throwClientErrorException(
-                        ResponseCode.invalidData, ResponseCode.invalidData.getErrorMessage());
-            }
-        }
-
-        byte[] byteArray = IOUtils.toByteArray(inputStream);
-        try {
-            if (null != inputStream) {
-                inputStream.close();
-            }
-        } catch (Exception e) {
-            ProjectLogger.log(
-                    "TextbookController:createAndInitUploadRequest : Exception occurred while closing stream");
+            throw new ProjectCommonException(
+                    ResponseCode.invalidData.getErrorCode(),
+                    ResponseCode.invalidData.getErrorMessage(),
+                    ResponseCode.CLIENT_ERROR.getResponseCode());
         }
         reqObj.setOperation(operation);
         reqObj.setRequestId(ExecutionContext.getRequestId());
         reqObj.setEnv(getEnvironment());
         map.put(JsonKey.OBJECT_TYPE, objectType);
         map.put(JsonKey.CREATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
-        map.put(JsonKey.DATA, byteArray);
-        reqObj.setRequest(map);
+        map.put(JsonKey.FILE, byteArray);
+        HashMap<String, Object> innerMap = new HashMap<>();
+        innerMap.put(JsonKey.DATA, map);
+        reqObj.setRequest(innerMap);
         return reqObj;
     }
 
@@ -844,8 +870,6 @@ public class BaseController extends Controller {
     private void setGlobalHealthFlag(Object result) {
         if (result instanceof Response) {
             Response response = (Response) result;
-            System.out.println(response);
-            System.out.println(response.getResult());
             if (Boolean.parseBoolean(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_HEALTH_CHECK_ENABLE))
                     && ((HashMap<String, Object>) response.getResult().get(JsonKey.RESPONSE))
                     .containsKey(JsonKey.Healthy)) {
@@ -858,7 +882,8 @@ public class BaseController extends Controller {
             OnRequestHandler.isServiceHealthy = false;
         }
         ProjectLogger.log(
-                "BaseController:setGlobalHealthFlag: isServiceHealthy = " + OnRequestHandler.isServiceHealthy,
+                "BaseController:setGlobalHealthFlag: isServiceHealthy = "
+                        + OnRequestHandler.isServiceHealthy,
                 LoggerEnum.INFO.name());
     }
 
@@ -926,5 +951,4 @@ public class BaseController extends Controller {
         }
         return builder.toString();
     }
-
 }

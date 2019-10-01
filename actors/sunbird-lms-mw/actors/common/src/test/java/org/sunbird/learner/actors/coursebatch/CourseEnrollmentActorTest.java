@@ -41,8 +41,14 @@ import scala.concurrent.Future;
 import scala.concurrent.Promise;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({EkStepRequestUtil.class, ServiceFactory.class, ElasticSearchHelper.class,EsClientFactory.class})
+@PrepareForTest({
+  EkStepRequestUtil.class,
+  ServiceFactory.class,
+  ElasticSearchHelper.class,
+  EsClientFactory.class
+})
 @PowerMockIgnore("javax.management.*")
+@Ignore
 public class CourseEnrollmentActorTest {
 
   private static ActorSystem system;

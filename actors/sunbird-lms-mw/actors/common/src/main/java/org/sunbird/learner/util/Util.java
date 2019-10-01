@@ -2,6 +2,7 @@ package org.sunbird.learner.util;
 
 import static org.sunbird.common.models.util.ProjectLogger.log;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
@@ -13,15 +14,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.factory.EsClientFactory;
-import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.util.BadgingJsonKey;
 import org.sunbird.common.models.util.HttpUtil;
 import org.sunbird.common.models.util.JsonKey;
@@ -29,8 +26,6 @@ import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.PropertiesCache;
-import org.sunbird.common.models.util.datasecurity.DataMaskingService;
-import org.sunbird.common.models.util.datasecurity.DecryptionService;
 import org.sunbird.common.models.util.datasecurity.EncryptionService;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
@@ -38,11 +33,8 @@ import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.helper.CassandraConnectionManager;
 import org.sunbird.helper.CassandraConnectionMngrFactory;
-import org.sunbird.helper.ServiceFactory;
 import org.sunbird.userorg.UserOrgService;
 import org.sunbird.userorg.UserOrgServiceImpl;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Utility class for actors
@@ -52,7 +44,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public final class Util {
 
   public static final Map<String, DbInfo> dbInfoMap = new HashMap<>();
-  private static UserOrgService userOrgService = new UserOrgServiceImpl();
+  private static UserOrgService userOrgService = UserOrgServiceImpl.getInstance();
   public static final int RECOMENDED_LIST_SIZE = 10;
   private static PropertiesCache propertiesCache = PropertiesCache.getInstance();
   public static final int DEFAULT_ELASTIC_DATA_LIMIT = 10000;
@@ -138,8 +130,8 @@ public final class Util {
         BadgingJsonKey.CONTENT_BADGE_ASSOCIATION_DB,
         getDbInfoObject(KEY_SPACE_NAME, "content_badge_association"));
     dbInfoMap.put(
-            JsonKey.SUNBIRD_COURSE_DIALCODES_DB,
-            getDbInfoObject(DIALCODE_KEY_SPACE_NAME, "dialcode_images"));
+        JsonKey.SUNBIRD_COURSE_DIALCODES_DB,
+        getDbInfoObject(DIALCODE_KEY_SPACE_NAME, "dialcode_images"));
   }
 
   /**
@@ -527,7 +519,7 @@ public final class Util {
   public static boolean isNotNull(Object obj) {
     return null != obj ? true : false;
   }
-  
+
   public static void initializeContext(Request actorMessage, String env) {
 
     ExecutionContext context = ExecutionContext.getCurrent();
@@ -588,7 +580,7 @@ public final class Util {
         ? (String) actorMessage.getContext().get(key)
         : "";
   }
-  
+
   public static String validateRoles(List<String> roleList) {
     Map<String, Object> roleMap = DataCacheHandler.getRoleMap();
     if (null != roleMap && !roleMap.isEmpty()) {

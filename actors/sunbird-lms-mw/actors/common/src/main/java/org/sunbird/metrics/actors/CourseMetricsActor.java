@@ -40,6 +40,7 @@ import org.sunbird.common.util.CloudStorageUtil.CloudStorageType;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.learner.constants.CourseJsonKey;
 import org.sunbird.learner.util.ContentSearchUtil;
+import org.sunbird.learner.util.Util;
 import org.sunbird.userorg.UserOrgService;
 import org.sunbird.userorg.UserOrgServiceImpl;
 import scala.concurrent.Future;
@@ -297,8 +298,37 @@ public class CourseMetricsActor extends BaseMetricsActor {
     String reportPath = courseMetricsReportFolder + File.separator + "report-" + batchId + ".csv";
 
     // check assessment report location exist in ES or not
+    Integer limit = (Integer) actorMessage.getContext().get(JsonKey.LIMIT);
+    String sortBy = (String) actorMessage.getContext().get(JsonKey.SORTBY);
+    Integer offset = (Integer) actorMessage.getContext().get(JsonKey.OFFSET);
+    String userName = (String) actorMessage.getContext().get(JsonKey.USERNAME);
+    String sortOrder = (String) actorMessage.getContext().get(JsonKey.SORT_ORDER);
+
+    Map<String, Object> filter = new HashMap<>();
+    filter.put(JsonKey.BATCH_ID, batchId);
+
+    SearchDTO searchDTO = new SearchDTO();
+    if (!StringUtils.isEmpty(userName)) {
+      searchDTO.setQuery(userName);
+      searchDTO.setQueryFields(Arrays.asList(JsonKey.NAME));
+    }
+    searchDTO.setLimit(limit);
+    searchDTO.setOffset(offset);
+    if (!StringUtils.isEmpty(sortBy)) {
+      Map<String, Object> sortMap = new HashMap<>();
+      sortBy = getSortyBy(sortBy);
+      if (StringUtils.isEmpty(sortOrder)) {
+        sortMap.put(sortBy, JsonKey.ASC);
+      } else {
+        sortMap.put(sortBy, sortOrder);
+      }
+      searchDTO.setSortBy(sortMap);
+    }
+
+    searchDTO.getAdditionalProperties().put(JsonKey.FILTERS, filter);
+
     Future<Map<String, Object>> assessmentBatchResultF =
-            esService.getDataByIdentifier(EsType.cbatchassessment.getTypeName(), batchId);
+            esService.search(searchDTO, EsType.cbatchassessment.getTypeName());
     Map<String, Object> assessmentBatchResult =
             (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(assessmentBatchResultF);
     String assessmentReportSignedUrl = null ;

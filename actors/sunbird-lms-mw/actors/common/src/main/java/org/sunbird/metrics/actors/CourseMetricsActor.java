@@ -314,7 +314,13 @@ public class CourseMetricsActor extends BaseMetricsActor {
                     + assessmentBatchResult,
             LoggerEnum.INFO.name());
     if (isNotNull(assessmentBatchResult) || assessmentBatchResult.size() != 0) {
-      String reportLocation = (String) assessmentBatchResult.get(JsonKey.ASSESSMENT_REPORT_BLOB_URL);
+      List<Map<String, Object>> content = (List<Map<String, Object>>) assessmentBatchResult.get(JsonKey.CONTENT);
+      Map<String, Object> batchData = content.get(0);
+      String reportLocation = (String) batchData.get(JsonKey.ASSESSMENT_REPORT_BLOB_URL);
+      ProjectLogger.log(
+              "CourseMetricsActor:courseProgressMetricsReport: reportLocation="
+                      + reportLocation,
+              LoggerEnum.INFO.name());
       if (isNotNull(reportLocation)) {
         String courseAssessmentsReportFolder =
                 ProjectUtil.getConfigValue(JsonKey.SUNBIRD_ASSESSMENT_REPORT_FOLDER);

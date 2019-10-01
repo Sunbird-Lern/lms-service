@@ -13,6 +13,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,6 +24,8 @@ import java.util.concurrent.TimeUnit;
 
 import modules.OnRequestHandler;
 import modules.ApplicationStart;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.service.SunbirdMWService;
@@ -44,6 +47,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 
+import play.libs.Files;
 import play.libs.Json;
 import play.libs.Files.TemporaryFile;
 import play.mvc.Controller;
@@ -53,6 +57,8 @@ import play.mvc.Http.Request;
 import play.mvc.Result;
 import play.mvc.Results;
 import util.AuthenticationHelper;
+
+import static org.sunbird.common.exception.ProjectCommonException.throwClientErrorException;
 
 /**
  * This controller we can use for writing some common method.
@@ -112,14 +118,6 @@ public class BaseController extends Controller {
     protected org.sunbird.common.request.Request createAndInitRequest(String operation, Http.Request httpRequest) {
         org.sunbird.common.request.Request request = new org.sunbird.common.request.Request();
         return initRequest(request, operation, httpRequest);
-    }
-
-    protected CompletionStage<Result> handleRequest(String operation, Http.Request httpRequest) {
-        return handleRequest(operation, null, null, null, null, false, httpRequest);
-    }
-
-    protected CompletionStage<Result> handleRequest(String operation, JsonNode requestBodyJson, Http.Request httpRequest) {
-        return handleRequest(operation, requestBodyJson, null, null, null, true, httpRequest);
     }
 
     protected CompletionStage<Result> handleRequest(
@@ -783,60 +781,62 @@ public class BaseController extends Controller {
      * @return
      * @throws IOException
      */
-    protected org.sunbird.common.request.Request createAndInitUploadRequest(
-            String operation, String objectType, Http.Request httpRequest) throws IOException {
-        ProjectLogger.log(
-                "BaseController: createAndInitUploadRequest called with operation = " + operation);
+
+    public org.sunbird.common.request.Request createAndInitUploadRequest(String operation, String objectType, Http.Request httpRequest)
+            throws IOException {
+        ProjectLogger.log("API call for operation : " + operation);
         org.sunbird.common.request.Request reqObj = new org.sunbird.common.request.Request();
         Map<String, Object> map = new HashMap<>();
-        byte[] byteArray = null;
-        Http.MultipartFormData<TemporaryFile> body = httpRequest.body().asMultipartFormData();
-        Map<String, String[]> formUrlEncodeddata = httpRequest.body().asFormUrlEncoded();
-        JsonNode requestData = httpRequest.body().asJson();
-        if (body != null) {
-            Map<String, String[]> data = body.asFormUrlEncoded();
-            for (Map.Entry<String, String[]> entry : data.entrySet()) {
-                map.put(entry.getKey(), entry.getValue()[0]);
-            }
-            List<Http.MultipartFormData.FilePart<TemporaryFile>> filePart = body.getFiles();
-            if (filePart != null && !filePart.isEmpty()) {
-                InputStream is = new FileInputStream(filePart.get(0).getRef().path().toFile());
-                byteArray = IOUtils.toByteArray(is);
-            }
-        } else if (null != formUrlEncodeddata) {
-            for (Map.Entry<String, String[]> entry : formUrlEncodeddata.entrySet()) {
-                map.put(entry.getKey(), entry.getValue()[0]);
-            }
-            InputStream is =
-                    new ByteArrayInputStream(
-                            ((String) map.get(JsonKey.DATA)).getBytes(StandardCharsets.UTF_8));
-            byteArray = IOUtils.toByteArray(is);
-        } else if (null != requestData) {
-            reqObj =
-                    (org.sunbird.common.request.Request)
-                            mapper.RequestMapper.mapRequest(
-                                    httpRequest.body().asJson(), org.sunbird.common.request.Request.class);
-            InputStream is =
-                    new ByteArrayInputStream(
-                            ((String) reqObj.getRequest().get(JsonKey.DATA)).getBytes(StandardCharsets.UTF_8));
-            byteArray = IOUtils.toByteArray(is);
-            reqObj.getRequest().remove(JsonKey.DATA);
-            map.putAll(reqObj.getRequest());
+        InputStream inputStream = null;
+
+        String fileUrl = httpRequest.getQueryString(JsonKey.FILE_URL);
+        if (StringUtils.isNotBlank(fileUrl)) {
+            ProjectLogger.log("Got fileUrl from path parameter: " + fileUrl, LoggerEnum.INFO.name());
+            URL url = new URL(fileUrl.trim());
+            inputStream = url.openStream();
         } else {
-            throw new ProjectCommonException(
-                    ResponseCode.invalidData.getErrorCode(),
-                    ResponseCode.invalidData.getErrorMessage(),
-                    ResponseCode.CLIENT_ERROR.getResponseCode());
+            Http.MultipartFormData body = httpRequest.body().asMultipartFormData();
+            if (body != null) {
+                Map<String, String[]> data = body.asFormUrlEncoded();
+                if (MapUtils.isNotEmpty(data) && data.containsKey(JsonKey.FILE_URL)) {
+                    fileUrl = data.getOrDefault(JsonKey.FILE_URL, new String[] {""})[0];
+                    if (StringUtils.isBlank(fileUrl) || !StringUtils.endsWith(fileUrl, ".csv")) {
+                        throwClientErrorException(
+                                ResponseCode.csvError, ResponseCode.csvError.getErrorMessage());
+                    }
+                    URL url = new URL(fileUrl.trim());
+                    inputStream = url.openStream();
+                } else {
+                    List<Http.MultipartFormData.FilePart<Files.TemporaryFile>> filePart = body.getFiles();
+                    if (CollectionUtils.isEmpty(filePart)) {
+                        throwClientErrorException(
+                                ResponseCode.fileNotFound, ResponseCode.fileNotFound.getErrorMessage());
+                    }
+                    inputStream = new FileInputStream(filePart.get(0).getRef().path().toFile());
+                }
+            } else {
+                ProjectLogger.log("Textbook toc upload request body is empty", LoggerEnum.INFO.name());
+                throwClientErrorException(
+                        ResponseCode.invalidData, ResponseCode.invalidData.getErrorMessage());
+            }
+        }
+
+        byte[] byteArray = IOUtils.toByteArray(inputStream);
+        try {
+            if (null != inputStream) {
+                inputStream.close();
+            }
+        } catch (Exception e) {
+            ProjectLogger.log(
+                    "TextbookController:createAndInitUploadRequest : Exception occurred while closing stream");
         }
         reqObj.setOperation(operation);
         reqObj.setRequestId(ExecutionContext.getRequestId());
         reqObj.setEnv(getEnvironment());
         map.put(JsonKey.OBJECT_TYPE, objectType);
         map.put(JsonKey.CREATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
-        map.put(JsonKey.FILE, byteArray);
-        HashMap<String, Object> innerMap = new HashMap<>();
-        innerMap.put(JsonKey.DATA, map);
-        reqObj.setRequest(innerMap);
+        map.put(JsonKey.DATA, byteArray);
+        reqObj.setRequest(map);
         return reqObj;
     }
 
@@ -844,6 +844,8 @@ public class BaseController extends Controller {
     private void setGlobalHealthFlag(Object result) {
         if (result instanceof Response) {
             Response response = (Response) result;
+            System.out.println(response);
+            System.out.println(response.getResult());
             if (Boolean.parseBoolean(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_HEALTH_CHECK_ENABLE))
                     && ((HashMap<String, Object>) response.getResult().get(JsonKey.RESPONSE))
                     .containsKey(JsonKey.Healthy)) {

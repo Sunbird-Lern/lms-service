@@ -18,7 +18,9 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.responsecode.ResponseCode;
 import play.Application;
 import play.Mode;
 import play.inject.guice.GuiceApplicationBuilder;
@@ -86,7 +88,47 @@ public class CourseMetricsControllerTest {
         Assert.assertEquals( 200, result.status());
     }
 
+    @Test
+    public void testGetCourseProgressV2failureForNonNumericLimit() {
+        Http.RequestBuilder req =
+                new Http.RequestBuilder()
+                        .uri("/v2/dashboard/progress/course/"+BATCH_ID+"?limit=abc")
+                        .method("GET");
+        try {
+            Helpers.route(application, req);
+        }
+        catch (ProjectCommonException ex) {
+            Assert.assertEquals(ResponseCode.dataTypeError.getErrorCode(),ex.getCode());
+        }
+    }
 
+    @Test
+    public void testGetCourseProgressV2failureForNonNumericOffset() {
+        Http.RequestBuilder req =
+                new Http.RequestBuilder()
+                        .uri("/v2/dashboard/progress/course/"+BATCH_ID+"?offset=abc")
+                        .method("GET");
+        try {
+            Helpers.route(application, req);
+        }
+        catch(ProjectCommonException ex) {
+            Assert.assertEquals(ResponseCode.dataTypeError.getErrorCode(),ex.getCode());
+        }
+    }
+
+    @Test
+    public void testGetCourseProgressV2failureForIncorrectSortOrder() {
+        Http.RequestBuilder req =
+                new Http.RequestBuilder()
+                        .uri("/v2/dashboard/progress/course/"+BATCH_ID+"?sortOrder=randomOrder")
+                        .method("GET");
+        try {
+            Helpers.route(application, req);
+        }
+        catch(ProjectCommonException ex) {
+            Assert.assertEquals(ResponseCode.invalidParameterValue.getErrorCode(),ex.getCode());
+        }
+    }
     @Test
     public void testGetCourseCreation() {
         Http.RequestBuilder req =

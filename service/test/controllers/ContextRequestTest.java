@@ -6,12 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.request.HeaderParam;
 import play.libs.Json;
 import play.mvc.Http;
-
+@Ignore
 public class ContextRequestTest extends BaseControllerTest {
 
   private static String userId = "{userId} uuiuhcf784508 8y8c79-fhh";

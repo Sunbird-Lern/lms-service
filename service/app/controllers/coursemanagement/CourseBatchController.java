@@ -92,6 +92,7 @@ public class CourseBatchController extends BaseController {
       reqObj.getContext().put(JsonKey.PARTICIPANTS, requestedField);
       List<String> esObjectType = new ArrayList<>();
       esObjectType.add(EsType.courseBatch.getTypeName());
+
       if (reqObj.getRequest().containsKey(JsonKey.FILTERS)
           && reqObj.getRequest().get(JsonKey.FILTERS) != null
           && reqObj.getRequest().get(JsonKey.FILTERS) instanceof Map) {

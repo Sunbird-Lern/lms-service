@@ -19,6 +19,7 @@ import java.util.*;
 import controllers.DummyActor;
 import modules.OnRequestHandler;
 import modules.StartModule;
+import org.apache.commons.lang.time.DateUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -65,7 +66,6 @@ public class CourseBatchControllerTest  {
   public static Application application;
   public static ActorSystem system;
   public static final Props props = Props.create(DummyActor.class);
-
   @Before
   public void before() {
     application =
@@ -154,6 +154,17 @@ public class CourseBatchControllerTest  {
                     .method("POST");
     Result result = Helpers.route(application, req);
     Assert.assertEquals( 400, result.status());
+  }
+
+  @Test
+  public void testCreateBatchFailureWithStartDateBeforeToday() {
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(CREATE_BATCH_URL)
+                    .bodyJson(createCourseBatchRequest(COURSE_ID, COURSE_NAME, JsonKey.INVITE_ONLY, DateUtils.addDays(new Date(), -1), getEndDate(false), getEnrollmentEndDate(true), null))
+                    .method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals(400, result.status());
   }
 
   @Test
@@ -342,17 +353,21 @@ public class CourseBatchControllerTest  {
   }
   private JsonNode searchCourseBatchRequest(boolean isFilter, boolean isEmpty) {
     Map<String, Object> requestMap = new HashMap<>();
-    Map<String, Object> innerMap = new HashMap<>();
-
-    if (isFilter) {
-      Map<String, Object> filters = new HashMap<>();
-
-      if (isEmpty) innerMap.put(JsonKey.FILTERS, null);
-      else {
-        filters.put(JsonKey.BATCH_ID, BATCH_ID);
-        innerMap.put(JsonKey.FILTERS, filters);
+    Map<String, Object> filtermap = new HashMap<>();
+    requestMap.put(JsonKey.REQUEST,filtermap);
+    if(isFilter)
+    {
+      if(isEmpty)
+        filtermap.put(JsonKey.FILTERS,null);
+      else
+      {
+        Map<String, Object> innerMap = new HashMap<>();
+        innerMap.put(JsonKey.COURSE_ID,COURSE_ID);
+        filtermap.put(JsonKey.FILTERS,innerMap);
       }
+      requestMap.put(JsonKey.REQUEST,filtermap);
     }
+    System.out.println(requestMap.toString());
     String data = mapToJson(requestMap);
     return Json.parse(data);
   }
@@ -374,7 +389,6 @@ public class CourseBatchControllerTest  {
   private JsonNode addAndRemoveUserToBatchRequest(boolean isUserIds) {
     Map<String, Object> requestMap = new HashMap<>();
     Map<String, Object> innerMap = new HashMap<>();
-
     if (isUserIds) {
       List<String> users = new ArrayList();
       users.add("123");

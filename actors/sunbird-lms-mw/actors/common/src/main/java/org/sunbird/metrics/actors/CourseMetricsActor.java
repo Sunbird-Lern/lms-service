@@ -302,6 +302,10 @@ public class CourseMetricsActor extends BaseMetricsActor {
     Map<String, Object> assessmentBatchResult =
             (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(assessmentBatchResultF);
     String assessmentReportSignedUrl = null ;
+    ProjectLogger.log(
+            "CourseMetricsActor:courseProgressMetricsReport: assessmentBatchResult="
+                    + assessmentBatchResult,
+            LoggerEnum.INFO.name());
     if (isNotNull(assessmentBatchResult) || assessmentBatchResult.size() != 0) {
       String reportLocation = (String) assessmentBatchResult.get(JsonKey.ASSESSMENT_REPORT_BLOB_URL);
       if (isNotNull(reportLocation)) {

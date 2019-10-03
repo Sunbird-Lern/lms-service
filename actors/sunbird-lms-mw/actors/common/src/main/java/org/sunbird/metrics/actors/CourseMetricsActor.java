@@ -313,8 +313,8 @@ public class CourseMetricsActor extends BaseMetricsActor {
             "CourseMetricsActor:courseProgressMetricsReport: assessmentBatchResult="
                     + assessmentBatchResult,
             LoggerEnum.INFO.name());
-    if (isNotNull(assessmentBatchResult) || assessmentBatchResult.size() != 0) {
-      List<Map<String, Object>> content = (List<Map<String, Object>>) assessmentBatchResult.get(JsonKey.CONTENT);
+    List<Map<String, Object>> content = (List<Map<String, Object>>) assessmentBatchResult.get(JsonKey.CONTENT);
+    if (isNotNull(content) || content.size() > 0) {
       Map<String, Object> batchData = content.get(0);
       String reportLocation = (String) batchData.get(JsonKey.ASSESSMENT_REPORT_BLOB_URL);
       ProjectLogger.log(

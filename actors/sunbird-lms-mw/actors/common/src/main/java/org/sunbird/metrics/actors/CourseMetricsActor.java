@@ -314,7 +314,7 @@ public class CourseMetricsActor extends BaseMetricsActor {
                     + assessmentBatchResult,
             LoggerEnum.INFO.name());
     List<Map<String, Object>> content = (List<Map<String, Object>>) assessmentBatchResult.get(JsonKey.CONTENT);
-    if (isNotNull(content) || content.size() > 0) {
+    if (isNotNull(content) && content.size() > 0) {
       Map<String, Object> batchData = content.get(0);
       String reportLocation = (String) batchData.get(JsonKey.ASSESSMENT_REPORT_BLOB_URL);
       ProjectLogger.log(

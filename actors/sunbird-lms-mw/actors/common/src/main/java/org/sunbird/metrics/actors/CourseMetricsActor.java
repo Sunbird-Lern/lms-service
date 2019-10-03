@@ -313,26 +313,24 @@ public class CourseMetricsActor extends BaseMetricsActor {
             "CourseMetricsActor:courseProgressMetricsReport: assessmentBatchResult="
                     + assessmentBatchResult,
             LoggerEnum.INFO.name());
-    List<Map<String, Object>> content = (List<Map<String, Object>>) assessmentBatchResult.get(JsonKey.CONTENT);
-    if (isNotNull(content) && content.size() > 0) {
+    if (MapUtils.isNotEmpty(assessmentBatchResult) && CollectionUtils.isNotEmpty((List<Map<String, Object>>) assessmentBatchResult.get(JsonKey.CONTENT))) {
+      List<Map<String, Object>> content = (List<Map<String, Object>>) assessmentBatchResult.get(JsonKey.CONTENT);
       Map<String, Object> batchData = content.get(0);
       String reportLocation = (String) batchData.get(JsonKey.ASSESSMENT_REPORT_BLOB_URL);
       ProjectLogger.log(
-              "CourseMetricsActor:courseProgressMetricsReport: reportLocation="
-                      + reportLocation,
-              LoggerEnum.INFO.name());
+                "CourseMetricsActor:courseProgressMetricsReport: reportLocation="
+                        + reportLocation,
+                LoggerEnum.INFO.name());
       if (isNotNull(reportLocation)) {
-        String courseAssessmentsReportFolder =
-                ProjectUtil.getConfigValue(JsonKey.SUNBIRD_ASSESSMENT_REPORT_FOLDER);
+        String courseAssessmentsReportFolder = ProjectUtil.getConfigValue(JsonKey.SUNBIRD_ASSESSMENT_REPORT_FOLDER);
         String courseAssessmentsreportPath = courseAssessmentsReportFolder + File.separator + "report-" + batchId + ".csv";
         ProjectLogger.log(
-                "CourseMetricsActor:courseProgressMetricsReport: courseMetricsContainer="
-                        + courseMetricsContainer
-                        + ", courseAssessmentsreportPath="
-                        + courseAssessmentsreportPath,
-                LoggerEnum.INFO.name());
-        assessmentReportSignedUrl = CloudStorageUtil.getAnalyticsSignedUrl(
-                CloudStorageType.AZURE, courseMetricsContainer, courseAssessmentsreportPath);
+                  "CourseMetricsActor:courseProgressMetricsReport: courseMetricsContainer="
+                          + courseMetricsContainer
+                          + ", courseAssessmentsreportPath="
+                          + courseAssessmentsreportPath,
+                  LoggerEnum.INFO.name());
+        assessmentReportSignedUrl = CloudStorageUtil.getAnalyticsSignedUrl(CloudStorageType.AZURE, courseMetricsContainer, courseAssessmentsreportPath);
       }
     }
 

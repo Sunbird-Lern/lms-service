@@ -1,4 +1,4 @@
-package controllers;
+package util;
 
 
 import modules.OnRequestHandler;
@@ -18,6 +18,7 @@ import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.cassandraimpl.CassandraOperationImpl;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.PropertiesCache;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.services.sso.SSOManager;
 import org.sunbird.services.sso.SSOServiceFactory;
@@ -32,8 +33,7 @@ import play.libs.typedmap.TypedMap;
 import play.mvc.Http;
 import play.test.Helpers;
 import util.RequestInterceptor;
-import play.core.j.RequestHeaderImpl;
-
+import play.mvc.Http.Flash;
 import java.io.File;
 import java.security.cert.X509Certificate;
 import java.util.*;
@@ -43,25 +43,27 @@ import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({SSOServiceFactory.class,ServiceFactory.class})
-@SuppressStaticInitializationFor( {"util.AuthenticationHelper","util.Global"})
+@PrepareForTest({SSOServiceFactory.class,ServiceFactory.class, org.sunbird.middleware.Application.class, PropertiesCache.class})
+//@SuppressStaticInitializationFor( {"util.AuthenticationHelper","util.Global"})
 @PowerMockIgnore("javax.management.*")
-@Ignore
+
 public class RequestInterceptorTest {
 
     public static Application application;
-    private static SSOManager ssoManager;
-    private static CassandraOperationImpl cassandraOperation;
-
+    private SSOManager ssoManager;
+    private CassandraOperationImpl cassandraOperation;
+    private PropertiesCache properties;
     @Before
     public void before() {
+        PowerMockito.mockStatic(org.sunbird.middleware.Application.class);
+        PowerMockito.doNothing().when(org.sunbird.middleware.Application.class);
+        org.sunbird.middleware.Application.checkCassandraConnection();
         application =
                 new GuiceApplicationBuilder()
                         .in(new File("path/to/app"))
                         .in(Mode.TEST)
                         .disable(StartModule.class)
                         .build();
-
         Helpers.start(application);
         ssoManager = mock(SSOManager.class);
         PowerMockito.mockStatic(SSOServiceFactory.class);
@@ -69,41 +71,51 @@ public class RequestInterceptorTest {
         cassandraOperation=mock(CassandraOperationImpl.class);
         PowerMockito.mockStatic(ServiceFactory.class);
         when(ServiceFactory.getInstance()).thenReturn(cassandraOperation);
+        properties=mock(PropertiesCache.class);
+        PowerMockito.mockStatic(PropertiesCache.class);
+        when(PropertiesCache.getInstance()).thenReturn(properties);
     }
-
     @Test
+    @PrepareForTest({SSOServiceFactory.class,ServiceFactory.class, org.sunbird.middleware.Application.class, PropertiesCache.class})
     public void testVerifyRequestDataWithUserAccessTokenWithPrivateRequestPath()
     {
+        when(properties.getProperty(JsonKey.SSO_PUBLIC_KEY)).thenReturn("somePublicKey");
+        when(properties.getProperty(JsonKey.IS_SSO_ENABLED)).thenReturn("false");
         Http.Request req=createRequest("user","/v1/course/batch/search");
         when(cassandraOperation.getRecordById(Mockito.anyString(),Mockito.anyString(),Mockito.anyString())).thenReturn(getMockCassandraRecordByIdResponse(JsonKey.USER_ID,"userId"));
         Assert.assertEquals("userId", RequestInterceptor.verifyRequestData(req));
     }
-
-
     @Test
+    @PrepareForTest({SSOServiceFactory.class,ServiceFactory.class, org.sunbird.middleware.Application.class, PropertiesCache.class})
     public void testVerifyRequestDataWithUserAccessTokenWithPublicRequestPath()
     {
-        Http.Request req=createRequest("user","/course/v1/batch/search");
+        when(properties.getProperty(JsonKey.SSO_PUBLIC_KEY)).thenReturn("somePublicKey");
+        when(properties.getProperty(JsonKey.IS_SSO_ENABLED)).thenReturn("false");
+        Http.Request req=createRequest("user","/v1/course/batch/create");
         when(cassandraOperation.getRecordById(Mockito.anyString(),Mockito.anyString(),Mockito.anyString())).thenReturn(getMockCassandraRecordByIdResponse(JsonKey.USER_ID,"userId"));
         Assert.assertEquals("userId", RequestInterceptor.verifyRequestData(req));
     }
-
-
     @Test
+    @PrepareForTest({SSOServiceFactory.class,ServiceFactory.class, org.sunbird.middleware.Application.class, PropertiesCache.class})
     public void testVerifyRequestDataWithAuthClientTokenWithPublicRequestPath()
     {
-        Http.Request req=createRequest("client","/course/v1/batch/search");
+        when(properties.getProperty(JsonKey.SSO_PUBLIC_KEY)).thenReturn("somePublicKey");
+        when(properties.getProperty(JsonKey.IS_SSO_ENABLED)).thenReturn("false");
+        Http.Request req=createRequest("client","/v1/course/batch/create");
         when(cassandraOperation.getRecordsByProperties(Mockito.anyString(),Mockito.anyString(),Mockito.anyMap())).thenReturn(getMockCassandraRecordByIdResponse(JsonKey.ID,"clientId"));
-        Assert.assertEquals("userId", RequestInterceptor.verifyRequestData(req));
+        Assert.assertEquals("clientId", RequestInterceptor.verifyRequestData(req));
     }
-
     @Test
+    @PrepareForTest({SSOServiceFactory.class,ServiceFactory.class, org.sunbird.middleware.Application.class, PropertiesCache.class})
     public void testVerifyRequestDataWithoutUserAccessToken()
     {
+        when(properties.getProperty(JsonKey.SSO_PUBLIC_KEY)).thenReturn("somePublicKey");
+        when(properties.getProperty(JsonKey.IS_SSO_ENABLED)).thenReturn("false");
         Http.Request req=createRequest("user","/v1/course/batch/search");
         when(cassandraOperation.getRecordsByProperties(Mockito.anyString(),Mockito.anyString(),Mockito.anyMap())).thenReturn(null);
         Assert.assertEquals("Anonymous", RequestInterceptor.verifyRequestData(req));
     }
+
 
     private Http.Request createRequest(String token,String path) {
         Http.Request req = new Http.Request() {
@@ -243,6 +255,10 @@ public class RequestInterceptorTest {
             @Override
             public Optional<List<X509Certificate>> clientCertificateChain() {
                 return Optional.empty();
+            }
+
+            public Flash flash() {
+                return new Http.Flash(new HashMap<String,String>());
             }
         };
     return  req;

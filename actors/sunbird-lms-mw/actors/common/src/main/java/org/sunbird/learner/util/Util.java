@@ -524,7 +524,7 @@ public final class Util {
 
     ExecutionContext context = ExecutionContext.getCurrent();
     Map<String, Object> requestContext = null;
-    if (actorMessage.getContext().get(JsonKey.TELEMETRY_CONTEXT) != null) {
+    if ((actorMessage.getContext().get(JsonKey.TELEMETRY_CONTEXT) != null) && (actorMessage.getRequest().get(JsonKey.REQUESTED_BY) != null)) {
       // means request context is already set by some other actor ...
       requestContext =
           (Map<String, Object>) actorMessage.getContext().get(JsonKey.TELEMETRY_CONTEXT);

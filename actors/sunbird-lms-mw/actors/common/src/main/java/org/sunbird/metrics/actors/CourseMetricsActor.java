@@ -40,6 +40,7 @@ import org.sunbird.common.util.CloudStorageUtil.CloudStorageType;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.learner.constants.CourseJsonKey;
 import org.sunbird.learner.util.ContentSearchUtil;
+import org.sunbird.learner.util.Util;
 import org.sunbird.userorg.UserOrgService;
 import org.sunbird.userorg.UserOrgServiceImpl;
 import scala.concurrent.Future;
@@ -296,9 +297,42 @@ public class CourseMetricsActor extends BaseMetricsActor {
         ProjectUtil.getConfigValue(JsonKey.SUNBIRD_COURSE_METRICS_REPORT_FOLDER);
     String reportPath = courseMetricsReportFolder + File.separator + "report-" + batchId + ".csv";
 
-    String courseAssessmentsReportFolder =
-            ProjectUtil.getConfigValue(JsonKey.SUNBIRD_ASSESSMENT_REPORT_FOLDER);
-    String courseAssessmentsreportPath = courseAssessmentsReportFolder + File.separator + "report-" + batchId + ".csv";
+    // check assessment report location exist in ES or not
+
+    Map<String, Object> filter = new HashMap<>();
+    filter.put(JsonKey.BATCH_ID, batchId);
+    SearchDTO searchDTO = new SearchDTO();
+    searchDTO.getAdditionalProperties().put(JsonKey.FILTERS, filter);
+
+    Future<Map<String, Object>> assessmentBatchResultF =
+            esService.search(searchDTO, EsType.cbatchassessment.getTypeName());
+    Map<String, Object> assessmentBatchResult =
+            (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(assessmentBatchResultF);
+    String assessmentReportSignedUrl = null ;
+    ProjectLogger.log(
+            "CourseMetricsActor:courseProgressMetricsReport: assessmentBatchResult="
+                    + assessmentBatchResult,
+            LoggerEnum.INFO.name());
+    if (MapUtils.isNotEmpty(assessmentBatchResult) && CollectionUtils.isNotEmpty((List<Map<String, Object>>) assessmentBatchResult.get(JsonKey.CONTENT))) {
+      List<Map<String, Object>> content = (List<Map<String, Object>>) assessmentBatchResult.get(JsonKey.CONTENT);
+      Map<String, Object> batchData = content.get(0);
+      String reportLocation = (String) batchData.get(JsonKey.ASSESSMENT_REPORT_BLOB_URL);
+      ProjectLogger.log(
+                "CourseMetricsActor:courseProgressMetricsReport: reportLocation="
+                        + reportLocation,
+                LoggerEnum.INFO.name());
+      if (isNotNull(reportLocation)) {
+        String courseAssessmentsReportFolder = ProjectUtil.getConfigValue(JsonKey.SUNBIRD_ASSESSMENT_REPORT_FOLDER);
+        String courseAssessmentsreportPath = courseAssessmentsReportFolder + File.separator + "report-" + batchId + ".csv";
+        ProjectLogger.log(
+                  "CourseMetricsActor:courseProgressMetricsReport: courseMetricsContainer="
+                          + courseMetricsContainer
+                          + ", courseAssessmentsreportPath="
+                          + courseAssessmentsreportPath,
+                  LoggerEnum.INFO.name());
+        assessmentReportSignedUrl = CloudStorageUtil.getAnalyticsSignedUrl(CloudStorageType.AZURE, courseMetricsContainer, courseAssessmentsreportPath);
+      }
+    }
 
     ProjectLogger.log(
         "CourseMetricsActor:courseProgressMetricsReport: courseMetricsContainer="
@@ -310,23 +344,13 @@ public class CourseMetricsActor extends BaseMetricsActor {
         CloudStorageUtil.getAnalyticsSignedUrl(
             CloudStorageType.AZURE, courseMetricsContainer, reportPath);
 
-    ProjectLogger.log(
-        "CourseMetricsActor:courseProgressMetricsReport: courseMetricsContainer="
-            + courseMetricsContainer
-            + ", courseAssessmentsreportPath="
-            + courseAssessmentsreportPath,
-        LoggerEnum.INFO.name());
-
-    String assessmentReportSignedUrl =
-            CloudStorageUtil.getAnalyticsSignedUrl(
-                    CloudStorageType.AZURE, courseMetricsContainer, courseAssessmentsreportPath);
-
-
     Response response = new Response();
     response.put(JsonKey.SIGNED_URL, signedUrl);
     Map<String, Object> reports = new HashMap<>();
     reports.put(JsonKey.PROGRESS_REPORT_SIGNED_URL, signedUrl);
-    reports.put(JsonKey.ASSESSMENT_REPORT_SIGNED_URL, assessmentReportSignedUrl);
+    if (isNotNull(assessmentReportSignedUrl)) {
+      reports.put(JsonKey.ASSESSMENT_REPORT_SIGNED_URL, assessmentReportSignedUrl);
+    }
     response.put(JsonKey.REPORTS, reports);
     response.put(
         JsonKey.DURATION, ProjectUtil.getConfigValue(JsonKey.DOWNLOAD_LINK_EXPIRY_TIMEOUT));

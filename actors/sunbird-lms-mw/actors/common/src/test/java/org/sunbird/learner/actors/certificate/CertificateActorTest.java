@@ -1,120 +1,85 @@
 package org.sunbird.learner.actors.certificate;
 
-import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 
-import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
-import akka.actor.Props;
-import akka.dispatch.Futures;
-import akka.testkit.javadsl.TestKit;
-import java.time.Duration;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.sunbird.application.test.SunbirdApplicationActorTest;
+import org.sunbird.builder.mocker.ESMocker;
+import org.sunbird.builder.mocker.MockerBuilder;
+import org.sunbird.builder.object.CustomObjectBuilder;
+import org.sunbird.builder.object.CustomObjectBuilder.CustomObjectWrapper;
 import org.sunbird.common.ElasticSearchHelper;
-import org.sunbird.common.ElasticSearchRestHighImpl;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
-import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.ProjectUtil.EsType;
 import org.sunbird.common.request.Request;
 import org.sunbird.kafka.client.InstructionEventGenerator;
-import scala.concurrent.Future;
-import scala.concurrent.Promise;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({EsClientFactory.class, ElasticSearchHelper.class, InstructionEventGenerator.class})
+@PrepareForTest({EsClientFactory.class, ElasticSearchHelper.class})
+@SuppressStaticInitializationFor("org.sunbird.kafka.client.KafkaClient")
 @PowerMockIgnore("javax.management.*")
-@Ignore
-public class CertificateActorTest {
+public class CertificateActorTest extends SunbirdApplicationActorTest {
 
-  private static ActorSystem system;
-  private static final Props props = Props.create(CertificateActor.class);
-  private static ElasticSearchService esService;
+  private static MockerBuilder.MockersGroup group;
+
   private static final String batchId = "randomBatchId";
   private static final String courseId = "randomCourseId";
   private static final String certificateName = "certificateName";
 
-  @BeforeClass
-  public static void setUp() {
-    system = ActorSystem.create("system");
+  @Before
+  public void beforeEach() {
+    group = MockerBuilder.getFreshMockerGroup().withESMock(new ESMocker());
   }
 
-  @Before
-  public void beforeEach() throws Exception {
-    PowerMockito.mockStatic(EsClientFactory.class);
-    PowerMockito.mockStatic(ElasticSearchHelper.class);
-    PowerMockito.mockStatic(InstructionEventGenerator.class);
-    esService = mock(ElasticSearchRestHighImpl.class);
-    when(EsClientFactory.getInstance(Mockito.anyString())).thenReturn(esService);
-    //    PowerMockito.doNothing()
-    //    .when(InstructionEventGenerator.class);
+  public CertificateActorTest() {
+    init(CertificateActor.class);
+  }
+
+  @Test
+  @PrepareForTest({
+    EsClientFactory.class,
+    ElasticSearchHelper.class,
+    InstructionEventGenerator.class
+  })
+  public void issueCertificateTest() throws Exception {
+    group.andStaticMock(InstructionEventGenerator.class);
+    CustomObjectWrapper<Map<String, Object>> courseBatch =
+        CustomObjectBuilder.getRandomCourseBatch();
+    when(group
+            .getESMockerService()
+            .getDataByIdentifier(Mockito.eq(EsType.courseBatch.getTypeName()), Mockito.anyString()))
+        .thenReturn(courseBatch.asESIdentifierResult());
+    when(group
+            .getESMockerService()
+            .search(Mockito.any(), Mockito.eq(EsType.usercourses.getTypeName())))
+        .thenReturn(CustomObjectBuilder.getRandomUserCoursesList(1).asESSearchResult());
     PowerMockito.doNothing()
         .when(
             InstructionEventGenerator.class,
             "pushInstructionEvent",
             Mockito.anyString(),
             Mockito.anyMap());
-  }
 
-  private void mockUserCoursesEsResponse(boolean isEmpty) {
-    Map<String, Object> userCourses = new HashMap<>();
-    List<Map<String, Object>> l1 = new ArrayList<>();
-    if (!isEmpty) {
-      l1.add(getMapforUserCourses(batchId, "user1"));
-    }
-    userCourses.put(JsonKey.CONTENT, l1);
-    Promise<Map<String, Object>> promiseUserCourses = Futures.promise();
-    promiseUserCourses.success(userCourses);
-    Future<Map<String, Object>> ucf = promiseUserCourses.future();
-    when(esService.search(Mockito.any(), Mockito.any())).thenReturn(ucf);
-    when(ElasticSearchHelper.getResponseFromFuture(ucf)).thenReturn(userCourses);
-  }
-
-  private void mockCourseBatchEsResponse(String courseId, String batchId, boolean isEmpty) {
-    Map<String, Object> courseBatch = new HashMap<>();
-    courseBatch.put(JsonKey.BATCH_ID, batchId);
-    courseBatch.put(JsonKey.COURSE_ID, courseId);
-    Promise<Map<String, Object>> promiseCourseBatch = Futures.promise();
-    promiseCourseBatch.success(courseBatch);
-    Future<Map<String, Object>> cbf = promiseCourseBatch.future();
-    when(esService.getDataByIdentifier(Mockito.anyString(), Mockito.anyString())).thenReturn(cbf);
-    when(ElasticSearchHelper.getResponseFromFuture(cbf)).thenReturn(isEmpty ? null : courseBatch);
-  }
-
-  private Map<String, Object> getMapforUserCourses(String batchId, String userId) {
-    Map<String, Object> result = new HashMap<>();
-    result.put(JsonKey.BATCH_ID, batchId);
-    result.put(JsonKey.USER_ID, userId);
-    return result;
-  }
-
-  @Test
-  public void issueCertificateTest() {
-    TestKit probe = new TestKit(system);
-    ActorRef subject = system.actorOf(props);
-    mockCourseBatchEsResponse(courseId, batchId, false);
-    mockUserCoursesEsResponse(false);
     Request req = new Request();
     HashMap<String, Object> innerMap = new HashMap<>();
-    innerMap.put(JsonKey.BATCH_ID, batchId);
-    innerMap.put(JsonKey.COURSE_ID, courseId);
+    innerMap.put(JsonKey.BATCH_ID, courseBatch.get().get(JsonKey.BATCH_ID));
+    innerMap.put(JsonKey.COURSE_ID, courseBatch.get().get(JsonKey.COURSE_ID));
     innerMap.put("certificate", certificateName);
     req.setOperation("issueCertificate");
     req.setRequest(innerMap);
-    subject.tell(req, probe.getRef());
-    Response response = probe.expectMsgClass(Duration.ofSeconds(10), Response.class);
+    Response response = executeInTenSeconds(req, Response.class);
     Assert.assertNotNull(response);
     Map<String, Object> result = (Map<String, Object>) response.get(JsonKey.RESULT);
     Assert.assertNotNull(result);
@@ -122,21 +87,39 @@ public class CertificateActorTest {
   }
 
   @Test
-  public void reIssueCertificateTest() {
-    TestKit probe = new TestKit(system);
-    ActorRef subject = system.actorOf(props);
-    mockCourseBatchEsResponse(courseId, batchId, false);
-    mockUserCoursesEsResponse(false);
+  @PrepareForTest({
+    EsClientFactory.class,
+    ElasticSearchHelper.class,
+    InstructionEventGenerator.class
+  })
+  public void reIssueCertificateTest() throws Exception {
+    group.andStaticMock(InstructionEventGenerator.class);
+    CustomObjectWrapper<Map<String, Object>> courseBatch =
+        CustomObjectBuilder.getRandomCourseBatch();
+    when(group
+            .getESMockerService()
+            .getDataByIdentifier(Mockito.eq(EsType.courseBatch.getTypeName()), Mockito.anyString()))
+        .thenReturn(courseBatch.asESIdentifierResult());
+    when(group
+            .getESMockerService()
+            .search(Mockito.any(), Mockito.eq(EsType.usercourses.getTypeName())))
+        .thenReturn(CustomObjectBuilder.getRandomUserCoursesList(1).asESSearchResult());
+    PowerMockito.doNothing()
+        .when(
+            InstructionEventGenerator.class,
+            "pushInstructionEvent",
+            Mockito.anyString(),
+            Mockito.anyMap());
+
     Request req = new Request();
     HashMap<String, Object> innerMap = new HashMap<>();
-    innerMap.put(JsonKey.BATCH_ID, batchId);
-    innerMap.put(JsonKey.COURSE_ID, courseId);
+    innerMap.put(JsonKey.BATCH_ID, courseBatch.get().get(JsonKey.BATCH_ID));
+    innerMap.put(JsonKey.COURSE_ID, courseBatch.get().get(JsonKey.COURSE_ID));
     innerMap.put("certificate", certificateName);
     req.setOperation("issueCertificate");
     req.setRequest(innerMap);
     req.getContext().put("reIssue", "true");
-    subject.tell(req, probe.getRef());
-    Response response = probe.expectMsgClass(Duration.ofSeconds(10), Response.class);
+    Response response = executeInTenSeconds(req, Response.class);
     Assert.assertNotNull(response);
     Map<String, Object> result = (Map<String, Object>) response.get(JsonKey.RESULT);
     Assert.assertNotNull(result);
@@ -145,19 +128,24 @@ public class CertificateActorTest {
 
   @Test
   public void issueCertificateEmptyTest() {
-    TestKit probe = new TestKit(system);
-    ActorRef subject = system.actorOf(props);
-    mockCourseBatchEsResponse(courseId, batchId, false);
-    mockUserCoursesEsResponse(true);
+    CustomObjectWrapper<Map<String, Object>> courseBatch =
+        CustomObjectBuilder.getRandomCourseBatch();
+    when(group
+            .getESMockerService()
+            .getDataByIdentifier(Mockito.eq(EsType.courseBatch.getTypeName()), Mockito.anyString()))
+        .thenReturn(courseBatch.asESIdentifierResult());
+    when(group
+            .getESMockerService()
+            .search(Mockito.any(), Mockito.eq(EsType.usercourses.getTypeName())))
+        .thenReturn(CustomObjectBuilder.getEmptyContentList().asESSearchResult());
     Request req = new Request();
     HashMap<String, Object> innerMap = new HashMap<>();
-    innerMap.put(JsonKey.BATCH_ID, batchId);
-    innerMap.put(JsonKey.COURSE_ID, courseId);
+    innerMap.put(JsonKey.BATCH_ID, courseBatch.get().get(JsonKey.BATCH_ID));
+    innerMap.put(JsonKey.COURSE_ID, courseBatch.get().get(JsonKey.COURSE_ID));
     innerMap.put("certificate", certificateName);
     req.setOperation("issueCertificate");
     req.setRequest(innerMap);
-    subject.tell(req, probe.getRef());
-    Response response = probe.expectMsgClass(Duration.ofSeconds(10), Response.class);
+    Response response = executeInTenSeconds(req, Response.class);
     Assert.assertNotNull(response);
     Map<String, Object> result = (Map<String, Object>) response.get(JsonKey.RESULT);
     Assert.assertNotNull(result);
@@ -166,27 +154,29 @@ public class CertificateActorTest {
 
   @Test
   public void issueCertificateCourseMismatchTest() {
-    TestKit probe = new TestKit(system);
-    ActorRef subject = system.actorOf(props);
-    mockCourseBatchEsResponse(courseId, batchId, false);
+    CustomObjectWrapper<Map<String, Object>> courseBatch =
+        CustomObjectBuilder.getRandomCourseBatch();
+    when(group
+            .getESMockerService()
+            .getDataByIdentifier(Mockito.eq(EsType.courseBatch.getTypeName()), Mockito.anyString()))
+        .thenReturn(courseBatch.asESIdentifierResult());
     Request req = new Request();
     HashMap<String, Object> innerMap = new HashMap<>();
-    innerMap.put(JsonKey.BATCH_ID, batchId);
+    innerMap.put(JsonKey.BATCH_ID, courseBatch.get().get(JsonKey.BATCH_ID));
     innerMap.put(JsonKey.COURSE_ID, "wrongCourseId");
     innerMap.put("certificate", certificateName);
     req.setOperation("issueCertificate");
     req.setRequest(innerMap);
-    subject.tell(req, probe.getRef());
-    ProjectCommonException ex =
-        probe.expectMsgClass(Duration.ofSeconds(10), ProjectCommonException.class);
+    ProjectCommonException ex = executeInTenSeconds(req, ProjectCommonException.class);
     Assert.assertNotNull(ex);
   }
 
   @Test
   public void issueCertificateMissingBatchTest() {
-    TestKit probe = new TestKit(system);
-    ActorRef subject = system.actorOf(props);
-    mockCourseBatchEsResponse(courseId, batchId, true);
+    when(group
+            .getESMockerService()
+            .getDataByIdentifier(Mockito.eq(EsType.courseBatch.getTypeName()), Mockito.anyString()))
+        .thenReturn(CustomObjectBuilder.getEmptyMap().asESIdentifierResult());
     Request req = new Request();
     HashMap<String, Object> innerMap = new HashMap<>();
     innerMap.put(JsonKey.BATCH_ID, batchId);
@@ -194,9 +184,7 @@ public class CertificateActorTest {
     innerMap.put("certificate", certificateName);
     req.setOperation("issueCertificate");
     req.setRequest(innerMap);
-    subject.tell(req, probe.getRef());
-    ProjectCommonException ex =
-        probe.expectMsgClass(Duration.ofSeconds(10), ProjectCommonException.class);
+    ProjectCommonException ex = executeInTenSeconds(req, ProjectCommonException.class);
     Assert.assertNotNull(ex);
   }
 }

@@ -1,8 +1,8 @@
 package controllers.cache;
 
-
 import controllers.BaseApplicationTest;
 import controllers.DummyActor;
+import controllers.DummyErrorActor;
 import modules.OnRequestHandler;
 import org.junit.Assert;
 import org.junit.Before;
@@ -20,21 +20,21 @@ import play.test.Helpers;
 @PrepareForTest({OnRequestHandler.class})
 @SuppressStaticInitializationFor({"util.AuthenticationHelper"})
 @PowerMockIgnore("javax.management.*")
-public class CacheControllerTest extends BaseApplicationTest {
+public class CacheControllerErrorTest extends BaseApplicationTest {
 
     public static String MAP_NAME="mapName";
     @Before
     public void before() {
-        setup(DummyActor.class);
+        setup(DummyErrorActor.class);
     }
 
     @Test
-    public void testClearCache() {
+    public void ClearCacheErrorTest() {
         Http.RequestBuilder req =
                 new Http.RequestBuilder()
                         .uri("/v1/cache/clear/"+MAP_NAME)
                         .method("DELETE");
         Result result = Helpers.route(application, req);
-        Assert.assertEquals( 200, result.status());
+        Assert.assertEquals( 500, result.status());
     }
 }

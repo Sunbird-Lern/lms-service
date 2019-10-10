@@ -1,95 +1,49 @@
 package controllers;
 
-import static controllers.TestUtil.mapToJson;
-import static org.junit.Assert.assertEquals;
-import static org.powermock.api.mockito.PowerMockito.when;
-import static play.test.Helpers.route;
-
-import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import com.fasterxml.jackson.databind.JsonNode;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import modules.OnRequestHandler;
-import modules.StartModule;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.responsecode.ResponseCode;
 import play.Application;
-import play.Mode;
-import play.inject.guice.GuiceApplicationBuilder;
 import play.libs.Json;
 import play.mvc.Http;
-import play.mvc.Http.RequestBuilder;
 import play.mvc.Result;
 import play.test.Helpers;
 import util.RequestInterceptor;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+import static controllers.TestUtil.mapToJson;
+
 /** @author arvind */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ RequestInterceptor.class})
-@SuppressStaticInitializationFor({"util.AuthenticationHelper", "util.Global"})
 @PowerMockIgnore("javax.management.*")
-public class LearnerControllerTest  {
+public class LearnerControllerTest extends BaseApplicationTest {
 
   private static final String COURSE_ID = "course-123";
   private static final String USER_ID = "user-123";
   private static final String CONTENT_ID = "content-123";
   private static final String BATCH_ID = "batch-123";
-  public static Application application;
-  public static ActorSystem system;
-  public static final Props props = Props.create(DummyActor.class);
   private static final String CONTENT_STATE_UPDATE_URL = "/v1/content/state/update";
   private static final String CONTENT_STATE_READ_URL = "/v1/content/state/read";
 
   @Before
   public void before() {
-    application =
-            new GuiceApplicationBuilder()
-                    .in(new File("path/to/app"))
-                    .in(Mode.TEST)
-                    .disable(StartModule.class)
-                    .build();
-
-    Helpers.start(application);
-    system = ActorSystem.create("system");
-    ActorRef subject = system.actorOf(props);
-    BaseController.setActorRef(subject);
-    PowerMockito.mockStatic(RequestInterceptor.class);
-    Http.Request request = PowerMockito.mock(Http.Request.class);
-    when(RequestInterceptor.verifyRequestData(request)).thenReturn("AUTHORIZED");
+      setup(DummyActor.class);
   }
   @Test
   public void testUpdateContentStateSuccess() {
-    Map<String, Object> requestMap = new HashMap<>();
-    Map<String, Object> innerMap = new HashMap<>();
-    List<Object> list = new ArrayList<>();
-    Map<String, Object> map = new HashMap<>();
-    map.put(JsonKey.CONTENT_ID, CONTENT_ID);
-    map.put(JsonKey.STATUS, "Active");
-    map.put(JsonKey.LAST_UPDATED_TIME, "2019-08-18 10:47:30:707+0530");
-    list.add(map);
-    innerMap.put("contents", list);
-    innerMap.put("courseId", COURSE_ID);
-    requestMap.put(JsonKey.REQUEST, innerMap);
-    String data = mapToJson(requestMap);
-    JsonNode json = Json.parse(data);
+    JsonNode json= createUpdateContentStateRequest(CONTENT_ID,"Active",generateDatePattern(),COURSE_ID);
     Http.RequestBuilder req =
             new Http.RequestBuilder()
                     .uri(CONTENT_STATE_UPDATE_URL)
@@ -102,14 +56,7 @@ public class LearnerControllerTest  {
 
   @Test
   public void testGetContentStateSuccess() {
-    Map<String, Object> requestMap = new HashMap<>();
-    Map<String, Object> innerMap = new HashMap<>();
-    innerMap.put(JsonKey.BATCH_ID, BATCH_ID);
-    innerMap.put(JsonKey.USER_ID, USER_ID);
-    innerMap.put(JsonKey.COURSE_ID,COURSE_ID);
-    requestMap.put(JsonKey.REQUEST, innerMap);
-    String data = mapToJson(requestMap);
-    JsonNode json = Json.parse(data);
+ JsonNode json=createGetContentStateRequest(USER_ID,COURSE_ID,BATCH_ID);
     Http.RequestBuilder req =
             new Http.RequestBuilder()
                     .uri(CONTENT_STATE_READ_URL)
@@ -140,12 +87,7 @@ public class LearnerControllerTest  {
 
   @Test
   public void testGetContentStateFailureWithoutUserId() {
-    Map<String, Object> requestMap = new HashMap<>();
-    Map<String, Object> innerMap = new HashMap<>();
-    innerMap.put("courseId", COURSE_ID);
-    requestMap.put(JsonKey.REQUEST, innerMap);
-    String data = mapToJson(requestMap);
-    JsonNode json = Json.parse(data);
+    JsonNode json=createGetContentStateRequest(null,COURSE_ID,BATCH_ID);
     Http.RequestBuilder req =
             new Http.RequestBuilder()
                     .uri(CONTENT_STATE_READ_URL)
@@ -158,12 +100,7 @@ public class LearnerControllerTest  {
 
   @Test
   public void testGetContentStateFailureWithoutCourseId() {
-    Map<String, Object> requestMap = new HashMap<>();
-    Map<String, Object> innerMap = new HashMap<>();
-    innerMap.put("userId", USER_ID);
-    requestMap.put(JsonKey.REQUEST, innerMap);
-    String data = mapToJson(requestMap);
-    JsonNode json = Json.parse(data);
+    JsonNode json=createGetContentStateRequest(USER_ID,null,BATCH_ID);
     Http.RequestBuilder req =
             new Http.RequestBuilder()
                     .uri(CONTENT_STATE_READ_URL)
@@ -180,7 +117,7 @@ public class LearnerControllerTest  {
     Map<String, Object> map = new HashMap<>();
     map.put(JsonKey.CONTENT_ID, CONTENT_ID);
     map.put(JsonKey.STATUS, "Active");
-    map.put(JsonKey.LAST_UPDATED_TIME, "2017-12-18 10:47:30:707+0530");
+    map.put(JsonKey.LAST_UPDATED_TIME, generateDatePattern());
     list.add(map);
 
     List<Map<String, Object>> assData = new ArrayList<Map<String, Object>>();
@@ -211,19 +148,7 @@ public class LearnerControllerTest  {
 
   @Test
   public void testUpdateContentStateFailureWithoutContentId() {
-    Map<String, Object> requestMap = new HashMap<>();
-    Map<String, Object> innerMap = new HashMap<>();
-    List<Object> list = new ArrayList<>();
-    Map<String, Object> map = new HashMap<>();
-    map.put(JsonKey.CONTENT_ID, null);
-    map.put(JsonKey.STATUS, "Active");
-    map.put(JsonKey.LAST_UPDATED_TIME, "2017-12-18 10:47:30:707+0530");
-    list.add(map);
-    innerMap.put("contents", list);
-    innerMap.put("courseId", COURSE_ID);
-    requestMap.put(JsonKey.REQUEST, innerMap);
-    String data = mapToJson(requestMap);
-    JsonNode json = Json.parse(data);
+    JsonNode json= createUpdateContentStateRequest(null,"Active",generateDatePattern(),COURSE_ID);
     Http.RequestBuilder req =
             new Http.RequestBuilder()
                     .uri(CONTENT_STATE_UPDATE_URL)
@@ -236,19 +161,7 @@ public class LearnerControllerTest  {
 
   @Test
   public void testUpdateContentStateFailureWithoutStatus() {
-    Map<String, Object> requestMap = new HashMap<>();
-    Map<String, Object> innerMap = new HashMap<>();
-    List<Object> list = new ArrayList<>();
-    Map<String, Object> map = new HashMap<>();
-    map.put(JsonKey.CONTENT_ID, CONTENT_ID);
-    map.put(JsonKey.STATUS, null);
-    map.put(JsonKey.LAST_UPDATED_TIME, "2017-12-18 10:47:30:707+0530");
-    list.add(map);
-    innerMap.put("contents", list);
-    innerMap.put("courseId", COURSE_ID);
-    requestMap.put(JsonKey.REQUEST, innerMap);
-    String data = mapToJson(requestMap);
-    JsonNode json = Json.parse(data);
+    JsonNode json= createUpdateContentStateRequest(CONTENT_ID,null,generateDatePattern(),COURSE_ID);
     Http.RequestBuilder req =
             new Http.RequestBuilder()
                     .uri(CONTENT_STATE_UPDATE_URL)
@@ -260,20 +173,8 @@ public class LearnerControllerTest  {
   }
 
   @Test
-  public void testUpdateContentStateFailureWithIncorextDateFormat() {
-    Map<String, Object> requestMap = new HashMap<>();
-    Map<String, Object> innerMap = new HashMap<>();
-    List<Object> list = new ArrayList<>();
-    Map<String, Object> map = new HashMap<>();
-    map.put(JsonKey.CONTENT_ID, CONTENT_ID);
-    map.put(JsonKey.STATUS, "Active");
-    map.put(JsonKey.LAST_UPDATED_TIME, "08-08-2019 10:47:30:707+0530");
-    list.add(map);
-    innerMap.put("contents", list);
-    innerMap.put("courseId", COURSE_ID);
-    requestMap.put(JsonKey.REQUEST, innerMap);
-    String data = mapToJson(requestMap);
-    JsonNode json = Json.parse(data);
+  public void testUpdateContentStateFailureWithIncorrectDateFormat() {
+    JsonNode json= createUpdateContentStateRequest(CONTENT_ID,"Active","18-12-2017 10:47:30:707+0530",COURSE_ID);
     Http.RequestBuilder req =
             new Http.RequestBuilder()
                     .uri(CONTENT_STATE_UPDATE_URL)
@@ -282,5 +183,42 @@ public class LearnerControllerTest  {
     Result result = Helpers.route(application, req);
     Assert.assertEquals( 400, result.status());
 
+  }
+
+  private JsonNode createUpdateContentStateRequest(String contentId, String status, String lastUpdatedTime, String courseId)
+  {
+    Map<String, Object> requestMap = new HashMap<>();
+    Map<String, Object> innerMap = new HashMap<>();
+    List<Object> list = new ArrayList<>();
+    Map<String, Object> map = new HashMap<>();
+    map.put(JsonKey.CONTENT_ID, contentId);
+    map.put(JsonKey.STATUS, status);
+    map.put(JsonKey.LAST_UPDATED_TIME, lastUpdatedTime);
+    list.add(map);
+    innerMap.put("contents", list);
+    innerMap.put("courseId", courseId);
+    requestMap.put(JsonKey.REQUEST, innerMap);
+    String data = mapToJson(requestMap);
+    JsonNode json = Json.parse(data);
+    return json;
+  }
+
+  private JsonNode createGetContentStateRequest(String userId, String courseId, String batchId){
+    Map<String, Object> requestMap = new HashMap<>();
+    Map<String, Object> innerMap = new HashMap<>();
+    innerMap.put(JsonKey.BATCH_ID, batchId);
+    innerMap.put(JsonKey.USER_ID, userId);
+    innerMap.put(JsonKey.COURSE_ID,courseId);
+    requestMap.put(JsonKey.REQUEST, innerMap);
+    String data = mapToJson(requestMap);
+    JsonNode json = Json.parse(data);
+    return json;
+  }
+
+  private String generateDatePattern(){
+    Date date = Calendar.getInstance().getTime();
+    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSSZ");
+    String strDate = dateFormat.format(date);
+    return strDate;
   }
 }

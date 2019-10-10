@@ -1,20 +1,16 @@
 package util;
 
 
-import modules.OnRequestHandler;
 import modules.StartModule;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
 import org.powermock.modules.junit4.PowerMockRunner;
-import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.cassandraimpl.CassandraOperationImpl;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
@@ -31,25 +27,23 @@ import play.inject.guice.GuiceApplicationBuilder;
 import play.libs.typedmap.TypedKey;
 import play.libs.typedmap.TypedMap;
 import play.mvc.Http;
-import play.test.Helpers;
-import util.RequestInterceptor;
 import play.mvc.Http.Flash;
+import play.test.Helpers;
+
 import java.io.File;
 import java.security.cert.X509Certificate;
 import java.util.*;
-
 
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({SSOServiceFactory.class,ServiceFactory.class, org.sunbird.middleware.Application.class, PropertiesCache.class})
-//@SuppressStaticInitializationFor( {"util.AuthenticationHelper","util.Global"})
 @PowerMockIgnore("javax.management.*")
 
 public class RequestInterceptorTest {
 
-    public static Application application;
+    public Application application;
     private SSOManager ssoManager;
     private CassandraOperationImpl cassandraOperation;
     private PropertiesCache properties;

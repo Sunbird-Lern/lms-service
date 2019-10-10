@@ -1,53 +1,34 @@
 package controllers.coursemanagement;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
-import akka.actor.Props;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import controllers.BaseController;
-import controllers.BaseControllerTest;
-
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-
+import controllers.BaseApplicationTest;
 import controllers.DummyActor;
 import modules.OnRequestHandler;
-import modules.StartModule;
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.responsecode.ResponseCode;
-import play.Application;
-import play.Mode;
-import play.inject.guice.GuiceApplicationBuilder;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
 
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({OnRequestHandler.class})
-@SuppressStaticInitializationFor({"util.AuthenticationHelper", "util.Global"})
 @PowerMockIgnore("javax.management.*")
-public class CourseBatchControllerTest  {
+public class CourseBatchControllerTest extends BaseApplicationTest {
 
   public static String COURSE_ID = "courseId";
   public static String COURSE_NAME = "courseName";
@@ -63,30 +44,9 @@ public class CourseBatchControllerTest  {
   private static final String BATCH_PARTICIPANTS_LIST_URL =  "/v1/batch/participants/list";
   private static final String ADD_USERS_BATCH_URL =  "/v1/course/batch/users/add/"+BATCH_ID;
   private static final String REMOVE_USERS_BATCH_URL =  "/v1/course/batch/users/remove/"+BATCH_ID;
-  public static Application application;
-  public static ActorSystem system;
-  public static final Props props = Props.create(DummyActor.class);
   @Before
   public void before() {
-    application =
-            new GuiceApplicationBuilder()
-                    .in(new File("path/to/app"))
-                    .in(Mode.TEST)
-                    .disable(StartModule.class)
-                    .build();
-
-    Helpers.start(application);
-    system = ActorSystem.create("system");
-    ActorRef subject = system.actorOf(props);
-    BaseController.setActorRef(subject);
-    PowerMockito.mockStatic(OnRequestHandler.class);
-    Map<String, Object> inner = new HashMap<>();
-    Map<String, Object> aditionalInfo = new HashMap<String, Object>();
-    aditionalInfo.put(JsonKey.START_TIME, System.currentTimeMillis());
-    inner.put(JsonKey.ADDITIONAL_INFO, aditionalInfo);
-    Map outer = PowerMockito.mock(HashMap.class);
-    OnRequestHandler.requestInfo = outer;
-    PowerMockito.when(OnRequestHandler.requestInfo.get(Mockito.anyString())).thenReturn(inner);
+    setup(DummyActor.class);
   }
 
   @Test

@@ -1,32 +1,27 @@
 package controllers;
 
-import akka.actor.ActorSystem;
-import akka.actor.Props;
+import actors.DummyActor;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.common.models.util.JsonKey;
-import play.Application;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
-import util.RequestInterceptor;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static controllers.TestUtil.mapToJson;
+import static util.TestUtil.mapToJson;
 
 /** @author arvind */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ RequestInterceptor.class})
 @PowerMockIgnore("javax.management.*")
 public class LearnerControllerTest extends BaseApplicationTest {
 

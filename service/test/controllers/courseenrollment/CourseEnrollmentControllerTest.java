@@ -2,14 +2,12 @@ package controllers.courseenrollment;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.BaseApplicationTest;
-import controllers.DummyActor;
-import modules.OnRequestHandler;
+import actors.DummyActor;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.common.models.util.JsonKey;
 import play.libs.Json;
@@ -20,10 +18,9 @@ import play.test.Helpers;
 import java.util.HashMap;
 import java.util.Map;
 
-import static controllers.TestUtil.mapToJson;
+import static util.TestUtil.mapToJson;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({OnRequestHandler.class})
 @PowerMockIgnore("javax.management.*")
 public class CourseEnrollmentControllerTest extends BaseApplicationTest {
 

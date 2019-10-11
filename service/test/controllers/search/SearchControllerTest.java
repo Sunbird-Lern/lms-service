@@ -4,46 +4,28 @@ import static org.junit.Assert.assertEquals;
 import static org.powermock.api.mockito.PowerMockito.when;
 import static play.test.Helpers.route;
 
-import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
-import akka.actor.Props;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import controllers.BaseApplicationTest;
-import controllers.BaseController;
-import controllers.DummyActor;
+import actors.DummyActor;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-import modules.OnRequestHandler;
-import modules.StartModule;
 import org.junit.*;
 import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
-import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.request.HeaderParam;
-import play.Application;
-import play.Mode;
 import play.libs.Json;
 import play.mvc.Http;
-import play.mvc.Http.RequestBuilder;
 import play.mvc.Result;
-import play.inject.guice.GuiceApplicationBuilder;
 import play.test.Helpers;
-import util.RequestInterceptor;
 
 /** Created by arvind on 6/12/17. */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({OnRequestHandler.class})
 @SuppressStaticInitializationFor({"util.AuthenticationHelper"})
 @PowerMockIgnore("javax.management.*")
 public class SearchControllerTest extends BaseApplicationTest {

@@ -3,14 +3,12 @@ package controllers.pagemanagement;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import controllers.BaseApplicationTest;
-import controllers.DummyActor;
-import modules.OnRequestHandler;
+import actors.DummyActor;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectLogger;
@@ -25,7 +23,6 @@ import java.util.Map;
 
 /** Created by arvind on 4/12/17. */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({OnRequestHandler.class})
 @PowerMockIgnore("javax.management.*")
 public class PageControllerTest extends BaseApplicationTest {
 

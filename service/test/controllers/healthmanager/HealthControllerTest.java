@@ -1,8 +1,7 @@
 package controllers.healthmanager;
 
 import controllers.BaseApplicationTest;
-import controllers.DummyHealthActor;
-import modules.OnRequestHandler;
+import actors.DummyHealthActor;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -29,7 +28,7 @@ import static play.test.Helpers.route;
 /** Created by arvind on 5/12/17. */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({OnRequestHandler.class,HttpUtil.class})
+@PrepareForTest({HttpUtil.class})
 @PowerMockIgnore("javax.management.*")
 
 public class HealthControllerTest extends BaseApplicationTest {

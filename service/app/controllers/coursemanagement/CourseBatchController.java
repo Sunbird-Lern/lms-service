@@ -76,17 +76,6 @@ public class CourseBatchController extends BaseController {
         httpRequest);
   }
 
-  public CompletionStage<Result> deleteBatch(Http.Request httpRequest) {
-    return handleRequest(
-        ActorOperations.REMOVE_BATCH.getValue(),
-        httpRequest.body().asJson(),
-        (request) -> {
-          new CourseBatchRequestValidator().validateDeleteCourseBatchRequest((Request) request);
-          return null;
-        },
-        httpRequest);
-  }
-
   @SuppressWarnings({"unchecked", "rawtypes"})
   public CompletionStage<Result> search(Http.Request httpRequest) {
     try {
@@ -103,6 +92,7 @@ public class CourseBatchController extends BaseController {
       reqObj.getContext().put(JsonKey.PARTICIPANTS, requestedField);
       List<String> esObjectType = new ArrayList<>();
       esObjectType.add(EsType.courseBatch.getTypeName());
+
       if (reqObj.getRequest().containsKey(JsonKey.FILTERS)
           && reqObj.getRequest().get(JsonKey.FILTERS) != null
           && reqObj.getRequest().get(JsonKey.FILTERS) instanceof Map) {

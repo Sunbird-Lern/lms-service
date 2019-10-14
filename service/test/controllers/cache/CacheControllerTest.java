@@ -2,7 +2,7 @@ package controllers.cache;
 
 
 import controllers.BaseApplicationTest;
-import controllers.DummyActor;
+import actors.DummyActor;
 import modules.OnRequestHandler;
 import org.junit.Assert;
 import org.junit.Before;

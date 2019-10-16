@@ -39,7 +39,7 @@ import org.sunbird.learner.util.Util;
 import scala.concurrent.Future;
 
 @ActorConfig(
-  tasks = {"issueCertificate","addCertificate"},
+  tasks = {"issueCertificate","addCertificate","getCertificate"},
   asyncTasks = {}
 )
 public class CertificateActor extends BaseActor {
@@ -76,6 +76,9 @@ public class CertificateActor extends BaseActor {
       case "addCertificate":
         addCertificate(request);
         break;
+        case "getCertificate":
+            getCertificateList(request);
+            break;
       default:
         onReceiveUnsupportedOperation(request.getOperation());
         break;
@@ -129,9 +132,9 @@ public class CertificateActor extends BaseActor {
     }
   }
 
-  private void addCertificate(Request request){
+  private void getCertificateList(Request request){
       ProjectLogger.log(
-              "CertificateActor:addCertificate request=" + request.getRequest(),
+              "CertificateActor:getCertificateList request=" + request.getRequest(),
               LoggerEnum.INFO.name());
       final String courseId = (String) request.getRequest().get(JsonKey.COURSE_ID);
       Map<String, String> headers =
@@ -140,22 +143,51 @@ public class CertificateActor extends BaseActor {
       String batchId =
               request.getRequest().containsKey(JsonKey.BATCH_ID)
                       ? (String)request.getRequest().get(JsonKey.BATCH_ID)
-                      : "";
-      if(StringUtils.isNotBlank(batchId)){
+                      : null;
+      if(batchId!= null){
           validateCourseBatch(courseId,batchId);
       }
-      String requestedBy = (String) request.getContext().get(JsonKey.REQUESTED_BY);
-      Map<String, Object> filters =
-              request.getRequest().containsKey(JsonKey.FILTERS)
-                      ? (Map<String, Object>) request.getRequest().get(JsonKey.FILTERS)
-                      : new HashMap<>();
-      Map<String,Object> requestMap = request.getRequest();
-      requestMap.put(JsonKey.ADDED_BY,requestedBy);
-      requestMap.put(JsonKey.FILTERS,filters);
-      Response result = certificateDao.add(requestMap);
-      sender().tell(result, self());
-
+      List<Map<String, Object>>  result = certificateDao.readById(courseId, batchId);
+      Response response = new Response();
+      response.put(JsonKey.RESPONSE, result);
+      sender().tell(response, self());
   }
+
+    private void addCertificate(Request request){
+        ProjectLogger.log(
+                "CertificateActor:addCertificate request=" + request.getRequest(),
+                LoggerEnum.INFO.name());
+        final String courseId = (String) request.getRequest().get(JsonKey.COURSE_ID);
+        final Map<String,Object> template = ( Map<String,Object>) request.getRequest().get(CourseJsonKey.TEMPLATE);
+        Map<String, String> headers =
+                (Map<String, String>) request.getContext().get(JsonKey.HEADER);
+        //   validateCourseDetails(courseId,headers);
+        String batchId =
+                request.getRequest().containsKey(JsonKey.BATCH_ID)
+                        ? (String)request.getRequest().get(JsonKey.BATCH_ID)
+                        : "";
+        if(StringUtils.isNotBlank(batchId)){
+            validateCourseBatch(courseId,batchId);
+        }
+        String requestedBy = (String) request.getContext().get(JsonKey.REQUESTED_BY);
+        Map<String, Object> filters =
+                request.getRequest().containsKey(JsonKey.FILTERS)
+                        ? (Map<String, Object>) request.getRequest().get(JsonKey.FILTERS)
+                        : new HashMap<>();
+        Map<String,Object> requestMap = request.getRequest();
+        requestMap.put(JsonKey.ADDED_BY,requestedBy);
+        requestMap.put(JsonKey.FILTERS,filters.toString());
+        requestMap.put(CourseJsonKey.TEMPLATE,template.toString());
+        requestMap.put(JsonKey.BATCH_ID,batchId);
+        requestMap.remove(JsonKey.ID);
+        requestMap.remove(JsonKey.USER_ID);
+        ProjectLogger.log(
+                "CertificateActor:addCertificate certificateDbRecord=" + requestMap,
+                LoggerEnum.INFO.name());
+        Response result = certificateDao.add(requestMap);
+        sender().tell(result, self());
+
+    }
 
   private boolean isReissue(Object queryString) {
     if (queryString != null) {

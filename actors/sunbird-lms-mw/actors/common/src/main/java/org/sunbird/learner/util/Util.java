@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -82,7 +84,7 @@ public final class Util {
     dbInfoMap.put(
         JsonKey.COURSE_MANAGEMENT_DB, getDbInfoObject(KEY_SPACE_NAME, "course_management"));
       dbInfoMap.put(
-              CourseJsonKey.CERTIFICATE_TEMPLATE_DB, getDbInfoObject(KEY_SPACE_NAME, "certificate_templates"));
+              CourseJsonKey.CERTIFICATE_TEMPLATE_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "certificate_templates"));
     dbInfoMap.put(JsonKey.USER_DB, getDbInfoObject(KEY_SPACE_NAME, "user"));
     dbInfoMap.put(JsonKey.USER_AUTH_DB, getDbInfoObject(KEY_SPACE_NAME, "user_auth"));
     dbInfoMap.put(JsonKey.ORG_DB, getDbInfoObject(KEY_SPACE_NAME, "organisation"));

@@ -39,4 +39,17 @@ public class CertificateController extends BaseController {
                 getAllRequestHeaders(httpRequest),
                 httpRequest);
     }
+
+    public CompletionStage<Result> getCertificateList(Http.Request httpRequest) {
+        return handleRequest(
+                CourseActorOperations.GET_CERTIFICATE.getValue(),
+                httpRequest.body().asJson(),
+                (request) -> {
+                    Request req = (Request) request;
+                    new CertificateRequestValidator().validateGetCertificateListRequest(req);
+                    return null;
+                },
+                getAllRequestHeaders(httpRequest),
+                httpRequest);
+    }
 }

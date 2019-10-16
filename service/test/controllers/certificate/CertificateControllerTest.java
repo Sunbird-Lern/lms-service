@@ -33,6 +33,7 @@ public class CertificateControllerTest extends BaseApplicationTest {
   private static final String CERTIFICATE = "certificate";
   private static final String ISSUE_CERTIFICATE_URL = "/v1/course/batch/cert/issue";
   private static final String ADD_CERTIFICATE_URL = "/v1/course/batch/cert/template";
+  private static final String GET_CERTIFICATE_URL = "/v1/course/batch/cert/template/list";
   private  static final String TEST="Test";
 
   @Before
@@ -149,12 +150,44 @@ public class CertificateControllerTest extends BaseApplicationTest {
     Assert.assertEquals( 400, result.status());
   }
 
+  @Test
+  public void getCertificateTest() {
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(GET_CERTIFICATE_URL)
+                    .bodyJson(getCertificateRequest(COURSE_ID,BATCH_ID))
+                    .method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 200, result.status());
+  }
+
+  @Test
+  public void getCertificateTestWithoutCourseId() {
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(GET_CERTIFICATE_URL)
+                    .bodyJson(getCertificateRequest(null,BATCH_ID))
+                    .method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 400, result.status());
+  }
+
   private JsonNode getAddCertificateRequest(String courseId, String batchId, String certificateName, String certificateTemplate) {
     Map<String, Object> innerMap = new HashMap<>();
     if (courseId != null) innerMap.put(JsonKey.COURSE_ID, courseId);
     if (batchId != null) innerMap.put(JsonKey.BATCH_ID, batchId);
-    if (certificateName != null) innerMap.put(CourseJsonKey.CERTIFICATE, certificateName);
+    if (certificateName != null) innerMap.put(CourseJsonKey.CERTIFICATE_NAME, certificateName);
     if (certificateTemplate != null) innerMap.put(CourseJsonKey.TEMPLATE, certificateTemplate);
+    Map<String, Object> requestMap = new HashMap<>();
+    requestMap.put(JsonKey.REQUEST, innerMap);
+    String data = mapToJson(requestMap);
+    return Json.parse(data);
+  }
+
+  private JsonNode getCertificateRequest(String courseId, String batchId) {
+    Map<String, Object> innerMap = new HashMap<>();
+    if (courseId != null) innerMap.put(JsonKey.COURSE_ID, courseId);
+    if (batchId != null) innerMap.put(JsonKey.BATCH_ID, batchId);
     Map<String, Object> requestMap = new HashMap<>();
     requestMap.put(JsonKey.REQUEST, innerMap);
     String data = mapToJson(requestMap);

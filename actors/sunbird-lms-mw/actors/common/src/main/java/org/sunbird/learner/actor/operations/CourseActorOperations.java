@@ -1,7 +1,8 @@
 package org.sunbird.learner.actor.operations;
 
 public enum CourseActorOperations {
-  ISSUE_CERTIFICATE("issueCertificate");
+  ISSUE_CERTIFICATE("issueCertificate"),
+  ADD_CERTIFICATE("addCertificate");
 
   private String value;
 

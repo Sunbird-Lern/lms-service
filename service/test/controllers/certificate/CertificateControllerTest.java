@@ -12,6 +12,7 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.learner.constants.CourseJsonKey;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -27,8 +28,11 @@ import java.util.Map;
 public class CertificateControllerTest extends BaseApplicationTest {
   private static final String COURSE_ID = "courseId";
   private static final String BATCH_ID = "batchId";
+  private static final String CERTIFICATE_NAME = "certificateName";
+  private static final String CERTIFICATE_TEMPLATE = "certificateTemplate";
   private static final String CERTIFICATE = "certificate";
   private static final String ISSUE_CERTIFICATE_URL = "/v1/course/batch/cert/issue";
+  private static final String ADD_CERTIFICATE_URL = "/v1/course/batch/cert/template";
   private  static final String TEST="Test";
 
   @Before
@@ -95,6 +99,62 @@ public class CertificateControllerTest extends BaseApplicationTest {
     if (courseId != null) innerMap.put(JsonKey.COURSE_ID, courseId);
     if (batchId != null) innerMap.put(JsonKey.BATCH_ID, batchId);
     if (certificate != null) innerMap.put(CERTIFICATE, certificate);
+    Map<String, Object> requestMap = new HashMap<>();
+    requestMap.put(JsonKey.REQUEST, innerMap);
+    String data = mapToJson(requestMap);
+    return Json.parse(data);
+  }
+
+  @Test
+  public void addCertificateTestWithoutCourseId() {
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(ADD_CERTIFICATE_URL)
+                    .bodyJson(getAddCertificateRequest(null,BATCH_ID, CERTIFICATE_NAME, CERTIFICATE_TEMPLATE))
+                    .method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 400, result.status());
+  }
+
+  @Test
+  public void addCertificateTest() {
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(ADD_CERTIFICATE_URL)
+                    .bodyJson(getAddCertificateRequest(COURSE_ID,BATCH_ID, CERTIFICATE_NAME, CERTIFICATE_TEMPLATE))
+                    .method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 200, result.status());
+  }
+
+  @Test
+  public void addCertificateTestWithoutCertificateName() {
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(ADD_CERTIFICATE_URL)
+                    .bodyJson(getAddCertificateRequest(COURSE_ID,BATCH_ID, null, CERTIFICATE_TEMPLATE))
+                    .method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 400, result.status());
+  }
+
+  @Test
+  public void addCertificateTestWithoutCertificateTemplate() {
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(ADD_CERTIFICATE_URL)
+                    .bodyJson(getAddCertificateRequest(COURSE_ID,BATCH_ID, CERTIFICATE_NAME,null))
+                    .method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 400, result.status());
+  }
+
+  private JsonNode getAddCertificateRequest(String courseId, String batchId, String certificateName, String certificateTemplate) {
+    Map<String, Object> innerMap = new HashMap<>();
+    if (courseId != null) innerMap.put(JsonKey.COURSE_ID, courseId);
+    if (batchId != null) innerMap.put(JsonKey.BATCH_ID, batchId);
+    if (certificateName != null) innerMap.put(CourseJsonKey.CERTIFICATE, certificateName);
+    if (certificateTemplate != null) innerMap.put(CourseJsonKey.TEMPLATE, certificateTemplate);
     Map<String, Object> requestMap = new HashMap<>();
     requestMap.put(JsonKey.REQUEST, innerMap);
     String data = mapToJson(requestMap);

@@ -1,4 +1,4 @@
-package org.sunbird.learner.actors.certificate;
+package org.sunbird.learner.actors.certificate.service;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.core.BaseActor;
 import org.sunbird.actor.router.ActorConfig;
 import org.sunbird.common.ElasticSearchHelper;
@@ -27,18 +28,24 @@ import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.kafka.client.InstructionEventGenerator;
 import org.sunbird.learner.actor.operations.CourseActorOperations;
+import org.sunbird.learner.actors.certificate.dao.CertificateDao;
+import org.sunbird.learner.actors.certificate.dao.impl.CertificateDaoImpl;
+import org.sunbird.learner.actors.coursebatch.CourseEnrollmentActor;
+import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao;
+import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl;
 import org.sunbird.learner.constants.CourseJsonKey;
 import org.sunbird.learner.constants.InstructionEvent;
 import org.sunbird.learner.util.Util;
 import scala.concurrent.Future;
 
 @ActorConfig(
-  tasks = {"issueCertificate"},
+  tasks = {"issueCertificate","addCertificate"},
   asyncTasks = {}
 )
 public class CertificateActor extends BaseActor {
 
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
+    private CertificateDao certificateDao = new CertificateDaoImpl();
 
   private static enum ResponseMessage {
     SUBMITTED("Certificates issue action for Course Batch Id {0} submitted Successfully!"),
@@ -61,14 +68,19 @@ public class CertificateActor extends BaseActor {
     Util.initializeContext(request, TelemetryEnvKey.USER);
     ExecutionContext.setRequestId(request.getRequestId());
 
-    if (CourseActorOperations.ISSUE_CERTIFICATE
-        .getValue()
-        .equalsIgnoreCase(request.getOperation())) {
-      issueCertificate(request);
-    } else {
-      onReceiveUnsupportedOperation(request.getOperation());
+    String requestedOperation = request.getOperation();
+    switch (requestedOperation) {
+      case "issueCertificate":
+        issueCertificate(request);
+        break;
+      case "addCertificate":
+        addCertificate(request);
+        break;
+      default:
+        onReceiveUnsupportedOperation(request.getOperation());
+        break;
+      }
     }
-  }
 
   private void issueCertificate(Request request) {
     ProjectLogger.log(
@@ -117,6 +129,34 @@ public class CertificateActor extends BaseActor {
     }
   }
 
+  private void addCertificate(Request request){
+      ProjectLogger.log(
+              "CertificateActor:addCertificate request=" + request.getRequest(),
+              LoggerEnum.INFO.name());
+      final String courseId = (String) request.getRequest().get(JsonKey.COURSE_ID);
+      Map<String, String> headers =
+              (Map<String, String>) request.getContext().get(JsonKey.HEADER);
+      validateCourseDetails(courseId,headers);
+      String batchId =
+              request.getRequest().containsKey(JsonKey.BATCH_ID)
+                      ? (String)request.getRequest().get(JsonKey.BATCH_ID)
+                      : "";
+      if(StringUtils.isNotBlank(batchId)){
+          validateCourseBatch(courseId,batchId);
+      }
+      String requestedBy = (String) request.getContext().get(JsonKey.REQUESTED_BY);
+      Map<String, Object> filters =
+              request.getRequest().containsKey(JsonKey.FILTERS)
+                      ? (Map<String, Object>) request.getRequest().get(JsonKey.FILTERS)
+                      : new HashMap<>();
+      Map<String,Object> requestMap = request.getRequest();
+      requestMap.put(JsonKey.ADDED_BY,requestedBy);
+      requestMap.put(JsonKey.FILTERS,filters);
+      Response result = certificateDao.add(requestMap);
+      sender().tell(result, self());
+
+  }
+
   private boolean isReissue(Object queryString) {
     if (queryString != null) {
       if (queryString instanceof String[]) {
@@ -143,6 +183,21 @@ public class CertificateActor extends BaseActor {
           ResponseCode.CLIENT_ERROR, "batchId is not linked with courseId");
     }
   }
+
+    private Map<String, Object> validateCourseDetails(String courseId, Map<String, String> headers) {
+        Map<String, Object> ekStepContent =
+                CourseEnrollmentActor.getCourseObjectFromEkStep(courseId, headers);
+        if (null == ekStepContent || ekStepContent.size() == 0) {
+            ProjectLogger.log(
+                    "CourseBatchManagementActor:getEkStepContent: Not found course for ID = " + courseId,
+                    LoggerEnum.INFO.name());
+            throw new ProjectCommonException(
+                    ResponseCode.invalidCourseId.getErrorCode(),
+                    ResponseCode.invalidCourseId.getErrorMessage(),
+                    ResponseCode.CLIENT_ERROR.getResponseCode());
+        }
+        return ekStepContent;
+    }
 
   private List<Map<String, Object>> getEnrollments(Map<String, Object> filters, String batchId) {
     filters.put(JsonKey.BATCH_ID, batchId);

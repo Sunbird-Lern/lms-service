@@ -41,6 +41,8 @@ public class CourseBatchNotificationActor extends BaseActor {
 
   private static EmailServiceClient emailServiceClient = EmailServiceFactory.getInstance();
   private static final Props props = Props.create(EmailServiceActor.class);
+
+  private static final String TRAINING_INVITATION = "Training Invitation";
   private static ActorSystem system = ActorSystem.create("system");
   private DecryptionService decryptionService =
       org.sunbird.common.models.util.datasecurity.impl.ServiceFactory.getDecryptionServiceInstance(
@@ -95,7 +97,7 @@ public class CourseBatchNotificationActor extends BaseActor {
 
       if (operationType.equals(JsonKey.ADD)) {
         template = JsonKey.OPEN_BATCH_LEARNER_ENROL;
-        subject = JsonKey.COURSE_INVITATION;
+        subject = TRAINING_INVITATION;
       }
 
       triggerEmailNotification(
@@ -112,7 +114,7 @@ public class CourseBatchNotificationActor extends BaseActor {
       triggerEmailNotification(
           addedMentors,
           courseBatch,
-          JsonKey.COURSE_INVITATION,
+          TRAINING_INVITATION,
           JsonKey.BATCH_MENTOR_ENROL,
           contentDetails);
       triggerEmailNotification(
@@ -129,7 +131,7 @@ public class CourseBatchNotificationActor extends BaseActor {
       triggerEmailNotification(
           addedParticipants,
           courseBatch,
-          JsonKey.COURSE_INVITATION,
+          TRAINING_INVITATION,
           JsonKey.BATCH_LEARNER_ENROL,
           contentDetails);
       triggerEmailNotification(

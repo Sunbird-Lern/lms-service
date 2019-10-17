@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.sunbird.actor.core.BaseActor;
@@ -27,6 +29,7 @@ import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.kafka.client.InstructionEventGenerator;
 import org.sunbird.learner.actor.operations.CourseActorOperations;
+import org.sunbird.learner.actors.coursebatch.service.CourseAssessmentService;
 import org.sunbird.learner.constants.CourseJsonKey;
 import org.sunbird.learner.constants.InstructionEvent;
 import org.sunbird.learner.util.Util;
@@ -39,6 +42,7 @@ import scala.concurrent.Future;
 public class CertificateActor extends BaseActor {
 
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
+  private CourseAssessmentService courseAssessmentService = new CourseAssessmentService();
 
   private static enum ResponseMessage {
     SUBMITTED("Certificates issue action for Course Batch Id {0} submitted Successfully!"),
@@ -83,6 +87,9 @@ public class CertificateActor extends BaseActor {
         request.getRequest().containsKey(JsonKey.FILTERS)
             ? (Map<String, Object>) request.getRequest().get(JsonKey.FILTERS)
             : new HashMap<>();
+    Optional<Map<String, Object>> assessmentFilter =
+        Optional.ofNullable((Map<String, Object>) filters.get(JsonKey.ASSESSMENT));
+    filters.remove(JsonKey.ASSESSMENT);
     List<Map<String, Object>> esContents = getEnrollments(filters, batchId);
     Response response = new Response();
     Map<String, Object> resultData = new HashMap<>();
@@ -100,20 +107,46 @@ public class CertificateActor extends BaseActor {
       ProjectLogger.log(
           "CertificateActor:issueCertificate user size=" + esContents.size(),
           LoggerEnum.INFO.name());
-      esContents
-          .stream()
-          .forEach(
-              userCourse -> {
-                String userId = (String) userCourse.get(JsonKey.USER_ID);
-                try {
-                  pushInstructionEvent(userId, batchId, courseId, certificateName, reIssue);
-                } catch (Exception e) {
-                  ProjectLogger.log(
-                      "CertificateActor:issueCertificate pushInstructionEvent error for userId="
-                          + userId,
-                      e);
-                }
-              });
+      assessmentFilter.ifPresent(
+          filter ->
+              courseAssessmentService.fetchFilteredAssessmentUser(
+                  courseId, batchId, filter, esContents));
+      Optional<Set<String>> users =
+          assessmentFilter.map(
+              filter ->
+                  courseAssessmentService.fetchFilteredAssessmentUser(
+                      courseId, batchId, filter, esContents));
+      users.ifPresent(
+          userList -> {
+            userList
+                .stream()
+                .forEach(
+                    userId -> {
+                      try {
+                        pushInstructionEvent(userId, batchId, courseId, certificateName, reIssue);
+                      } catch (Exception e) {
+                        ProjectLogger.log(
+                            "CertificateActor:issueCertificate pushInstructionEvent error for userId="
+                                + userId,
+                            e);
+                      }
+                    });
+          });
+      //      esContents
+      //          .stream()
+      //          .forEach(
+      //              userCourse -> {
+      //                String userId = (String) userCourse.get(JsonKey.USER_ID);
+      //                try {
+      //                  pushInstructionEvent(userId, batchId, courseId, certificateName, reIssue);
+      //                } catch (Exception e) {
+      //                  ProjectLogger.log(
+      //                      "CertificateActor:issueCertificate pushInstructionEvent error for
+      // userId="
+      //                          + userId,
+      //                      e);
+      //                }
+      //              });
     }
   }
 

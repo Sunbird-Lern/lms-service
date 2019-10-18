@@ -160,13 +160,13 @@ public class CertificateActor extends BaseActor {
         final Map<String,Object> template = ( Map<String,Object>) request.getRequest().get(CourseJsonKey.TEMPLATE);
         Map<String, String> headers =
                 (Map<String, String>) request.getContext().get(JsonKey.HEADER);
-      //  validateCourseDetails(courseId,headers);
+         validateCourseDetails(courseId,headers);
         String batchId =
                 request.getRequest().containsKey(JsonKey.BATCH_ID)
                         ? (String)request.getRequest().get(JsonKey.BATCH_ID)
                         : StringUtils.EMPTY;
         if(StringUtils.isNotBlank(batchId)){
-          //  validateCourseBatch(courseId,batchId);
+          validateCourseBatch(courseId,batchId);
         }
         String requestedBy = (String) request.getContext().get(JsonKey.REQUESTED_BY);
         Map<String, Object> filters =

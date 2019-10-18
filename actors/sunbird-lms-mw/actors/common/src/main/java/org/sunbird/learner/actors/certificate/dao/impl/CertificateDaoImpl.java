@@ -1,14 +1,9 @@
 package org.sunbird.learner.actors.certificate.dao.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.actors.certificate.dao.CertificateDao;
 import org.sunbird.learner.constants.CourseJsonKey;
@@ -23,7 +18,6 @@ public class CertificateDaoImpl implements CertificateDao {
 
     private CassandraOperation cassandraOperation = ServiceFactory.getInstance();
     private Util.DbInfo certificateTemplate_db = Util.dbInfoMap.get(CourseJsonKey.CERTIFICATE_TEMPLATE_DB);
-    private ObjectMapper mapper = new ObjectMapper();
 
     @Override
     public void add(Map<String,Object> certificateMap) {

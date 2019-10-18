@@ -151,6 +151,17 @@ public class CertificateControllerTest extends BaseApplicationTest {
   }
 
   @Test
+  public void addCertificateTestWithoutBatchId() {
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(ADD_CERTIFICATE_URL)
+                    .bodyJson(getAddCertificateRequest(COURSE_ID,null, CERTIFICATE_NAME,CERTIFICATE_TEMPLATE))
+                    .method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 200, result.status());
+  }
+
+  @Test
   public void getCertificateTest() {
     Http.RequestBuilder req =
             new Http.RequestBuilder()
@@ -170,6 +181,17 @@ public class CertificateControllerTest extends BaseApplicationTest {
                     .method("POST");
     Result result = Helpers.route(application, req);
     Assert.assertEquals( 400, result.status());
+  }
+
+  @Test
+  public void getCertificateTestWithoutBatchId() {
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(GET_CERTIFICATE_URL)
+                    .bodyJson(getCertificateRequest(COURSE_ID,null))
+                    .method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 200, result.status());
   }
 
   private JsonNode getAddCertificateRequest(String courseId, String batchId, String certificateName, String certificateTemplate) {

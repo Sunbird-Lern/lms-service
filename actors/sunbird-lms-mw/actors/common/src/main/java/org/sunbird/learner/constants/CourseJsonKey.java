@@ -18,4 +18,5 @@ public abstract class CourseJsonKey {
   public static final String TEMPLATE="template";
   public static final String CERTIFICATE_NAME="certificateName";
   public static final String CERTIFICATE_TEMPLATE_DB="certificateTemplate_db";
+  public static final String LAST_UPDATED_ON="lastUpdatedOn";
 }

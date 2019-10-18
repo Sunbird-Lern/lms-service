@@ -7,7 +7,7 @@ import java.util.Map;
 
 public interface CertificateDao {
 
-    Response add(Map<String,Object> certificate);
+    void add(Map<String,Object> certificate);
 
     List<Map<String, Object>> readById(String courseId, String batchId);
 }

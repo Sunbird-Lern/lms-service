@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -46,6 +48,7 @@ public class CertificateActor extends BaseActor {
 
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
     private CertificateDao certificateDao = new CertificateDaoImpl();
+    private ObjectMapper mapper = new ObjectMapper();
 
   private static enum ResponseMessage {
     SUBMITTED("Certificates issue action for Course Batch Id {0} submitted Successfully!"),
@@ -139,14 +142,10 @@ public class CertificateActor extends BaseActor {
       final String courseId = (String) request.getRequest().get(JsonKey.COURSE_ID);
       Map<String, String> headers =
               (Map<String, String>) request.getContext().get(JsonKey.HEADER);
-      validateCourseDetails(courseId,headers);
       String batchId =
               request.getRequest().containsKey(JsonKey.BATCH_ID)
                       ? (String)request.getRequest().get(JsonKey.BATCH_ID)
                       : null;
-      if(batchId!= null){
-          validateCourseBatch(courseId,batchId);
-      }
       List<Map<String, Object>>  result = certificateDao.readById(courseId, batchId);
       Response response = new Response();
       response.put(JsonKey.RESPONSE, result);
@@ -161,13 +160,13 @@ public class CertificateActor extends BaseActor {
         final Map<String,Object> template = ( Map<String,Object>) request.getRequest().get(CourseJsonKey.TEMPLATE);
         Map<String, String> headers =
                 (Map<String, String>) request.getContext().get(JsonKey.HEADER);
-        //   validateCourseDetails(courseId,headers);
+      //  validateCourseDetails(courseId,headers);
         String batchId =
                 request.getRequest().containsKey(JsonKey.BATCH_ID)
                         ? (String)request.getRequest().get(JsonKey.BATCH_ID)
-                        : "";
+                        : StringUtils.EMPTY;
         if(StringUtils.isNotBlank(batchId)){
-            validateCourseBatch(courseId,batchId);
+          //  validateCourseBatch(courseId,batchId);
         }
         String requestedBy = (String) request.getContext().get(JsonKey.REQUESTED_BY);
         Map<String, Object> filters =
@@ -176,15 +175,22 @@ public class CertificateActor extends BaseActor {
                         : new HashMap<>();
         Map<String,Object> requestMap = request.getRequest();
         requestMap.put(JsonKey.ADDED_BY,requestedBy);
-        requestMap.put(JsonKey.FILTERS,filters.toString());
-        requestMap.put(CourseJsonKey.TEMPLATE,template.toString());
+        try {
+            requestMap.put(JsonKey.FILTERS, mapper.writeValueAsString(filters));
+            requestMap.put(CourseJsonKey.TEMPLATE, mapper.writeValueAsString(template));
+        }
+        catch (Exception e){
+            ProjectLogger.log(
+                    "CertificateActor:addCertificate Exception occurred with error message ==" + e.getMessage(),
+                    LoggerEnum.INFO.name());
+        }
         requestMap.put(JsonKey.BATCH_ID,batchId);
-        requestMap.remove(JsonKey.ID);
-        requestMap.remove(JsonKey.USER_ID);
         ProjectLogger.log(
                 "CertificateActor:addCertificate certificateDbRecord=" + requestMap,
                 LoggerEnum.INFO.name());
-        Response result = certificateDao.add(requestMap);
+        certificateDao.add(requestMap);
+        Response result = new Response();
+        result.put("response", "SUCCESS");
         sender().tell(result, self());
 
     }
@@ -219,9 +225,9 @@ public class CertificateActor extends BaseActor {
     private Map<String, Object> validateCourseDetails(String courseId, Map<String, String> headers) {
         Map<String, Object> ekStepContent =
                 CourseEnrollmentActor.getCourseObjectFromEkStep(courseId, headers);
-        if (null == ekStepContent || ekStepContent.size() == 0) {
+        if (MapUtils.isEmpty(ekStepContent )|| ekStepContent.size() == 0) {
             ProjectLogger.log(
-                    "CourseBatchManagementActor:getEkStepContent: Not found course for ID = " + courseId,
+                    "CertificateActor:validateCourseDetails: Not found course for ID = " + courseId,
                     LoggerEnum.INFO.name());
             throw new ProjectCommonException(
                     ResponseCode.invalidCourseId.getErrorCode(),

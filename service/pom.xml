@@ -237,7 +237,7 @@
 							<goal>report</goal>
 						</goals>
 					</execution>
-					<!-- <execution>
+					<execution>
 						<id>default-check</id>
 						<goals>
 							<goal>check</goal>
@@ -247,38 +247,23 @@
 								<rule>
 									<element>BUNDLE</element>
 									<limits>
-										<limit>
+									    <limit>
 											<counter>COMPLEXITY</counter>
 											<value>COVEREDRATIO</value>
 											<minimum>0.60</minimum>
+									   </limit>
+										<limit>
+											<counter>INSTRUCTION</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>0.60</minimum>
+										</limit>
+										<limit>
+											<counter>CLASS</counter>
+											<value>MISSEDCOUNT</value>
+											<maximum>0</maximum>
 										</limit>
 									</limits>
 								</rule>
-							</rules>
-							</configuration>
-					</execution> -->
-					<execution>
-						<id>default-check</id>
-						<goals>
-							<goal>check</goal>
-						</goals>
-						<configuration>
-							<rules>
-						<!--	<rule>
-								<element>BUNDLE</element>
-								<limits>
-									<limit>
-										<counter>INSTRUCTION</counter>
-										<value>COVEREDRATIO</value>
-										<minimum>0.60</minimum>
-									</limit>
-									<limit>
-										<counter>CLASS</counter>
-										<value>MISSEDCOUNT</value>
-										<maximum>0</maximum>
-									</limit>
-								</limits>
-							</rule>
 								<rule>
 									<element>CLASS</element>
 									<excludes>
@@ -291,7 +276,7 @@
 											<minimum>60%</minimum>
 										</limit>
 									</limits>
-								</rule>-->
+								</rule>
 							</rules>
 						</configuration>
 					</execution>

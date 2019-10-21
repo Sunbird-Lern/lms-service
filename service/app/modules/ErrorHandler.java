@@ -44,9 +44,6 @@ public class ErrorHandler extends DefaultHttpErrorHandler {
     ProjectCommonException commonException = null;
     if (t instanceof ProjectCommonException) {
       commonException = (ProjectCommonException) t;
-      response =
-          BaseController.createResponseOnException(
-              request.path(), request.method(), (ProjectCommonException) t);
     } else if (t instanceof akka.pattern.AskTimeoutException) {
       commonException =
           new ProjectCommonException(

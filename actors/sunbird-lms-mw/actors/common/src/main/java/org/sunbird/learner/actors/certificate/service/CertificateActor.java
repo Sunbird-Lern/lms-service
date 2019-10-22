@@ -145,17 +145,23 @@ public class CertificateActor extends BaseActor {
     List<Map<String, Object>> result = certificateDao.readById(courseId, name);
     result = result.stream().map(template -> mapToObject(template)).collect(Collectors.toList());
     Response response = new Response();
-    response.put(JsonKey.RESPONSE, result);
+    if (name != null) {
+      response.put(CourseJsonKey.TEMPLATE, result.get(0));
+    } else {
+      response.put("templates", result);
+    }
     sender().tell(response, self());
   }
 
   private Map<String, Object> mapToObject(Map<String, Object> template) {
     try {
-      template.put(
-          JsonKey.FILTERS,
-          mapper.readValue(
-              (String) template.get(JsonKey.FILTERS),
-              new TypeReference<HashMap<String, Object>>() {}));
+      if (template.get(JsonKey.FILTERS) != null) {
+        template.put(
+            JsonKey.FILTERS,
+            mapper.readValue(
+                (String) template.get(JsonKey.FILTERS),
+                new TypeReference<HashMap<String, Object>>() {}));
+      }
       template.put(
           CourseJsonKey.TEMPLATE,
           mapper.readValue(
@@ -181,20 +187,21 @@ public class CertificateActor extends BaseActor {
       validateCourseBatch(courseId, batchId);
     }
     String requestedBy = (String) request.getContext().get(JsonKey.REQUESTED_BY);
-    Map<String, Object> filters =
-        request.getRequest().containsKey(JsonKey.FILTERS)
-            ? (Map<String, Object>) request.getRequest().get(JsonKey.FILTERS)
-            : new HashMap<>();
+    Map<String, Object> filters = (Map<String, Object>) request.getRequest().get(JsonKey.FILTERS);
     Map<String, Object> requestMap = new HashMap<>();
     requestMap.put(JsonKey.ADDED_BY, requestedBy);
     try {
-      requestMap.put(JsonKey.FILTERS, mapper.writeValueAsString(filters));
+      if (filters != null) {
+        requestMap.put(JsonKey.FILTERS, mapper.writeValueAsString(filters));
+      }
       requestMap.put(CourseJsonKey.TEMPLATE, mapper.writeValueAsString(template));
     } catch (Exception e) {
       ProjectLogger.log(
           "CertificateActor:addCertificate Exception occurred with error message =="
               + e.getMessage(),
-          LoggerEnum.INFO.name());
+          e);
+      ProjectCommonException.throwClientErrorException(
+          ResponseCode.unableToParseData, "Error while parsing template or filter");
     }
     requestMap.put(JsonKey.COURSE_ID, courseId);
     requestMap.put(JsonKey.BATCH_ID, batchId);
@@ -204,7 +211,7 @@ public class CertificateActor extends BaseActor {
         LoggerEnum.INFO.name());
     certificateDao.add(requestMap);
     Response result = new Response();
-    result.put("response", JsonKey.SUCCESS);
+    result.put(JsonKey.RESPONSE, JsonKey.SUCCESS);
     sender().tell(result, self());
   }
 
@@ -213,7 +220,7 @@ public class CertificateActor extends BaseActor {
     final String name = (String) request.getRequest().get(JsonKey.NAME);
     certificateDao.delete(courseId, name);
     Response result = new Response();
-    result.put("response", JsonKey.SUCCESS);
+    result.put(JsonKey.RESPONSE, JsonKey.SUCCESS);
     sender().tell(result, self());
   }
 

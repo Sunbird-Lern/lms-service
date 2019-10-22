@@ -68,7 +68,7 @@ GET    /v1/textbook/toc/download/:textbookId           @controllers.textbook.Tex
 # Certificate APIs
 POST /v1/course/batch/cert/issue           @controllers.certificate.CertificateController.issueCertificate(request: play.mvc.Http.Request)
 POST /v1/course/batch/cert/template           @controllers.certificate.CertificateController.addCertificate(request: play.mvc.Http.Request)
-POST /v1/course/batch/cert/template/list           @controllers.certificate.CertificateController.getCertificateList(request: play.mvc.Http.Request)
+POST /v1/course/batch/cert/template/read           @controllers.certificate.CertificateController.getCertificateList(request: play.mvc.Http.Request)
 DELETE /v1/course/batch/cert/template           @controllers.certificate.CertificateController.deleteCertificate(request: play.mvc.Http.Request)
 
 #QR Code Download APIs

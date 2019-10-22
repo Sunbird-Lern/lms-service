@@ -31,7 +31,7 @@ public class CertificateControllerTest extends BaseApplicationTest {
   private static final String CERTIFICATE = "certificate";
   private static final String ISSUE_CERTIFICATE_URL = "/v1/course/batch/cert/issue";
   private static final String ADD_CERTIFICATE_URL = "/v1/course/batch/cert/template";
-  private static final String GET_CERTIFICATE_URL = "/v1/course/batch/cert/template/list";
+  private static final String GET_CERTIFICATE_URL = "/v1/course/batch/cert/template/read";
   private static final String TEST = "Test";
 
   @Before

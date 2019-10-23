@@ -184,7 +184,7 @@ public class CourseMetricsActor extends BaseMetricsActor {
     filter.put(JsonKey.BATCH_ID, batchId);
     filter.put(JsonKey.USER_ID, userIds);
     Map<String, Object> mandatoryFields = new HashMap<>();
-    mandatoryFields.put(JsonKey.FIELD,"certificates");
+    mandatoryFields.put(JsonKey.FIELD,CourseJsonKey.CERTIFICATES);
     searchDTO.getAdditionalProperties().put(JsonKey.FILTERS, filter);
     searchDTO.getAdditionalProperties().put(JsonKey.EXISTS, mandatoryFields);
     searchDTO.setFields(Arrays.asList(JsonKey.USER_ID, CourseJsonKey.CERTIFICATES));

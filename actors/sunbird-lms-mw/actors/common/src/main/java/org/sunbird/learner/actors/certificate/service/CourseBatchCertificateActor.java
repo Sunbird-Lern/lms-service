@@ -16,7 +16,7 @@ import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.Util;
 
 @ActorConfig(
-  tasks = {"addCertificateToCoursebatch", "removeCertificateFromCoursebatch"},
+  tasks = {"addCertificateToCourseBatch", "removeCertificateFromCourseBatch"},
   asyncTasks = {}
 )
 public class CourseBatchCertificateActor extends BaseActor {
@@ -30,10 +30,10 @@ public class CourseBatchCertificateActor extends BaseActor {
 
     String requestedOperation = request.getOperation();
     switch (requestedOperation) {
-      case "addCertificateToCoursebatch":
+      case "addCertificateToCourseBatch":
         addCertificateTemplateToCourseBatch(request);
         break;
-      case "removeCertificateFromCoursebatch":
+      case "removeCertificateFromCourseBatch":
         removeCertificateTemplateFromCourseBatch(request);
         break;
       default:

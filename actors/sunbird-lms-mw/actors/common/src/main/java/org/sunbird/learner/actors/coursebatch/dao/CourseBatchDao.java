@@ -37,4 +37,24 @@ public interface CourseBatchDao {
    * @return Response containing status of course batch delete
    */
   Response delete(String courseBatchId);
+
+  /**
+   * Attaches a certificate template to course batch
+   *
+   * @param courseId
+   * @param batchId
+   * @param templateId
+   * @param templateDetails
+   */
+  void addCertificateTemplateToCourseBatch(
+      String courseId, String batchId, String templateId, Map<String, Object> templateDetails);
+
+  /**
+   * Removes an attached certificate template from course batch
+   *
+   * @param courseId
+   * @param batchId
+   * @param templateId
+   */
+  void removeCertificateTemplateFromCourseBatch(String courseId, String batchId, String templateId);
 }

@@ -296,7 +296,7 @@ public class CertificateControllerTest extends BaseApplicationTest {
     if (certificateTemplate) {
       batch.put(CourseJsonKey.TEMPLATE, template);
       if (certificateName != null) template.put(JsonKey.NAME, certificateName);
-      if (templateId != null) template.put(CourseJsonKey.TEMPLATE_ID, templateId);
+      if (templateId != null) template.put(JsonKey.IDENTIFIER, templateId);
       if (criteria) {
         Map<String, Object> statusMap = new HashMap<>();
         statusMap.put(JsonKey.STATUS, 2);
@@ -323,7 +323,7 @@ public class CertificateControllerTest extends BaseApplicationTest {
     Map<String, Object> template = new HashMap<>();
     if (certificateTemplate) {
       batch.put(CourseJsonKey.TEMPLATE, template);
-      if (templateId != null) template.put(CourseJsonKey.TEMPLATE_ID, templateId);
+      if (templateId != null) template.put(JsonKey.IDENTIFIER, templateId);
     }
     Map<String, Object> requestMap = new HashMap<>();
     innerMap.put(JsonKey.BATCH, batch);

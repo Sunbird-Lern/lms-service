@@ -22,7 +22,6 @@ import org.sunbird.common.request.Request;
 import org.sunbird.kafka.client.InstructionEventGenerator;
 import org.sunbird.learner.constants.CourseJsonKey;
 import org.sunbird.learner.constants.InstructionEvent;
-import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.Util;
 
 @ActorConfig(
@@ -71,7 +70,7 @@ public class CertificateActor extends BaseActor {
     final String courseId = (String) request.getRequest().get(JsonKey.COURSE_ID);
     List<String> userIds = (List<String>) request.getRequest().get(JsonKey.USER_IDs);
     final boolean reIssue = isReissue(request.getContext().get(CourseJsonKey.REISSUE));
-    CourseBatchUtil.validateCourseBatch(courseId, batchId);
+    //    CourseBatchUtil.validateCourseBatch(courseId, batchId);
     Response response = new Response();
     Map<String, Object> resultData = new HashMap<>();
     resultData.put(

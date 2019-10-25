@@ -54,9 +54,9 @@ public class CertificateRequestValidator extends BaseRequestValidator {
     }
     Map<String, Object> template = (Map<String, Object>) batch.get(CourseJsonKey.TEMPLATE);
     validateParam(
-        (String) template.get(CourseJsonKey.TEMPLATE_ID),
+        (String) template.get(JsonKey.IDENTIFIER),
         ResponseCode.mandatoryParamsMissing,
-        CourseJsonKey.TEMPLATE_ID);
+        JsonKey.IDENTIFIER);
     validateParam(
         (String) template.get(JsonKey.NAME), ResponseCode.mandatoryParamsMissing, JsonKey.NAME);
     validateTemplateCriteria(template);
@@ -105,9 +105,9 @@ public class CertificateRequestValidator extends BaseRequestValidator {
     }
     Map<String, Object> template = (Map<String, Object>) batch.get(CourseJsonKey.TEMPLATE);
     validateParam(
-        (String) template.get(CourseJsonKey.TEMPLATE_ID),
+        (String) template.get(JsonKey.IDENTIFIER),
         ResponseCode.mandatoryParamsMissing,
-        CourseJsonKey.TEMPLATE_ID);
+        JsonKey.IDENTIFIER);
   }
 
   public void validateTemplateCriteria(Map<String, Object> template) {

@@ -1,14 +1,18 @@
 /** */
 package org.sunbird.learner.actors.certificate.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
 import org.sunbird.actor.core.BaseActor;
 import org.sunbird.actor.router.ActorConfig;
+import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao;
 import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl;
 import org.sunbird.learner.constants.CourseJsonKey;
@@ -22,6 +26,7 @@ import org.sunbird.learner.util.Util;
 public class CourseBatchCertificateActor extends BaseActor {
 
   private CourseBatchDao courseBatchDao = new CourseBatchDaoImpl();
+  private ObjectMapper mapper = new ObjectMapper();
 
   @Override
   public void onReceive(Request request) throws Throwable {
@@ -71,5 +76,29 @@ public class CourseBatchCertificateActor extends BaseActor {
     sender().tell(response, self());
   }
 
-  private void validateTemplateDetails(String templateId, Map<String, Object> template) {}
+  private void validateTemplateDetails(String templateId, Map<String, Object> template) {
+    CourseBatchUtil.validateTemplate(templateId);
+    try {
+      template.put(JsonKey.CRITERIA, mapper.writeValueAsString(template.get(JsonKey.CRITERIA)));
+      if (template.get(CourseJsonKey.ISSUER) != null) {
+        template.put(
+            CourseJsonKey.ISSUER, mapper.writeValueAsString(template.get(CourseJsonKey.ISSUER)));
+      }
+      if (template.get(CourseJsonKey.SIGNATORY_LIST) != null) {
+        template.put(
+            CourseJsonKey.SIGNATORY_LIST,
+            mapper.writeValueAsString(template.get(CourseJsonKey.SIGNATORY_LIST)));
+      }
+    } catch (JsonProcessingException ex) {
+      ProjectCommonException.throwClientErrorException(
+          ResponseCode.invalidData,
+          "Error in parsing template data, Please check "
+              + JsonKey.CRITERIA
+              + ","
+              + CourseJsonKey.ISSUER
+              + " and "
+              + CourseJsonKey.SIGNATORY_LIST
+              + " fields");
+    }
+  }
 }

@@ -27,7 +27,7 @@ public class CertificateController extends BaseController {
 
   public CompletionStage<Result> addCertificate(Http.Request httpRequest) {
     return handleRequest(
-        CourseActorOperations.ADD_CERTIFICATE.getValue(),
+        CourseActorOperations.ADD_BATCH_CERTIFICATE.getValue(),
         httpRequest.body().asJson(),
         (request) -> {
           Request req = (Request) request;
@@ -40,7 +40,7 @@ public class CertificateController extends BaseController {
 
   public CompletionStage<Result> deleteCertificate(Http.Request httpRequest) {
     return handleRequest(
-        CourseActorOperations.DELETE_CERTIFICATE.getValue(),
+        CourseActorOperations.DELETE_BATCH_CERTIFICATE.getValue(),
         httpRequest.body().asJson(),
         (request) -> {
           Request req = (Request) request;

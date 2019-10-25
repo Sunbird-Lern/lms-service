@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import controllers.BaseApplicationTest;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Assert;
@@ -27,12 +28,13 @@ public class CertificateControllerTest extends BaseApplicationTest {
   private static final String COURSE_ID = "courseId";
   private static final String BATCH_ID = "batchId";
   private static final String CERTIFICATE_NAME = "certificateName";
-  private static final String CERTIFICATE_TEMPLATE = "certificateTemplate";
+  private static final String TEMPLATE_ID = "templateId";
   private static final String CERTIFICATE = "certificate";
   private static final String ISSUE_CERTIFICATE_URL = "/v1/course/batch/cert/issue";
-  private static final String ADD_CERTIFICATE_URL = "/v1/course/batch/cert/template";
-  private static final String GET_CERTIFICATE_URL = "/v1/course/batch/cert/template/list";
+  private static final String ADD_CERTIFICATE_URL = "/v1/course/batch/cert/template/add";
+  private static final String DELETE_CERTIFICATE_URL = "/v1/course/batch/cert/template/remove";
   private static final String TEST = "Test";
+  ObjectMapper mapper = new ObjectMapper();
 
   @Before
   public void before() {
@@ -110,8 +112,10 @@ public class CertificateControllerTest extends BaseApplicationTest {
     Http.RequestBuilder req =
         new Http.RequestBuilder()
             .uri(ADD_CERTIFICATE_URL)
-            .bodyJson(getAddCertificateRequest(null, BATCH_ID, CERTIFICATE_NAME, true))
-            .method("POST");
+            .bodyJson(
+                getAddCertificateRequest(
+                    null, BATCH_ID, true, CERTIFICATE_NAME, TEMPLATE_ID, true, true, true))
+            .method("PATCH");
     Result result = Helpers.route(application, req);
     Assert.assertEquals(400, result.status());
   }
@@ -121,8 +125,10 @@ public class CertificateControllerTest extends BaseApplicationTest {
     Http.RequestBuilder req =
         new Http.RequestBuilder()
             .uri(ADD_CERTIFICATE_URL)
-            .bodyJson(getAddCertificateRequest(COURSE_ID, BATCH_ID, CERTIFICATE_NAME, true))
-            .method("POST");
+            .bodyJson(
+                getAddCertificateRequest(
+                    COURSE_ID, BATCH_ID, true, CERTIFICATE_NAME, TEMPLATE_ID, true, true, true))
+            .method("PATCH");
     Result result = Helpers.route(application, req);
     Assert.assertEquals(200, result.status());
   }
@@ -132,8 +138,10 @@ public class CertificateControllerTest extends BaseApplicationTest {
     Http.RequestBuilder req =
         new Http.RequestBuilder()
             .uri(ADD_CERTIFICATE_URL)
-            .bodyJson(getAddCertificateRequest(COURSE_ID, BATCH_ID, null, true))
-            .method("POST");
+            .bodyJson(
+                getAddCertificateRequest(
+                    COURSE_ID, BATCH_ID, true, null, TEMPLATE_ID, true, true, true))
+            .method("PATCH");
     Result result = Helpers.route(application, req);
     Assert.assertEquals(400, result.status());
   }
@@ -143,8 +151,23 @@ public class CertificateControllerTest extends BaseApplicationTest {
     Http.RequestBuilder req =
         new Http.RequestBuilder()
             .uri(ADD_CERTIFICATE_URL)
-            .bodyJson(getAddCertificateRequest(COURSE_ID, BATCH_ID, CERTIFICATE_NAME, false))
-            .method("POST");
+            .bodyJson(
+                getAddCertificateRequest(
+                    COURSE_ID, BATCH_ID, false, CERTIFICATE_NAME, TEMPLATE_ID, false, false, false))
+            .method("PATCH");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals(400, result.status());
+  }
+
+  @Test
+  public void addCertificateTestWithoutCriteria() {
+    Http.RequestBuilder req =
+        new Http.RequestBuilder()
+            .uri(ADD_CERTIFICATE_URL)
+            .bodyJson(
+                getAddCertificateRequest(
+                    COURSE_ID, BATCH_ID, true, CERTIFICATE_NAME, TEMPLATE_ID, false, true, true))
+            .method("PATCH");
     Result result = Helpers.route(application, req);
     Assert.assertEquals(400, result.status());
   }
@@ -154,41 +177,49 @@ public class CertificateControllerTest extends BaseApplicationTest {
     Http.RequestBuilder req =
         new Http.RequestBuilder()
             .uri(ADD_CERTIFICATE_URL)
-            .bodyJson(getAddCertificateRequest(COURSE_ID, null, CERTIFICATE_NAME, true))
-            .method("POST");
-    Result result = Helpers.route(application, req);
-    Assert.assertEquals(200, result.status());
-  }
-
-  @Test
-  public void getCertificateTest() {
-    Http.RequestBuilder req =
-        new Http.RequestBuilder()
-            .uri(GET_CERTIFICATE_URL)
-            .bodyJson(getCertificateRequest(COURSE_ID, CERTIFICATE_NAME))
-            .method("POST");
-    Result result = Helpers.route(application, req);
-    Assert.assertEquals(200, result.status());
-  }
-
-  @Test
-  public void getCertificateTestWithoutCourseId() {
-    Http.RequestBuilder req =
-        new Http.RequestBuilder()
-            .uri(GET_CERTIFICATE_URL)
-            .bodyJson(getCertificateRequest(null, CERTIFICATE_NAME))
-            .method("POST");
+            .bodyJson(
+                getAddCertificateRequest(
+                    COURSE_ID, null, true, CERTIFICATE_NAME, TEMPLATE_ID, true, true, true))
+            .method("PATCH");
     Result result = Helpers.route(application, req);
     Assert.assertEquals(400, result.status());
   }
 
   @Test
-  public void getCertificateTestWithoutName() {
+  public void addCertificateTestWithoutTemplateId() {
     Http.RequestBuilder req =
         new Http.RequestBuilder()
-            .uri(GET_CERTIFICATE_URL)
-            .bodyJson(getCertificateRequest(COURSE_ID, null))
-            .method("POST");
+            .uri(ADD_CERTIFICATE_URL)
+            .bodyJson(
+                getAddCertificateRequest(
+                    COURSE_ID, BATCH_ID, true, CERTIFICATE_NAME, null, true, true, true))
+            .method("PATCH");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals(400, result.status());
+  }
+
+  @Test
+  public void addCertificateTestWithoutSignatoryList() {
+    Http.RequestBuilder req =
+        new Http.RequestBuilder()
+            .uri(ADD_CERTIFICATE_URL)
+            .bodyJson(
+                getAddCertificateRequest(
+                    COURSE_ID, BATCH_ID, true, CERTIFICATE_NAME, TEMPLATE_ID, true, false, true))
+            .method("PATCH");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals(200, result.status());
+  }
+
+  @Test
+  public void addCertificateTestWithoutIssuer() {
+    Http.RequestBuilder req =
+        new Http.RequestBuilder()
+            .uri(ADD_CERTIFICATE_URL)
+            .bodyJson(
+                getAddCertificateRequest(
+                    COURSE_ID, BATCH_ID, true, CERTIFICATE_NAME, TEMPLATE_ID, true, true, false))
+            .method("PATCH");
     Result result = Helpers.route(application, req);
     Assert.assertEquals(200, result.status());
   }
@@ -197,9 +228,9 @@ public class CertificateControllerTest extends BaseApplicationTest {
   public void deleteCertificateTest() {
     Http.RequestBuilder req =
         new Http.RequestBuilder()
-            .uri(ADD_CERTIFICATE_URL)
-            .bodyJson(getCertificateRequest(COURSE_ID, CERTIFICATE_NAME))
-            .method("DELETE");
+            .uri(DELETE_CERTIFICATE_URL)
+            .bodyJson(getCertificateRequest(COURSE_ID, BATCH_ID, true, TEMPLATE_ID))
+            .method("PATCH");
     Result result = Helpers.route(application, req);
     Assert.assertEquals(200, result.status());
   }
@@ -208,43 +239,96 @@ public class CertificateControllerTest extends BaseApplicationTest {
   public void deleteCertificateWithoutCourseId() {
     Http.RequestBuilder req =
         new Http.RequestBuilder()
-            .uri(ADD_CERTIFICATE_URL)
-            .bodyJson(getCertificateRequest(null, CERTIFICATE_NAME))
-            .method("DELETE");
+            .uri(DELETE_CERTIFICATE_URL)
+            .bodyJson(getCertificateRequest(null, BATCH_ID, true, TEMPLATE_ID))
+            .method("PATCH");
     Result result = Helpers.route(application, req);
     Assert.assertEquals(400, result.status());
   }
 
   @Test
-  public void deleteCertificateTestWithoutName() {
+  public void deleteCertificateTestWithoutBatchId() {
     Http.RequestBuilder req =
         new Http.RequestBuilder()
-            .uri(ADD_CERTIFICATE_URL)
-            .bodyJson(getCertificateRequest(COURSE_ID, null))
-            .method("DELETE");
+            .uri(DELETE_CERTIFICATE_URL)
+            .bodyJson(getCertificateRequest(COURSE_ID, null, true, TEMPLATE_ID))
+            .method("PATCH");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals(400, result.status());
+  }
+
+  @Test
+  public void deleteCertificateTestWithoutTemplate() {
+    Http.RequestBuilder req =
+        new Http.RequestBuilder()
+            .uri(DELETE_CERTIFICATE_URL)
+            .bodyJson(getCertificateRequest(COURSE_ID, null, false, null))
+            .method("PATCH");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals(400, result.status());
+  }
+
+  @Test
+  public void deleteCertificateTestWithoutTemplateId() {
+    Http.RequestBuilder req =
+        new Http.RequestBuilder()
+            .uri(DELETE_CERTIFICATE_URL)
+            .bodyJson(getCertificateRequest(COURSE_ID, null, true, null))
+            .method("PATCH");
     Result result = Helpers.route(application, req);
     Assert.assertEquals(400, result.status());
   }
 
   private JsonNode getAddCertificateRequest(
-      String courseId, String batchId, String certificateName, boolean certificateTemplate) {
+      String courseId,
+      String batchId,
+      boolean certificateTemplate,
+      String certificateName,
+      String templateId,
+      boolean criteria,
+      boolean signatoryList,
+      boolean issuer) {
     Map<String, Object> innerMap = new HashMap<>();
-    if (courseId != null) innerMap.put(JsonKey.COURSE_ID, courseId);
-    if (batchId != null) innerMap.put(JsonKey.BATCH_ID, batchId);
-    if (certificateName != null) innerMap.put(JsonKey.NAME, certificateName);
-    if (certificateTemplate) innerMap.put(CourseJsonKey.TEMPLATE, new HashMap<String, Object>());
+    Map<String, Object> batch = new HashMap<>();
+    if (courseId != null) batch.put(JsonKey.COURSE_ID, courseId);
+    if (batchId != null) batch.put(JsonKey.BATCH_ID, batchId);
+    Map<String, Object> template = new HashMap<>();
+    if (certificateTemplate) {
+      batch.put(CourseJsonKey.TEMPLATE, template);
+      if (certificateName != null) template.put(JsonKey.NAME, certificateName);
+      if (templateId != null) template.put(CourseJsonKey.TEMPLATE_ID, templateId);
+      if (criteria) {
+        Map<String, Object> statusMap = new HashMap<>();
+        statusMap.put(JsonKey.STATUS, 2);
+        Map<String, Object> criteriaMap = new HashMap<>();
+        criteriaMap.put(CourseJsonKey.ENROLLMENT, statusMap);
+        template.put(JsonKey.CRITERIA, criteriaMap);
+      }
+      if (signatoryList) template.put(CourseJsonKey.SIGNATORY_LIST, new ArrayList<>());
+      if (issuer) template.put(CourseJsonKey.ISSUER, new HashMap<String, Object>());
+    }
     Map<String, Object> requestMap = new HashMap<>();
+    innerMap.put(JsonKey.BATCH, batch);
     requestMap.put(JsonKey.REQUEST, innerMap);
     String data = mapToJson(requestMap);
     return Json.parse(data);
   }
 
-  private JsonNode getCertificateRequest(String courseId, String certificateName) {
+  private JsonNode getCertificateRequest(
+      String courseId, String batchId, boolean certificateTemplate, String templateId) {
     Map<String, Object> innerMap = new HashMap<>();
-    if (courseId != null) innerMap.put(JsonKey.COURSE_ID, courseId);
-    if (certificateName != null) innerMap.put(JsonKey.NAME, certificateName);
+    Map<String, Object> batch = new HashMap<>();
+    if (courseId != null) batch.put(JsonKey.COURSE_ID, courseId);
+    if (batchId != null) batch.put(JsonKey.BATCH_ID, batchId);
+    Map<String, Object> template = new HashMap<>();
+    if (certificateTemplate) {
+      batch.put(CourseJsonKey.TEMPLATE, template);
+      if (templateId != null) template.put(CourseJsonKey.TEMPLATE_ID, templateId);
+    }
     Map<String, Object> requestMap = new HashMap<>();
+    innerMap.put(JsonKey.BATCH, batch);
     requestMap.put(JsonKey.REQUEST, innerMap);
+    System.out.println(requestMap.toString());
     String data = mapToJson(requestMap);
     return Json.parse(data);
   }
@@ -252,7 +336,6 @@ public class CertificateControllerTest extends BaseApplicationTest {
   public String mapToJson(Map map) {
     ObjectMapper mapperObj = new ObjectMapper();
     String jsonResp = "";
-
     if (map != null) {
       try {
         jsonResp = mapperObj.writeValueAsString(map);

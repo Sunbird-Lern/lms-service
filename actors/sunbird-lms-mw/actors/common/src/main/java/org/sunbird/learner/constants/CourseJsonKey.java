@@ -16,7 +16,7 @@ public abstract class CourseJsonKey {
   public static final String COURSE_COMPLETION_CERTIFICATE =
       "sunbird_course_completion_certificate_name";
   public static final String CERTIFICATE_NAME = "certificateName";
-  public static final String CERTIFICATE_TEMPLATES_COLUMN = "certificate_templates";
+  public static final String CERTIFICATE_TEMPLATES_COLUMN = "cert_templates";
   public static final String LAST_UPDATED_ON = "lastUpdatedOn";
   public static final String TEMPLATE = "template";
   public static final String TEMPLATE_ID = "templateId";

@@ -77,11 +77,11 @@ public class CourseBatchUtil {
     if (templateResponse == null
         || MapUtils.isEmpty(templateResponse.getResult())
         || !templateResponse.getResult().containsKey(CourseJsonKey.CERTIFICATE)) {
+      System.out.println("Get template result: " + templateResponse);
       ProjectCommonException.throwClientErrorException(
           ResponseCode.CLIENT_ERROR, "Invalid template Id: " + templateId);
     }
-    Map<String, Object> template =
-        (Map<String, Object>) templateResponse.getResult().get(CourseJsonKey.CERTIFICATE);
+    Map<String, Object> template = (Map<String, Object>) ((Map<String, Object>) templateResponse.getResult().get(CourseJsonKey.CERTIFICATE)).get("template");
     if (MapUtils.isEmpty(template) || !templateId.equals(template.get(JsonKey.IDENTIFIER))) {
       ProjectCommonException.throwClientErrorException(
           ResponseCode.CLIENT_ERROR, "Invalid template Id: " + templateId);

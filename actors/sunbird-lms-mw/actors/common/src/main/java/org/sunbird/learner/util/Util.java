@@ -14,8 +14,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,7 +33,6 @@ import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.helper.CassandraConnectionManager;
 import org.sunbird.helper.CassandraConnectionMngrFactory;
-import org.sunbird.learner.constants.CourseJsonKey;
 import org.sunbird.userorg.UserOrgService;
 import org.sunbird.userorg.UserOrgServiceImpl;
 
@@ -83,8 +80,6 @@ public final class Util {
         JsonKey.LEARNER_CONTENT_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "content_consumption"));
     dbInfoMap.put(
         JsonKey.COURSE_MANAGEMENT_DB, getDbInfoObject(KEY_SPACE_NAME, "course_management"));
-      dbInfoMap.put(
-              CourseJsonKey.CERTIFICATE_TEMPLATE_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "certificate_templates"));
     dbInfoMap.put(JsonKey.USER_DB, getDbInfoObject(KEY_SPACE_NAME, "user"));
     dbInfoMap.put(JsonKey.USER_AUTH_DB, getDbInfoObject(KEY_SPACE_NAME, "user_auth"));
     dbInfoMap.put(JsonKey.ORG_DB, getDbInfoObject(KEY_SPACE_NAME, "organisation"));
@@ -557,21 +552,21 @@ public final class Util {
           (String) actorMessage.getContext().get(JsonKey.ACTOR_TYPE))) {
         // assign rollup of user ...
         try {
-            if(actorMessage.getRequest().get(JsonKey.REQUESTED_BY) != null) {
-                Map<String, Object> result =
-                        userOrgService.getUserById(
-                                (String) actorMessage.getContext().get(JsonKey.REQUESTED_BY));
-                if (result != null) {
-                    String rootOrgId = (String) result.get(JsonKey.ROOT_ORG_ID);
+          if (actorMessage.getRequest().get(JsonKey.REQUESTED_BY) != null) {
+            Map<String, Object> result =
+                userOrgService.getUserById(
+                    (String) actorMessage.getContext().get(JsonKey.REQUESTED_BY));
+            if (result != null) {
+              String rootOrgId = (String) result.get(JsonKey.ROOT_ORG_ID);
 
-                    if (StringUtils.isNotBlank(rootOrgId)) {
-                        Map<String, String> rollup = new HashMap<>();
+              if (StringUtils.isNotBlank(rootOrgId)) {
+                Map<String, String> rollup = new HashMap<>();
 
-                        rollup.put("l1", rootOrgId);
-                        requestContext.put(JsonKey.ROLLUP, rollup);
-                    }
-                }
+                rollup.put("l1", rootOrgId);
+                requestContext.put(JsonKey.ROLLUP, rollup);
+              }
             }
+          }
         } catch (Exception e) {
           log("Util:initializeContext:Exception occurred with error message = ", e);
         }

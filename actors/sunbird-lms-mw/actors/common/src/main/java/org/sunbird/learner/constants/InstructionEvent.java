@@ -4,7 +4,7 @@ public enum InstructionEvent {
   BATCH_USER_STATE_UPDATE(
       "Course Batch Updater", "System", "CourseBatchEnrolment", "batch-enrolment-update"),
   ISSUE_COURSE_CERTIFICATE(
-      "Course Certificate Generator", "System", "CourseCertificate", "generate-course-certificate");
+      "Course Certificate Generator", "System", "CourseCertificateGeneration", "issue-certificate");
 
   private String actorId;
   private String actorType;

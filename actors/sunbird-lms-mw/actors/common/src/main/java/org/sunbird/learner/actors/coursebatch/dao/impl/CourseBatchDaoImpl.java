@@ -11,6 +11,7 @@ import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao;
+import org.sunbird.learner.constants.CourseJsonKey;
 import org.sunbird.learner.util.Util;
 import org.sunbird.models.course.batch.CourseBatch;
 
@@ -65,5 +66,34 @@ public class CourseBatchDaoImpl implements CourseBatchDao {
   public Response delete(String id) {
     return cassandraOperation.deleteRecord(
         courseBatchDb.getKeySpace(), courseBatchDb.getTableName(), id);
+  }
+
+  @Override
+  public void addCertificateTemplateToCourseBatch(
+      String courseId, String batchId, String templateId, Map<String, Object> templateDetails) {
+    Map<String, Object> primaryKey = new HashMap<>();
+    primaryKey.put(JsonKey.COURSE_ID, courseId);
+    primaryKey.put(JsonKey.BATCH_ID, batchId);
+    cassandraOperation.updateAddMapRecord(
+        courseBatchDb.getKeySpace(),
+        courseBatchDb.getTableName(),
+        primaryKey,
+        CourseJsonKey.CERTIFICATE_TEMPLATES_COLUMN,
+        templateId,
+        templateDetails);
+  }
+
+  @Override
+  public void removeCertificateTemplateFromCourseBatch(
+      String courseId, String batchId, String templateId) {
+    Map<String, Object> primaryKey = new HashMap<>();
+    primaryKey.put(JsonKey.COURSE_ID, courseId);
+    primaryKey.put(JsonKey.BATCH_ID, batchId);
+    cassandraOperation.updateRemoveMapRecord(
+        courseBatchDb.getKeySpace(),
+        courseBatchDb.getTableName(),
+        primaryKey,
+        CourseJsonKey.CERTIFICATE_TEMPLATES_COLUMN,
+        templateId);
   }
 }

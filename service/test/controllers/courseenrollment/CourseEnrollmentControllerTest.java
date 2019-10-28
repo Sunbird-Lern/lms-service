@@ -18,6 +18,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.common.models.util.JsonKey;
 import play.libs.Json;
+import play.mvc.Http;
 import play.mvc.Http.RequestBuilder;
 import play.mvc.Result;
 import util.RequestInterceptor;
@@ -39,8 +40,8 @@ public class CourseEnrollmentControllerTest extends BaseControllerTest {
   public void testEnrollCourseBatchSuccess() {
     JsonNode json = createCourseEnrollmentRequest(COURSE_ID, BATCH_ID, USER_ID);
     RequestBuilder req = new RequestBuilder().bodyJson(json).uri(ENROLL_URI).method("POST");
-    req.headers(headerMap);
-    Result result = route(req);
+    req.headers(new Http.Headers(headerMap));
+    Result result = route(app, req);
     assertEquals(200, result.status());
   }
 
@@ -48,8 +49,8 @@ public class CourseEnrollmentControllerTest extends BaseControllerTest {
   public void testUnenrollCourseBatchSuccess() {
     JsonNode json = createCourseEnrollmentRequest(COURSE_ID, BATCH_ID, USER_ID);
     RequestBuilder req = new RequestBuilder().bodyJson(json).uri(UNENROLL_URI).method("POST");
-    req.headers(headerMap);
-    Result result = route(req);
+    req.headers(new Http.Headers(headerMap));
+    Result result = route(app, req);
     assertEquals(200, result.status());
   }
 
@@ -57,8 +58,8 @@ public class CourseEnrollmentControllerTest extends BaseControllerTest {
   public void testEnrollCourseBatchFailureWithoutCourseId() {
     JsonNode json = createCourseEnrollmentRequest(null, BATCH_ID, USER_ID);
     RequestBuilder req = new RequestBuilder().bodyJson(json).uri(ENROLL_URI).method("POST");
-    req.headers(headerMap);
-    Result result = route(req);
+    req.headers(new Http.Headers(headerMap));
+    Result result = route(app, req);
     assertEquals(400, result.status());
   }
 
@@ -66,8 +67,8 @@ public class CourseEnrollmentControllerTest extends BaseControllerTest {
   public void testUnenrollCourseBatchFailureWithoutCourseId() {
     JsonNode json = createCourseEnrollmentRequest(null, BATCH_ID, USER_ID);
     RequestBuilder req = new RequestBuilder().bodyJson(json).uri(UNENROLL_URI).method("POST");
-    req.headers(headerMap);
-    Result result = route(req);
+    req.headers(new Http.Headers(headerMap));
+    Result result = route(app, req);
     assertEquals(400, result.status());
   }
 
@@ -75,8 +76,8 @@ public class CourseEnrollmentControllerTest extends BaseControllerTest {
   public void testUnenrollCourseBatchFailureWithoutBatchId() {
     JsonNode json = createCourseEnrollmentRequest(COURSE_ID, null, USER_ID);
     RequestBuilder req = new RequestBuilder().bodyJson(json).uri(UNENROLL_URI).method("POST");
-    req.headers(headerMap);
-    Result result = route(req);
+    req.headers(new Http.Headers(headerMap));
+    Result result = route(app, req);
     assertEquals(400, result.status());
   }
 
@@ -84,8 +85,8 @@ public class CourseEnrollmentControllerTest extends BaseControllerTest {
   public void testUnenrollCourseBatchFailureWithoutUserId() {
     JsonNode json = createCourseEnrollmentRequest(COURSE_ID, BATCH_ID, null);
     RequestBuilder req = new RequestBuilder().bodyJson(json).uri(UNENROLL_URI).method("POST");
-    req.headers(headerMap);
-    Result result = route(req);
+    req.headers(new Http.Headers(headerMap));
+    Result result = route(app, req);
     assertEquals(400, result.status());
   }
 

@@ -23,7 +23,7 @@ public class ContextRequestTest extends BaseControllerTest {
     JsonNode json = Json.parse(data);
     Http.RequestBuilder req =
         new Http.RequestBuilder().bodyJson(json).uri("/v1/user/profile/visibility").method("POST");
-    String appId = headerMap.get(HeaderParam.X_APP_ID)[0];
+    String appId = headerMap.get(HeaderParam.X_APP_ID).get(0);
     Assert.assertTrue(!(appId.charAt(0) >= 65 && appId.charAt(0) <= 90));
   }
 

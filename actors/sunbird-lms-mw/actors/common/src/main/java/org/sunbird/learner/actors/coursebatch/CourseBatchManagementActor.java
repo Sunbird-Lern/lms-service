@@ -457,8 +457,11 @@ public class CourseBatchManagementActor extends BaseActor {
             (String) actorMessage.getContext().get(JsonKey.BATCH_ID));
     Map<String, Object> result =
         (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
+    System.out.println("ES reponse "+result.toString());
+    Map<String, Object> courseBatch = courseBatchDao.getCourseBatchList((String) result.get(JsonKey.COURSE_ID), (String) actorMessage.getContext().get(JsonKey.BATCH_ID));
     Response response = new Response();
-    response.put(JsonKey.RESPONSE, result);
+    System.out.println("Cassandra reponse "+courseBatch.toString());
+    response.put(JsonKey.RESPONSE, courseBatch);
     sender().tell(response, self());
   }
 

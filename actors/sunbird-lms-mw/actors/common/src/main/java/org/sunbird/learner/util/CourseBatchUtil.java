@@ -77,7 +77,6 @@ public class CourseBatchUtil {
     if (templateResponse == null
         || MapUtils.isEmpty(templateResponse.getResult())
         || !templateResponse.getResult().containsKey(CourseJsonKey.CERTIFICATE)) {
-      System.out.println("Get template result: " + templateResponse);
       ProjectCommonException.throwClientErrorException(
           ResponseCode.CLIENT_ERROR, "Invalid template Id: " + templateId);
     }

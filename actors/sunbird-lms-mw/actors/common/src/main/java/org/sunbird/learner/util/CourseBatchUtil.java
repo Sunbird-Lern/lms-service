@@ -1,6 +1,7 @@
 package org.sunbird.learner.util;
 
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
+import static org.sunbird.common.exception.ProjectCommonException.throwClientErrorException;
 import static org.sunbird.common.exception.ProjectCommonException.throwServerErrorException;
 import static org.sunbird.common.models.util.JsonKey.BEARER;
 import static org.sunbird.common.models.util.JsonKey.SUNBIRD_AUTHORIZATION;
@@ -98,17 +99,17 @@ public class CourseBatchUtil {
       String certTempUrl = certServiceBaseUrl + templateRelativeUrl + "/" + templateId;
       log("CourseBatchUtil:getTemplate certTempUrl : " + certTempUrl, INFO.name());
       httpResponse = Unirest.get(certTempUrl).headers(getdefaultHeaders()).asString();
-      log(
-          "CourseBatchUtil:getResponse Response Status : " + httpResponse.getStatus(),
-          INFO.name());
+      log("CourseBatchUtil:getResponse Response Status : " + httpResponse.getStatus(), INFO.name());
+
+      if (httpResponse.getStatus() == 404)
+        throwClientErrorException(ResponseCode.RESOURCE_NOT_FOUND, "Given cert template not found: " + templateId);
+
       if (StringUtils.isBlank(httpResponse.getBody())) {
-        throwServerErrorException(
-            ResponseCode.SERVER_ERROR, errorProcessingRequest.getErrorMessage());
+        throwServerErrorException(ResponseCode.SERVER_ERROR, errorProcessingRequest.getErrorMessage());
       }
       responseBody = httpResponse.getBody();
       response = mapper.readValue(responseBody, Response.class);
       if (!ResponseCode.OK.equals(response.getResponseCode())) {
-
         throw new ProjectCommonException(
             response.getResponseCode().name(),
             response.getParams().getErrmsg(),

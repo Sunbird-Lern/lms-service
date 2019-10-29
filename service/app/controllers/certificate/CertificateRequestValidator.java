@@ -188,7 +188,7 @@ public class CertificateRequestValidator extends BaseRequestValidator {
             ResponseCode.CLIENT_ERROR.getResponseCode());
       }
       Map<String, Object> score = (Map<String, Object>) assessment.get(CourseJsonKey.SCORE);
-      if (!(score.containsKey("ge") || score.containsKey("le") || score.containsKey("eq"))) {
+      if (!(score.containsKey(">=") || score.containsKey("<=") || score.containsKey("eq"))) {
         throw new ProjectCommonException(
             ResponseCode.invalidPropertyError.getErrorCode(),
             MessageFormat.format(ResponseCode.invalidPropertyError.getErrorMessage(), "for Score"),

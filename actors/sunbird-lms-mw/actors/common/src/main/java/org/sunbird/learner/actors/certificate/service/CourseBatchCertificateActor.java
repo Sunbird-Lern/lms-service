@@ -70,6 +70,7 @@ public class CourseBatchCertificateActor extends BaseActor {
     CourseBatchUtil.validateCourseBatch(courseId, batchId);
     Map<String, Object> template = (Map<String, Object>) batchRequest.get(CourseJsonKey.TEMPLATE);
     String templateId = (String) template.get(JsonKey.IDENTIFIER);
+    CourseBatchUtil.validateTemplate(templateId);
     courseBatchDao.removeCertificateTemplateFromCourseBatch(courseId, batchId, templateId);
     Response response = new Response();
     response.put(JsonKey.RESPONSE, JsonKey.SUCCESS);
@@ -77,7 +78,7 @@ public class CourseBatchCertificateActor extends BaseActor {
   }
 
   private void validateTemplateDetails(String templateId, Map<String, Object> template) {
-    Map<String, Object> templateDetails=CourseBatchUtil.validateTemplate(templateId);
+   Map<String, Object> templateDetails=CourseBatchUtil.validateTemplate(templateId);
     try {
       template.put(JsonKey.NAME,templateDetails.get(JsonKey.NAME));
       template.put(JsonKey.CRITERIA, mapper.writeValueAsString(template.get(JsonKey.CRITERIA)));

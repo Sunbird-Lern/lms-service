@@ -31,10 +31,7 @@ public interface CourseBatchDao {
    */
   CourseBatch readById(String courseId, String batchId);
 
-
-
-  Map<String, Object> getCourseBatchList(String courseId, String batchId);
-
+  Map<String,Object> getCourseBatch(String courseId, String batchId);
 
   /**
    * Delete specified course batch.

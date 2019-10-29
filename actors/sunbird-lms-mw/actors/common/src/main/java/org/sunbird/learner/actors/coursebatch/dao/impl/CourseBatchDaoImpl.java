@@ -63,7 +63,7 @@ public class CourseBatchDaoImpl implements CourseBatchDao {
   }
 
   @Override
-  public Map<String, Object> getCourseBatchList(String courseId, String batchId) {
+  public Map<String,Object> getCourseBatch(String courseId, String batchId) {
     Map<String, Object> primaryKey = new HashMap<>();
     primaryKey.put(JsonKey.COURSE_ID, courseId);
     primaryKey.put(JsonKey.BATCH_ID, batchId);
@@ -72,14 +72,7 @@ public class CourseBatchDaoImpl implements CourseBatchDao {
                     courseBatchDb.getKeySpace(), courseBatchDb.getTableName(), primaryKey);
     List<Map<String, Object>> courseList =
             (List<Map<String, Object>>) courseBatchResult.get(JsonKey.RESPONSE);
-    if (courseList.isEmpty()) {
-      throw new ProjectCommonException(
-              ResponseCode.invalidCourseBatchId.getErrorCode(),
-              ResponseCode.invalidCourseBatchId.getErrorMessage(),
-              ResponseCode.CLIENT_ERROR.getResponseCode());
-    } else {
-      return (Map<String,Object>)courseList.get(0).remove(JsonKey.PARTICIPANT);
-    }
+    return courseList.get(0);
   }
 
   @Override

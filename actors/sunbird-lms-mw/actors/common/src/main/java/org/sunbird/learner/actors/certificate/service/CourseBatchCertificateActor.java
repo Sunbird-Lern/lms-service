@@ -18,6 +18,7 @@ import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl;
 import org.sunbird.learner.constants.CourseJsonKey;
 import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.Util;
+import org.sunbird.models.course.batch.CourseBatch;
 
 @ActorConfig(
   tasks = {"addCertificateToCourseBatch", "removeCertificateFromCourseBatch"},
@@ -57,6 +58,9 @@ public class CourseBatchCertificateActor extends BaseActor {
     String templateId = (String) template.get(JsonKey.IDENTIFIER);
     validateTemplateDetails(templateId, template);
     courseBatchDao.addCertificateTemplateToCourseBatch(courseId, batchId, templateId, template);
+    Map<String,Object> courseBatch = courseBatchDao.getCourseBatch(courseId,batchId);
+    CourseBatchUtil.syncCourseBatchForeground(
+            batchId,courseBatch);
     Response response = new Response();
     response.put(JsonKey.RESPONSE, JsonKey.SUCCESS);
     sender().tell(response, self());
@@ -71,15 +75,18 @@ public class CourseBatchCertificateActor extends BaseActor {
     Map<String, Object> template = (Map<String, Object>) batchRequest.get(CourseJsonKey.TEMPLATE);
     String templateId = (String) template.get(JsonKey.IDENTIFIER);
     courseBatchDao.removeCertificateTemplateFromCourseBatch(courseId, batchId, templateId);
+    Map<String,Object> courseBatch = courseBatchDao.getCourseBatch(courseId,batchId);
+    CourseBatchUtil.syncCourseBatchForeground(
+            batchId,courseBatch);
     Response response = new Response();
     response.put(JsonKey.RESPONSE, JsonKey.SUCCESS);
     sender().tell(response, self());
   }
 
   private void validateTemplateDetails(String templateId, Map<String, Object> template) {
-    Map<String, Object> templateDetails=CourseBatchUtil.validateTemplate(templateId);
+  //  Map<String, Object> templateDetails=CourseBatchUtil.validateTemplate(templateId);
     try {
-      template.put(JsonKey.NAME,templateDetails.get(JsonKey.NAME));
+     // template.put(JsonKey.NAME,templateDetails.get(JsonKey.NAME));
       template.put(JsonKey.CRITERIA, mapper.writeValueAsString(template.get(JsonKey.CRITERIA)));
       if (template.get(CourseJsonKey.ISSUER) != null) {
         template.put(

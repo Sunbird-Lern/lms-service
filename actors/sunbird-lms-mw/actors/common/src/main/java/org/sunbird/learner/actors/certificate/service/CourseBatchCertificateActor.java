@@ -3,7 +3,6 @@ package org.sunbird.learner.actors.certificate.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Map;
 import org.sunbird.actor.core.BaseActor;
 import org.sunbird.actor.router.ActorConfig;
 import org.sunbird.common.exception.ProjectCommonException;
@@ -18,7 +17,8 @@ import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl;
 import org.sunbird.learner.constants.CourseJsonKey;
 import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.Util;
-import org.sunbird.models.course.batch.CourseBatch;
+
+import java.util.Map;
 
 @ActorConfig(
   tasks = {"addCertificateToCourseBatch", "removeCertificateFromCourseBatch"},
@@ -84,9 +84,9 @@ public class CourseBatchCertificateActor extends BaseActor {
   }
 
   private void validateTemplateDetails(String templateId, Map<String, Object> template) {
-  //  Map<String, Object> templateDetails=CourseBatchUtil.validateTemplate(templateId);
+   Map<String, Object> templateDetails=CourseBatchUtil.validateTemplate(templateId);
     try {
-     // template.put(JsonKey.NAME,templateDetails.get(JsonKey.NAME));
+      template.put(JsonKey.NAME,templateDetails.get(JsonKey.NAME));
       template.put(JsonKey.CRITERIA, mapper.writeValueAsString(template.get(JsonKey.CRITERIA)));
       if (template.get(CourseJsonKey.ISSUER) != null) {
         template.put(

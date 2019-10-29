@@ -57,8 +57,6 @@ public class CertificateRequestValidator extends BaseRequestValidator {
         (String) template.get(JsonKey.IDENTIFIER),
         ResponseCode.mandatoryParamsMissing,
         JsonKey.IDENTIFIER);
-    validateParam(
-        (String) template.get(JsonKey.NAME), ResponseCode.mandatoryParamsMissing, JsonKey.NAME);
     validateTemplateCriteria(template);
     if (template.containsKey(CourseJsonKey.ISSUER)
         && !(template.get(CourseJsonKey.ISSUER) instanceof Map)) {

@@ -21,10 +21,6 @@ public class CertificateRequestValidator extends BaseRequestValidator {
         (String) certRequestDto.getRequest().get(JsonKey.BATCH_ID),
         ResponseCode.mandatoryParamsMissing,
         JsonKey.BATCH_ID);
-    validateParam(
-        (String) certRequestDto.getRequest().get("certificate"),
-        ResponseCode.mandatoryParamsMissing,
-        JsonKey.USER_ID);
   }
 
   public void validateAddCertificateRequest(Request certRequestDto) {

@@ -99,7 +99,7 @@ public class CourseBatchUtil {
       log("CourseBatchUtil:getTemplate certTempUrl : " + certTempUrl, INFO.name());
       httpResponse = Unirest.get(certTempUrl).headers(getdefaultHeaders()).asString();
       log(
-          "CourseBatchUtil:getResponse Response Status : " + httpResponse.getStatus(),
+          "UserOrgServiceImpl:getResponse Response Status : " + httpResponse.getStatus(),
           INFO.name());
       if (StringUtils.isBlank(httpResponse.getBody())) {
         throwServerErrorException(
@@ -116,7 +116,7 @@ public class CourseBatchUtil {
       }
     } catch (ProjectCommonException e) {
       log(
-          "CourseBatchUtil:getResponse ProjectCommonException:"
+          "UserOrgServiceImpl:getResponse ProjectCommonException:"
               + "Request , Status : "
               + e.getCode()
               + " "
@@ -126,9 +126,8 @@ public class CourseBatchUtil {
           ERROR.name());
       throw e;
     } catch (Exception e) {
-      e.printStackTrace();
       log(
-          "CourseBatchUtil:getResponse occurred with error message = "
+          "UserOrgServiceImpl:getResponse occurred with error message = "
               + e.getMessage()
               + ", Response Body : "
               + responseBody,

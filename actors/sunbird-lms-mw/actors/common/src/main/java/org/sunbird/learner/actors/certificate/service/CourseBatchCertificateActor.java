@@ -3,7 +3,6 @@ package org.sunbird.learner.actors.certificate.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Map;
 import org.sunbird.actor.core.BaseActor;
 import org.sunbird.actor.router.ActorConfig;
 import org.sunbird.common.exception.ProjectCommonException;
@@ -18,6 +17,8 @@ import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl;
 import org.sunbird.learner.constants.CourseJsonKey;
 import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.Util;
+
+import java.util.Map;
 
 @ActorConfig(
   tasks = {"addCertificateToCourseBatch", "removeCertificateFromCourseBatch"},
@@ -57,6 +58,9 @@ public class CourseBatchCertificateActor extends BaseActor {
     String templateId = (String) template.get(JsonKey.IDENTIFIER);
     validateTemplateDetails(templateId, template);
     courseBatchDao.addCertificateTemplateToCourseBatch(courseId, batchId, templateId, template);
+    Map<String,Object> courseBatch = courseBatchDao.getCourseBatch(courseId,batchId);
+    CourseBatchUtil.syncCourseBatchForeground(
+            batchId,courseBatch);
     Response response = new Response();
     response.put(JsonKey.RESPONSE, JsonKey.SUCCESS);
     sender().tell(response, self());
@@ -72,6 +76,9 @@ public class CourseBatchCertificateActor extends BaseActor {
     String templateId = (String) template.get(JsonKey.IDENTIFIER);
     CourseBatchUtil.validateTemplate(templateId);
     courseBatchDao.removeCertificateTemplateFromCourseBatch(courseId, batchId, templateId);
+    Map<String,Object> courseBatch = courseBatchDao.getCourseBatch(courseId,batchId);
+    CourseBatchUtil.syncCourseBatchForeground(
+            batchId,courseBatch);
     Response response = new Response();
     response.put(JsonKey.RESPONSE, JsonKey.SUCCESS);
     sender().tell(response, self());

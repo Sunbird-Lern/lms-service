@@ -63,6 +63,19 @@ public class CourseBatchDaoImpl implements CourseBatchDao {
   }
 
   @Override
+  public Map<String,Object> getCourseBatch(String courseId, String batchId) {
+    Map<String, Object> primaryKey = new HashMap<>();
+    primaryKey.put(JsonKey.COURSE_ID, courseId);
+    primaryKey.put(JsonKey.BATCH_ID, batchId);
+    Response courseBatchResult =
+            cassandraOperation.getRecordById(
+                    courseBatchDb.getKeySpace(), courseBatchDb.getTableName(), primaryKey);
+    List<Map<String, Object>> courseList =
+            (List<Map<String, Object>>) courseBatchResult.get(JsonKey.RESPONSE);
+    return courseList.get(0);
+  }
+
+  @Override
   public Response delete(String id) {
     return cassandraOperation.deleteRecord(
         courseBatchDb.getKeySpace(), courseBatchDb.getTableName(), id);

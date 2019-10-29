@@ -1,5 +1,6 @@
 package org.sunbird.learner.actors.coursebatch.dao;
 
+import java.util.List;
 import java.util.Map;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.models.course.batch.CourseBatch;
@@ -29,6 +30,8 @@ public interface CourseBatchDao {
    * @return Course batch information
    */
   CourseBatch readById(String courseId, String batchId);
+
+  Map<String,Object> getCourseBatch(String courseId, String batchId);
 
   /**
    * Delete specified course batch.

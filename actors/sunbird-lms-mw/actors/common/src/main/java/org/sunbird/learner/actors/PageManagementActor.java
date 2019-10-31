@@ -87,6 +87,7 @@ public class PageManagementActor extends BaseActor {
     Util.initializeContext(request, TelemetryEnvKey.PAGE);
 
     ExecutionContext.setRequestId(request.getRequestId());
+    ProjectLogger.log("PageManagementActor: Request recieved : " + request.getRequest(), LoggerEnum.INFO.name());
     if (request.getOperation().equalsIgnoreCase(ActorOperations.CREATE_PAGE.getValue())) {
       createPage(request);
     } else if (request.getOperation().equalsIgnoreCase(ActorOperations.UPDATE_PAGE.getValue())) {
@@ -112,6 +113,9 @@ public class PageManagementActor extends BaseActor {
         .equalsIgnoreCase(ActorOperations.GET_ALL_SECTION.getValue())) {
       getAllSections();
     } else {
+      ProjectLogger.log(
+              "PageManagementActor: Invalid operation request",
+              LoggerEnum.ERROR.name());
       onReceiveUnsupportedOperation(request.getOperation());
     }
   }
@@ -268,6 +272,7 @@ public class PageManagementActor extends BaseActor {
 
   @SuppressWarnings("unchecked")
   private void getPageData(Request actorMessage) throws Exception {
+    ProjectLogger.log("PageManagementActor:getPageData: start",LoggerEnum.INFO.name());
     String sectionQuery = null;
     Map<String, Object> filterMap = new HashMap<>();
     Map<String, Object> req = (Map<String, Object>) actorMessage.getRequest().get(JsonKey.PAGE);
@@ -392,6 +397,7 @@ public class PageManagementActor extends BaseActor {
                 }
               },
               getContext().dispatcher());
+      ProjectLogger.log("PageManagementActor:getPageData: end",LoggerEnum.INFO.name());
       Patterns.pipe(response, getContext().dispatcher()).to(sender());
 
     } catch (Exception e) {

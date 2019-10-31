@@ -114,7 +114,7 @@ public class PageManagementActor extends BaseActor {
       getAllSections();
     } else {
       ProjectLogger.log(
-              "PageManagementActor: Invalid operation request",
+              "PageManagementActor: Invalid operation request : " + request.getOperation(),
               LoggerEnum.ERROR.name());
       onReceiveUnsupportedOperation(request.getOperation());
     }
@@ -315,7 +315,7 @@ public class PageManagementActor extends BaseActor {
       ProjectLogger.log(
           "PageManagementActor:getPageData: Exception occurred with error message =  "
               + e.getMessage(),
-          LoggerEnum.INFO);
+          LoggerEnum.INFO.name());
       throw new ProjectCommonException(
           ResponseCode.errorInvalidPageSection.getErrorCode(),
           ResponseCode.errorInvalidPageSection.getErrorMessage(),
@@ -643,6 +643,7 @@ public class PageManagementActor extends BaseActor {
       ExecutionContextExecutor ec)
       throws Exception {
 
+    ProjectLogger.log("PageManagementActor:getContentData: start",LoggerEnum.INFO.name());
     Map<String, Object> searchQueryMap =
         mapper.readValue((String) section.get(JsonKey.SEARCH_QUERY), HashMap.class);
     if (MapUtils.isEmpty(searchQueryMap)) {
@@ -687,6 +688,7 @@ public class PageManagementActor extends BaseActor {
                 ProjectLogger.log(
                     "PageManagementActor:getContentData:apply: section = " + section,
                     LoggerEnum.DEBUG.name());
+                ProjectLogger.log("PageManagementActor:getContentData: end",LoggerEnum.INFO.name());
               }
               return section;
             }
@@ -701,6 +703,7 @@ public class PageManagementActor extends BaseActor {
       final Promise promise = Futures.promise();
       promise.success(section);
       result = promise.future();
+      ProjectLogger.log("PageManagementActor:getContentData: end",LoggerEnum.INFO.name());
       return result;
     }
   }

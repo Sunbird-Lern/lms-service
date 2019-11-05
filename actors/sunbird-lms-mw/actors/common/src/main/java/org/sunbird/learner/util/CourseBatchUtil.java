@@ -66,7 +66,7 @@ public class CourseBatchUtil {
       ProjectCommonException.throwClientErrorException(
           ResponseCode.CLIENT_ERROR, "No such batchId exists");
     }
-    if (courseId != null && !StringUtils.equals(courseId, (String)result.get(JsonKey.COURSE_ID))) {
+    if (StringUtils.isNotBlank(courseId) && !StringUtils.equals(courseId, (String)result.get(JsonKey.COURSE_ID))) {
       ProjectCommonException.throwClientErrorException(
           ResponseCode.CLIENT_ERROR, "batchId is not linked with courseId");
     }

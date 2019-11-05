@@ -183,12 +183,10 @@ public class CourseMetricsActor extends BaseMetricsActor {
     Map<String, Object> filter = new HashMap<>();
     filter.put(JsonKey.BATCH_ID, batchId);
     filter.put(JsonKey.USER_ID, userIds);
-    Map<String, Object> nestedFilter = new HashMap<>();
-    nestedFilter.put(
-        CourseJsonKey.CERTIFICATES_DOT_NAME,
-        ProjectUtil.getConfigValue(CourseJsonKey.COURSE_COMPLETION_CERTIFICATE));
+    List<String> mandatoryFields = new ArrayList<>();
+    mandatoryFields.add(CourseJsonKey.CERTIFICATES);
     searchDTO.getAdditionalProperties().put(JsonKey.FILTERS, filter);
-    searchDTO.getAdditionalProperties().put(JsonKey.NESTED_KEY_FILTER, nestedFilter);
+    searchDTO.getAdditionalProperties().put(JsonKey.EXISTS, mandatoryFields);
     searchDTO.setFields(Arrays.asList(JsonKey.USER_ID, CourseJsonKey.CERTIFICATES));
     Future<Map<String, Object>> resultF =
         esService.search(searchDTO, EsType.usercourses.getTypeName());

@@ -70,10 +70,6 @@ public class CourseBatchUtil {
       ProjectCommonException.throwClientErrorException(
           ResponseCode.CLIENT_ERROR, "batchId is not linked with courseId");
     }
-    if(null == result.get("cert_templates")) {
-      ProjectCommonException.throwClientErrorException(
-              ResponseCode.CLIENT_ERROR, "No certificate templates associated with " + batchId);
-    }
     return result;
   }
 

@@ -682,7 +682,7 @@ public class TextbookTocActor extends BaseActor {
 
           String reqTopics = (String) recordMap.get(JsonKey.TOPIC);
           if (StringUtils.isNotBlank(reqTopics)) {
-            List<String> topicList = new ArrayList<String>(Arrays.asList(reqTopics.split(",")));
+            List<String> topicList = new ArrayList<String>(Arrays.asList(reqTopics.substring(2,reqTopics.length()-2).split("\"\",\"\"")));
             topicList.forEach(
                 s -> {
                   topics.add(s.trim());

@@ -8,6 +8,7 @@ import java.util.Map;
 import org.apache.commons.collections.CollectionUtils;
 import org.sunbird.actor.core.BaseActor;
 import org.sunbird.actor.router.ActorConfig;
+import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
@@ -19,6 +20,7 @@ import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.models.util.datasecurity.OneWayHashing;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.kafka.client.InstructionEventGenerator;
 import org.sunbird.learner.constants.CourseJsonKey;
 import org.sunbird.learner.constants.InstructionEvent;
@@ -71,7 +73,11 @@ public class CertificateActor extends BaseActor {
     final String courseId = (String) request.getRequest().get(JsonKey.COURSE_ID);
     List<String> userIds = (List<String>) request.getRequest().get(JsonKey.USER_IDs);
     final boolean reIssue = isReissue(request.getContext().get(CourseJsonKey.REISSUE));
-    CourseBatchUtil.validateCourseBatch(courseId, batchId);
+    Map<String, Object> courseBatchResponse = CourseBatchUtil.validateCourseBatch(courseId, batchId);
+    if(null == courseBatchResponse.get("cert_templates")) {
+        ProjectCommonException.throwClientErrorException(
+                  ResponseCode.CLIENT_ERROR, "No certificate templates associated with " + batchId);
+    }
     Response response = new Response();
     Map<String, Object> resultData = new HashMap<>();
     resultData.put(

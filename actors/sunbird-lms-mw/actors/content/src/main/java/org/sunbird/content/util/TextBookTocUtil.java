@@ -79,7 +79,11 @@ public class TextBookTocUtil {
     Response response = null;
     try {
       String requestUrl =
-          "https://dev.sunbirded.org/action/content/v3/hierarchy/do_1128856161055457281100?mode=edit";
+              getConfigValue(EKSTEP_BASE_URL)
+                      + getConfigValue(urlPath)
+                      + "/"
+                      + id
+                      + requestParams(requestParams);
 
       log(
           "TextBookTocUtil:handleReadRequest: Sending GET Request | TextBook Id: "

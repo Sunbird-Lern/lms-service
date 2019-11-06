@@ -19,9 +19,7 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.exception.ProjectCommonException;
@@ -81,11 +79,7 @@ public class TextBookTocUtil {
     Response response = null;
     try {
       String requestUrl =
-          getConfigValue(EKSTEP_BASE_URL)
-              + getConfigValue(urlPath)
-              + "/"
-              + id
-              + requestParams(requestParams);
+          "https://dev.sunbirded.org/action/content/v3/hierarchy/do_1128856161055457281100?mode=edit";
 
       log(
           "TextBookTocUtil:handleReadRequest: Sending GET Request | TextBook Id: "
@@ -180,23 +174,24 @@ public class TextBookTocUtil {
   public static Object stringify(Object o) {
     if (isNull(o)) return "";
     if (o instanceof List) {
-      List l = (List) o;
-      if (!l.isEmpty() && l.get(0) instanceof String) {
-        return String.join(",", l);
-      }
-      else if(l.isEmpty()) {
-          return "";
-      }
+      return listToCsvString((List)o);
     }
     if (o instanceof String[]) {
-      String[] l = (String[]) o;
-      if (l.length > 0) {
-        return String.join(",", l);
-      }
-      else {
-          return "";
-      }
+      List l = Arrays.asList((String[]) o);
+      return listToCsvString(l);
     }
     return o;
+  }
+
+  public static String listToCsvString(List l){
+    if (!l.isEmpty() && l.get(0) instanceof String) {
+      for(int index=0; index < l.size(); index++){
+        l.set(index, "\"\""+l.get(index)+"\"\"");
+      }
+    }
+    else if(l.isEmpty()) {
+      return "";
+    }
+    return String.join(",", l);
   }
 }

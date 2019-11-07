@@ -257,6 +257,7 @@ public class LearnerStateUpdateActor extends BaseActor {
         parseDate(inputContent.get(JsonKey.LAST_COMPLETED_TIME), simpleDateFormat);
     Date inputAccessTime = parseDate(inputContent.get(JsonKey.LAST_ACCESS_TIME), simpleDateFormat);
     if (MapUtils.isNotEmpty(existingContent)) {
+      System.out.println("Existing content: " + existingContent);
       int viewCount = getInteger(existingContent.get(JsonKey.VIEW_COUNT), 0);
       inputContent.put(JsonKey.VIEW_COUNT, viewCount + 1);
 

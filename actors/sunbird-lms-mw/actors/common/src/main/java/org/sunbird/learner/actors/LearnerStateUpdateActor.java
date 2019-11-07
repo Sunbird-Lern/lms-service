@@ -257,14 +257,12 @@ public class LearnerStateUpdateActor extends BaseActor {
         parseDate(inputContent.get(JsonKey.LAST_COMPLETED_TIME), simpleDateFormat);
     Date inputAccessTime = parseDate(inputContent.get(JsonKey.LAST_ACCESS_TIME), simpleDateFormat);
     if (MapUtils.isNotEmpty(existingContent)) {
-      System.out.println("Existing content: " + existingContent);
       int viewCount = getInteger(existingContent.get(JsonKey.VIEW_COUNT), 0);
       inputContent.put(JsonKey.VIEW_COUNT, viewCount + 1);
 
       Date accessTime = parseDate(existingContent.get(JsonKey.LAST_ACCESS_TIME), simpleDateFormat);
       inputContent.put(JsonKey.LAST_ACCESS_TIME, compareTime(accessTime, inputAccessTime));
 
-      int existingStatus = getInteger(existingContent.get(JsonKey.PROGRESS), 0);
       int inputProgress = getInteger(inputContent.get(JsonKey.PROGRESS), 0);
       int existingProgress = getInteger(existingContent.get(JsonKey.PROGRESS), 0);
       int progress = Collections.max(Arrays.asList(inputProgress, existingProgress));
@@ -273,6 +271,7 @@ public class LearnerStateUpdateActor extends BaseActor {
           parseDate(existingContent.get(JsonKey.LAST_COMPLETED_TIME), simpleDateFormat);
 
       int completedCount = getInteger(existingContent.get(JsonKey.COMPLETED_COUNT), 0);
+      int existingStatus = getInteger(existingContent.get(JsonKey.STATUS), 0);
       if (inputStatus >= existingStatus) {
         if (inputStatus == 2) {
           completedCount = completedCount + 1;
@@ -281,9 +280,8 @@ public class LearnerStateUpdateActor extends BaseActor {
               JsonKey.LAST_COMPLETED_TIME, compareTime(completedDate, inputCompletedDate));
         }
         inputContent.put(JsonKey.COMPLETED_COUNT, completedCount);
-      }
-      if (completedCount >= 1) {
-        inputContent.put(JsonKey.STATUS, 2);
+      } else {
+        inputContent.put(JsonKey.STATUS, existingStatus);
       }
     } else {
       if (inputStatus == 2) {
@@ -297,7 +295,6 @@ public class LearnerStateUpdateActor extends BaseActor {
       inputContent.put(JsonKey.LAST_ACCESS_TIME, compareTime(null, inputAccessTime));
     }
     inputContent.put(JsonKey.LAST_UPDATED_TIME, ProjectUtil.getFormattedDate());
-    inputContent.put("status", inputStatus);
     inputContent.put("userId", userId);
     return inputContent;
   }

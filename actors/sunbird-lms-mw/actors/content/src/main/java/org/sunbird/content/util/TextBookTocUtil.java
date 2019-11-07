@@ -80,10 +80,10 @@ public class TextBookTocUtil {
     try {
       String requestUrl =
               getConfigValue(EKSTEP_BASE_URL)
-                      + getConfigValue(urlPath)
-                      + "/"
-                      + id
-                      + requestParams(requestParams);
+              + getConfigValue(urlPath)
+              + "/"
+              + id
+              + requestParams(requestParams);
 
       log(
           "TextBookTocUtil:handleReadRequest: Sending GET Request | TextBook Id: "
@@ -190,7 +190,11 @@ public class TextBookTocUtil {
   public static String listToCsvString(List l){
     if (!l.isEmpty() && l.get(0) instanceof String) {
       for(int index=0; index < l.size(); index++){
-        l.set(index, "\"\""+l.get(index)+"\"\"");
+        String entry = (String)l.get(index);
+        if(entry.startsWith("\"\"") && entry.endsWith("\"\"")){
+          l.set(index,entry.substring(2,entry.length()-2));
+        }
+      l.set(index, "\"\""+l.get(index)+"\"\"");
       }
     }
     else if(l.isEmpty()) {

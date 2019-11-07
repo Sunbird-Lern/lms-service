@@ -24,6 +24,7 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -100,6 +101,7 @@ public class TextbookTocActorTest {
             "{\"identifier\":\"Identifier\",\"frameworkCategories\":{\"board\":\"Board\",\"medium\":\"Medium\",\"gradeLevel\":\"Grade\",\"subject\":\"Subject\"},\"hierarchy\":{\"Textbook\":\"Textbook Name\",\"L:1\":\"Level 1 Textbook Unit\",\"L:2\":\"Level 2 Textbook Unit\",\"L:3\":\"Level 3 Textbook Unit\",\"L:4\":\"Level 4 Textbook Unit\"},\"metadata\":{\"description\":\"Description\",\"topic\":\"Mapped Topics\",\"keywords\":\"Keywords\",\"purpose\":\"Purpose of Content to be linked\",\"dialcodeRequired\":\"QR Code Required?\",\"dialcodes\":\"QR Code\"}}");
   }
 
+  @Ignore
   @Test
   public void testUpdateFailureWithIncorrectTocData() throws IOException, UnirestException {
     mockRequiredMethods(false, false);

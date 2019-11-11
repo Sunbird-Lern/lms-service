@@ -329,7 +329,7 @@ public class CourseMetricsActor extends BaseMetricsActor {
                           + ", courseAssessmentsreportPath="
                           + courseAssessmentsreportPath,
                   LoggerEnum.INFO.name());
-        assessmentReportSignedUrl = CloudStorageUtil.getAnalyticsSignedUrl(CloudStorageType.AZURE, courseMetricsContainer, courseAssessmentsreportPath);
+        assessmentReportSignedUrl = CloudStorageUtil.getSignedUrl(CloudStorageType.AZURE, courseMetricsContainer, courseAssessmentsreportPath);
       }
     }
 
@@ -340,7 +340,7 @@ public class CourseMetricsActor extends BaseMetricsActor {
             + reportPath,
         LoggerEnum.INFO.name());
     String signedUrl =
-        CloudStorageUtil.getAnalyticsSignedUrl(
+        CloudStorageUtil.getSignedUrl(
             CloudStorageType.AZURE, courseMetricsContainer, reportPath);
 
     Response response = new Response();

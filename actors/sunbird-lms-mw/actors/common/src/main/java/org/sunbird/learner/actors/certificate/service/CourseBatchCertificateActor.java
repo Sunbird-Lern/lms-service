@@ -7,14 +7,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.MapUtils;
 import org.sunbird.actor.core.BaseActor;
 import org.sunbird.actor.router.ActorConfig;
-import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.factory.EsClientFactory;
-import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
@@ -24,7 +20,6 @@ import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl;
 import org.sunbird.learner.constants.CourseJsonKey;
 import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.Util;
-import scala.concurrent.Future;
 
 import java.util.HashMap;
 import java.util.List;
@@ -39,7 +34,6 @@ import java.util.stream.Collectors;
 public class CourseBatchCertificateActor extends BaseActor {
 
   private CourseBatchDao courseBatchDao = new CourseBatchDaoImpl();
-  private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private ObjectMapper mapper = new ObjectMapper();
 
   @Override

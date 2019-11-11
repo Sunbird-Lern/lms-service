@@ -36,16 +36,6 @@ public class SearchController extends BaseController {
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
       RequestValidator.validateSyncRequest(reqObj);
       String operation = (String) reqObj.getRequest().get(JsonKey.OPERATION_FOR);
-      if ("keycloak".equalsIgnoreCase(operation)) {
-        reqObj.setOperation(ActorOperations.SYNC_KEYCLOAK.getValue());
-        reqObj.setRequestId(ExecutionContext.getRequestId());
-        reqObj.getRequest().put(JsonKey.CREATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
-        reqObj.setEnv(getEnvironment());
-        HashMap<String, Object> map = new HashMap<>();
-        map.put(JsonKey.DATA, reqObj.getRequest());
-        reqObj.setRequest(map);
-        return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
-      } else {
         reqObj.setOperation(ActorOperations.SYNC.getValue());
         reqObj.setRequestId(ExecutionContext.getRequestId());
         reqObj.getRequest().put(JsonKey.CREATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
@@ -54,7 +44,6 @@ public class SearchController extends BaseController {
         map.put(JsonKey.DATA, reqObj.getRequest());
         reqObj.setRequest(map);
         return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
-      }
 
     } catch (Exception e) {
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));

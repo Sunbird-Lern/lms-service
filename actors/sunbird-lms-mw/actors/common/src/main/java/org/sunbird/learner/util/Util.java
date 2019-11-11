@@ -524,7 +524,7 @@ public final class Util {
 
     ExecutionContext context = ExecutionContext.getCurrent();
     Map<String, Object> requestContext = null;
-    if (actorMessage.getContext().get(JsonKey.TELEMETRY_CONTEXT) != null) {
+    if ((actorMessage.getContext().get(JsonKey.TELEMETRY_CONTEXT) != null)) {
       // means request context is already set by some other actor ...
       requestContext =
           (Map<String, Object>) actorMessage.getContext().get(JsonKey.TELEMETRY_CONTEXT);
@@ -552,17 +552,19 @@ public final class Util {
           (String) actorMessage.getContext().get(JsonKey.ACTOR_TYPE))) {
         // assign rollup of user ...
         try {
-          Map<String, Object> result =
-              userOrgService.getUserById(
-                  (String) actorMessage.getContext().get(JsonKey.REQUESTED_BY));
-          if (result != null) {
-            String rootOrgId = (String) result.get(JsonKey.ROOT_ORG_ID);
+          if (actorMessage.getRequest().get(JsonKey.REQUESTED_BY) != null) {
+            Map<String, Object> result =
+                userOrgService.getUserById(
+                    (String) actorMessage.getContext().get(JsonKey.REQUESTED_BY));
+            if (result != null) {
+              String rootOrgId = (String) result.get(JsonKey.ROOT_ORG_ID);
 
-            if (StringUtils.isNotBlank(rootOrgId)) {
-              Map<String, String> rollup = new HashMap<>();
+              if (StringUtils.isNotBlank(rootOrgId)) {
+                Map<String, String> rollup = new HashMap<>();
 
-              rollup.put("l1", rootOrgId);
-              requestContext.put(JsonKey.ROLLUP, rollup);
+                rollup.put("l1", rootOrgId);
+                requestContext.put(JsonKey.ROLLUP, rollup);
+              }
             }
           }
         } catch (Exception e) {

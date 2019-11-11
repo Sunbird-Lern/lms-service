@@ -154,8 +154,7 @@ public class CourseBatchManagementActor extends BaseActor {
 
   private boolean courseNotificationActive() {
     ProjectLogger.log(
-        "CourseBatchManagementActor: courseNotificationActive: "
-            + Boolean.parseBoolean(
+        "CourseBatchManagementActor: courseNotificationActive: "            + Boolean.parseBoolean(
                 PropertiesCache.getInstance()
                     .getProperty(JsonKey.SUNBIRD_COURSE_BATCH_NOTIFICATIONS_ENABLED)),
         LoggerEnum.INFO.name());

@@ -4,12 +4,17 @@ package org.sunbird.learner.actors.certificate.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.collections.MapUtils;
 import org.sunbird.actor.core.BaseActor;
 import org.sunbird.actor.router.ActorConfig;
+import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.exception.ProjectCommonException;
+import org.sunbird.common.factory.EsClientFactory;
+import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
@@ -19,10 +24,12 @@ import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl;
 import org.sunbird.learner.constants.CourseJsonKey;
 import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.Util;
+import scala.concurrent.Future;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @ActorConfig(
@@ -32,6 +39,7 @@ import java.util.stream.Collectors;
 public class CourseBatchCertificateActor extends BaseActor {
 
   private CourseBatchDao courseBatchDao = new CourseBatchDaoImpl();
+  private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private ObjectMapper mapper = new ObjectMapper();
 
   @Override
@@ -58,10 +66,10 @@ public class CourseBatchCertificateActor extends BaseActor {
         (Map<String, Object>) request.getRequest().get(JsonKey.BATCH);
     final String batchId = (String) batchRequest.get(JsonKey.BATCH_ID);
     final String courseId = (String) batchRequest.get(JsonKey.COURSE_ID);
-    CourseBatchUtil.validateCourseBatch(courseId, batchId);
+    Map<String,Object> batchresult = CourseBatchUtil.validateCourseBatch(courseId, batchId);
     Map<String, Object> template = (Map<String, Object>) batchRequest.get(CourseJsonKey.TEMPLATE);
     String templateId = (String) template.get(JsonKey.IDENTIFIER);
-    validateTemplateDetails(templateId, template);
+    validateTemplateDetails(templateId, template, batchresult);
     courseBatchDao.addCertificateTemplateToCourseBatch(courseId, batchId, templateId, template);
     Map<String,Object> courseBatch =mapESFieldsToObject(courseBatchDao.getCourseBatch(courseId,batchId));
     CourseBatchUtil.syncCourseBatchForeground(
@@ -89,11 +97,20 @@ public class CourseBatchCertificateActor extends BaseActor {
     sender().tell(response, self());
   }
 
-  private void validateTemplateDetails(String templateId, Map<String, Object> template) {
-    Map<String, Object> templateDetails=CourseBatchUtil.validateTemplate(templateId);
+  private void validateTemplateDetails(String templateId, Map<String, Object> template, Map<String,Object> batchDetails) {
+     Map<String, Object> templateDetails=CourseBatchUtil.validateTemplate(templateId);
+      String currentCertificateName = (String) templateDetails.get(JsonKey.NAME);
+      Map<String,Object> certTemplates =(Map<String,Object>) batchDetails.get(CourseJsonKey.CERTIFICATE_TEMPLATES_COLUMN);
+      if (MapUtils.isNotEmpty(certTemplates)) {
+          Set<String> existingcertificateNames =certTemplates.entrySet().stream().map(certificate ->(String) ((Map<String,Object>) certificate.getValue()).get(JsonKey.NAME)).collect(Collectors.toSet());
+          if(existingcertificateNames.contains(currentCertificateName)){
+              ProjectCommonException.throwClientErrorException(
+                      ResponseCode.CLIENT_ERROR,"Certificate with the name "+currentCertificateName+" already exists");
+          }
+      }
+      template.put(JsonKey.NAME,currentCertificateName);
     try {
-       template.put(JsonKey.NAME,templateDetails.get(JsonKey.NAME));
-      template.put(JsonKey.CRITERIA, mapper.writeValueAsString(template.get(JsonKey.CRITERIA)));
+       template.put(JsonKey.CRITERIA, mapper.writeValueAsString(template.get(JsonKey.CRITERIA)));
       if (template.get(CourseJsonKey.ISSUER) != null) {
         template.put(
             CourseJsonKey.ISSUER, mapper.writeValueAsString(template.get(CourseJsonKey.ISSUER)));

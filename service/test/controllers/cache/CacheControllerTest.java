@@ -18,6 +18,7 @@ import org.sunbird.common.request.HeaderParam;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
+import util.ACTOR_NAMES;
 import util.RequestInterceptor;
 
 @RunWith(PowerMockRunner.class)
@@ -30,7 +31,7 @@ public class CacheControllerTest extends BaseApplicationTest {
 
   @Before
   public void before() {
-    setup(DummyActor.class);
+    setup(ACTOR_NAMES.CACHE_MANAGEMENT_ACTOR, DummyActor.class);
   }
 
   @Test

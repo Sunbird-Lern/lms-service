@@ -11,7 +11,6 @@ import org.sunbird.badge.service.BadgeClassExtensionService;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.BadgingJsonKey;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
@@ -25,6 +24,11 @@ public class BadgeClassExtensionServiceImpl implements BadgeClassExtensionServic
 
     public BadgeClassExtensionServiceImpl() {
         this.cassandraOperation = ServiceFactory.getInstance();
+    }
+
+
+    public BadgeClassExtensionServiceImpl(CassandraOperation cassandraOperation) {
+        this.cassandraOperation = cassandraOperation;
     }
 
     @Override

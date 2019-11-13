@@ -1,17 +1,26 @@
 package controllers.courseenrollment;
 
+import akka.actor.ActorRef;
 import controllers.BaseController;
 import controllers.courseenrollment.validator.CourseEnrollmentRequestValidator;
+import java.util.concurrent.CompletionStage;
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
-import java.util.concurrent.CompletionStage;
-
 import play.mvc.Http;
 import play.mvc.Result;
 
 public class CourseEnrollmentController extends BaseController {
+
+  private ActorRef courseEnrollmentActorRef;
+
+  @Inject
+  public CourseEnrollmentController(@Named("course-enrollment-actor") ActorRef actorRef) {
+    courseEnrollmentActorRef = actorRef;
+  }
 
   public CompletionStage<Result> getEnrolledCourses(String uid, Http.Request httpRequest) {
     return handleRequest(
@@ -31,7 +40,7 @@ public class CourseEnrollmentController extends BaseController {
         JsonKey.USER_ID,
         getAllRequestHeaders((httpRequest)),
         false,
-            httpRequest);
+        httpRequest);
   }
 
   public CompletionStage<Result> getEnrolledCourse(Http.Request httpRequest) {
@@ -44,7 +53,7 @@ public class CourseEnrollmentController extends BaseController {
           return null;
         },
         getAllRequestHeaders((httpRequest)),
-            httpRequest);
+        httpRequest);
   }
 
   public CompletionStage<Result> enrollCourse(Http.Request httpRequest) {
@@ -56,7 +65,7 @@ public class CourseEnrollmentController extends BaseController {
           return null;
         },
         getAllRequestHeaders(httpRequest),
-            httpRequest);
+        httpRequest);
   }
 
   public CompletionStage<Result> unenrollCourse(Http.Request httpRequest) {
@@ -68,6 +77,6 @@ public class CourseEnrollmentController extends BaseController {
           return null;
         },
         getAllRequestHeaders(httpRequest),
-            httpRequest);
+        httpRequest);
   }
 }

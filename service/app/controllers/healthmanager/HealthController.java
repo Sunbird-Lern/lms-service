@@ -1,32 +1,35 @@
 /** */
 package controllers.healthmanager;
 
+import akka.actor.ActorRef;
 import controllers.BaseController;
+import org.apache.commons.lang3.StringUtils;
+import org.sunbird.common.models.response.Response;
+import org.sunbird.common.models.util.*;
+import org.sunbird.common.request.ExecutionContext;
+import org.sunbird.common.request.Request;
+import play.mvc.Http;
+import play.mvc.Result;
+
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang3.StringUtils;
-import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.ActorOperations;
-import org.sunbird.common.models.util.HttpUtil;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.models.util.ProjectUtil;
-import org.sunbird.common.models.util.PropertiesCache;
-import org.sunbird.common.request.ExecutionContext;
-import org.sunbird.common.request.Request;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-
-import play.mvc.Http;
-import play.mvc.Result;
 
 /** @author Manzarul */
 public class HealthController extends BaseController {
   private static List<String> list = new ArrayList<>();
+  private ActorRef healthActorRef;
 
+
+  @Inject
+  public HealthController(@Named("health-actor") ActorRef healthActorRef) {
+    this.healthActorRef = healthActorRef;
+  }
   static {
     list.add("service");
     list.add("actor");
@@ -47,7 +50,7 @@ public class HealthController extends BaseController {
       reqObj.setRequestId(ExecutionContext.getRequestId());
       reqObj.getRequest().put(JsonKey.CREATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
       reqObj.setEnv(getEnvironment());
-      return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
+      return actorResponseHandler(healthActorRef, reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
       e.printStackTrace();
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
@@ -73,7 +76,7 @@ public class HealthController extends BaseController {
           reqObj.setRequestId(ExecutionContext.getRequestId());
           reqObj.getRequest().put(JsonKey.CREATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
           reqObj.setEnv(getEnvironment());
-          return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
+          return actorResponseHandler(healthActorRef, reqObj, timeout, null, httpRequest);
         } catch (Exception e) {
           return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
         }

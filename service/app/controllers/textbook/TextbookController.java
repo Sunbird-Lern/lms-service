@@ -1,17 +1,8 @@
 package controllers.textbook;
 
-import static org.sunbird.common.exception.ProjectCommonException.throwClientErrorException;
-
+import akka.actor.ActorRef;
 import akka.util.Timeout;
 import controllers.BaseController;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.IOUtils;
@@ -23,12 +14,24 @@ import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.learner.actors.textbook.TextbookActorOperation;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-
 import play.libs.Files;
 import play.mvc.Http;
 import play.mvc.Result;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.TimeUnit;
+
+import static org.sunbird.common.exception.ProjectCommonException.throwClientErrorException;
 
 /**
  * Handles Textbook TOC APIs.
@@ -36,6 +39,14 @@ import play.mvc.Result;
  * @author gauraw
  */
 public class TextbookController extends BaseController {
+
+  private ActorRef textbookTocActorRef;
+
+
+  @Inject
+  public TextbookController(@Named("textbook-toc-actor") ActorRef textbookTocActorRef) {
+    this.textbookTocActorRef = textbookTocActorRef;
+  }
 
   private static final int UPLOAD_TOC_TIMEOUT = 30;
 
@@ -47,7 +58,7 @@ public class TextbookController extends BaseController {
       request.put(JsonKey.TEXTBOOK_ID, textbookId);
       request.setTimeout(UPLOAD_TOC_TIMEOUT);
       Timeout uploadTimeout = new Timeout(UPLOAD_TOC_TIMEOUT, TimeUnit.SECONDS);
-      return actorResponseHandler(getActorRef(), request, uploadTimeout, null, httpRequest);
+      return actorResponseHandler(textbookTocActorRef, request, uploadTimeout, null, httpRequest);
     } catch (Exception e) {
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
@@ -56,6 +67,7 @@ public class TextbookController extends BaseController {
   public CompletionStage<Result> getTocUrl(String textbookId, Http.Request httpRequest) {
     try {
       return handleRequest(
+              textbookTocActorRef,
           TextbookActorOperation.TEXTBOOK_TOC_URL.getValue(), textbookId, JsonKey.TEXTBOOK_ID, httpRequest);
     } catch (Exception e) {
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));

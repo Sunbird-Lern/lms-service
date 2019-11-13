@@ -1,11 +1,9 @@
 /** */
 package controllers.pagemanagement;
 
+import akka.actor.ActorRef;
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.BaseController;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
@@ -14,12 +12,17 @@ import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.request.RequestValidator;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-
 import play.mvc.Http;
 import play.mvc.Result;
 import util.Common;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
 
 /**
  * This controller will handle all the request related to page api's.
@@ -27,6 +30,14 @@ import util.Common;
  * @author Amit Kumar
  */
 public class PageController extends BaseController {
+
+  private ActorRef pageManagementActorRef;
+
+
+  @Inject
+  public PageController(@Named("page-management-actor") ActorRef pageManagementActorRef) {
+    this.pageManagementActorRef = pageManagementActorRef;
+  }
 
   /**
    * This method will allow admin to create a page for view.
@@ -46,7 +57,7 @@ public class PageController extends BaseController {
       HashMap<String, Object> map = new HashMap<>();
       map.put(JsonKey.PAGE, reqObj.getRequest());
       reqObj.setRequest(map);
-      return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
+      return actorResponseHandler(pageManagementActorRef, reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
@@ -70,7 +81,7 @@ public class PageController extends BaseController {
       HashMap<String, Object> map = new HashMap<>();
       map.put(JsonKey.PAGE, reqObj.getRequest());
       reqObj.setRequest(map);
-      return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
+      return actorResponseHandler(pageManagementActorRef, reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
@@ -93,7 +104,7 @@ public class PageController extends BaseController {
       reqObj.setEnv(getEnvironment());
       reqObj.getRequest().put(JsonKey.ID, pageId);
       reqObj.getRequest().put(JsonKey.ORGANISATION_ID, organisationId);
-      return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
+      return actorResponseHandler(pageManagementActorRef, reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
@@ -112,7 +123,7 @@ public class PageController extends BaseController {
       reqObj.setOperation(ActorOperations.GET_PAGE_SETTINGS.getValue());
       reqObj.setRequestId(ExecutionContext.getRequestId());
       reqObj.setEnv(getEnvironment());
-      return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
+      return actorResponseHandler(pageManagementActorRef, reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
@@ -138,7 +149,7 @@ public class PageController extends BaseController {
       map.put(JsonKey.PAGE, reqObj.getRequest());
       map.put(JsonKey.HEADER, getAllRequestHeaders(httpRequest));
       reqObj.setRequest(map);
-      return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
+      return actorResponseHandler(pageManagementActorRef, reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
       ProjectLogger.log(
               "PageController:getPageData: Exception occurred with error message = " + e.getMessage(),
@@ -184,7 +195,7 @@ public class PageController extends BaseController {
       HashMap<String, Object> map = new HashMap<>();
       map.put(JsonKey.SECTION, reqObj.getRequest());
       reqObj.setRequest(map);
-      return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
+      return actorResponseHandler(pageManagementActorRef, reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
@@ -210,7 +221,7 @@ public class PageController extends BaseController {
       reqObj.getRequest().put(JsonKey.UPDATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
       innerMap.put(JsonKey.SECTION, reqObj.getRequest());
       reqObj.setRequest(innerMap);
-      return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
+      return actorResponseHandler(pageManagementActorRef, reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
@@ -232,7 +243,7 @@ public class PageController extends BaseController {
       reqObj.setRequestId(ExecutionContext.getRequestId());
       reqObj.setEnv(getEnvironment());
       reqObj.getRequest().put(JsonKey.ID, sectionId);
-      return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
+      return actorResponseHandler(pageManagementActorRef, reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
@@ -251,7 +262,7 @@ public class PageController extends BaseController {
       reqObj.setOperation(ActorOperations.GET_ALL_SECTION.getValue());
       reqObj.setRequestId(ExecutionContext.getRequestId());
       reqObj.setEnv(getEnvironment());
-      return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
+      return actorResponseHandler(pageManagementActorRef, reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }

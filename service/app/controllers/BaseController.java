@@ -20,7 +20,6 @@ import java.util.function.Function;
 import modules.ApplicationStart;
 import modules.OnRequestHandler;
 import org.apache.commons.lang3.StringUtils;
-import org.sunbird.actor.service.SunbirdMWService;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.response.ResponseParams;
@@ -55,13 +54,13 @@ public class BaseController extends Controller {
   private TelemetryLmaxWriter lmaxWriter = TelemetryLmaxWriter.getInstance();
   protected Timeout timeout = new Timeout(AKKA_WAIT_TIME, TimeUnit.SECONDS);
 
-  static {
-    try {
-      actorRef = SunbirdMWService.getRequestRouter();
-    } catch (Exception ex) {
-      ProjectLogger.log("Exception occured while getting actor ref in base controller " + ex);
-    }
-  }
+  //  static {
+  //    try {
+  //      actorRef = SunbirdMWService.getRequestRouter();
+  //    } catch (Exception ex) {
+  //      ProjectLogger.log("Exception occured while getting actor ref in base controller " + ex);
+  //    }
+  //  }
 
   private org.sunbird.common.request.Request initRequest(
       org.sunbird.common.request.Request request, String operation, Http.Request httpRequest) {
@@ -118,8 +117,28 @@ public class BaseController extends Controller {
   }
 
   protected CompletionStage<Result> handleRequest(
+      ActorRef actorRef,
+      String operation,
+      JsonNode requestBodyJson,
+      java.util.function.Function requestValidatorFn,
+      Http.Request httpRequest) {
+    return handleRequest(
+        operation, requestBodyJson, requestValidatorFn, null, null, null, true, httpRequest);
+  }
+
+  protected CompletionStage<Result> handleRequest(
       String operation, String pathId, String pathVariable, Http.Request httpRequest) {
     return handleRequest(operation, null, null, pathId, pathVariable, false, httpRequest);
+  }
+
+  protected CompletionStage<Result> handleRequest(
+      ActorRef actorRef,
+      String operation,
+      String pathId,
+      String pathVariable,
+      Http.Request httpRequest) {
+    return handleRequest(
+        actorRef, operation, null, null, pathId, pathVariable, null, false, httpRequest);
   }
 
   protected CompletionStage<Result> handleRequest(
@@ -133,6 +152,25 @@ public class BaseController extends Controller {
   }
 
   protected CompletionStage<Result> handleRequest(
+      ActorRef actorRef,
+      String operation,
+      String pathId,
+      String pathVariable,
+      boolean isJsonBodyRequired,
+      Http.Request httpRequest) {
+    return handleRequest(
+        actorRef,
+        operation,
+        null,
+        null,
+        pathId,
+        pathVariable,
+        null,
+        isJsonBodyRequired,
+        httpRequest);
+  }
+
+  protected CompletionStage<Result> handleRequest(
       String operation,
       JsonNode requestBodyJson,
       java.util.function.Function requestValidatorFn,
@@ -140,6 +178,25 @@ public class BaseController extends Controller {
       Http.Request httpRequest) {
     return handleRequest(
         operation, requestBodyJson, requestValidatorFn, null, null, headers, true, httpRequest);
+  }
+
+  protected CompletionStage<Result> handleRequest(
+      ActorRef actorRef,
+      String operation,
+      JsonNode requestBodyJson,
+      java.util.function.Function requestValidatorFn,
+      Map<String, String> headers,
+      Http.Request httpRequest) {
+    return handleRequest(
+        actorRef,
+        operation,
+        requestBodyJson,
+        requestValidatorFn,
+        null,
+        null,
+        headers,
+        true,
+        httpRequest);
   }
 
   protected CompletionStage<Result> handleRequest(
@@ -161,6 +218,26 @@ public class BaseController extends Controller {
       Http.Request httpRequest) {
     return handleRequest(
         operation, requestBodyJson, requestValidatorFn, pathId, pathVariable, true, httpRequest);
+  }
+
+  protected CompletionStage<Result> handleRequest(
+      ActorRef actorRef,
+      String operation,
+      JsonNode requestBodyJson,
+      java.util.function.Function requestValidatorFn,
+      String pathId,
+      String pathVariable,
+      Http.Request httpRequest) {
+    return handleRequest(
+        actorRef,
+        operation,
+        requestBodyJson,
+        requestValidatorFn,
+        pathId,
+        pathVariable,
+        null,
+        true,
+        httpRequest);
   }
 
   protected CompletionStage<Result> handleRequest(
@@ -206,6 +283,39 @@ public class BaseController extends Controller {
       if (headers != null) request.getContext().put(JsonKey.HEADER, headers);
 
       return actorResponseHandler(getActorRef(), request, timeout, null, httpRequest);
+    } catch (Exception e) {
+      ProjectLogger.log(
+          "BaseController:handleRequest: Exception occurred with error message = " + e.getMessage(),
+          e);
+      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
+    }
+  }
+
+  protected CompletionStage<Result> handleRequest(
+      ActorRef actorRef,
+      String operation,
+      JsonNode requestBodyJson,
+      java.util.function.Function requestValidatorFn,
+      String pathId,
+      String pathVariable,
+      Map<String, String> headers,
+      boolean isJsonBodyRequired,
+      Http.Request httpRequest) {
+    try {
+      org.sunbird.common.request.Request request = null;
+      if (!isJsonBodyRequired) {
+        request = createAndInitRequest(operation, httpRequest);
+      } else {
+        request = createAndInitRequest(operation, requestBodyJson, httpRequest);
+      }
+      if (pathId != null) {
+        request.getRequest().put(pathVariable, pathId);
+        request.getContext().put(pathVariable, pathId);
+      }
+      if (requestValidatorFn != null) requestValidatorFn.apply(request);
+      if (headers != null) request.getContext().put(JsonKey.HEADER, headers);
+
+      return actorResponseHandler(actorRef, request, timeout, null, httpRequest);
     } catch (Exception e) {
       ProjectLogger.log(
           "BaseController:handleRequest: Exception occurred with error message = " + e.getMessage(),

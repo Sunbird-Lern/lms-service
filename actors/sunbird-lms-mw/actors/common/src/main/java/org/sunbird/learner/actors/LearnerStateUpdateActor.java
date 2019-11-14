@@ -38,7 +38,6 @@ import scala.concurrent.Future;
 public class LearnerStateUpdateActor extends BaseActor {
 
   private CassandraOperation cassandraOperation = ServiceFactory.getInstance();
-
   private Util.DbInfo consumptionDBInfo = Util.dbInfoMap.get(JsonKey.LEARNER_CONTENT_DB);
   private Util.DbInfo userCourseDBInfo = Util.dbInfoMap.get(JsonKey.LEARNER_COURSE_DB);
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);

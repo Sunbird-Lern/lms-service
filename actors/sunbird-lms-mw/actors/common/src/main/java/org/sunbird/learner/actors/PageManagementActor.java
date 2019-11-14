@@ -54,7 +54,6 @@ public class PageManagementActor extends BaseActor {
   private UserOrgService userOrgService = UserOrgServiceImpl.getInstance();
   private boolean isCacheEnabled = false;
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
-  // Boolean.parseBoolean(ProjectUtil.propertiesCache.getProperty(JsonKey.SUNBIRD_CACHE_ENABLE));
 
   @Override
   public void onReceive(Request request) throws Throwable {

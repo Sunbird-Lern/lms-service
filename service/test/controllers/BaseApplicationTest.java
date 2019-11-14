@@ -2,8 +2,6 @@ package controllers;
 
 import static play.inject.Bindings.bind;
 
-import akka.actor.ActorSystem;
-import akka.actor.Props;
 import java.io.File;
 import java.util.List;
 import modules.StartModule;
@@ -25,8 +23,6 @@ import util.RequestInterceptor;
 @PrepareForTest({RequestInterceptor.class})
 public abstract class BaseApplicationTest {
   protected Application application;
-  private ActorSystem system;
-  private Props props;
 
   public <T> void setup(ACTOR_NAMES actor, Class actorClass) {
     application =

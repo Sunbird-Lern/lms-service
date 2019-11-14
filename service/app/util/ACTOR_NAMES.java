@@ -4,6 +4,7 @@ import org.sunbird.badge.actors.BadgeAssociationActor;
 import org.sunbird.learner.actors.LearnerStateActor;
 import org.sunbird.learner.actors.LearnerStateUpdateActor;
 import org.sunbird.learner.actors.PageManagementActor;
+import org.sunbird.learner.actors.bulkupload.BulkUploadBackGroundJobActor;
 import org.sunbird.learner.actors.bulkupload.BulkUploadManagementActor;
 import org.sunbird.learner.actors.cache.CacheManagementActor;
 import org.sunbird.learner.actors.certificate.service.CertificateActor;
@@ -25,15 +26,19 @@ public enum ACTOR_NAMES {
   PAGE_MANAGEMENT_ACTOR(PageManagementActor.class, "page-management-actor"),
   SEARCH_HANDLER_ACTOR(SearchHandlerActor.class, "search-handler-actor"),
   LEARNER_STATE_ACTOR(LearnerStateActor.class, "learner-state-actor"),
-  LEARNER_STATE_UPDATE_ACTOR(LearnerStateUpdateActor.class,"learner-state-update-actor"),
-  TEXTBOOK_TOC_ACTOR(TextbookTocActor.class,"textbook-toc-actor"),
-  HEALTH_ACTOR(HealthActor.class,"health-actor"),
-  COURSEBATCH_CERTIFICATE_ACTOR(CourseBatchCertificateActor.class,"course-batch-certificate-actor"),
-  CERTIFICATE_ACTOR(CertificateActor.class,"certificate-actor"),
-  QRCODE_DOWNLOAD_MANAGEMENT_ACTOR(QRCodeDownloadManagementActor.class,"qrcode-download-management-actor"),
-  BADGE_ASSOCIATION_ACTOR(BadgeAssociationActor.class,"badge-association-actor"),
-  BULK_UPLOAD_MANAMGEMENT_ACTOR(BulkUploadManagementActor.class,"bulk-upload-management-actor"),
-  ES_SYNC_ACTOR(EsSyncActor.class,"es-sync-actor");
+  LEARNER_STATE_UPDATE_ACTOR(LearnerStateUpdateActor.class, "learner-state-update-actor"),
+  TEXTBOOK_TOC_ACTOR(TextbookTocActor.class, "textbook-toc-actor"),
+  HEALTH_ACTOR(HealthActor.class, "health-actor"),
+  COURSEBATCH_CERTIFICATE_ACTOR(
+      CourseBatchCertificateActor.class, "course-batch-certificate-actor"),
+  CERTIFICATE_ACTOR(CertificateActor.class, "certificate-actor"),
+  QRCODE_DOWNLOAD_MANAGEMENT_ACTOR(
+      QRCodeDownloadManagementActor.class, "qrcode-download-management-actor"),
+  BADGE_ASSOCIATION_ACTOR(BadgeAssociationActor.class, "badge-association-actor"),
+  BULK_UPLOAD_MANAMGEMENT_ACTOR(BulkUploadManagementActor.class, "bulk-upload-management-actor"),
+  BULK_UPLOAD_BACKGROUND_JOB_ACTOR(
+      BulkUploadBackGroundJobActor.class, "bulk-upload-background-job-actor"),
+  ES_SYNC_ACTOR(EsSyncActor.class, "es-sync-actor");
 
   private ACTOR_NAMES(Class clazz, String name) {
     actorClass = clazz;

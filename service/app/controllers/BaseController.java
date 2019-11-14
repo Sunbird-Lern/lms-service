@@ -50,20 +50,11 @@ public class BaseController extends Controller {
 
   private static final String version = "v1";
   public static final int AKKA_WAIT_TIME = 30;
-  private static Object actorRef = null;
   private TelemetryLmaxWriter lmaxWriter = TelemetryLmaxWriter.getInstance();
   protected Timeout timeout = new Timeout(AKKA_WAIT_TIME, TimeUnit.SECONDS);
 
-  //  static {
-  //    try {
-  //      actorRef = SunbirdMWService.getRequestRouter();
-  //    } catch (Exception ex) {
-  //      ProjectLogger.log("Exception occured while getting actor ref in base controller " + ex);
-  //    }
-  //  }
-
   private org.sunbird.common.request.Request initRequest(
-          org.sunbird.common.request.Request request, String operation, Http.Request httpRequest) {
+      org.sunbird.common.request.Request request, String operation, Http.Request httpRequest) {
     request.setOperation(operation);
     request.setRequestId(ExecutionContext.getRequestId());
     request.setEnv(getEnvironment());
@@ -81,11 +72,11 @@ public class BaseController extends Controller {
    *     instance.
    */
   protected org.sunbird.common.request.Request createAndInitRequest(
-          String operation, JsonNode requestBodyJson, Http.Request httpRequest) {
+      String operation, JsonNode requestBodyJson, Http.Request httpRequest) {
     org.sunbird.common.request.Request request =
-            (org.sunbird.common.request.Request)
-                    mapper.RequestMapper.mapRequest(
-                            requestBodyJson, org.sunbird.common.request.Request.class);
+        (org.sunbird.common.request.Request)
+            mapper.RequestMapper.mapRequest(
+                requestBodyJson, org.sunbird.common.request.Request.class);
     return initRequest(request, operation, httpRequest);
   }
 
@@ -97,204 +88,116 @@ public class BaseController extends Controller {
    *     instance.
    */
   protected org.sunbird.common.request.Request createAndInitRequest(
-          String operation, Http.Request httpRequest) {
+      String operation, Http.Request httpRequest) {
     org.sunbird.common.request.Request request = new org.sunbird.common.request.Request();
     return initRequest(request, operation, httpRequest);
   }
 
   protected CompletionStage<Result> handleRequest(
-          String operation,
-          JsonNode requestBodyJson,
-          java.util.function.Function requestValidatorFn,
-          Http.Request httpRequest) {
-    return handleRequest(operation, requestBodyJson, requestValidatorFn, null,null, null, true, httpRequest);
-  }
-
-  protected CompletionStage<Result> handleRequest(
-          ActorRef actorRef,
-          String operation,
-          JsonNode requestBodyJson,
-          java.util.function.Function requestValidatorFn,
-          Http.Request httpRequest) {
+      ActorRef actorRef,
+      String operation,
+      JsonNode requestBodyJson,
+      java.util.function.Function requestValidatorFn,
+      Http.Request httpRequest) {
     return handleRequest(
-            actorRef,operation, requestBodyJson, requestValidatorFn, null, null, null, true, httpRequest);
+        actorRef,
+        operation,
+        requestBodyJson,
+        requestValidatorFn,
+        null,
+        null,
+        null,
+        true,
+        httpRequest);
   }
 
   protected CompletionStage<Result> handleRequest(
-          String operation, String pathId, String pathVariable, Http.Request httpRequest) {
-    return handleRequest(operation, null, null, pathId, pathVariable, false, httpRequest);
-  }
-
-  protected CompletionStage<Result> handleRequest(
-          ActorRef actorRef,
-          String operation,
-          String pathId,
-          String pathVariable,
-          Http.Request httpRequest) {
+      ActorRef actorRef,
+      String operation,
+      java.util.function.Function requestValidatorFn,
+      Http.Request httpRequest) {
     return handleRequest(
-            actorRef, operation, null, null, pathId, pathVariable, null, false, httpRequest);
+        actorRef, operation, null, requestValidatorFn, null, null, null, false, httpRequest);
   }
 
   protected CompletionStage<Result> handleRequest(
-          String operation,
-          String pathId,
-          String pathVariable,
-          boolean isJsonBodyRequired,
-          Http.Request httpRequest) {
+      ActorRef actorRef,
+      String operation,
+      String pathId,
+      String pathVariable,
+      Http.Request httpRequest) {
     return handleRequest(
-            operation, null, null, pathId, pathVariable, isJsonBodyRequired, httpRequest);
+        actorRef, operation, null, null, pathId, pathVariable, null, false, httpRequest);
   }
 
   protected CompletionStage<Result> handleRequest(
-          ActorRef actorRef,
-          String operation,
-          String pathId,
-          String pathVariable,
-          boolean isJsonBodyRequired,
-          Http.Request httpRequest) {
+      ActorRef actorRef,
+      String operation,
+      String pathId,
+      String pathVariable,
+      boolean isJsonBodyRequired,
+      Http.Request httpRequest) {
     return handleRequest(
-            actorRef,
-            operation,
-            null,
-            null,
-            pathId,
-            pathVariable,
-            null,
-            isJsonBodyRequired,
-            httpRequest);
+        actorRef,
+        operation,
+        null,
+        null,
+        pathId,
+        pathVariable,
+        null,
+        isJsonBodyRequired,
+        httpRequest);
   }
 
   protected CompletionStage<Result> handleRequest(
-          String operation,
-          JsonNode requestBodyJson,
-          java.util.function.Function requestValidatorFn,
-          Map<String, String> headers,
-          Http.Request httpRequest) {
+      ActorRef actorRef,
+      String operation,
+      JsonNode requestBodyJson,
+      java.util.function.Function requestValidatorFn,
+      Map<String, String> headers,
+      Http.Request httpRequest) {
     return handleRequest(
-            operation, requestBodyJson, requestValidatorFn, null, null, headers, true, httpRequest);
+        actorRef,
+        operation,
+        requestBodyJson,
+        requestValidatorFn,
+        null,
+        null,
+        headers,
+        true,
+        httpRequest);
   }
 
   protected CompletionStage<Result> handleRequest(
-          ActorRef actorRef,
-          String operation,
-          JsonNode requestBodyJson,
-          java.util.function.Function requestValidatorFn,
-          Map<String, String> headers,
-          Http.Request httpRequest) {
+      ActorRef actorRef,
+      String operation,
+      JsonNode requestBodyJson,
+      java.util.function.Function requestValidatorFn,
+      String pathId,
+      String pathVariable,
+      Http.Request httpRequest) {
     return handleRequest(
-            actorRef,
-            operation,
-            requestBodyJson,
-            requestValidatorFn,
-            null,
-            null,
-            headers,
-            true,
-            httpRequest);
+        actorRef,
+        operation,
+        requestBodyJson,
+        requestValidatorFn,
+        pathId,
+        pathVariable,
+        null,
+        true,
+        httpRequest);
   }
 
   protected CompletionStage<Result> handleRequest(
-          String operation,
-          java.util.function.Function requestValidatorFn,
-          String pathId,
-          String pathVariable,
-          Http.Request httpRequest) {
-    return handleRequest(
-            operation, null, requestValidatorFn, pathId, pathVariable, false, httpRequest);
-  }
-
-  protected CompletionStage<Result> handleRequest(
-          String operation,
-          JsonNode requestBodyJson,
-          java.util.function.Function requestValidatorFn,
-          String pathId,
-          String pathVariable,
-          Http.Request httpRequest) {
-    return handleRequest(
-            operation, requestBodyJson, requestValidatorFn, pathId, pathVariable, true, httpRequest);
-  }
-
-  protected CompletionStage<Result> handleRequest(
-          ActorRef actorRef,
-          String operation,
-          JsonNode requestBodyJson,
-          java.util.function.Function requestValidatorFn,
-          String pathId,
-          String pathVariable,
-          Http.Request httpRequest) {
-    return handleRequest(
-            actorRef,
-            operation,
-            requestBodyJson,
-            requestValidatorFn,
-            pathId,
-            pathVariable,
-            null,
-            true,
-            httpRequest);
-  }
-
-  protected CompletionStage<Result> handleRequest(
-          String operation,
-          JsonNode requestBodyJson,
-          java.util.function.Function requestValidatorFn,
-          String pathId,
-          String pathVariable,
-          boolean isJsonBodyRequired,
-          Http.Request httpRequest) {
-    return handleRequest(
-            operation,
-            requestBodyJson,
-            requestValidatorFn,
-            pathId,
-            pathVariable,
-            null,
-            isJsonBodyRequired,
-            httpRequest);
-  }
-
-  protected CompletionStage<Result> handleRequest(
-          String operation,
-          JsonNode requestBodyJson,
-          java.util.function.Function requestValidatorFn,
-          String pathId,
-          String pathVariable,
-          Map<String, String> headers,
-          boolean isJsonBodyRequired,
-          Http.Request httpRequest) {
-    try {
-      org.sunbird.common.request.Request request = null;
-      if (!isJsonBodyRequired) {
-        request = createAndInitRequest(operation, httpRequest);
-      } else {
-        request = createAndInitRequest(operation, requestBodyJson, httpRequest);
-      }
-      if (pathId != null) {
-        request.getRequest().put(pathVariable, pathId);
-        request.getContext().put(pathVariable, pathId);
-      }
-      if (requestValidatorFn != null) requestValidatorFn.apply(request);
-      if (headers != null) request.getContext().put(JsonKey.HEADER, headers);
-
-      return actorResponseHandler(getActorRef(), request, timeout, null, httpRequest);
-    } catch (Exception e) {
-      ProjectLogger.log(
-              "BaseController:handleRequest: Exception occurred with error message = " + e.getMessage(),
-              e);
-      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
-    }
-  }
-
-  protected CompletionStage<Result> handleRequest(
-          ActorRef actorRef,
-          String operation,
-          JsonNode requestBodyJson,
-          java.util.function.Function requestValidatorFn,
-          String pathId,
-          String pathVariable,
-          Map<String, String> headers,
-          boolean isJsonBodyRequired,
-          Http.Request httpRequest) {
+      ActorRef actorRef,
+      String operation,
+      JsonNode requestBodyJson,
+      java.util.function.Function requestValidatorFn,
+      String pathId,
+      String pathVariable,
+      Map<String, String> headers,
+      boolean isJsonBodyRequired,
+      Http.Request httpRequest) {
     try {
       org.sunbird.common.request.Request request = null;
       if (!isJsonBodyRequired) {
@@ -312,22 +215,22 @@ public class BaseController extends Controller {
       return actorResponseHandler(actorRef, request, timeout, null, httpRequest);
     } catch (Exception e) {
       ProjectLogger.log(
-              "BaseController:handleRequest: Exception occurred with error message = " + e.getMessage(),
-              e);
+          "BaseController:handleRequest: Exception occurred with error message = " + e.getMessage(),
+          e);
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
   }
 
   protected CompletionStage<Result> handleSearchRequest(
-          ActorRef actorRef,
-          String operation,
-          JsonNode requestBodyJson,
-          java.util.function.Function requestValidatorFn,
-          String pathId,
-          String pathVariable,
-          Map<String, String> headers,
-          String esObjectType,
-          Http.Request httpRequest) {
+      ActorRef actorRef,
+      String operation,
+      JsonNode requestBodyJson,
+      java.util.function.Function requestValidatorFn,
+      String pathId,
+      String pathVariable,
+      Map<String, String> headers,
+      String esObjectType,
+      Http.Request httpRequest) {
     try {
       org.sunbird.common.request.Request request = null;
       if (null != requestBodyJson) {
@@ -345,26 +248,16 @@ public class BaseController extends Controller {
         List<String> esObjectTypeList = new ArrayList<>();
         esObjectTypeList.add(esObjectType);
         ((Map) (request.getRequest().get(JsonKey.FILTERS)))
-                .put(JsonKey.OBJECT_TYPE, esObjectTypeList);
+            .put(JsonKey.OBJECT_TYPE, esObjectTypeList);
       }
       request.getRequest().put(JsonKey.REQUESTED_BY, httpRequest.flash().get(JsonKey.USER_ID));
       return actorResponseHandler(actorRef, request, timeout, null, httpRequest);
     } catch (Exception e) {
       ProjectLogger.log(
-              "BaseController:handleRequest: Exception occurred with error message = " + e.getMessage(),
-              e);
+          "BaseController:handleRequest: Exception occurred with error message = " + e.getMessage(),
+          e);
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
-  }
-
-  /**
-   * This method will provide remote Actor selection
-   *
-   * @return Object
-   */
-  public Object getActorRef() {
-
-    return actorRef;
   }
 
   /**
@@ -376,7 +269,7 @@ public class BaseController extends Controller {
    * @return Response
    */
   public static Response createFailureResponse(
-          Request request, ResponseCode code, ResponseCode headerCode) {
+      Request request, ResponseCode code, ResponseCode headerCode) {
 
     Response response = new Response();
     response.setVer(getApiVersion(request.path()));
@@ -392,7 +285,7 @@ public class BaseController extends Controller {
     if (code.getResponseCode() != 200) {
       params.setErr(code.getErrorCode());
       params.setErrmsg(
-              StringUtils.isNotBlank(customMessage) ? customMessage : code.getErrorMessage());
+          StringUtils.isNotBlank(customMessage) ? customMessage : code.getErrorMessage());
     }
     params.setMsgid(ExecutionContext.getRequestId());
     params.setStatus(ResponseCode.getHeaderResponseCode(code.getResponseCode()).name());
@@ -440,7 +333,7 @@ public class BaseController extends Controller {
     }
 
     return Results.ok(Json.toJson(response))
-            .withHeader(HeaderParam.X_Response_Length.getName(), value);
+        .withHeader(HeaderParam.X_Response_Length.getName(), value);
   }
 
   /**
@@ -462,11 +355,11 @@ public class BaseController extends Controller {
    * @return Response
    */
   public static Response createResponseOnException(
-          Http.Request request, ProjectCommonException exception) {
+      Http.Request request, ProjectCommonException exception) {
     ProjectLogger.log(
-            exception != null ? exception.getMessage() : "Message is not coming",
-            exception,
-            genarateTelemetryInfoForError(request));
+        exception != null ? exception.getMessage() : "Message is not coming",
+        exception,
+        genarateTelemetryInfoForError(request));
     Response response = new Response();
     response.setVer("");
     if (request != null) {
@@ -486,7 +379,7 @@ public class BaseController extends Controller {
         response.getParams().setStatus(exception.getCode());
       }
       if (!StringUtils.isBlank(response.getParams().getErrmsg())
-              && response.getParams().getErrmsg().contains("{0}")) {
+          && response.getParams().getErrmsg().contains("{0}")) {
         response.getParams().setErrmsg(exception.getMessage());
       }
     }
@@ -501,7 +394,7 @@ public class BaseController extends Controller {
    * @return Response
    */
   public static Response createResponseOnException(
-          String path, String method, ProjectCommonException exception) {
+      String path, String method, ProjectCommonException exception) {
     Response response = new Response();
     response.setVer(getApiVersion(path));
     response.setId(getApiResponseId(path, method));
@@ -535,40 +428,40 @@ public class BaseController extends Controller {
         long startTime = (Long) params.get(JsonKey.START_TIME);
         params.put(JsonKey.DURATION, calculateApiTimeTaken(startTime));
         ProjectLogger.log(
-                "BaseController:createCommonResponse api taken time="
-                        + params.get(JsonKey.DURATION)
-                        + " for messageId="
-                        + requestId,
-                LoggerEnum.INFO);
+            "BaseController:createCommonResponse api taken time="
+                + params.get(JsonKey.DURATION)
+                + " for messageId="
+                + requestId,
+            LoggerEnum.INFO);
         removeFields(params, JsonKey.START_TIME);
         params.put(
-                JsonKey.STATUS,
-                String.valueOf(((Response) response).getResponseCode().getResponseCode()));
+            JsonKey.STATUS,
+            String.valueOf(((Response) response).getResponseCode().getResponseCode()));
         params.put(JsonKey.LOG_LEVEL, JsonKey.INFO);
         req.setRequest(
-                generateTelemetryRequestForController(
-                        TelemetryEvents.LOG.getName(),
-                        params,
-                        (Map<String, Object>) requestInfo.get(JsonKey.CONTEXT)));
+            generateTelemetryRequestForController(
+                TelemetryEvents.LOG.getName(),
+                params,
+                (Map<String, Object>) requestInfo.get(JsonKey.CONTEXT)));
         // if any request is coming form /v1/telemetry/save then don't generate the telemetry log
         // for it.
         lmaxWriter.submitMessage(req);
       } catch (Exception ex) {
         ProjectLogger.log(
-                "BaseController:createCommonResponse Exception in writing telemetry for request "
-                        + requestId,
-                ex);
+            "BaseController:createCommonResponse Exception in writing telemetry for request "
+                + requestId,
+            ex);
       } finally {
         // remove request info from map
         OnRequestHandler.requestInfo.remove(requestId);
         ProjectLogger.log(
-                "BaseController:createCommonResponse removed details for messageId=" + requestId,
-                LoggerEnum.INFO);
+            "BaseController:createCommonResponse removed details for messageId=" + requestId,
+            LoggerEnum.INFO);
       }
     } else {
       ProjectLogger.log(
-              "BaseController:createCommonResponse request details not found requestId=" + requestId,
-              LoggerEnum.ERROR);
+          "BaseController:createCommonResponse request details not found requestId=" + requestId,
+          LoggerEnum.ERROR);
     }
     Response courseResponse = (Response) response;
     if (!StringUtils.isBlank(key)) {
@@ -585,8 +478,8 @@ public class BaseController extends Controller {
    */
   public Result createFileDownloadResponse(File file) {
     return Results.ok(file)
-            .withHeader("Content-Type", "application/x-download")
-            .withHeader("Content-disposition", "attachment; filename=" + file.getName());
+        .withHeader("Content-Type", "application/x-download")
+        .withHeader("Content-disposition", "attachment; filename=" + file.getName());
   }
 
   private void removeFields(Map<String, Object> params, String... properties) {
@@ -606,7 +499,7 @@ public class BaseController extends Controller {
   }
 
   private Map<String, Object> generateTelemetryRequestForController(
-          String eventType, Map<String, Object> params, Map<String, Object> context) {
+      String eventType, Map<String, Object> params, Map<String, Object> context) {
 
     Map<String, Object> map = new HashMap<>();
     map.put(JsonKey.TELEMETRY_EVENT_TYPE, eventType);
@@ -630,14 +523,14 @@ public class BaseController extends Controller {
       exception = (ProjectCommonException) e;
     } else {
       exception =
-              new ProjectCommonException(
-                      ResponseCode.internalError.getErrorCode(),
-                      ResponseCode.internalError.getErrorMessage(),
-                      ResponseCode.SERVER_ERROR.getResponseCode());
+          new ProjectCommonException(
+              ResponseCode.internalError.getErrorCode(),
+              ResponseCode.internalError.getErrorMessage(),
+              ResponseCode.SERVER_ERROR.getResponseCode());
     }
 
     Map<String, Object> requestInfo =
-            OnRequestHandler.requestInfo.get(request.flash().get(JsonKey.REQUEST_ID));
+        OnRequestHandler.requestInfo.get(request.flash().get(JsonKey.REQUEST_ID));
     org.sunbird.common.request.Request reqForTelemetry = new org.sunbird.common.request.Request();
     Map<String, Object> params = (Map<String, Object>) requestInfo.get(JsonKey.ADDITIONAL_INFO);
     params.put(JsonKey.LOG_TYPE, JsonKey.API_ACCESS);
@@ -651,16 +544,16 @@ public class BaseController extends Controller {
     params.put(JsonKey.LOG_LEVEL, "error");
     params.put(JsonKey.STACKTRACE, generateStackTrace(exception.getStackTrace()));
     reqForTelemetry.setRequest(
-            generateTelemetryRequestForController(
-                    TelemetryEvents.ERROR.getName(),
-                    params,
-                    (Map<String, Object>) requestInfo.get(JsonKey.CONTEXT)));
+        generateTelemetryRequestForController(
+            TelemetryEvents.ERROR.getName(),
+            params,
+            (Map<String, Object>) requestInfo.get(JsonKey.CONTEXT)));
     lmaxWriter.submitMessage(reqForTelemetry);
 
     // cleaning request info ...
     return Results.status(
-            exception.getResponseCode(),
-            Json.toJson(BaseController.createResponseOnException(req, exception)));
+        exception.getResponseCode(),
+        Json.toJson(BaseController.createResponseOnException(req, exception)));
   }
 
   private long calculateApiTimeTaken(Long startTime) {
@@ -683,11 +576,11 @@ public class BaseController extends Controller {
    * @return CompletionStage<Result>
    */
   public CompletionStage<Result> actorResponseHandler(
-          Object actorRef,
-          org.sunbird.common.request.Request request,
-          Timeout timeout,
-          String responseKey,
-          Http.Request httpReq) {
+      Object actorRef,
+      org.sunbird.common.request.Request request,
+      Timeout timeout,
+      String responseKey,
+      Http.Request httpReq) {
 
     String operation = request.getOperation();
 
@@ -696,25 +589,25 @@ public class BaseController extends Controller {
     setChannelAndActorInfo(httpReq, request);
 
     Function<Object, Result> function =
-            new Function<Object, Result>() {
-              @Override
-              public Result apply(Object result) {
-                if (ActorOperations.HEALTH_CHECK.getValue().equals(request.getOperation())) {
-                  setGlobalHealthFlag(result);
-                }
+        new Function<Object, Result>() {
+          @Override
+          public Result apply(Object result) {
+            if (ActorOperations.HEALTH_CHECK.getValue().equals(request.getOperation())) {
+              setGlobalHealthFlag(result);
+            }
 
-                if (result instanceof Response) {
-                  Response response = (Response) result;
-                  return createCommonResponse(response, responseKey, httpReq);
-                } else if (result instanceof ProjectCommonException) {
-                  return createCommonExceptionResponse((ProjectCommonException) result, httpReq);
-                } else if (result instanceof File) {
-                  return createFileDownloadResponse((File) result);
-                } else {
-                  return createCommonExceptionResponse(new Exception(), httpReq);
-                }
-              }
-            };
+            if (result instanceof Response) {
+              Response response = (Response) result;
+              return createCommonResponse(response, responseKey, httpReq);
+            } else if (result instanceof ProjectCommonException) {
+              return createCommonExceptionResponse((ProjectCommonException) result, httpReq);
+            } else if (result instanceof File) {
+              return createFileDownloadResponse((File) result);
+            } else {
+              return createCommonExceptionResponse(new Exception(), httpReq);
+            }
+          }
+        };
 
     if (actorRef instanceof ActorRef) {
       return PatternsCS.ask((ActorRef) actorRef, request, timeout).thenApply(function);
@@ -819,15 +712,11 @@ public class BaseController extends Controller {
     return builder.toString();
   }
 
-  public static void setActorRef(Object obj) {
-    actorRef = obj;
-  }
-
   private static Map<String, Object> genarateTelemetryInfoForError(Http.Request request) {
 
     Map<String, Object> map = new HashMap<>();
     Map<String, Object> requestInfo =
-            OnRequestHandler.requestInfo.get(request.flash().get(JsonKey.REQUEST_ID));
+        OnRequestHandler.requestInfo.get(request.flash().get(JsonKey.REQUEST_ID));
     Map<String, Object> contextInfo = (Map<String, Object>) requestInfo.get(JsonKey.CONTEXT);
     Map<String, Object> params = new HashMap<>();
     params.put(JsonKey.ERR_TYPE, JsonKey.API_ACCESS);
@@ -838,7 +727,7 @@ public class BaseController extends Controller {
   }
 
   public void setChannelAndActorInfo(
-          Http.Request httpReq, org.sunbird.common.request.Request reqObj) {
+      Http.Request httpReq, org.sunbird.common.request.Request reqObj) {
 
     reqObj.getContext().put(JsonKey.CHANNEL, httpReq.flash().get(JsonKey.CHANNEL));
     reqObj.getContext().put(JsonKey.ACTOR_ID, httpReq.flash().get(JsonKey.ACTOR_ID));
@@ -846,15 +735,15 @@ public class BaseController extends Controller {
     reqObj.getContext().put(JsonKey.APP_ID, httpReq.flash().get(JsonKey.APP_ID));
     reqObj.getContext().put(JsonKey.DEVICE_ID, httpReq.flash().get(JsonKey.DEVICE_ID));
     reqObj
-            .getContext()
-            .put(
-                    JsonKey.SIGNUP_TYPE,
-                    httpReq.flash().get(JsonKey.SIGNUP_TYPE)); // adding signup type in request context
+        .getContext()
+        .put(
+            JsonKey.SIGNUP_TYPE,
+            httpReq.flash().get(JsonKey.SIGNUP_TYPE)); // adding signup type in request context
     reqObj
-            .getContext()
-            .put(
-                    JsonKey.REQUEST_SOURCE,
-                    httpReq.flash().get(JsonKey.REQUEST_SOURCE)); // ADDING Source under params in context
+        .getContext()
+        .put(
+            JsonKey.REQUEST_SOURCE,
+            httpReq.flash().get(JsonKey.REQUEST_SOURCE)); // ADDING Source under params in context
     httpReq.flash().removing(JsonKey.APP_ID);
   }
 
@@ -874,30 +763,30 @@ public class BaseController extends Controller {
     if (result instanceof Response) {
       Response response = (Response) result;
       if (Boolean.parseBoolean(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_HEALTH_CHECK_ENABLE))
-              && ((HashMap<String, Object>) response.getResult().get(JsonKey.RESPONSE))
+          && ((HashMap<String, Object>) response.getResult().get(JsonKey.RESPONSE))
               .containsKey(JsonKey.Healthy)) {
         OnRequestHandler.isServiceHealthy =
-                (boolean)
-                        ((HashMap<String, Object>) response.getResult().get(JsonKey.RESPONSE))
-                                .get(JsonKey.Healthy);
+            (boolean)
+                ((HashMap<String, Object>) response.getResult().get(JsonKey.RESPONSE))
+                    .get(JsonKey.Healthy);
       }
     } else {
       OnRequestHandler.isServiceHealthy = false;
     }
     ProjectLogger.log(
-            "BaseController:setGlobalHealthFlag: isServiceHealthy = "
-                    + OnRequestHandler.isServiceHealthy,
-            LoggerEnum.INFO.name());
+        "BaseController:setGlobalHealthFlag: isServiceHealthy = "
+            + OnRequestHandler.isServiceHealthy,
+        LoggerEnum.INFO.name());
   }
 
   protected String getQueryString(Map<String, String[]> queryStringMap) {
     return queryStringMap
-            .entrySet()
-            .stream()
-            .map(p -> p.getKey() + "=" + String.join(",", p.getValue()))
-            .reduce((p1, p2) -> p1 + "&" + p2)
-            .map(s -> "?" + s)
-            .orElse("");
+        .entrySet()
+        .stream()
+        .map(p -> p.getKey() + "=" + String.join(",", p.getValue()))
+        .reduce((p1, p2) -> p1 + "&" + p2)
+        .map(s -> "?" + s)
+        .orElse("");
   }
 
   public static String getResponseSize(String response) throws UnsupportedEncodingException {
@@ -908,7 +797,7 @@ public class BaseController extends Controller {
   }
 
   public org.sunbird.common.request.Request transformUserId(
-          org.sunbird.common.request.Request request) {
+      org.sunbird.common.request.Request request) {
     if (request != null && request.getRequest() != null) {
       String id = (String) request.getRequest().get(JsonKey.ID);
       request.getRequest().put(JsonKey.ID, ProjectUtil.getLmsUserId(id));

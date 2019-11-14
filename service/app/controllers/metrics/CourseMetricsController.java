@@ -3,6 +3,12 @@ package controllers.metrics;
 import akka.actor.ActorRef;
 import controllers.BaseController;
 import controllers.metrics.validator.CourseMetricsProgressValidator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
@@ -11,18 +17,10 @@ import org.sunbird.common.request.Request;
 import play.mvc.Http;
 import play.mvc.Result;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-
 public class CourseMetricsController extends BaseController {
   private static final String DEFAULT_LIMIT = "200";
   private static final String DEFAULT_OFFSET = "0";
   private ActorRef courseMetricsActorRef;
-
 
   @Inject
   public CourseMetricsController(@Named("course-metrics-actor") ActorRef courseMetricsActorRef) {
@@ -65,9 +63,8 @@ public class CourseMetricsController extends BaseController {
     final int dataOffset = Integer.parseInt(offset);
 
     return handleRequest(
-            courseMetricsActorRef,
+        courseMetricsActorRef,
         ActorOperations.COURSE_PROGRESS_METRICS_V2.getValue(),
-        null,
         (request) -> {
           Request req = (Request) request;
           req.getContext().put(JsonKey.LIMIT, dataLimit);
@@ -122,5 +119,4 @@ public class CourseMetricsController extends BaseController {
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
   }
-
 }

@@ -1,28 +1,10 @@
 package org.sunbird.metrics.actors;
 
-import static org.sunbird.common.models.util.ProjectUtil.isNotNull;
-import static org.sunbird.common.models.util.ProjectUtil.isNull;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.File;
-import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.sunbird.actor.router.ActorConfig;
 import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
@@ -40,21 +22,19 @@ import org.sunbird.common.util.CloudStorageUtil.CloudStorageType;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.learner.constants.CourseJsonKey;
 import org.sunbird.learner.util.ContentSearchUtil;
-import org.sunbird.learner.util.Util;
 import org.sunbird.userorg.UserOrgService;
 import org.sunbird.userorg.UserOrgServiceImpl;
 import scala.concurrent.Future;
 
-@ActorConfig(
-  tasks = {
-    "courseProgressMetrics",
-    "courseConsumptionMetrics",
-    "courseProgressMetricsV2",
-    "courseProgressMetricsReport",
-    "courseConsumptionMetricsReport"
-  },
-  asyncTasks = {}
-)
+import java.io.File;
+import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.sunbird.common.models.util.ProjectUtil.isNotNull;
+import static org.sunbird.common.models.util.ProjectUtil.isNull;
+
 public class CourseMetricsActor extends BaseMetricsActor {
 
   private static final String COURSE_PROGRESS_REPORT = "Course Progress Report";

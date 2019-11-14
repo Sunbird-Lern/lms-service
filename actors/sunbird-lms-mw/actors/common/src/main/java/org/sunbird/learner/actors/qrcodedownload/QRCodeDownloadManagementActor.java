@@ -7,13 +7,11 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.sunbird.actor.core.BaseActor;
-import org.sunbird.actor.router.ActorConfig;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
@@ -25,11 +23,7 @@ import org.sunbird.learner.util.Util;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.io.File.separator;
@@ -42,10 +36,6 @@ import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
  * This actor is used to create an html file for all the qr code images that are
  * linked to courses that are created userIds given
  */
-@ActorConfig(
-        tasks = {"downloadQRCodes"},
-        asyncTasks = {}
-)
 public class QRCodeDownloadManagementActor extends BaseActor {
     private static final List<String> fields = Arrays.asList("identifier", "dialcodes", "name");
     private static final Map<String, String> filtersHelperMap = new HashMap<String, String>() {{

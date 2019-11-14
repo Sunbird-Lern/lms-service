@@ -1,39 +1,17 @@
 package org.sunbird.learner.actors.coursebatch;
 
-import static org.sunbird.common.models.util.JsonKey.ID;
-import static org.sunbird.common.models.util.JsonKey.PARTICIPANTS;
-import static org.sunbird.common.models.util.ProjectLogger.log;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
-import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.core.BaseActor;
-import org.sunbird.actor.router.ActorConfig;
 import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.ActorOperations;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.models.util.ProjectUtil;
+import org.sunbird.common.models.util.*;
 import org.sunbird.common.models.util.ProjectUtil.ProgressStatus;
-import org.sunbird.common.models.util.PropertiesCache;
-import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
@@ -49,17 +27,16 @@ import org.sunbird.userorg.UserOrgService;
 import org.sunbird.userorg.UserOrgServiceImpl;
 import scala.concurrent.Future;
 
-@ActorConfig(
-  tasks = {
-    "createBatch",
-    "updateBatch",
-    "addUserBatch",
-    "removeUserFromBatch",
-    "getBatch",
-    "getParticipants"
-  },
-  asyncTasks = {}
-)
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.sunbird.common.models.util.JsonKey.ID;
+import static org.sunbird.common.models.util.JsonKey.PARTICIPANTS;
+import static org.sunbird.common.models.util.ProjectLogger.log;
+
 public class CourseBatchManagementActor extends BaseActor {
 
   private CourseBatchDao courseBatchDao = new CourseBatchDaoImpl();
@@ -123,9 +100,9 @@ public class CourseBatchManagementActor extends BaseActor {
     CourseBatch courseBatch = new ObjectMapper().convertValue(request, CourseBatch.class);
     courseBatch.setStatus(setCourseBatchStatus((String) request.get(JsonKey.START_DATE)));
     String courseId = (String) request.get(JsonKey.COURSE_ID);
-    Map<String, Object> contentDetails = getContentDetails(courseId, headers);
-    courseBatch.setContentDetails(contentDetails, requestedBy);
-    validateContentOrg(courseBatch.getCreatedFor());
+   Map<String, Object> contentDetails = getContentDetails(courseId, headers);
+   courseBatch.setContentDetails(contentDetails, requestedBy);
+   validateContentOrg(courseBatch.getCreatedFor());
     validateMentors(courseBatch);
     courseBatch.setBatchId(courseBatchId);
     Response result = courseBatchDao.create(courseBatch);

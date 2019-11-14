@@ -1,13 +1,8 @@
 /** */
 package org.sunbird.learner.actors.health;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.core.BaseActor;
-import org.sunbird.actor.router.ActorConfig;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.ElasticSearchTcpImpl;
@@ -22,11 +17,12 @@ import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.util.Util;
 import scala.concurrent.Future;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /** @author Manzarul */
-@ActorConfig(
-  tasks = {"healthCheck", "actor", "es", "cassandra"},
-  asyncTasks = {}
-)
 public class HealthActor extends BaseActor {
 
   private CassandraOperation cassandraOperation = ServiceFactory.getInstance();

@@ -15,6 +15,7 @@ import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
+import util.ACTOR_NAMES;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,7 +30,7 @@ public class BadgeAssociationControllerTest extends BaseApplicationTest {
     private static final String CONTENT_ID = "content-123";
     @Before
     public void before() {
-        setup(DummyActor.class);
+        setup(ACTOR_NAMES.BADGE_ASSOCIATION_ACTOR, DummyActor.class);
     }
 
     @Test

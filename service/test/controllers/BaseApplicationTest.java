@@ -68,7 +68,7 @@ public abstract class BaseApplicationTest {
             .in(Mode.TEST)
             .disable(StartModule.class);
     for (ACTOR_NAMES actor : actors) {
-      applicationBuilder.overrides(bind(actor.getActorClass()).to(actorClass));
+      applicationBuilder = applicationBuilder.overrides(bind(actor.getActorClass()).to(actorClass));
     }
     application = applicationBuilder.build();
     Helpers.start(application);

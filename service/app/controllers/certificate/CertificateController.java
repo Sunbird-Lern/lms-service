@@ -19,7 +19,7 @@ public class CertificateController extends BaseController {
 
     @Inject
     public CertificateController(@Named("course-batch-certificate-actor") ActorRef courseBatchCertificateActorRef,
-                                 @Named("course-batch-certificate-actor") ActorRef certificateActorRef) {
+                                 @Named("certificate-actor") ActorRef certificateActorRef) {
         this.courseBatchCertificateActorRef=courseBatchCertificateActorRef;
         this.certificateActorRef = certificateActorRef;
     }

@@ -8,20 +8,19 @@ import org.sunbird.common.models.util.BadgingActorOperations;
 import org.sunbird.common.models.util.ProjectUtil.EsType;
 import org.sunbird.common.request.BaseRequestValidator;
 import org.sunbird.common.request.Request;
-import java.util.concurrent.CompletionStage;
-
 import play.mvc.Http;
 import play.mvc.Result;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.concurrent.CompletionStage;
 
 public class BadgeAssociationController extends BaseController {
     private ActorRef badgeAssociationActorRef;
 
 
     @Inject
-    public BadgeAssociationController(@Named("qrcode-download-management-actor") ActorRef badgeAssociationActorRef) {
+    public BadgeAssociationController(@Named("badge-association-actor") ActorRef badgeAssociationActorRef) {
         this.badgeAssociationActorRef = badgeAssociationActorRef;
     }
 

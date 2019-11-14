@@ -1,5 +1,10 @@
 package org.sunbird.learner.actors.certificate.service;
 
+import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.commons.collections.CollectionUtils;
 import org.sunbird.actor.core.BaseActor;
 import org.sunbird.common.exception.ProjectCommonException;
@@ -16,12 +21,6 @@ import org.sunbird.learner.constants.CourseJsonKey;
 import org.sunbird.learner.constants.InstructionEvent;
 import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.Util;
-
-import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class CertificateActor extends BaseActor {
 
@@ -65,10 +64,11 @@ public class CertificateActor extends BaseActor {
     final String courseId = (String) request.getRequest().get(JsonKey.COURSE_ID);
     List<String> userIds = (List<String>) request.getRequest().get(JsonKey.USER_IDs);
     final boolean reIssue = isReissue(request.getContext().get(CourseJsonKey.REISSUE));
-    Map<String, Object> courseBatchResponse = CourseBatchUtil.validateCourseBatch(courseId, batchId);
-    if(null == courseBatchResponse.get("cert_templates")) {
-        ProjectCommonException.throwClientErrorException(
-                  ResponseCode.CLIENT_ERROR, "No certificate templates associated with " + batchId);
+    Map<String, Object> courseBatchResponse =
+        CourseBatchUtil.validateCourseBatch(courseId, batchId);
+    if (null == courseBatchResponse.get("cert_templates")) {
+      ProjectCommonException.throwClientErrorException(
+          ResponseCode.CLIENT_ERROR, "No certificate templates associated with " + batchId);
     }
     Response response = new Response();
     Map<String, Object> resultData = new HashMap<>();

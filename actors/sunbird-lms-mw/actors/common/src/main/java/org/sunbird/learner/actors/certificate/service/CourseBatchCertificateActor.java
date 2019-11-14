@@ -4,6 +4,9 @@ package org.sunbird.learner.actors.certificate.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.sunbird.actor.core.BaseActor;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
@@ -18,10 +21,6 @@ import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl;
 import org.sunbird.learner.constants.CourseJsonKey;
 import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.Util;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class CourseBatchCertificateActor extends BaseActor {
 
@@ -57,9 +56,9 @@ public class CourseBatchCertificateActor extends BaseActor {
     String templateId = (String) template.get(JsonKey.IDENTIFIER);
     validateTemplateDetails(templateId, template);
     courseBatchDao.addCertificateTemplateToCourseBatch(courseId, batchId, templateId, template);
-    Map<String,Object> courseBatch =mapESFieldsToObject(courseBatchDao.getCourseBatch(courseId,batchId));
-    CourseBatchUtil.syncCourseBatchForeground(
-            batchId,courseBatch);
+    Map<String, Object> courseBatch =
+        mapESFieldsToObject(courseBatchDao.getCourseBatch(courseId, batchId));
+    CourseBatchUtil.syncCourseBatchForeground(batchId, courseBatch);
     Response response = new Response();
     response.put(JsonKey.RESPONSE, JsonKey.SUCCESS);
     sender().tell(response, self());
@@ -75,18 +74,18 @@ public class CourseBatchCertificateActor extends BaseActor {
     String templateId = (String) template.get(JsonKey.IDENTIFIER);
     CourseBatchUtil.validateTemplate(templateId);
     courseBatchDao.removeCertificateTemplateFromCourseBatch(courseId, batchId, templateId);
-    Map<String,Object> courseBatch =mapESFieldsToObject(courseBatchDao.getCourseBatch(courseId,batchId));
-    CourseBatchUtil.syncCourseBatchForeground(
-            batchId,courseBatch);
+    Map<String, Object> courseBatch =
+        mapESFieldsToObject(courseBatchDao.getCourseBatch(courseId, batchId));
+    CourseBatchUtil.syncCourseBatchForeground(batchId, courseBatch);
     Response response = new Response();
     response.put(JsonKey.RESPONSE, JsonKey.SUCCESS);
     sender().tell(response, self());
   }
 
   private void validateTemplateDetails(String templateId, Map<String, Object> template) {
-    Map<String, Object> templateDetails=CourseBatchUtil.validateTemplate(templateId);
+    Map<String, Object> templateDetails = CourseBatchUtil.validateTemplate(templateId);
     try {
-       template.put(JsonKey.NAME,templateDetails.get(JsonKey.NAME));
+      template.put(JsonKey.NAME, templateDetails.get(JsonKey.NAME));
       template.put(JsonKey.CRITERIA, mapper.writeValueAsString(template.get(JsonKey.CRITERIA)));
       if (template.get(CourseJsonKey.ISSUER) != null) {
         template.put(
@@ -110,9 +109,17 @@ public class CourseBatchCertificateActor extends BaseActor {
     }
   }
 
-  private Map<String,Object> mapESFieldsToObject(Map<String,Object> courseBatch){
-    Map<String,Map<String,Object>> certificateTemplates = (Map<String,Map<String,Object>>)courseBatch.get(CourseJsonKey.CERTIFICATE_TEMPLATES_COLUMN);
-    certificateTemplates.entrySet().stream().forEach(cert_template -> certificateTemplates.put(cert_template.getKey(),mapToObject(cert_template.getValue())));
+  private Map<String, Object> mapESFieldsToObject(Map<String, Object> courseBatch) {
+    Map<String, Map<String, Object>> certificateTemplates =
+        (Map<String, Map<String, Object>>)
+            courseBatch.get(CourseJsonKey.CERTIFICATE_TEMPLATES_COLUMN);
+    certificateTemplates
+        .entrySet()
+        .stream()
+        .forEach(
+            cert_template ->
+                certificateTemplates.put(
+                    cert_template.getKey(), mapToObject(cert_template.getValue())));
     courseBatch.put(CourseJsonKey.CERTIFICATE_TEMPLATES_COLUMN, certificateTemplates);
     return courseBatch;
   }
@@ -120,26 +127,23 @@ public class CourseBatchCertificateActor extends BaseActor {
   private Map<String, Object> mapToObject(Map<String, Object> template) {
     try {
       template.put(
-              JsonKey.CRITERIA,
-              mapper.readValue(
-                      (String) template.get(JsonKey.CRITERIA),
-                      new TypeReference<HashMap<String, Object>>() {
-                      }));
+          JsonKey.CRITERIA,
+          mapper.readValue(
+              (String) template.get(JsonKey.CRITERIA),
+              new TypeReference<HashMap<String, Object>>() {}));
       template.put(
-              CourseJsonKey.SIGNATORY_LIST,
-              mapper.readValue(
-                      (String) template.get(CourseJsonKey.SIGNATORY_LIST),
-                      new TypeReference<List<Object>>() {
-                      }));
+          CourseJsonKey.SIGNATORY_LIST,
+          mapper.readValue(
+              (String) template.get(CourseJsonKey.SIGNATORY_LIST),
+              new TypeReference<List<Object>>() {}));
       template.put(
-              CourseJsonKey.ISSUER,
-              mapper.readValue(
-                      (String) template.get(CourseJsonKey.ISSUER),
-                      new TypeReference<HashMap<String, Object>>() {
-                      }));
+          CourseJsonKey.ISSUER,
+          mapper.readValue(
+              (String) template.get(CourseJsonKey.ISSUER),
+              new TypeReference<HashMap<String, Object>>() {}));
     } catch (Exception ex) {
       ProjectLogger.log(
-              "CourseBatchCertificateActor:mapToObject Exception occurred with error message ==", ex);
+          "CourseBatchCertificateActor:mapToObject Exception occurred with error message ==", ex);
     }
     return template;
   }

@@ -2,6 +2,10 @@ package org.sunbird.learner.actors.bulkupload;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.*;
+import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.sunbird.actor.core.BaseActor;
@@ -25,11 +29,6 @@ import org.sunbird.telemetry.util.TelemetryUtil;
 import org.sunbird.userorg.UserOrgService;
 import org.sunbird.userorg.UserOrgServiceImpl;
 import scala.concurrent.Future;
-
-import java.io.IOException;
-import java.sql.Timestamp;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * This actor will handle bulk upload operation .
@@ -60,6 +59,8 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
   private void process(Request actorMessage) {
     processId = (String) actorMessage.get(JsonKey.PROCESS_ID);
     Map<String, Object> dataMap = getBulkData(processId);
+    ProjectLogger.log(
+        "process started in BulkUploadBackGroundJobActor : " + processId, LoggerEnum.INFO.name());
     int status = (int) dataMap.get(JsonKey.STATUS);
     if (!(status == (ProjectUtil.BulkProcessStatus.COMPLETED.getValue())
         || status == (ProjectUtil.BulkProcessStatus.INTERRUPT.getValue()))) {

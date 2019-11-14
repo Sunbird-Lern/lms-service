@@ -1,10 +1,16 @@
 package org.sunbird.learner.actors;
 
+import static org.sunbird.common.models.util.JsonKey.ID;
+
 import akka.dispatch.Futures;
 import akka.dispatch.Mapper;
 import akka.pattern.Patterns;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import java.io.IOException;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -33,13 +39,6 @@ import scala.concurrent.ExecutionContextExecutor;
 import scala.concurrent.Future;
 import scala.concurrent.Promise;
 
-import java.io.IOException;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-
-import static org.sunbird.common.models.util.JsonKey.ID;
-
 /**
  * This actor will handle page management operation .
  *
@@ -55,14 +54,14 @@ public class PageManagementActor extends BaseActor {
   private UserOrgService userOrgService = UserOrgServiceImpl.getInstance();
   private boolean isCacheEnabled = false;
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
-  // Boolean.parseBoolean(ProjectUtil.propertiesCache.getProperty(JsonKey.SUNBIRD_CACHE_ENABLE));
 
   @Override
   public void onReceive(Request request) throws Throwable {
     Util.initializeContext(request, TelemetryEnvKey.PAGE);
 
     ExecutionContext.setRequestId(request.getRequestId());
-    ProjectLogger.log("PageManagementActor: Request recieved : " + request.getRequest(), LoggerEnum.INFO.name());
+    ProjectLogger.log(
+        "PageManagementActor: Request recieved : " + request.getRequest(), LoggerEnum.INFO.name());
     if (request.getOperation().equalsIgnoreCase(ActorOperations.CREATE_PAGE.getValue())) {
       createPage(request);
     } else if (request.getOperation().equalsIgnoreCase(ActorOperations.UPDATE_PAGE.getValue())) {
@@ -89,8 +88,8 @@ public class PageManagementActor extends BaseActor {
       getAllSections();
     } else {
       ProjectLogger.log(
-              "PageManagementActor: Invalid operation request : " + request.getOperation(),
-              LoggerEnum.ERROR.name());
+          "PageManagementActor: Invalid operation request : " + request.getOperation(),
+          LoggerEnum.ERROR.name());
       onReceiveUnsupportedOperation(request.getOperation());
     }
   }
@@ -247,7 +246,7 @@ public class PageManagementActor extends BaseActor {
 
   @SuppressWarnings("unchecked")
   private void getPageData(Request actorMessage) throws Exception {
-    ProjectLogger.log("PageManagementActor:getPageData: start",LoggerEnum.INFO.name());
+    ProjectLogger.log("PageManagementActor:getPageData: start", LoggerEnum.INFO.name());
     String sectionQuery = null;
     Map<String, Object> filterMap = new HashMap<>();
     Map<String, Object> req = (Map<String, Object>) actorMessage.getRequest().get(JsonKey.PAGE);
@@ -372,7 +371,7 @@ public class PageManagementActor extends BaseActor {
                 }
               },
               getContext().dispatcher());
-      ProjectLogger.log("PageManagementActor:getPageData: end",LoggerEnum.INFO.name());
+      ProjectLogger.log("PageManagementActor:getPageData: end", LoggerEnum.INFO.name());
       Patterns.pipe(response, getContext().dispatcher()).to(sender());
 
     } catch (Exception e) {
@@ -618,7 +617,7 @@ public class PageManagementActor extends BaseActor {
       ExecutionContextExecutor ec)
       throws Exception {
 
-    ProjectLogger.log("PageManagementActor:getContentData: start",LoggerEnum.INFO.name());
+    ProjectLogger.log("PageManagementActor:getContentData: start", LoggerEnum.INFO.name());
     Map<String, Object> searchQueryMap =
         mapper.readValue((String) section.get(JsonKey.SEARCH_QUERY), HashMap.class);
     if (MapUtils.isEmpty(searchQueryMap)) {
@@ -663,7 +662,8 @@ public class PageManagementActor extends BaseActor {
                 ProjectLogger.log(
                     "PageManagementActor:getContentData:apply: section = " + section,
                     LoggerEnum.DEBUG.name());
-                ProjectLogger.log("PageManagementActor:getContentData: end",LoggerEnum.INFO.name());
+                ProjectLogger.log(
+                    "PageManagementActor:getContentData: end", LoggerEnum.INFO.name());
               }
               return section;
             }
@@ -678,7 +678,7 @@ public class PageManagementActor extends BaseActor {
       final Promise promise = Futures.promise();
       promise.success(section);
       result = promise.future();
-      ProjectLogger.log("PageManagementActor:getContentData: end",LoggerEnum.INFO.name());
+      ProjectLogger.log("PageManagementActor:getContentData: end", LoggerEnum.INFO.name());
       return result;
     }
   }

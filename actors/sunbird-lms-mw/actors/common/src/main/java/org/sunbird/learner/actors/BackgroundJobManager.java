@@ -1,6 +1,10 @@
 package org.sunbird.learner.actors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.core.BaseActor;
 import org.sunbird.common.ElasticSearchHelper;
@@ -14,11 +18,6 @@ import org.sunbird.learner.actors.coursebatch.service.UserCoursesService;
 import org.sunbird.learner.util.CourseBatchSchedulerUtil;
 import org.sunbird.learner.util.Util;
 import scala.concurrent.Future;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * This class will handle all the background job. Example when ever course is published then this
@@ -50,8 +49,7 @@ public class BackgroundJobManager extends BaseActor {
     }
     String operation = request.getOperation();
     ProjectLogger.log("Operation name is ==" + operation);
-    if (operation.equalsIgnoreCase(
-        ActorOperations.INSERT_USR_COURSES_INFO_ELASTIC.getValue())) {
+    if (operation.equalsIgnoreCase(ActorOperations.INSERT_USR_COURSES_INFO_ELASTIC.getValue())) {
       insertUserCourseInfoToEs(request);
     } else if (operation.equalsIgnoreCase(ActorOperations.INSERT_COURSE_BATCH_ES.getValue())) {
       insertCourseBatchInfoToEs(request);

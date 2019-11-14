@@ -1,6 +1,15 @@
 package org.sunbird.learner.actors.coursebatch;
 
+import static org.sunbird.common.models.util.JsonKey.ID;
+import static org.sunbird.common.models.util.JsonKey.PARTICIPANTS;
+import static org.sunbird.common.models.util.ProjectLogger.log;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -26,16 +35,6 @@ import org.sunbird.telemetry.util.TelemetryUtil;
 import org.sunbird.userorg.UserOrgService;
 import org.sunbird.userorg.UserOrgServiceImpl;
 import scala.concurrent.Future;
-
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static org.sunbird.common.models.util.JsonKey.ID;
-import static org.sunbird.common.models.util.JsonKey.PARTICIPANTS;
-import static org.sunbird.common.models.util.ProjectLogger.log;
 
 public class CourseBatchManagementActor extends BaseActor {
 
@@ -100,9 +99,9 @@ public class CourseBatchManagementActor extends BaseActor {
     CourseBatch courseBatch = new ObjectMapper().convertValue(request, CourseBatch.class);
     courseBatch.setStatus(setCourseBatchStatus((String) request.get(JsonKey.START_DATE)));
     String courseId = (String) request.get(JsonKey.COURSE_ID);
-   Map<String, Object> contentDetails = getContentDetails(courseId, headers);
-   courseBatch.setContentDetails(contentDetails, requestedBy);
-   validateContentOrg(courseBatch.getCreatedFor());
+    Map<String, Object> contentDetails = getContentDetails(courseId, headers);
+    courseBatch.setContentDetails(contentDetails, requestedBy);
+    validateContentOrg(courseBatch.getCreatedFor());
     validateMentors(courseBatch);
     courseBatch.setBatchId(courseBatchId);
     Response result = courseBatchDao.create(courseBatch);
@@ -131,7 +130,8 @@ public class CourseBatchManagementActor extends BaseActor {
 
   private boolean courseNotificationActive() {
     ProjectLogger.log(
-        "CourseBatchManagementActor: courseNotificationActive: "            + Boolean.parseBoolean(
+        "CourseBatchManagementActor: courseNotificationActive: "
+            + Boolean.parseBoolean(
                 PropertiesCache.getInstance()
                     .getProperty(JsonKey.SUNBIRD_COURSE_BATCH_NOTIFICATIONS_ENABLED)),
         LoggerEnum.INFO.name());

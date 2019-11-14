@@ -1,9 +1,36 @@
 package org.sunbird.learner.actors.textbook;
 
+import static java.io.File.separator;
+import static java.util.Arrays.asList;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.sunbird.common.exception.ProjectCommonException.throwClientErrorException;
+import static org.sunbird.common.exception.ProjectCommonException.throwServerErrorException;
+import static org.sunbird.common.models.util.JsonKey.*;
+import static org.sunbird.common.models.util.LoggerEnum.ERROR;
+import static org.sunbird.common.models.util.LoggerEnum.INFO;
+import static org.sunbird.common.models.util.ProjectLogger.log;
+import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
+import static org.sunbird.common.models.util.Slug.makeSlug;
+import static org.sunbird.common.responsecode.ResponseCode.*;
+import static org.sunbird.content.textbook.FileExtension.Extension.CSV;
+import static org.sunbird.content.textbook.TextBookTocUploader.TEXTBOOK_TOC_FOLDER;
+import static org.sunbird.content.util.ContentCloudStore.getUri;
+import static org.sunbird.content.util.TextBookTocUtil.*;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
+import java.time.Instant;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -29,34 +56,6 @@ import org.sunbird.content.textbook.TextBookTocUploader;
 import org.sunbird.content.util.TextBookTocUtil;
 import org.sunbird.services.sso.SSOManager;
 import org.sunbird.services.sso.SSOServiceFactory;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.text.MessageFormat;
-import java.time.Instant;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-
-import static java.io.File.separator;
-import static java.util.Arrays.asList;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.sunbird.common.exception.ProjectCommonException.throwClientErrorException;
-import static org.sunbird.common.exception.ProjectCommonException.throwServerErrorException;
-import static org.sunbird.common.models.util.JsonKey.*;
-import static org.sunbird.common.models.util.LoggerEnum.ERROR;
-import static org.sunbird.common.models.util.LoggerEnum.INFO;
-import static org.sunbird.common.models.util.ProjectLogger.log;
-import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
-import static org.sunbird.common.models.util.Slug.makeSlug;
-import static org.sunbird.common.responsecode.ResponseCode.*;
-import static org.sunbird.content.textbook.FileExtension.Extension.CSV;
-import static org.sunbird.content.textbook.TextBookTocUploader.TEXTBOOK_TOC_FOLDER;
-import static org.sunbird.content.util.ContentCloudStore.getUri;
-import static org.sunbird.content.util.TextBookTocUtil.*;
 
 public class TextbookTocActor extends BaseActor {
 
@@ -639,7 +638,9 @@ public class TextbookTocActor extends BaseActor {
           String dialCode = (String) recordMap.get(JsonKey.DIAL_CODES);
           List<String> dialCodeList = null;
           if (StringUtils.isNotBlank(dialCode)) {
-            dialCodeList = new ArrayList<String>(Arrays.asList(dialCode.substring(2,dialCode.length()-2).split("\"\",\"\"")));
+            dialCodeList =
+                new ArrayList<String>(
+                    Arrays.asList(dialCode.substring(2, dialCode.length() - 2).split("\"\",\"\"")));
             for (String dCode : dialCodeList) {
               if (!dialCodes.add(dCode.trim())) {
                 duplicateDialCodes.add(dCode.trim());
@@ -649,7 +650,10 @@ public class TextbookTocActor extends BaseActor {
 
           String reqTopics = (String) recordMap.get(JsonKey.TOPIC);
           if (StringUtils.isNotBlank(reqTopics)) {
-            List<String> topicList = new ArrayList<String>(Arrays.asList(reqTopics.substring(2,reqTopics.length()-2).split("\"\",\"\"")));
+            List<String> topicList =
+                new ArrayList<String>(
+                    Arrays.asList(
+                        reqTopics.substring(2, reqTopics.length() - 2).split("\"\",\"\"")));
             topicList.forEach(
                 s -> {
                   topics.add(s.trim());
@@ -735,7 +739,7 @@ public class TextbookTocActor extends BaseActor {
   private void getBgmsData(HashMap<String, Object> recordMap, Map<String, Object> bgms) {
     for (Entry<String, Object> entry : frameCategories.entrySet()) {
       String key = entry.getKey();
-      bgms.put(key,recordMap.get(key));
+      bgms.put(key, recordMap.get(key));
     }
   }
 
@@ -1547,20 +1551,32 @@ public class TextbookTocActor extends BaseActor {
     if (MapUtils.isNotEmpty(metadata)) {
       List<String> keywords =
           (StringUtils.isNotBlank((String) metadata.get(JsonKey.KEYWORDS)))
-              ? asList(((String) metadata.get(JsonKey.KEYWORDS)).substring(2,((String) metadata.get(JsonKey.KEYWORDS)).length()-2).split("\"\",\"\""))
+              ? asList(
+                  ((String) metadata.get(JsonKey.KEYWORDS))
+                      .substring(2, ((String) metadata.get(JsonKey.KEYWORDS)).length() - 2)
+                      .split("\"\",\"\""))
               : null;
       List<String> gradeLevel =
           (StringUtils.isNotBlank((String) metadata.get(JsonKey.GRADE_LEVEL)))
-              ? asList(((String) metadata.get(JsonKey.GRADE_LEVEL)).substring(2,((String) metadata.get(JsonKey.GRADE_LEVEL)).length()-2).split("\"\",\"\""))
+              ? asList(
+                  ((String) metadata.get(JsonKey.GRADE_LEVEL))
+                      .substring(2, ((String) metadata.get(JsonKey.GRADE_LEVEL)).length() - 2)
+                      .split("\"\",\"\""))
               : null;
       List<String> dialCodes =
           (StringUtils.isNotBlank((String) metadata.get(JsonKey.DIAL_CODES)))
-              ? asList(((String) metadata.get(JsonKey.DIAL_CODES)).substring(2,((String) metadata.get(JsonKey.DIAL_CODES)).length()-2).split("\"\",\"\""))
+              ? asList(
+                  ((String) metadata.get(JsonKey.DIAL_CODES))
+                      .substring(2, ((String) metadata.get(JsonKey.DIAL_CODES)).length() - 2)
+                      .split("\"\",\"\""))
               : null;
 
       List<String> topics =
           (StringUtils.isNotBlank((String) metadata.get(JsonKey.TOPIC)))
-              ? asList(((String) metadata.get(JsonKey.TOPIC)).substring(2,((String) metadata.get(JsonKey.TOPIC)).length()-2).split("\"\",\"\""))
+              ? asList(
+                  ((String) metadata.get(JsonKey.TOPIC))
+                      .substring(2, ((String) metadata.get(JsonKey.TOPIC)).length() - 2)
+                      .split("\"\",\"\""))
               : null;
       newMeta.putAll(metadata);
       newMeta.remove(JsonKey.KEYWORDS);
@@ -1643,5 +1659,4 @@ public class TextbookTocActor extends BaseActor {
           });
     }
   }
-
 }

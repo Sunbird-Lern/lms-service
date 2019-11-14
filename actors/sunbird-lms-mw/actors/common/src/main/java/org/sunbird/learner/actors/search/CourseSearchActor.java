@@ -2,6 +2,8 @@ package org.sunbird.learner.actors.search;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.HashMap;
+import java.util.Map;
 import org.sunbird.actor.core.BaseActor;
 import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.exception.ProjectCommonException;
@@ -16,15 +18,11 @@ import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.learner.util.Util;
 import scala.concurrent.Future;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * This class will handle search operation for course.
  *
  * @author Amit Kumar
  */
-
 public class CourseSearchActor extends BaseActor {
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
 

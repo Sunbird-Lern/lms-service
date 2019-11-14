@@ -5,6 +5,8 @@ import com.datastax.driver.core.Row;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.FutureCallback;
+import java.text.MessageFormat;
+import java.util.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.sunbird.actor.core.BaseActor;
 import org.sunbird.cassandra.CassandraOperation;
@@ -20,9 +22,6 @@ import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.actors.coursebatch.service.UserCoursesService;
 import org.sunbird.learner.util.Util;
 import org.sunbird.learner.util.Util.DbInfo;
-
-import java.text.MessageFormat;
-import java.util.*;
 
 /** Sync data between Cassandra and Elastic Search. */
 public class EsSyncActor extends BaseActor {

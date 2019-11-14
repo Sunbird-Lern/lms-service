@@ -1,5 +1,7 @@
 package org.sunbird.learner.actors.notificationservice;
 
+import java.text.MessageFormat;
+import java.util.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
@@ -29,9 +31,6 @@ import org.sunbird.learner.util.Util;
 import org.sunbird.notification.sms.provider.ISmsProvider;
 import org.sunbird.notification.utils.SMSFactory;
 import scala.concurrent.Future;
-
-import java.text.MessageFormat;
-import java.util.*;
 
 public class EmailServiceActor extends BaseActor {
 

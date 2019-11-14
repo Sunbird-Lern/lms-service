@@ -1,23 +1,33 @@
 package controllers.metrics;
 
+import akka.actor.ActorRef;
 import controllers.BaseController;
 import controllers.metrics.validator.CourseMetricsProgressValidator;
-import java.util.HashMap;
-import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-
 import play.mvc.Http;
 import play.mvc.Result;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 public class CourseMetricsController extends BaseController {
   private static final String DEFAULT_LIMIT = "200";
   private static final String DEFAULT_OFFSET = "0";
+  private ActorRef courseMetricsActorRef;
+
+
+  @Inject
+  public CourseMetricsController(@Named("course-metrics-actor") ActorRef courseMetricsActorRef) {
+    this.courseMetricsActorRef = courseMetricsActorRef;
+  }
 
   public CompletionStage<Result> courseProgress(String batchId, Http.Request httpRequest) {
     try {
@@ -32,7 +42,7 @@ public class CourseMetricsController extends BaseController {
       request.setOperation(ActorOperations.COURSE_PROGRESS_METRICS.getValue());
       request.setRequest(map);
       request.setRequestId(ExecutionContext.getRequestId());
-      return actorResponseHandler(getActorRef(), request, timeout, null, httpRequest);
+      return actorResponseHandler(courseMetricsActorRef, request, timeout, null, httpRequest);
     } catch (Exception e) {
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
@@ -55,7 +65,9 @@ public class CourseMetricsController extends BaseController {
     final int dataOffset = Integer.parseInt(offset);
 
     return handleRequest(
+            courseMetricsActorRef,
         ActorOperations.COURSE_PROGRESS_METRICS_V2.getValue(),
+        null,
         (request) -> {
           Request req = (Request) request;
           req.getContext().put(JsonKey.LIMIT, dataLimit);
@@ -81,7 +93,7 @@ public class CourseMetricsController extends BaseController {
       map.put(JsonKey.REQUESTED_BY, httpRequest.flash().get(JsonKey.USER_ID));
       request.setRequest(map);
       request.setRequestId(ExecutionContext.getRequestId());
-      return actorResponseHandler(getActorRef(), request, timeout, null, httpRequest);
+      return actorResponseHandler(courseMetricsActorRef, request, timeout, null, httpRequest);
     } catch (Exception e) {
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
@@ -105,7 +117,7 @@ public class CourseMetricsController extends BaseController {
       request.setOperation(ActorOperations.COURSE_PROGRESS_METRICS_REPORT.getValue());
       request.setRequest(map);
       request.setRequestId(ExecutionContext.getRequestId());
-      return actorResponseHandler(getActorRef(), request, timeout, null, httpRequest);
+      return actorResponseHandler(courseMetricsActorRef, request, timeout, null, httpRequest);
     } catch (Exception e) {
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }

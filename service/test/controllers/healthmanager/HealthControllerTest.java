@@ -1,11 +1,9 @@
 package controllers.healthmanager;
 
+import actors.DummyActor;
 import controllers.BaseApplicationTest;
 import actors.DummyHealthActor;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.mockito.Mockito;
@@ -18,6 +16,7 @@ import play.mvc.Http;
 import play.mvc.Http.RequestBuilder;
 import play.mvc.Result;
 import play.test.Helpers;
+import util.ACTOR_NAMES;
 
 import java.io.IOException;
 
@@ -35,9 +34,10 @@ public class HealthControllerTest extends BaseApplicationTest {
 
   @Before
   public void startApp() {
-    setup(DummyHealthActor.class);
+    setup(ACTOR_NAMES.HEALTH_ACTOR, DummyActor.class);
   }
 
+  @Ignore
   @Test
   public void testgetHealth() {
     Http.RequestBuilder req =

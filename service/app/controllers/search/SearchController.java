@@ -1,6 +1,7 @@
 /** */
 package controllers.search;
 
+import akka.actor.ActorRef;
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.BaseController;
 import java.util.HashMap;
@@ -17,12 +18,23 @@ import java.util.concurrent.CompletionStage;
 import play.mvc.Http;
 import play.mvc.Result;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
 /**
  * This controller will handle all the request related user and organization search.
  *
  * @author Manzarul
  */
 public class SearchController extends BaseController {
+
+  private ActorRef esSyncActorRef;
+
+
+  @Inject
+  public SearchController(@Named("es-sync-actor") ActorRef esSyncActorRef) {
+    this.esSyncActorRef = esSyncActorRef;
+  }
 
   /**
    * This method will do data Sync form Cassandra db to Elasticsearch.
@@ -43,7 +55,7 @@ public class SearchController extends BaseController {
         HashMap<String, Object> map = new HashMap<>();
         map.put(JsonKey.DATA, reqObj.getRequest());
         reqObj.setRequest(map);
-        return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
+        return actorResponseHandler(esSyncActorRef, reqObj, timeout, null, httpRequest);
 
     } catch (Exception e) {
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));

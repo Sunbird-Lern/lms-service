@@ -11,6 +11,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
+import util.ACTOR_NAMES;
 
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore("javax.management.*")
@@ -19,7 +20,7 @@ public class CacheControllerErrorTest extends BaseApplicationTest {
     public static String MAP_NAME="mapName";
     @Before
     public void before() {
-        setup(DummyErrorActor.class);
+        setup(ACTOR_NAMES.CACHE_MANAGEMENT_ACTOR,DummyErrorActor.class);
     }
 
     @Test

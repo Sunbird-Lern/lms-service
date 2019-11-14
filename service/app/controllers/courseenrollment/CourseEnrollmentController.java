@@ -16,14 +16,18 @@ import play.mvc.Result;
 public class CourseEnrollmentController extends BaseController {
 
   private ActorRef courseEnrollmentActorRef;
+  private ActorRef learnerStateActorRef;
 
   @Inject
-  public CourseEnrollmentController(@Named("course-enrollment-actor") ActorRef actorRef) {
-    courseEnrollmentActorRef = actorRef;
+  public CourseEnrollmentController(@Named("course-enrollment-actor") ActorRef courseEnrollmentActorRef,
+                                    @Named("learner-state-actor") ActorRef learnerStateActorRef) {
+    this.courseEnrollmentActorRef = courseEnrollmentActorRef;
+    this.learnerStateActorRef = learnerStateActorRef;
   }
 
   public CompletionStage<Result> getEnrolledCourses(String uid, Http.Request httpRequest) {
     return handleRequest(
+        learnerStateActorRef,
         ActorOperations.GET_COURSE.getValue(),
         httpRequest.body().asJson(),
         (req) -> {
@@ -45,6 +49,7 @@ public class CourseEnrollmentController extends BaseController {
 
   public CompletionStage<Result> getEnrolledCourse(Http.Request httpRequest) {
     return handleRequest(
+        learnerStateActorRef,
         ActorOperations.GET_USER_COURSE.getValue(),
         httpRequest.body().asJson(),
         (req) -> {
@@ -58,6 +63,7 @@ public class CourseEnrollmentController extends BaseController {
 
   public CompletionStage<Result> enrollCourse(Http.Request httpRequest) {
     return handleRequest(
+        courseEnrollmentActorRef,
         ActorOperations.ENROLL_COURSE.getValue(),
         httpRequest.body().asJson(),
         (request) -> {
@@ -70,6 +76,7 @@ public class CourseEnrollmentController extends BaseController {
 
   public CompletionStage<Result> unenrollCourse(Http.Request httpRequest) {
     return handleRequest(
+        courseEnrollmentActorRef,
         ActorOperations.UNENROLL_COURSE.getValue(),
         httpRequest.body().asJson(),
         (request) -> {

@@ -17,6 +17,7 @@ import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
+import util.ACTOR_NAMES;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -41,9 +42,11 @@ public class CourseBatchControllerTest extends BaseApplicationTest {
   private static final String BATCH_PARTICIPANTS_LIST_URL =  "/v1/batch/participants/list";
   private static final String ADD_USERS_BATCH_URL =  "/v1/course/batch/users/add/"+BATCH_ID;
   private static final String REMOVE_USERS_BATCH_URL =  "/v1/course/batch/users/remove/"+BATCH_ID;
+
+
   @Before
   public void before() {
-    setup(DummyActor.class);
+    setup(Arrays.asList(ACTOR_NAMES.COURSE_BATCH_MANAGEMENT_ACTOR,ACTOR_NAMES.SEARCH_HANDLER_ACTOR), DummyActor.class);
   }
 
   @Test
@@ -212,6 +215,7 @@ public class CourseBatchControllerTest extends BaseApplicationTest {
 
   @Test
   public void testSearchBatchSuccess() {
+ //   setup(ACTOR_NAMES.SEARCH_HANDLER_ACTOR, DummyActor.class);
     Http.RequestBuilder req =
             new Http.RequestBuilder()
                     .uri(SEARCH_BATCH_URL)
@@ -223,6 +227,7 @@ public class CourseBatchControllerTest extends BaseApplicationTest {
 
   @Test
   public void testSearchBatchSuccessWithoutFilters() {
+ //   setup(ACTOR_NAMES.SEARCH_HANDLER_ACTOR, DummyActor.class);
     Http.RequestBuilder req =
             new Http.RequestBuilder()
                     .uri(SEARCH_BATCH_URL)
@@ -234,6 +239,7 @@ public class CourseBatchControllerTest extends BaseApplicationTest {
 
   @Test
   public void testSearchBatchSuccessWithEmptyFilters() {
+  //  setup(ACTOR_NAMES.SEARCH_HANDLER_ACTOR, DummyActor.class);
     Http.RequestBuilder req =
             new Http.RequestBuilder()
                     .uri(SEARCH_BATCH_URL)

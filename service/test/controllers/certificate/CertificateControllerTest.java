@@ -6,10 +6,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import controllers.BaseApplicationTest;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
@@ -21,6 +23,7 @@ import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
+import util.ACTOR_NAMES;
 
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore("javax.management.*")
@@ -38,11 +41,12 @@ public class CertificateControllerTest extends BaseApplicationTest {
 
   @Before
   public void before() {
-    setup(DummyActor.class);
+    setup(Arrays.asList(ACTOR_NAMES.COURSEBATCH_CERTIFICATE_ACTOR,ACTOR_NAMES.CERTIFICATE_ACTOR),DummyActor.class);
   }
 
   @Test
   public void issueCertificateTest() {
+    setup(ACTOR_NAMES.CERTIFICATE_ACTOR,DummyActor.class);
     Http.RequestBuilder req =
         new Http.RequestBuilder()
             .uri(ISSUE_CERTIFICATE_URL)
@@ -93,7 +97,7 @@ public class CertificateControllerTest extends BaseApplicationTest {
             .bodyJson(getIssueCertificateRequest(COURSE_ID, BATCH_ID, null))
             .method("POST");
     Result result = Helpers.route(application, req);
-    Assert.assertEquals(400, result.status());
+    Assert.assertEquals(200, result.status());
   }
 
   private JsonNode getIssueCertificateRequest(String courseId, String batchId, String certificate) {
@@ -143,7 +147,7 @@ public class CertificateControllerTest extends BaseApplicationTest {
                     COURSE_ID, BATCH_ID, true, null, TEMPLATE_ID, true, true, true))
             .method("PATCH");
     Result result = Helpers.route(application, req);
-    Assert.assertEquals(400, result.status());
+    Assert.assertEquals(200, result.status());
   }
 
   @Test

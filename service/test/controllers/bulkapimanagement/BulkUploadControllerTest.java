@@ -16,6 +16,7 @@ import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
+import util.ACTOR_NAMES;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -30,7 +31,7 @@ public class BulkUploadControllerTest extends BaseApplicationTest {
 
   @Before
   public void before() {
-    setup(DummyActor.class);
+    setup(ACTOR_NAMES.BULK_UPLOAD_MANAMGEMENT_ACTOR, DummyActor.class);
   }
 
   @Test

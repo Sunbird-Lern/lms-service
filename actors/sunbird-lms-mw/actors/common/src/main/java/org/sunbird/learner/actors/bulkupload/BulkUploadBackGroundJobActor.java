@@ -74,6 +74,8 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
   private void process(Request actorMessage) {
     processId = (String) actorMessage.get(JsonKey.PROCESS_ID);
     Map<String, Object> dataMap = getBulkData(processId);
+    ProjectLogger.log(
+        "process started in BulkUploadBackGroundJobActor : " + processId, LoggerEnum.INFO.name());
     int status = (int) dataMap.get(JsonKey.STATUS);
     if (!(status == (ProjectUtil.BulkProcessStatus.COMPLETED.getValue())
         || status == (ProjectUtil.BulkProcessStatus.INTERRUPT.getValue()))) {

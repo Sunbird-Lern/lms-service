@@ -1,5 +1,7 @@
 package org.sunbird.learner.actors.bulkupload;
 
+import akka.actor.ActorRef;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -7,7 +9,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.sunbird.actor.router.ActorConfig;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.exception.ProjectCommonException;
@@ -31,8 +34,6 @@ import org.sunbird.learner.actors.bulkupload.model.BulkUploadProcess;
 import org.sunbird.learner.actors.bulkupload.model.StorageDetails;
 import org.sunbird.learner.util.Util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  * This actor will handle bulk upload operation .
  *
@@ -48,6 +49,10 @@ public class BulkUploadManagementActor extends BaseBulkUploadActor {
   private Util.DbInfo bulkDb = Util.dbInfoMap.get(JsonKey.BULK_OP_DB);
   private int batchDataSize = 0;
   private ObjectMapper mapper = new ObjectMapper();
+
+  @Inject
+  @Named("bulk-upload-background-job-actor")
+  private ActorRef bulkUploadBackGroundJobActorRef;
 
   private String[] bulkBatchAllowedFields = {JsonKey.BATCH_ID, JsonKey.USER_IDs};
 
@@ -284,7 +289,7 @@ public class BulkUploadManagementActor extends BaseBulkUploadActor {
       Request request = new Request();
       request.put(JsonKey.PROCESS_ID, processId);
       request.setOperation(ActorOperations.PROCESS_BULK_UPLOAD.getValue());
-      tellToAnother(request);
+      bulkUploadBackGroundJobActorRef.tell(request, getSelf());
     }
     ProjectLogger.log(
         "BulkUploadManagementActor: uploadCsvToDB completed processing for processId: " + processId,

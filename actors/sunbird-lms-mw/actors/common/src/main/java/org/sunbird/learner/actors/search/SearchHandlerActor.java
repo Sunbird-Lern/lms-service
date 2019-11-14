@@ -6,18 +6,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.sunbird.actor.core.BaseActor;
-import org.sunbird.actor.router.ActorConfig;
 import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.ActorOperations;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.*;
 import org.sunbird.common.models.util.ProjectUtil.EsType;
-import org.sunbird.common.models.util.PropertiesCache;
-import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.dto.SearchDTO;
@@ -32,10 +26,6 @@ import scala.concurrent.Future;
  *
  * @author Manzarul
  */
-@ActorConfig(
-  tasks = {"compositeSearch"},
-  asyncTasks = {}
-)
 public class SearchHandlerActor extends BaseActor {
 
   private String topn = PropertiesCache.getInstance().getProperty(JsonKey.SEARCH_TOP_N);

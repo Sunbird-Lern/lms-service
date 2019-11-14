@@ -38,7 +38,6 @@ public class ApplicationStart {
     ProjectLogger.log("Server started.. with environment: " + env.name(), LoggerEnum.INFO.name());
     checkCassandraConnections();
     SchedulerManager.schedule();
-    //        SunbirdMWService.init();
     lifecycle.addStopHook(
         () -> {
           return CompletableFuture.completedFuture(null);

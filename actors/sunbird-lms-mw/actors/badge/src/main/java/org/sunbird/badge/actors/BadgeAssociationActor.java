@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.sunbird.actor.core.BaseActor;
-import org.sunbird.actor.router.ActorConfig;
 import org.sunbird.badge.dao.ContentBadgeAssociationDao;
 import org.sunbird.badge.dao.impl.ContentBadgeAssociationDaoImpl;
 import org.sunbird.badge.service.BadgeAssociationService;
@@ -32,10 +31,6 @@ import org.sunbird.content.service.ContentService;
 import org.sunbird.learner.actors.coursebatch.CourseEnrollmentActor;
 import org.sunbird.learner.util.CourseBatchSchedulerUtil;
 
-@ActorConfig(
-  tasks = {"createBadgeAssociation", "removeBadgeAssociation"},
-  asyncTasks = {}
-)
 public class BadgeAssociationActor extends BaseActor {
 
   private BadgingService service = BadgingFactory.getInstance();

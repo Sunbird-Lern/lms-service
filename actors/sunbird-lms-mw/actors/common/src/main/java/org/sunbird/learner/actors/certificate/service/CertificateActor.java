@@ -7,16 +7,11 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.collections.CollectionUtils;
 import org.sunbird.actor.core.BaseActor;
-import org.sunbird.actor.router.ActorConfig;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.models.util.ProjectUtil;
-import org.sunbird.common.models.util.TelemetryEnvKey;
+import org.sunbird.common.models.util.*;
 import org.sunbird.common.models.util.datasecurity.OneWayHashing;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
@@ -27,10 +22,6 @@ import org.sunbird.learner.constants.InstructionEvent;
 import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.Util;
 
-@ActorConfig(
-  tasks = {"issueCertificate"},
-  asyncTasks = {}
-)
 public class CertificateActor extends BaseActor {
 
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
@@ -73,10 +64,11 @@ public class CertificateActor extends BaseActor {
     final String courseId = (String) request.getRequest().get(JsonKey.COURSE_ID);
     List<String> userIds = (List<String>) request.getRequest().get(JsonKey.USER_IDs);
     final boolean reIssue = isReissue(request.getContext().get(CourseJsonKey.REISSUE));
-    Map<String, Object> courseBatchResponse = CourseBatchUtil.validateCourseBatch(courseId, batchId);
-    if(null == courseBatchResponse.get("cert_templates")) {
-        ProjectCommonException.throwClientErrorException(
-                  ResponseCode.CLIENT_ERROR, "No certificate templates associated with " + batchId);
+    Map<String, Object> courseBatchResponse =
+        CourseBatchUtil.validateCourseBatch(courseId, batchId);
+    if (null == courseBatchResponse.get("cert_templates")) {
+      ProjectCommonException.throwClientErrorException(
+          ResponseCode.CLIENT_ERROR, "No certificate templates associated with " + batchId);
     }
     Response response = new Response();
     Map<String, Object> resultData = new HashMap<>();

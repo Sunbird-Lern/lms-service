@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.Map;
 import org.sunbird.actor.core.BaseActor;
-import org.sunbird.actor.router.ActorConfig;
 import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
@@ -24,10 +23,6 @@ import scala.concurrent.Future;
  *
  * @author Amit Kumar
  */
-@ActorConfig(
-  tasks = {"searchCourse", "getCourseById"},
-  asyncTasks = {}
-)
 public class CourseSearchActor extends BaseActor {
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
 

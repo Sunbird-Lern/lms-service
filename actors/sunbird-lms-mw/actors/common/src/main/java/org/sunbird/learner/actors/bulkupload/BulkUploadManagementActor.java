@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.sunbird.actor.router.ActorConfig;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
@@ -39,10 +38,6 @@ import org.sunbird.learner.util.Util;
  *
  * @author Amit Kumar
  */
-@ActorConfig(
-  tasks = {"bulkUpload", "getBulkOpStatus", "getBulkUploadStatusDownloadLink"},
-  asyncTasks = {}
-)
 public class BulkUploadManagementActor extends BaseBulkUploadActor {
 
   private CassandraOperation cassandraOperation = ServiceFactory.getInstance();

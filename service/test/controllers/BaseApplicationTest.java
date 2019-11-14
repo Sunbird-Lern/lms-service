@@ -2,9 +2,6 @@ package controllers;
 
 import static play.inject.Bindings.bind;
 
-import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
-import akka.actor.Props;
 import java.io.File;
 import java.util.List;
 import modules.StartModule;
@@ -26,24 +23,6 @@ import util.RequestInterceptor;
 @PrepareForTest({RequestInterceptor.class})
 public abstract class BaseApplicationTest {
   protected Application application;
-  private ActorSystem system;
-  private Props props;
-
-  public <T> void setup(Class<T> actorClass) {
-    application =
-        new GuiceApplicationBuilder()
-            .in(new File("path/to/app"))
-            .in(Mode.TEST)
-            .disable(StartModule.class)
-            .build();
-    Helpers.start(application);
-    system = ActorSystem.create("system");
-    props = Props.create(actorClass);
-    ActorRef subject = system.actorOf(props);
-    BaseController.setActorRef(subject);
-    PowerMockito.mockStatic(RequestInterceptor.class);
-    PowerMockito.when(RequestInterceptor.verifyRequestData(Mockito.any())).thenReturn("userId");
-  }
 
   public <T> void setup(ACTOR_NAMES actor, Class actorClass) {
     application =

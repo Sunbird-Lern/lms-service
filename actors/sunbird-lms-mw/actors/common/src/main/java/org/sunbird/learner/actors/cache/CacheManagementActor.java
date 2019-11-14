@@ -1,7 +1,6 @@
 package org.sunbird.learner.actors.cache;
 
 import org.sunbird.actor.core.BaseActor;
-import org.sunbird.actor.router.ActorConfig;
 import org.sunbird.cache.CacheFactory;
 import org.sunbird.cache.interfaces.Cache;
 import org.sunbird.common.models.response.Response;
@@ -12,10 +11,6 @@ import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 
-@ActorConfig(
-  tasks = {"clearCache"},
-  asyncTasks = {}
-)
 public class CacheManagementActor extends BaseActor {
   private Cache cache = CacheFactory.getInstance();
 

@@ -1,25 +1,10 @@
 package org.sunbird.learner.actors.bulkupload;
 
-import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.sunbird.actor.router.ActorConfig;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.ActorOperations;
-import org.sunbird.common.models.util.BulkUploadJsonKey;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.models.util.ProjectUtil;
-import org.sunbird.common.models.util.PropertiesCache;
-import org.sunbird.common.models.util.TelemetryEnvKey;
+import org.sunbird.common.models.util.*;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
@@ -31,17 +16,15 @@ import org.sunbird.learner.actors.bulkupload.model.BulkUploadProcess;
 import org.sunbird.learner.actors.bulkupload.model.StorageDetails;
 import org.sunbird.learner.util.Util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.*;
 
 /**
  * This actor will handle bulk upload operation .
  *
  * @author Amit Kumar
  */
-@ActorConfig(
-  tasks = {"bulkUpload", "getBulkOpStatus", "getBulkUploadStatusDownloadLink"},
-  asyncTasks = {}
-)
 public class BulkUploadManagementActor extends BaseBulkUploadActor {
 
   private CassandraOperation cassandraOperation = ServiceFactory.getInstance();

@@ -1,26 +1,14 @@
 package org.sunbird.learner.actors;
 
-import static org.sunbird.common.models.util.JsonKey.*;
-
 import akka.dispatch.Futures;
 import akka.dispatch.Mapper;
 import akka.pattern.Patterns;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.core.BaseActor;
-import org.sunbird.actor.router.ActorConfig;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.cacheloader.PageCacheLoaderService;
@@ -29,12 +17,7 @@ import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.hash.HashGeneratorUtil;
 import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.ActorOperations;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.models.util.ProjectUtil;
-import org.sunbird.common.models.util.TelemetryEnvKey;
+import org.sunbird.common.models.util.*;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
@@ -50,26 +33,18 @@ import scala.concurrent.ExecutionContextExecutor;
 import scala.concurrent.Future;
 import scala.concurrent.Promise;
 
+import java.io.IOException;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+
+import static org.sunbird.common.models.util.JsonKey.ID;
+
 /**
  * This actor will handle page management operation .
  *
  * @author Amit Kumar
  */
-@ActorConfig(
-  tasks = {
-    "createPage",
-    "updatePage",
-    "getPageData",
-    "getPageSettings",
-    "getPageSetting",
-    "createSection",
-    "updateSection",
-    "getSection",
-    "getAllSection"
-  },
-  asyncTasks = {},
-  dispatcher = "page-mgr-actor-dispatcher"
-)
 public class PageManagementActor extends BaseActor {
 
   private Util.DbInfo pageDbInfo = Util.dbInfoMap.get(JsonKey.PAGE_MGMT_DB);

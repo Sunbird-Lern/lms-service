@@ -1,65 +1,9 @@
 package org.sunbird.learner.actors.textbook;
 
-import static java.io.File.separator;
-import static java.util.Arrays.asList;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.sunbird.common.exception.ProjectCommonException.throwClientErrorException;
-import static org.sunbird.common.exception.ProjectCommonException.throwServerErrorException;
-import static org.sunbird.common.models.util.JsonKey.CHILDREN;
-import static org.sunbird.common.models.util.JsonKey.CONTENT;
-import static org.sunbird.common.models.util.JsonKey.CONTENT_TYPE;
-import static org.sunbird.common.models.util.JsonKey.DOWNLOAD;
-import static org.sunbird.common.models.util.JsonKey.HIERARCHY;
-import static org.sunbird.common.models.util.JsonKey.MIME_TYPE;
-import static org.sunbird.common.models.util.JsonKey.NAME;
-import static org.sunbird.common.models.util.JsonKey.SUNBIRD_CONTENT_GET_HIERARCHY_API;
-import static org.sunbird.common.models.util.JsonKey.TEXTBOOK;
-import static org.sunbird.common.models.util.JsonKey.TEXTBOOK_ID;
-import static org.sunbird.common.models.util.JsonKey.TEXTBOOK_TOC_ALLOWED_CONTNET_TYPES;
-import static org.sunbird.common.models.util.JsonKey.TEXTBOOK_TOC_ALLOWED_MIMETYPE;
-import static org.sunbird.common.models.util.JsonKey.TEXTBOOK_TOC_CSV_TTL;
-import static org.sunbird.common.models.util.JsonKey.TOC_URL;
-import static org.sunbird.common.models.util.JsonKey.TTL;
-import static org.sunbird.common.models.util.JsonKey.VERSION_KEY;
-import static org.sunbird.common.models.util.LoggerEnum.ERROR;
-import static org.sunbird.common.models.util.LoggerEnum.INFO;
-import static org.sunbird.common.models.util.ProjectLogger.log;
-import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
-import static org.sunbird.common.models.util.Slug.makeSlug;
-import static org.sunbird.common.responsecode.ResponseCode.SERVER_ERROR;
-import static org.sunbird.common.responsecode.ResponseCode.invalidTextbook;
-import static org.sunbird.common.responsecode.ResponseCode.noChildrenExists;
-import static org.sunbird.common.responsecode.ResponseCode.textbookChildrenExist;
-import static org.sunbird.content.textbook.FileExtension.Extension.CSV;
-import static org.sunbird.content.textbook.TextBookTocUploader.TEXTBOOK_TOC_FOLDER;
-import static org.sunbird.content.util.ContentCloudStore.getUri;
-import static org.sunbird.content.util.TextBookTocUtil.getObjectFrom;
-import static org.sunbird.content.util.TextBookTocUtil.readContent;
-import static org.sunbird.content.util.TextBookTocUtil.serialize;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.text.MessageFormat;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -72,7 +16,6 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.core.BaseActor;
-import org.sunbird.actor.router.ActorConfig;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
@@ -87,10 +30,34 @@ import org.sunbird.content.util.TextBookTocUtil;
 import org.sunbird.services.sso.SSOManager;
 import org.sunbird.services.sso.SSOServiceFactory;
 
-@ActorConfig(
-  tasks = {"textbookTocUpload", "textbookTocUrl", "textbookTocUpdate"},
-  asyncTasks = {}
-)
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
+import java.time.Instant;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+
+import static java.io.File.separator;
+import static java.util.Arrays.asList;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.sunbird.common.exception.ProjectCommonException.throwClientErrorException;
+import static org.sunbird.common.exception.ProjectCommonException.throwServerErrorException;
+import static org.sunbird.common.models.util.JsonKey.*;
+import static org.sunbird.common.models.util.LoggerEnum.ERROR;
+import static org.sunbird.common.models.util.LoggerEnum.INFO;
+import static org.sunbird.common.models.util.ProjectLogger.log;
+import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
+import static org.sunbird.common.models.util.Slug.makeSlug;
+import static org.sunbird.common.responsecode.ResponseCode.*;
+import static org.sunbird.content.textbook.FileExtension.Extension.CSV;
+import static org.sunbird.content.textbook.TextBookTocUploader.TEXTBOOK_TOC_FOLDER;
+import static org.sunbird.content.util.ContentCloudStore.getUri;
+import static org.sunbird.content.util.TextBookTocUtil.*;
+
 public class TextbookTocActor extends BaseActor {
 
   private SSOManager ssoManager = SSOServiceFactory.getInstance();

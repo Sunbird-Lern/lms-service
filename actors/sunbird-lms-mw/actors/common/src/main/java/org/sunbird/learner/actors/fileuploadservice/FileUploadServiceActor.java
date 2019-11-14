@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.core.BaseActor;
-import org.sunbird.actor.router.ActorConfig;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.ActorOperations;
@@ -19,10 +18,6 @@ import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 
 /** Class to upload the file on cloud storage. Created by arvind on 28/8/17. */
-@ActorConfig(
-  tasks = {"fileStorageService"},
-  asyncTasks = {}
-)
 public class FileUploadServiceActor extends BaseActor {
 
   @Override

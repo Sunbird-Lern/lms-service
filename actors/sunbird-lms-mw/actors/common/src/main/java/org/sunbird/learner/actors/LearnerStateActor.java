@@ -2,24 +2,17 @@ package org.sunbird.learner.actors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.*;
-import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.slf4j.helpers.MessageFormatter;
 import org.sunbird.actor.core.BaseActor;
-import org.sunbird.actor.router.ActorConfig;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.ActorOperations;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.models.util.ProjectUtil;
+import org.sunbird.common.models.util.*;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
@@ -31,16 +24,15 @@ import org.sunbird.learner.util.CourseBatchSchedulerUtil;
 import org.sunbird.learner.util.Util;
 import scala.concurrent.Future;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 /**
  * This actor will handle leaner's state operation like get course , get content etc.
  *
  * @author Manzarul
  * @author Arvind
  */
-@ActorConfig(
-  tasks = {"getCourse", "getUserCourse", "getContent"},
-  asyncTasks = {}
-)
 public class LearnerStateActor extends BaseActor {
 
   private CassandraOperation cassandraOperation = ServiceFactory.getInstance();
@@ -78,7 +70,7 @@ public class LearnerStateActor extends BaseActor {
     Map<String, Object> result = userCoursesService.getActiveUserCourses(userId);
     List<Map<String, Object>> updatedCourses = calculateProgressForUserCourses(request, result);
     if (MapUtils.isNotEmpty(result)) {
-      addCourseDetails(request, updatedCourses);
+    addCourseDetails(request, updatedCourses);
     } else {
       ProjectLogger.log(
           "LearnerStateActor:getCourse: returning batch without course details",
@@ -425,7 +417,7 @@ public class LearnerStateActor extends BaseActor {
     String batchId = (String) request.getRequest().get(JsonKey.BATCH_ID);
     String id = UserCoursesService.generateUserCourseESId(batchId, userId);
     Future<Map<String, Object>> mapF =
-        esService.getDataByIdentifier(ProjectUtil.EsType.usercourses.getTypeName(), id);
+            esService.getDataByIdentifier(ProjectUtil.EsType.usercourses.getTypeName(), id);
 
     Map<String, Object> map = (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(mapF);
     if (MapUtils.isEmpty(map) || !(boolean) map.get(JsonKey.ACTIVE)) {
@@ -438,8 +430,8 @@ public class LearnerStateActor extends BaseActor {
     List<Map<String, Object>> updatedCourses = calculateProgressForUserCourses(request, result);
     if (MapUtils.isEmpty(result)) {
       ProjectLogger.log(
-          "LearnerStateActor:getCourse: returning batch without course details",
-          LoggerEnum.INFO.name());
+              "LearnerStateActor:getCourse: returning batch without course details",
+              LoggerEnum.INFO.name());
     }
     Response response = new Response();
     response.put(JsonKey.COURSE, updatedCourses.get(0));

@@ -3,6 +3,7 @@ package modules;
 import java.util.concurrent.CompletableFuture;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
@@ -38,7 +39,6 @@ public class ApplicationStart {
     ProjectLogger.log("Server started.. with environment: " + env.name(), LoggerEnum.INFO.name());
     checkCassandraConnections();
     SchedulerManager.schedule();
-    //        SunbirdMWService.init();
     lifecycle.addStopHook(
         () -> {
           return CompletableFuture.completedFuture(null);

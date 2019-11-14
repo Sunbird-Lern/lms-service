@@ -9,7 +9,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.sunbird.actor.background.BackgroundOperations;
 import org.sunbird.actor.core.BaseActor;
-import org.sunbird.actor.router.ActorConfig;
 import org.sunbird.actorutil.email.EmailServiceClient;
 import org.sunbird.actorutil.email.EmailServiceFactory;
 import org.sunbird.cassandra.CassandraOperation;
@@ -32,10 +31,6 @@ import org.sunbird.models.course.batch.CourseBatch;
  * Actor responsible to sending email notifications to participants and mentors in open and
  * invite-only batches.
  */
-@ActorConfig(
-  tasks = {"courseBatchNotification"},
-  asyncTasks = {"courseBatchNotification"}
-)
 public class CourseBatchNotificationActor extends BaseActor {
   private static CassandraOperation cassandraOperation = ServiceFactory.getInstance();
 

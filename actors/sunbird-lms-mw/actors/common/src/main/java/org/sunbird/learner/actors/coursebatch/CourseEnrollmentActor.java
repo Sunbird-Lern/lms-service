@@ -1,11 +1,7 @@
 package org.sunbird.learner.actors.coursebatch;
 
+import akka.actor.ActorRef;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +30,14 @@ import org.sunbird.models.user.courses.UserCourses;
 import org.sunbird.telemetry.util.TelemetryUtil;
 import scala.concurrent.Future;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.Collectors;
+
 public class CourseEnrollmentActor extends BaseActor {
 
   private static String EKSTEP_COURSE_SEARCH_QUERY =
@@ -43,7 +47,13 @@ public class CourseEnrollmentActor extends BaseActor {
   private UserCoursesDao userCourseDao = UserCoursesDaoImpl.getInstance();
   private static ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private ObjectMapper mapper = new ObjectMapper();
+  private ActorRef courseBatchNotificationActorRef;
 
+  @Inject
+  public CourseEnrollmentActor(
+          @Named("course-batch-notification-actor") ActorRef courseBatchNotificationActorRef) {
+    this.courseBatchNotificationActorRef = courseBatchNotificationActorRef;
+  }
   @Override
   public void onReceive(Request request) throws Throwable {
 
@@ -187,7 +197,7 @@ public class CourseEnrollmentActor extends BaseActor {
     batchNotificationMap.put(JsonKey.COURSE_BATCH, courseBatchResult);
     batchNotificationMap.put(JsonKey.OPERATION_TYPE, operationType);
     batchNotification.setRequest(batchNotificationMap);
-    tellToAnother(batchNotification);
+    courseBatchNotificationActorRef.tell(batchNotification,getSelf());
   }
 
   private void generateAndProcessTelemetryEvent(

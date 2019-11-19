@@ -8,6 +8,7 @@ import static org.sunbird.common.models.util.LoggerEnum.INFO;
 import static org.sunbird.common.models.util.ProjectLogger.log;
 import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
 import static org.sunbird.common.responsecode.ResponseCode.errorProcessingRequest;
+import static org.sunbird.learner.constants.CourseJsonKey.SUNBIRD_SEND_EMAIL_NOTIFICATION_API;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.HttpMethod;
@@ -188,6 +189,19 @@ public class UserOrgServiceImpl implements UserOrgService {
     return userlist;
   }
 
+  @Override
+  public void sendEmailNotification(Map<String, Object> request) {
+    Map<String, String> headers = getdefaultHeaders();
+    headers.put(
+        "x-authenticated-user-token",
+        ssoManager.login(
+            getConfigValue(JsonKey.SUNBIRD_SSO_USERNAME),
+            getConfigValue(JsonKey.SUNBIRD_SSO_PASSWORD)));
+    getUserOrgResponse(
+        getConfigValue(SUNBIRD_SEND_EMAIL_NOTIFICATION_API), HttpMethod.POST, request, headers);
+  }
+
+  @Override
   public List<Map<String, Object>> getUsers(Map<String, Object> request) {
     Map<String, Object> requestMap = new HashMap<>();
     requestMap.put(JsonKey.REQUEST, request);

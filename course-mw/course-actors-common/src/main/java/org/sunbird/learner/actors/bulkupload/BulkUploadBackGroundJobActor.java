@@ -1,11 +1,14 @@
 package org.sunbird.learner.actors.bulkupload;
 
+import akka.actor.ActorRef;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.sunbird.actor.core.BaseActor;
@@ -44,6 +47,10 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
   private static ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private UserCoursesDao userCourseDao = UserCoursesDaoImpl.getInstance();
   private UserOrgService userOrgService = UserOrgServiceImpl.getInstance();
+
+  @Inject
+  @Named("background-job-manager-actor")
+  private ActorRef backgroundJobManagerActorRef;
 
   @Override
   public void onReceive(Request request) throws Throwable {
@@ -260,7 +267,7 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
     request.setOperation(ActorOperations.INSERT_USR_COURSES_INFO_ELASTIC.getValue());
     request.getRequest().put(JsonKey.USER_COURSES, courseMap);
     try {
-      tellToAnother(request);
+      backgroundJobManagerActorRef.tell(request, getSelf());
     } catch (Exception ex) {
       ProjectLogger.log("Exception Occurred during saving user count to Es : ", ex);
     }
@@ -271,7 +278,7 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
     request.setOperation(ActorOperations.UPDATE_USR_COURSES_INFO_ELASTIC.getValue());
     request.getRequest().put(JsonKey.USER_COURSES, courseMap);
     try {
-      tellToAnother(request);
+      backgroundJobManagerActorRef.tell(request, getSelf());
     } catch (Exception ex) {
       ProjectLogger.log("Exception Occurred during saving user count to Es : ", ex);
     }

@@ -85,13 +85,12 @@ public class CourseEnrollmentActor extends BaseActor {
     CourseBatch courseBatch =
         courseBatchDao.readById(
             (String) courseMap.get(JsonKey.COURSE_ID), (String) courseMap.get(JsonKey.BATCH_ID));
-    checkUserEnrollementStatus(
-        (String) courseMap.get(JsonKey.COURSE_ID), (String) courseMap.get(JsonKey.USER_ID));
+    checkUserEnrollementStatus((String) courseMap.get(JsonKey.COURSE_ID), (String) courseMap.get(JsonKey.USER_ID));
     validateCourseBatch(
-        courseBatch,
-        courseMap,
+            courseBatch,
+            courseMap,
         (String) actorMessage.getContext().get(JsonKey.REQUESTED_BY),
-        ActorOperations.ENROLL_COURSE.getValue());
+         ActorOperations.ENROLL_COURSE.getValue());
 
     UserCourses userCourseResult =
         userCourseDao.read(
@@ -127,7 +126,7 @@ public class CourseEnrollmentActor extends BaseActor {
           (String) courseMap.get(JsonKey.BATCH_ID),
           (String) courseMap.get(JsonKey.USER_ID));
     }
-    if (courseNotificationActive()) {
+   if (courseNotificationActive()) {
       batchOperationNotifier(courseMap, courseBatch, JsonKey.ADD);
     }
     generateAndProcessTelemetryEvent(courseMap, "user.batch.course", JsonKey.CREATE);
@@ -222,7 +221,7 @@ public class CourseEnrollmentActor extends BaseActor {
     request.setOperation(ActorOperations.INSERT_USR_COURSES_INFO_ELASTIC.getValue());
     request.getRequest().put(JsonKey.USER_COURSES, courseMap);
     try {
-      tellToAnother(request);
+      courseBatchNotificationActorRef.tell(request,getSelf());
     } catch (Exception ex) {
       ProjectLogger.log("Exception Occurred during saving user count to Es : ", ex);
     }

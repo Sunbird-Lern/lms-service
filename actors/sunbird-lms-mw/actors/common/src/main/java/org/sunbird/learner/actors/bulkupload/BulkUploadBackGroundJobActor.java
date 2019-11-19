@@ -1,5 +1,6 @@
 package org.sunbird.learner.actors.bulkupload;
 
+import akka.actor.ActorRef;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -30,6 +31,9 @@ import org.sunbird.userorg.UserOrgService;
 import org.sunbird.userorg.UserOrgServiceImpl;
 import scala.concurrent.Future;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
 /**
  * This actor will handle bulk upload operation .
  *
@@ -44,7 +48,13 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
   private static ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private UserCoursesDao userCourseDao = UserCoursesDaoImpl.getInstance();
   private UserOrgService userOrgService = UserOrgServiceImpl.getInstance();
+  private ActorRef backgroundJobManagerActorRef;
 
+  @Inject
+  public BulkUploadBackGroundJobActor(
+          @Named("background-job-manager-actor") ActorRef backgroundJobManagerActorRef) {
+    this.backgroundJobManagerActorRef = backgroundJobManagerActorRef;
+  }
   @Override
   public void onReceive(Request request) throws Throwable {
     Util.initializeContext(request, TelemetryEnvKey.USER);
@@ -260,7 +270,7 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
     request.setOperation(ActorOperations.INSERT_USR_COURSES_INFO_ELASTIC.getValue());
     request.getRequest().put(JsonKey.USER_COURSES, courseMap);
     try {
-      tellToAnother(request);
+      backgroundJobManagerActorRef.tell(request,getSelf());
     } catch (Exception ex) {
       ProjectLogger.log("Exception Occurred during saving user count to Es : ", ex);
     }
@@ -271,7 +281,7 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
     request.setOperation(ActorOperations.UPDATE_USR_COURSES_INFO_ELASTIC.getValue());
     request.getRequest().put(JsonKey.USER_COURSES, courseMap);
     try {
-      tellToAnother(request);
+      backgroundJobManagerActorRef.tell(request,getSelf());
     } catch (Exception ex) {
       ProjectLogger.log("Exception Occurred during saving user count to Es : ", ex);
     }

@@ -48,13 +48,11 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
   private static ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private UserCoursesDao userCourseDao = UserCoursesDaoImpl.getInstance();
   private UserOrgService userOrgService = UserOrgServiceImpl.getInstance();
-  private ActorRef backgroundJobManagerActorRef;
 
   @Inject
-  public BulkUploadBackGroundJobActor(
-          @Named("background-job-manager-actor") ActorRef backgroundJobManagerActorRef) {
-    this.backgroundJobManagerActorRef = backgroundJobManagerActorRef;
-  }
+  @Named("background-job-manager-actor")
+  private ActorRef backgroundJobManagerActorRef;
+
   @Override
   public void onReceive(Request request) throws Throwable {
     Util.initializeContext(request, TelemetryEnvKey.USER);

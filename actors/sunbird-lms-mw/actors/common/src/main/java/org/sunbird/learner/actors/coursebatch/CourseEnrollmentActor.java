@@ -47,13 +47,11 @@ public class CourseEnrollmentActor extends BaseActor {
   private UserCoursesDao userCourseDao = UserCoursesDaoImpl.getInstance();
   private static ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private ObjectMapper mapper = new ObjectMapper();
-  private ActorRef courseBatchNotificationActorRef;
 
   @Inject
-  public CourseEnrollmentActor(
-          @Named("course-batch-notification-actor") ActorRef courseBatchNotificationActorRef) {
-    this.courseBatchNotificationActorRef = courseBatchNotificationActorRef;
-  }
+  @Named("course-batch-notification-actor")
+  private ActorRef courseBatchNotificationActorRef;
+
   @Override
   public void onReceive(Request request) throws Throwable {
 

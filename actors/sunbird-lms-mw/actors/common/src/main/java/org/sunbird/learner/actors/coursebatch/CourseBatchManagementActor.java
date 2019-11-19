@@ -47,13 +47,10 @@ public class CourseBatchManagementActor extends BaseActor {
   private UserCoursesService userCoursesService = new UserCoursesService();
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
-  private ActorRef courseBatchNotificationActorRef;
 
-    @Inject
-    public CourseBatchManagementActor(
-            @Named("course-batch-notification-actor") ActorRef courseBatchNotificationActorRef) {
-        this.courseBatchNotificationActorRef = courseBatchNotificationActorRef;
-    }
+  @Inject
+  @Named("course-batch-notification-actor")
+  private ActorRef courseBatchNotificationActorRef;
 
   static {
     DATE_FORMAT.setTimeZone(

@@ -1,11 +1,7 @@
 package org.sunbird.learner.actors.coursebatch;
 
+import akka.actor.ActorRef;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +30,14 @@ import org.sunbird.models.user.courses.UserCourses;
 import org.sunbird.telemetry.util.TelemetryUtil;
 import scala.concurrent.Future;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.Collectors;
+
 public class CourseEnrollmentActor extends BaseActor {
 
   private static String EKSTEP_COURSE_SEARCH_QUERY =
@@ -43,6 +47,10 @@ public class CourseEnrollmentActor extends BaseActor {
   private UserCoursesDao userCourseDao = UserCoursesDaoImpl.getInstance();
   private static ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private ObjectMapper mapper = new ObjectMapper();
+
+  @Inject
+  @Named("course-batch-notification-actor")
+  private ActorRef courseBatchNotificationActorRef;
 
   @Override
   public void onReceive(Request request) throws Throwable {
@@ -75,13 +83,12 @@ public class CourseEnrollmentActor extends BaseActor {
     CourseBatch courseBatch =
         courseBatchDao.readById(
             (String) courseMap.get(JsonKey.COURSE_ID), (String) courseMap.get(JsonKey.BATCH_ID));
-    checkUserEnrollementStatus(
-        (String) courseMap.get(JsonKey.COURSE_ID), (String) courseMap.get(JsonKey.USER_ID));
+    checkUserEnrollementStatus((String) courseMap.get(JsonKey.COURSE_ID), (String) courseMap.get(JsonKey.USER_ID));
     validateCourseBatch(
-        courseBatch,
-        courseMap,
+            courseBatch,
+            courseMap,
         (String) actorMessage.getContext().get(JsonKey.REQUESTED_BY),
-        ActorOperations.ENROLL_COURSE.getValue());
+         ActorOperations.ENROLL_COURSE.getValue());
 
     UserCourses userCourseResult =
         userCourseDao.read(
@@ -117,7 +124,7 @@ public class CourseEnrollmentActor extends BaseActor {
           (String) courseMap.get(JsonKey.BATCH_ID),
           (String) courseMap.get(JsonKey.USER_ID));
     }
-    if (courseNotificationActive()) {
+   if (courseNotificationActive()) {
       batchOperationNotifier(courseMap, courseBatch, JsonKey.ADD);
     }
     generateAndProcessTelemetryEvent(courseMap, "user.batch.course", JsonKey.CREATE);
@@ -187,7 +194,7 @@ public class CourseEnrollmentActor extends BaseActor {
     batchNotificationMap.put(JsonKey.COURSE_BATCH, courseBatchResult);
     batchNotificationMap.put(JsonKey.OPERATION_TYPE, operationType);
     batchNotification.setRequest(batchNotificationMap);
-    tellToAnother(batchNotification);
+    courseBatchNotificationActorRef.tell(batchNotification,getSelf());
   }
 
   private void generateAndProcessTelemetryEvent(
@@ -212,7 +219,7 @@ public class CourseEnrollmentActor extends BaseActor {
     request.setOperation(ActorOperations.INSERT_USR_COURSES_INFO_ELASTIC.getValue());
     request.getRequest().put(JsonKey.USER_COURSES, courseMap);
     try {
-      tellToAnother(request);
+      courseBatchNotificationActorRef.tell(request,getSelf());
     } catch (Exception ex) {
       ProjectLogger.log("Exception Occurred during saving user count to Es : ", ex);
     }

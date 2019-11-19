@@ -1,5 +1,7 @@
 package org.sunbird.userorg;
 
+import org.sunbird.common.models.response.Response;
+
 import java.util.List;
 import java.util.Map;
 
@@ -14,4 +16,6 @@ public interface UserOrgService {
   List<Map<String, Object>> getUsersByIds(List<String> ids);
 
   List<Map<String, Object>> getUsers(Map<String, Object> request);
+
+  void sendEmailNotification(Map<String,Object> request);
 }

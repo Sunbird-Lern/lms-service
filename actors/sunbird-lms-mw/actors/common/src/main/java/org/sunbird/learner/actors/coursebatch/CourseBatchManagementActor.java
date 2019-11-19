@@ -4,6 +4,7 @@ import static org.sunbird.common.models.util.JsonKey.ID;
 import static org.sunbird.common.models.util.JsonKey.PARTICIPANTS;
 import static org.sunbird.common.models.util.ProjectLogger.log;
 
+import akka.actor.ActorRef;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.text.MessageFormat;
 import java.text.ParseException;
@@ -36,6 +37,9 @@ import org.sunbird.userorg.UserOrgService;
 import org.sunbird.userorg.UserOrgServiceImpl;
 import scala.concurrent.Future;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
 public class CourseBatchManagementActor extends BaseActor {
 
   private CourseBatchDao courseBatchDao = new CourseBatchDaoImpl();
@@ -43,6 +47,10 @@ public class CourseBatchManagementActor extends BaseActor {
   private UserCoursesService userCoursesService = new UserCoursesService();
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+
+  @Inject
+  @Named("course-batch-notification-actor")
+  private ActorRef courseBatchNotificationActorRef;
 
   static {
     DATE_FORMAT.setTimeZone(
@@ -164,7 +172,7 @@ public class CourseBatchManagementActor extends BaseActor {
     }
     batchNotificationMap.put(JsonKey.COURSE_BATCH, courseBatch);
     batchNotification.setRequest(batchNotificationMap);
-    tellToAnother(batchNotification);
+    courseBatchNotificationActorRef.tell(batchNotification,getSelf());
   }
 
   @SuppressWarnings("unchecked")

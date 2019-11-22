@@ -19,7 +19,7 @@
   			<activeByDefault>true</activeByDefault>
   		</activation>
   		<modules>
-  			<module>actors/sunbird-lms-mw</module>
+  			<module>course-mw</module>
 	  		<module>service</module>
   		</modules>
   	</profile>
@@ -32,8 +32,8 @@
   	<profile>
         <id>jacoco</id>
         <modules>
-  			<module>actors/sunbird-lms-mw</module>
-	  		<!-- <module>service</module> -->
+  			<module>course-mw</module>
+	  		<module>service</module>
   		</modules>
         <build>
             <plugins>
@@ -51,7 +51,7 @@
                             <configuration>
                                 <fileSets>
                                     <fileSet>
-                                        <directory>actors/sunbird-lms-mw/actors</directory>
+                                        <directory>course-mw</directory>
                                         <includes>
                                             <include>**/target/coverage-reports/*.exec</include>
                                         </includes>

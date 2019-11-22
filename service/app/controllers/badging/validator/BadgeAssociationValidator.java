@@ -22,6 +22,7 @@ public class BadgeAssociationValidator extends BaseRequestValidator {
 
   @SuppressWarnings("unchecked")
   public void commonValidation(Request request) {
+    System.out.println(request.getRequest().toString());
     validateParam(
         (String) request.getRequest().get(JsonKey.CONTENT_ID),
         ResponseCode.mandatoryParamsMissing,

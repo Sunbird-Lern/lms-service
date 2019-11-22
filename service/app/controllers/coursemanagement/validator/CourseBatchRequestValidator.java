@@ -38,7 +38,6 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
     validateEndDate(startDate, endDate);
     validateEnrollmentEndDate(enrollmentEndDate, startDate, endDate);
     validateCreatedForAndMentors(request);
-    validateParticipants(request);
   }
 
   public void validateUpdateCourseBatchRequest(Request request) {
@@ -87,15 +86,9 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
 
     validateUpdateBatchEndDate(request);
     validateCreatedForAndMentors(request);
-    validateParticipants(request);
   }
 
   public void validateAddUserToCourseBatchRequest(Request courseRequest) {
-    validateBatchId(courseRequest);
-    validateUserId(courseRequest);
-  }
-
-  public void validateDeleteCourseBatchRequest(Request courseRequest) {
     validateBatchId(courseRequest);
     validateUserId(courseRequest);
   }
@@ -115,18 +108,6 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
           ResponseCode.userIdRequired.getErrorCode(),
           ResponseCode.userIdRequired.getErrorMessage(),
           ERROR_CODE);
-    }
-  }
-
-  private void validateParticipants(Request request) {
-    if (request.getRequest().containsKey(JsonKey.PARTICIPANTS)
-        && !(request.getRequest().get(JsonKey.PARTICIPANTS) instanceof List)) {
-      throw new ProjectCommonException(
-          ResponseCode.dataTypeError.getErrorCode(),
-          ResponseCode.dataTypeError.getErrorMessage(),
-          ResponseCode.CLIENT_ERROR.getResponseCode(),
-          JsonKey.PARTICIPANTS,
-          "Array");
     }
   }
 

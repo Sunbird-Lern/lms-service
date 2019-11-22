@@ -183,12 +183,11 @@ public class CourseMetricsActor extends BaseMetricsActor {
     Map<String, Object> filter = new HashMap<>();
     filter.put(JsonKey.BATCH_ID, batchId);
     filter.put(JsonKey.USER_ID, userIds);
-    Map<String, Object> nestedFilter = new HashMap<>();
-    nestedFilter.put(
-        CourseJsonKey.CERTIFICATES_DOT_NAME,
-        ProjectUtil.getConfigValue(CourseJsonKey.COURSE_COMPLETION_CERTIFICATE));
+    Map<String, String> mandatoryNestedFieldsByPath = new HashMap<>();
+    mandatoryNestedFieldsByPath.put(
+            CourseJsonKey.CERTIFICATES_DOT_NAME, CourseJsonKey.CERTIFICATES);
     searchDTO.getAdditionalProperties().put(JsonKey.FILTERS, filter);
-    searchDTO.getAdditionalProperties().put(JsonKey.NESTED_KEY_FILTER, nestedFilter);
+    searchDTO.getAdditionalProperties().put(JsonKey.NESTED_EXISTS, mandatoryNestedFieldsByPath);
     searchDTO.setFields(Arrays.asList(JsonKey.USER_ID, CourseJsonKey.CERTIFICATES));
     Future<Map<String, Object>> resultF =
         esService.search(searchDTO, EsType.usercourses.getTypeName());
@@ -330,7 +329,7 @@ public class CourseMetricsActor extends BaseMetricsActor {
                           + ", courseAssessmentsreportPath="
                           + courseAssessmentsreportPath,
                   LoggerEnum.INFO.name());
-        assessmentReportSignedUrl = CloudStorageUtil.getAnalyticsSignedUrl(CloudStorageType.AZURE, courseMetricsContainer, courseAssessmentsreportPath);
+        assessmentReportSignedUrl = CloudStorageUtil.getSignedUrl(CloudStorageType.AZURE, courseMetricsContainer, courseAssessmentsreportPath);
       }
     }
 
@@ -341,7 +340,7 @@ public class CourseMetricsActor extends BaseMetricsActor {
             + reportPath,
         LoggerEnum.INFO.name());
     String signedUrl =
-        CloudStorageUtil.getAnalyticsSignedUrl(
+        CloudStorageUtil.getSignedUrl(
             CloudStorageType.AZURE, courseMetricsContainer, reportPath);
 
     Response response = new Response();

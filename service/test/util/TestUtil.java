@@ -1,4 +1,4 @@
-package controllers;
+package util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;

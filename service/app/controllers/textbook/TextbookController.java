@@ -62,7 +62,7 @@ public class TextbookController extends BaseController {
     }
   }
 
-  @Override
+//  @Override
   public Request createAndInitUploadRequest(String operation, String objectType, Http.Request httpRequest)
       throws IOException {
     ProjectLogger.log("API call for operation : " + operation);

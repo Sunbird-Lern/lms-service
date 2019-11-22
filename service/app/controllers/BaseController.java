@@ -6,13 +6,8 @@ import akka.pattern.PatternsCS;
 import akka.util.Timeout;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -24,7 +19,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import modules.ApplicationStart;
 import modules.OnRequestHandler;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.service.SunbirdMWService;
 import org.sunbird.common.exception.ProjectCommonException;
@@ -40,7 +34,6 @@ import org.sunbird.common.request.HeaderParam;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.telemetry.util.TelemetryEvents;
 import org.sunbird.telemetry.util.TelemetryLmaxWriter;
-import play.libs.Files.TemporaryFile;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
@@ -108,15 +101,6 @@ public class BaseController extends Controller {
       String operation, Http.Request httpRequest) {
     org.sunbird.common.request.Request request = new org.sunbird.common.request.Request();
     return initRequest(request, operation, httpRequest);
-  }
-
-  protected CompletionStage<Result> handleRequest(String operation, Http.Request httpRequest) {
-    return handleRequest(operation, null, null, null, null, false, httpRequest);
-  }
-
-  protected CompletionStage<Result> handleRequest(
-      String operation, JsonNode requestBodyJson, Http.Request httpRequest) {
-    return handleRequest(operation, requestBodyJson, null, null, null, true, httpRequest);
   }
 
   protected CompletionStage<Result> handleRequest(
@@ -769,29 +753,6 @@ public class BaseController extends Controller {
     httpReq.flash().removing(JsonKey.APP_ID);
   }
 
-  /**
-   * This method will set extra param to request body which is required for actor layer.
-   *
-   * @param request Request
-   * @param requestId String
-   * @param actorOpName String
-   * @param requestedUserId String
-   * @param env int
-   * @return Request
-   */
-  public org.sunbird.common.request.Request setExtraParam(
-      org.sunbird.common.request.Request request,
-      String requestId,
-      String actorOpName,
-      String requestedUserId,
-      int env) {
-    request.setRequestId(requestId);
-    request.setOperation(actorOpName);
-    request.getRequest().put(JsonKey.CREATED_BY, requestedUserId);
-    request.setEnv(env);
-    return request;
-  }
-
   public Map<String, String> getAllRequestHeaders(Request request) {
     Map<String, String> map = new HashMap<>();
     Map<String, List<String>> headers = request.getHeaders().toMap();
@@ -801,69 +762,6 @@ public class BaseController extends Controller {
       map.put(entry.getKey(), entry.getValue().get(0));
     }
     return map;
-  }
-
-  /**
-   * @param operation
-   * @param objectType
-   * @return
-   * @throws IOException
-   */
-  protected org.sunbird.common.request.Request createAndInitUploadRequest(
-      String operation, String objectType, Http.Request httpRequest) throws IOException {
-    ProjectLogger.log(
-        "BaseController: createAndInitUploadRequest called with operation = " + operation);
-    org.sunbird.common.request.Request reqObj = new org.sunbird.common.request.Request();
-    Map<String, Object> map = new HashMap<>();
-    byte[] byteArray = null;
-    Http.MultipartFormData<TemporaryFile> body = httpRequest.body().asMultipartFormData();
-    Map<String, String[]> formUrlEncodeddata = httpRequest.body().asFormUrlEncoded();
-    JsonNode requestData = httpRequest.body().asJson();
-    if (body != null) {
-      Map<String, String[]> data = body.asFormUrlEncoded();
-      for (Map.Entry<String, String[]> entry : data.entrySet()) {
-        map.put(entry.getKey(), entry.getValue()[0]);
-      }
-      List<Http.MultipartFormData.FilePart<TemporaryFile>> filePart = body.getFiles();
-      if (filePart != null && !filePart.isEmpty()) {
-        InputStream is = new FileInputStream(filePart.get(0).getRef().path().toFile());
-        byteArray = IOUtils.toByteArray(is);
-      }
-    } else if (null != formUrlEncodeddata) {
-      for (Map.Entry<String, String[]> entry : formUrlEncodeddata.entrySet()) {
-        map.put(entry.getKey(), entry.getValue()[0]);
-      }
-      InputStream is =
-          new ByteArrayInputStream(
-              ((String) map.get(JsonKey.DATA)).getBytes(StandardCharsets.UTF_8));
-      byteArray = IOUtils.toByteArray(is);
-    } else if (null != requestData) {
-      reqObj =
-          (org.sunbird.common.request.Request)
-              mapper.RequestMapper.mapRequest(
-                  httpRequest.body().asJson(), org.sunbird.common.request.Request.class);
-      InputStream is =
-          new ByteArrayInputStream(
-              ((String) reqObj.getRequest().get(JsonKey.DATA)).getBytes(StandardCharsets.UTF_8));
-      byteArray = IOUtils.toByteArray(is);
-      reqObj.getRequest().remove(JsonKey.DATA);
-      map.putAll(reqObj.getRequest());
-    } else {
-      throw new ProjectCommonException(
-          ResponseCode.invalidData.getErrorCode(),
-          ResponseCode.invalidData.getErrorMessage(),
-          ResponseCode.CLIENT_ERROR.getResponseCode());
-    }
-    reqObj.setOperation(operation);
-    reqObj.setRequestId(ExecutionContext.getRequestId());
-    reqObj.setEnv(getEnvironment());
-    map.put(JsonKey.OBJECT_TYPE, objectType);
-    map.put(JsonKey.CREATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
-    map.put(JsonKey.FILE, byteArray);
-    HashMap<String, Object> innerMap = new HashMap<>();
-    innerMap.put(JsonKey.DATA, map);
-    reqObj.setRequest(innerMap);
-    return reqObj;
   }
 
   @SuppressWarnings("unchecked")

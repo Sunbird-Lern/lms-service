@@ -87,6 +87,7 @@ public class PageManagementActor extends BaseActor {
     Util.initializeContext(request, TelemetryEnvKey.PAGE);
 
     ExecutionContext.setRequestId(request.getRequestId());
+    ProjectLogger.log("PageManagementActor: Request recieved : " + request.getRequest(), LoggerEnum.INFO.name());
     if (request.getOperation().equalsIgnoreCase(ActorOperations.CREATE_PAGE.getValue())) {
       createPage(request);
     } else if (request.getOperation().equalsIgnoreCase(ActorOperations.UPDATE_PAGE.getValue())) {
@@ -112,6 +113,9 @@ public class PageManagementActor extends BaseActor {
         .equalsIgnoreCase(ActorOperations.GET_ALL_SECTION.getValue())) {
       getAllSections();
     } else {
+      ProjectLogger.log(
+              "PageManagementActor: Invalid operation request : " + request.getOperation(),
+              LoggerEnum.ERROR.name());
       onReceiveUnsupportedOperation(request.getOperation());
     }
   }
@@ -268,6 +272,7 @@ public class PageManagementActor extends BaseActor {
 
   @SuppressWarnings("unchecked")
   private void getPageData(Request actorMessage) throws Exception {
+    ProjectLogger.log("PageManagementActor:getPageData: start",LoggerEnum.INFO.name());
     String sectionQuery = null;
     Map<String, Object> filterMap = new HashMap<>();
     Map<String, Object> req = (Map<String, Object>) actorMessage.getRequest().get(JsonKey.PAGE);
@@ -310,7 +315,7 @@ public class PageManagementActor extends BaseActor {
       ProjectLogger.log(
           "PageManagementActor:getPageData: Exception occurred with error message =  "
               + e.getMessage(),
-          LoggerEnum.INFO);
+          LoggerEnum.INFO.name());
       throw new ProjectCommonException(
           ResponseCode.errorInvalidPageSection.getErrorCode(),
           ResponseCode.errorInvalidPageSection.getErrorMessage(),
@@ -392,6 +397,7 @@ public class PageManagementActor extends BaseActor {
                 }
               },
               getContext().dispatcher());
+      ProjectLogger.log("PageManagementActor:getPageData: end",LoggerEnum.INFO.name());
       Patterns.pipe(response, getContext().dispatcher()).to(sender());
 
     } catch (Exception e) {
@@ -637,6 +643,7 @@ public class PageManagementActor extends BaseActor {
       ExecutionContextExecutor ec)
       throws Exception {
 
+    ProjectLogger.log("PageManagementActor:getContentData: start",LoggerEnum.INFO.name());
     Map<String, Object> searchQueryMap =
         mapper.readValue((String) section.get(JsonKey.SEARCH_QUERY), HashMap.class);
     if (MapUtils.isEmpty(searchQueryMap)) {
@@ -681,6 +688,7 @@ public class PageManagementActor extends BaseActor {
                 ProjectLogger.log(
                     "PageManagementActor:getContentData:apply: section = " + section,
                     LoggerEnum.DEBUG.name());
+                ProjectLogger.log("PageManagementActor:getContentData: end",LoggerEnum.INFO.name());
               }
               return section;
             }
@@ -695,6 +703,7 @@ public class PageManagementActor extends BaseActor {
       final Promise promise = Futures.promise();
       promise.success(section);
       result = promise.future();
+      ProjectLogger.log("PageManagementActor:getContentData: end",LoggerEnum.INFO.name());
       return result;
     }
   }

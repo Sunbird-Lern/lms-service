@@ -111,20 +111,4 @@ public class CourseMetricsController extends BaseController {
     }
   }
 
-  public CompletionStage<Result> courseCreationReport(String courseId, Http.Request httpRequest) {
-    try {
-      String periodStr = httpRequest.getQueryString("period");
-      Map<String, Object> map = new HashMap<>();
-      Request request = new Request();
-      request.setEnv(getEnvironment());
-      request.setOperation(ActorOperations.COURSE_CREATION_METRICS_REPORT.getValue());
-      map.put(JsonKey.COURSE_ID, courseId);
-      map.put(JsonKey.PERIOD, periodStr);
-      request.setRequest(map);
-      request.setRequestId(ExecutionContext.getRequestId());
-      return actorResponseHandler(getActorRef(), request, timeout, null, httpRequest);
-    } catch (Exception e) {
-      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
-    }
-  }
 }

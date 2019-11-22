@@ -672,7 +672,7 @@ public class TextbookTocActor extends BaseActor {
           String dialCode = (String) recordMap.get(JsonKey.DIAL_CODES);
           List<String> dialCodeList = null;
           if (StringUtils.isNotBlank(dialCode)) {
-            dialCodeList = new ArrayList<String>(Arrays.asList(dialCode.split(",")));
+            dialCodeList = new ArrayList<String>(Arrays.asList(dialCode.substring(2,dialCode.length()-2).split("\"\",\"\"")));
             for (String dCode : dialCodeList) {
               if (!dialCodes.add(dCode.trim())) {
                 duplicateDialCodes.add(dCode.trim());
@@ -682,7 +682,7 @@ public class TextbookTocActor extends BaseActor {
 
           String reqTopics = (String) recordMap.get(JsonKey.TOPIC);
           if (StringUtils.isNotBlank(reqTopics)) {
-            List<String> topicList = new ArrayList<String>(Arrays.asList(reqTopics.split(",")));
+            List<String> topicList = new ArrayList<String>(Arrays.asList(reqTopics.substring(2,reqTopics.length()-2).split("\"\",\"\"")));
             topicList.forEach(
                 s -> {
                   topics.add(s.trim());
@@ -768,7 +768,7 @@ public class TextbookTocActor extends BaseActor {
   private void getBgmsData(HashMap<String, Object> recordMap, Map<String, Object> bgms) {
     for (Entry<String, Object> entry : frameCategories.entrySet()) {
       String key = entry.getKey();
-      bgms.put(key, recordMap.get(key));
+      bgms.put(key,recordMap.get(key));
     }
   }
 
@@ -1580,20 +1580,20 @@ public class TextbookTocActor extends BaseActor {
     if (MapUtils.isNotEmpty(metadata)) {
       List<String> keywords =
           (StringUtils.isNotBlank((String) metadata.get(JsonKey.KEYWORDS)))
-              ? asList(((String) metadata.get(JsonKey.KEYWORDS)).split(","))
+              ? asList(((String) metadata.get(JsonKey.KEYWORDS)).substring(2,((String) metadata.get(JsonKey.KEYWORDS)).length()-2).split("\"\",\"\""))
               : null;
       List<String> gradeLevel =
           (StringUtils.isNotBlank((String) metadata.get(JsonKey.GRADE_LEVEL)))
-              ? asList(((String) metadata.get(JsonKey.GRADE_LEVEL)).split(","))
+              ? asList(((String) metadata.get(JsonKey.GRADE_LEVEL)).substring(2,((String) metadata.get(JsonKey.GRADE_LEVEL)).length()-2).split("\"\",\"\""))
               : null;
       List<String> dialCodes =
           (StringUtils.isNotBlank((String) metadata.get(JsonKey.DIAL_CODES)))
-              ? asList(((String) metadata.get(JsonKey.DIAL_CODES)).split(","))
+              ? asList(((String) metadata.get(JsonKey.DIAL_CODES)).substring(2,((String) metadata.get(JsonKey.DIAL_CODES)).length()-2).split("\"\",\"\""))
               : null;
 
       List<String> topics =
           (StringUtils.isNotBlank((String) metadata.get(JsonKey.TOPIC)))
-              ? asList(((String) metadata.get(JsonKey.TOPIC)).split(","))
+              ? asList(((String) metadata.get(JsonKey.TOPIC)).substring(2,((String) metadata.get(JsonKey.TOPIC)).length()-2).split("\"\",\"\""))
               : null;
       newMeta.putAll(metadata);
       newMeta.remove(JsonKey.KEYWORDS);
@@ -1676,4 +1676,5 @@ public class TextbookTocActor extends BaseActor {
           });
     }
   }
+
 }

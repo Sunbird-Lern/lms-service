@@ -2,8 +2,10 @@ package org.sunbird.learner.util;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.ElasticSearchTcpImpl;
@@ -16,7 +18,6 @@ import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.PropertiesCache;
 import org.sunbird.common.request.HeaderParam;
 import org.sunbird.helper.ServiceFactory;
-import org.sunbird.learner.actors.coursebatch.CourseEnrollmentActor;
 import scala.concurrent.Future;
 
 /**
@@ -29,6 +30,8 @@ import scala.concurrent.Future;
 public final class CourseBatchSchedulerUtil {
   public static Map<String, String> headerMap = new HashMap<>();
   private static ElasticSearchService esService = new ElasticSearchTcpImpl();
+  private static String EKSTEP_COURSE_SEARCH_QUERY =
+      "{\"request\": {\"filters\":{\"contentType\": [\"Course\"], \"objectType\": [\"Content\"], \"identifier\": \"COURSE_ID_PLACEHOLDER\", \"status\": \"Live\"},\"limit\": 1}}";
 
   static {
     String header = ProjectUtil.getConfigValue(JsonKey.EKSTEP_AUTHORIZATION);
@@ -119,8 +122,7 @@ public final class CourseBatchSchedulerUtil {
       String courseId, boolean increment, String enrollmentType) {
     String contentName = getCountName(enrollmentType);
     boolean response = false;
-    Map<String, Object> ekStepContent =
-        CourseEnrollmentActor.getCourseObjectFromEkStep(courseId, getBasicHeader());
+    Map<String, Object> ekStepContent = getCourseObjectFromEkStep(courseId, getBasicHeader());
     if (MapUtils.isNotEmpty(ekStepContent)) {
       int val = getUpdatedBatchCount(ekStepContent, contentName, increment);
       if (ekStepContent.get(JsonKey.CHANNEL) != null) {
@@ -186,5 +188,29 @@ public final class CourseBatchSchedulerUtil {
       ProjectLogger.log("Error while updating content value " + e.getMessage(), e);
     }
     return JsonKey.SUCCESS.equalsIgnoreCase(response);
+  }
+
+  @SuppressWarnings("unchecked")
+  public static Map<String, Object> getCourseObjectFromEkStep(
+      String courseId, Map<String, String> headers) {
+    ProjectLogger.log("Requested course id is ==" + courseId, LoggerEnum.INFO.name());
+    if (!StringUtils.isBlank(courseId)) {
+      try {
+        String query = EKSTEP_COURSE_SEARCH_QUERY.replaceAll("COURSE_ID_PLACEHOLDER", courseId);
+        Map<String, Object> result = EkStepRequestUtil.searchContent(query, headers);
+        if (null != result && !result.isEmpty() && result.get(JsonKey.CONTENTS) != null) {
+          return ((List<Map<String, Object>>) result.get(JsonKey.CONTENTS)).get(0);
+          // return (Map<String, Object>) contentObject;
+        } else {
+          ProjectLogger.log(
+              "CourseEnrollmentActor:getCourseObjectFromEkStep: Content not found for requested courseId "
+                  + courseId,
+              LoggerEnum.INFO.name());
+        }
+      } catch (Exception e) {
+        ProjectLogger.log(e.getMessage(), e);
+      }
+    }
+    return null;
   }
 }

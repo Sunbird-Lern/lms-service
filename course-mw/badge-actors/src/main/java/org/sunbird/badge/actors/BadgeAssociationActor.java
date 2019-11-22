@@ -28,7 +28,6 @@ import org.sunbird.common.models.util.StringFormatter;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.content.service.ContentService;
-import org.sunbird.learner.actors.coursebatch.CourseEnrollmentActor;
 import org.sunbird.learner.util.CourseBatchSchedulerUtil;
 
 public class BadgeAssociationActor extends BaseActor {
@@ -175,7 +174,7 @@ public class BadgeAssociationActor extends BaseActor {
   private Map<String, Object> getContentDetails(String contentId) {
     Map<String, String> headers = CourseBatchSchedulerUtil.headerMap;
     Map<String, Object> contentDetails =
-        CourseEnrollmentActor.getCourseObjectFromEkStep(contentId, headers);
+        CourseBatchSchedulerUtil.getCourseObjectFromEkStep(contentId, headers);
     if (MapUtils.isEmpty(contentDetails)) {
       ProjectCommonException.throwClientErrorException(ResponseCode.invalidContentId);
     }

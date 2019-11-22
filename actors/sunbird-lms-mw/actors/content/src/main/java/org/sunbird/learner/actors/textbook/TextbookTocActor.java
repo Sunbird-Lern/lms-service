@@ -5,37 +5,17 @@ import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.sunbird.common.exception.ProjectCommonException.throwClientErrorException;
 import static org.sunbird.common.exception.ProjectCommonException.throwServerErrorException;
-import static org.sunbird.common.models.util.JsonKey.CHILDREN;
-import static org.sunbird.common.models.util.JsonKey.CONTENT;
-import static org.sunbird.common.models.util.JsonKey.CONTENT_TYPE;
-import static org.sunbird.common.models.util.JsonKey.DOWNLOAD;
-import static org.sunbird.common.models.util.JsonKey.HIERARCHY;
-import static org.sunbird.common.models.util.JsonKey.MIME_TYPE;
-import static org.sunbird.common.models.util.JsonKey.NAME;
-import static org.sunbird.common.models.util.JsonKey.SUNBIRD_CONTENT_GET_HIERARCHY_API;
-import static org.sunbird.common.models.util.JsonKey.TEXTBOOK;
-import static org.sunbird.common.models.util.JsonKey.TEXTBOOK_ID;
-import static org.sunbird.common.models.util.JsonKey.TEXTBOOK_TOC_ALLOWED_CONTNET_TYPES;
-import static org.sunbird.common.models.util.JsonKey.TEXTBOOK_TOC_ALLOWED_MIMETYPE;
-import static org.sunbird.common.models.util.JsonKey.TEXTBOOK_TOC_CSV_TTL;
-import static org.sunbird.common.models.util.JsonKey.TOC_URL;
-import static org.sunbird.common.models.util.JsonKey.TTL;
-import static org.sunbird.common.models.util.JsonKey.VERSION_KEY;
+import static org.sunbird.common.models.util.JsonKey.*;
 import static org.sunbird.common.models.util.LoggerEnum.ERROR;
 import static org.sunbird.common.models.util.LoggerEnum.INFO;
 import static org.sunbird.common.models.util.ProjectLogger.log;
 import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
 import static org.sunbird.common.models.util.Slug.makeSlug;
-import static org.sunbird.common.responsecode.ResponseCode.SERVER_ERROR;
-import static org.sunbird.common.responsecode.ResponseCode.invalidTextbook;
-import static org.sunbird.common.responsecode.ResponseCode.noChildrenExists;
-import static org.sunbird.common.responsecode.ResponseCode.textbookChildrenExist;
+import static org.sunbird.common.responsecode.ResponseCode.*;
 import static org.sunbird.content.textbook.FileExtension.Extension.CSV;
 import static org.sunbird.content.textbook.TextBookTocUploader.TEXTBOOK_TOC_FOLDER;
 import static org.sunbird.content.util.ContentCloudStore.getUri;
-import static org.sunbird.content.util.TextBookTocUtil.getObjectFrom;
-import static org.sunbird.content.util.TextBookTocUtil.readContent;
-import static org.sunbird.content.util.TextBookTocUtil.serialize;
+import static org.sunbird.content.util.TextBookTocUtil.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,17 +28,8 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -72,7 +43,6 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.core.BaseActor;
-import org.sunbird.actor.router.ActorConfig;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
@@ -87,10 +57,6 @@ import org.sunbird.content.util.TextBookTocUtil;
 import org.sunbird.services.sso.SSOManager;
 import org.sunbird.services.sso.SSOServiceFactory;
 
-@ActorConfig(
-  tasks = {"textbookTocUpload", "textbookTocUrl", "textbookTocUpdate"},
-  asyncTasks = {}
-)
 public class TextbookTocActor extends BaseActor {
 
   private SSOManager ssoManager = SSOServiceFactory.getInstance();
@@ -672,7 +638,9 @@ public class TextbookTocActor extends BaseActor {
           String dialCode = (String) recordMap.get(JsonKey.DIAL_CODES);
           List<String> dialCodeList = null;
           if (StringUtils.isNotBlank(dialCode)) {
-            dialCodeList = new ArrayList<String>(Arrays.asList(dialCode.substring(2,dialCode.length()-2).split("\"\",\"\"")));
+            dialCodeList =
+                new ArrayList<String>(
+                    Arrays.asList(dialCode.substring(2, dialCode.length() - 2).split("\"\",\"\"")));
             for (String dCode : dialCodeList) {
               if (!dialCodes.add(dCode.trim())) {
                 duplicateDialCodes.add(dCode.trim());
@@ -682,7 +650,10 @@ public class TextbookTocActor extends BaseActor {
 
           String reqTopics = (String) recordMap.get(JsonKey.TOPIC);
           if (StringUtils.isNotBlank(reqTopics)) {
-            List<String> topicList = new ArrayList<String>(Arrays.asList(reqTopics.substring(2,reqTopics.length()-2).split("\"\",\"\"")));
+            List<String> topicList =
+                new ArrayList<String>(
+                    Arrays.asList(
+                        reqTopics.substring(2, reqTopics.length() - 2).split("\"\",\"\"")));
             topicList.forEach(
                 s -> {
                   topics.add(s.trim());
@@ -768,7 +739,7 @@ public class TextbookTocActor extends BaseActor {
   private void getBgmsData(HashMap<String, Object> recordMap, Map<String, Object> bgms) {
     for (Entry<String, Object> entry : frameCategories.entrySet()) {
       String key = entry.getKey();
-      bgms.put(key,recordMap.get(key));
+      bgms.put(key, recordMap.get(key));
     }
   }
 
@@ -1580,20 +1551,32 @@ public class TextbookTocActor extends BaseActor {
     if (MapUtils.isNotEmpty(metadata)) {
       List<String> keywords =
           (StringUtils.isNotBlank((String) metadata.get(JsonKey.KEYWORDS)))
-              ? asList(((String) metadata.get(JsonKey.KEYWORDS)).substring(2,((String) metadata.get(JsonKey.KEYWORDS)).length()-2).split("\"\",\"\""))
+              ? asList(
+                  ((String) metadata.get(JsonKey.KEYWORDS))
+                      .substring(2, ((String) metadata.get(JsonKey.KEYWORDS)).length() - 2)
+                      .split("\"\",\"\""))
               : null;
       List<String> gradeLevel =
           (StringUtils.isNotBlank((String) metadata.get(JsonKey.GRADE_LEVEL)))
-              ? asList(((String) metadata.get(JsonKey.GRADE_LEVEL)).substring(2,((String) metadata.get(JsonKey.GRADE_LEVEL)).length()-2).split("\"\",\"\""))
+              ? asList(
+                  ((String) metadata.get(JsonKey.GRADE_LEVEL))
+                      .substring(2, ((String) metadata.get(JsonKey.GRADE_LEVEL)).length() - 2)
+                      .split("\"\",\"\""))
               : null;
       List<String> dialCodes =
           (StringUtils.isNotBlank((String) metadata.get(JsonKey.DIAL_CODES)))
-              ? asList(((String) metadata.get(JsonKey.DIAL_CODES)).substring(2,((String) metadata.get(JsonKey.DIAL_CODES)).length()-2).split("\"\",\"\""))
+              ? asList(
+                  ((String) metadata.get(JsonKey.DIAL_CODES))
+                      .substring(2, ((String) metadata.get(JsonKey.DIAL_CODES)).length() - 2)
+                      .split("\"\",\"\""))
               : null;
 
       List<String> topics =
           (StringUtils.isNotBlank((String) metadata.get(JsonKey.TOPIC)))
-              ? asList(((String) metadata.get(JsonKey.TOPIC)).substring(2,((String) metadata.get(JsonKey.TOPIC)).length()-2).split("\"\",\"\""))
+              ? asList(
+                  ((String) metadata.get(JsonKey.TOPIC))
+                      .substring(2, ((String) metadata.get(JsonKey.TOPIC)).length() - 2)
+                      .split("\"\",\"\""))
               : null;
       newMeta.putAll(metadata);
       newMeta.remove(JsonKey.KEYWORDS);
@@ -1676,5 +1659,4 @@ public class TextbookTocActor extends BaseActor {
           });
     }
   }
-
 }

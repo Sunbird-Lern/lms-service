@@ -12,7 +12,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
-import org.sunbird.actor.service.SunbirdMWService;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
@@ -28,7 +27,6 @@ public class HealthActorTest {
 
   @BeforeClass
   public static void setUp() {
-    SunbirdMWService.init();
     system = ActorSystem.create("system");
     Util.checkCassandraDbConnections(JsonKey.SUNBIRD);
   }

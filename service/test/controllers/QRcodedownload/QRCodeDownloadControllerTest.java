@@ -14,6 +14,7 @@ import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
+import util.ACTOR_NAMES;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,7 +29,7 @@ public class QRCodeDownloadControllerTest extends BaseApplicationTest {
 
     @Before
     public void before() {
-        setup(DummyActor.class);
+        setup(ACTOR_NAMES.QRCODE_DOWNLOAD_MANAGEMENT_ACTOR,DummyActor.class);
     }
 
     @Test

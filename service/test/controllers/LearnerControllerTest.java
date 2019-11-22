@@ -18,6 +18,7 @@ import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
+import util.ACTOR_NAMES;
 
 /** @author arvind */
 @RunWith(PowerMockRunner.class)
@@ -33,7 +34,7 @@ public class LearnerControllerTest extends BaseApplicationTest {
 
   @Before
   public void before() {
-    setup(DummyActor.class);
+    setup(Arrays.asList(ACTOR_NAMES.LEARNER_STATE_UPDATE_ACTOR,ACTOR_NAMES.LEARNER_STATE_ACTOR), DummyActor.class);
   }
 
   @Test

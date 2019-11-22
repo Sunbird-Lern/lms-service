@@ -1,32 +1,22 @@
 package org.sunbird.learner.actors.bulkupload;
 
+import akka.actor.ActorRef;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.sunbird.actor.core.BaseActor;
-import org.sunbird.actor.router.ActorConfig;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.ActorOperations;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.models.util.ProjectUtil;
+import org.sunbird.common.models.util.*;
 import org.sunbird.common.models.util.ProjectUtil.EsType;
-import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
@@ -41,15 +31,14 @@ import org.sunbird.userorg.UserOrgService;
 import org.sunbird.userorg.UserOrgServiceImpl;
 import scala.concurrent.Future;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
 /**
  * This actor will handle bulk upload operation .
  *
  * @author Amit Kumar
  */
-@ActorConfig(
-  tasks = {},
-  asyncTasks = {"processBulkUpload"}
-)
 public class BulkUploadBackGroundJobActor extends BaseActor {
 
   private String processId = "";
@@ -59,6 +48,10 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
   private static ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private UserCoursesDao userCourseDao = UserCoursesDaoImpl.getInstance();
   private UserOrgService userOrgService = UserOrgServiceImpl.getInstance();
+
+  @Inject
+  @Named("background-job-manager-actor")
+  private ActorRef backgroundJobManagerActorRef;
 
   @Override
   public void onReceive(Request request) throws Throwable {
@@ -74,6 +67,8 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
   private void process(Request actorMessage) {
     processId = (String) actorMessage.get(JsonKey.PROCESS_ID);
     Map<String, Object> dataMap = getBulkData(processId);
+    ProjectLogger.log(
+        "process started in BulkUploadBackGroundJobActor : " + processId, LoggerEnum.INFO.name());
     int status = (int) dataMap.get(JsonKey.STATUS);
     if (!(status == (ProjectUtil.BulkProcessStatus.COMPLETED.getValue())
         || status == (ProjectUtil.BulkProcessStatus.INTERRUPT.getValue()))) {
@@ -273,7 +268,7 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
     request.setOperation(ActorOperations.INSERT_USR_COURSES_INFO_ELASTIC.getValue());
     request.getRequest().put(JsonKey.USER_COURSES, courseMap);
     try {
-      tellToAnother(request);
+      backgroundJobManagerActorRef.tell(request,getSelf());
     } catch (Exception ex) {
       ProjectLogger.log("Exception Occurred during saving user count to Es : ", ex);
     }
@@ -284,7 +279,7 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
     request.setOperation(ActorOperations.UPDATE_USR_COURSES_INFO_ELASTIC.getValue());
     request.getRequest().put(JsonKey.USER_COURSES, courseMap);
     try {
-      tellToAnother(request);
+      backgroundJobManagerActorRef.tell(request,getSelf());
     } catch (Exception ex) {
       ProjectLogger.log("Exception Occurred during saving user count to Es : ", ex);
     }

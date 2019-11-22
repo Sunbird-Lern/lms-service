@@ -17,7 +17,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.sunbird</groupId>
-			<artifactId>actor-common</artifactId>
+			<artifactId>course-actors-common</artifactId>
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
 	</dependencies>

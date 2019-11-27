@@ -29,16 +29,14 @@ import java.util.concurrent.CompletionStage;
 public class LearnerController extends BaseController {
 
     private LearnerStateRequestValidator validator = new LearnerStateRequestValidator();
-    private ActorRef learnerStateUpdateActorRef;
-    private ActorRef learnerStateActorRef;
-
 
     @Inject
-    public LearnerController(@Named("learner-state-update-actor") ActorRef learnerStateUpdateActorRef,
-                                      @Named("learner-state-actor") ActorRef learnerStateActorRef) {
-        this.learnerStateUpdateActorRef = learnerStateUpdateActorRef;
-        this.learnerStateActorRef = learnerStateActorRef;
-    }
+    @Named("learner-state-update-actor")
+    private ActorRef learnerStateUpdateActorRef;
+
+    @Inject
+    @Named("learner-state-actor")
+    private ActorRef learnerStateActorRef;
     /**
      * This method will provide list of user content state. Content refer user activity {started,half
      * completed ,completed} against TOC (table of content).

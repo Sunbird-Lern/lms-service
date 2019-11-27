@@ -20,12 +20,10 @@ import play.mvc.Result;
 public class CourseMetricsController extends BaseController {
   private static final String DEFAULT_LIMIT = "200";
   private static final String DEFAULT_OFFSET = "0";
-  private ActorRef courseMetricsActorRef;
 
   @Inject
-  public CourseMetricsController(@Named("course-metrics-actor") ActorRef courseMetricsActorRef) {
-    this.courseMetricsActorRef = courseMetricsActorRef;
-  }
+  @Named("course-metrics-actor")
+  private ActorRef courseMetricsActorRef;
 
   public CompletionStage<Result> courseProgress(String batchId, Http.Request httpRequest) {
     try {

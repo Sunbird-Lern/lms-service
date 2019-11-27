@@ -14,15 +14,14 @@ import java.util.concurrent.CompletionStage;
 public class CertificateController extends BaseController {
 
   public static final String REISSUE = "reIssue";
-    private ActorRef courseBatchCertificateActorRef;
-    private ActorRef certificateActorRef;
 
     @Inject
-    public CertificateController(@Named("course-batch-certificate-actor") ActorRef courseBatchCertificateActorRef,
-                                 @Named("certificate-actor") ActorRef certificateActorRef) {
-        this.courseBatchCertificateActorRef=courseBatchCertificateActorRef;
-        this.certificateActorRef = certificateActorRef;
-    }
+    @Named("course-batch-certificate-actor")
+    private ActorRef courseBatchCertificateActorRef;
+
+    @Inject
+    @Named("certificate-actor")
+    private ActorRef certificateActorRef;
 
   public CompletionStage<Result> issueCertificate(Http.Request httpRequest) {
     return handleRequest(

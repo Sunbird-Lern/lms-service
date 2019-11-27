@@ -31,13 +31,9 @@ import java.util.stream.Collectors;
  */
 public class PageController extends BaseController {
 
-  private ActorRef pageManagementActorRef;
-
-
   @Inject
-  public PageController(@Named("page-management-actor") ActorRef pageManagementActorRef) {
-    this.pageManagementActorRef = pageManagementActorRef;
-  }
+  @Named("page-management-actor")
+  private ActorRef pageManagementActorRef;
 
   /**
    * This method will allow admin to create a page for view.

@@ -12,12 +12,9 @@ import play.mvc.Result;
 
 public class CacheController extends BaseController {
 
-  private ActorRef actorRef;
-
   @Inject
-  public CacheController(@Named("cache-management-actor") ActorRef actorRef) {
-    this.actorRef = actorRef;
-  }
+  @Named("cache-management-actor")
+  private ActorRef actorRef;
 
   public CompletionStage<Result> clearCache(String mapName, Http.Request httpRequest) {
     return handleRequest(

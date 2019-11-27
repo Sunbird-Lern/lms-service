@@ -18,13 +18,9 @@ public class BulkUploadController extends BaseBulkUploadController {
 
   BaseRequestValidator baseRequestValidator = new BaseRequestValidator();
 
-  private ActorRef bulkUploadActorRef;
-
-
   @Inject
-  public BulkUploadController(@Named("bulk-upload-management-actor") ActorRef bulkUploadActorRef) {
-    this.bulkUploadActorRef = bulkUploadActorRef;
-  }
+  @Named("bulk-upload-management-actor")
+  private ActorRef bulkUploadActorRef;
 
   public CompletionStage<Result> batchEnrollmentBulkUpload(Http.Request httpRequest) {
     try {

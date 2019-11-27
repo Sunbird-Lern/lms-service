@@ -1,4 +1,4 @@
 [submodule "course-mw/sunbird-utils"]
 	path = course-mw/sunbird-utils
 	url = https://github.com/project-sunbird/sunbird-utils.git
-        branch = release-lms-2.5.0
+        branch = release-2.6.0

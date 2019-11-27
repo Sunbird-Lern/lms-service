@@ -1,6 +1,6 @@
 package org.sunbird.learner.actors.cache;
 
-import org.sunbird.actor.core.BaseActor;
+import org.sunbird.actor.base.BaseActor;
 import org.sunbird.cache.CacheFactory;
 import org.sunbird.cache.interfaces.Cache;
 import org.sunbird.common.models.response.Response;

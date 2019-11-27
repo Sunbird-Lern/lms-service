@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.collections.CollectionUtils;
 import org.sunbird.actor.background.BackgroundOperations;
-import org.sunbird.actor.core.BaseActor;
+import org.sunbird.actor.base.BaseActor;
 import org.sunbird.common.models.util.*;
 import org.sunbird.common.request.Request;
 import org.sunbird.learner.util.CourseBatchSchedulerUtil;

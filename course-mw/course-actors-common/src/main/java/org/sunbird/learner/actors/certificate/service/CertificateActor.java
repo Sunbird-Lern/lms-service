@@ -6,12 +6,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.collections.CollectionUtils;
-import org.sunbird.actor.core.BaseActor;
+import org.sunbird.actor.base.BaseActor;
 import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.factory.EsClientFactory;
-import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.*;
+import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.LoggerEnum;
+import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.ProjectUtil;
+import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.models.util.datasecurity.OneWayHashing;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
@@ -23,8 +25,6 @@ import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.Util;
 
 public class CertificateActor extends BaseActor {
-
-  private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
 
   private static enum ResponseMessage {
     SUBMITTED("Certificates issue action for Course Batch Id {0} submitted Successfully!"),

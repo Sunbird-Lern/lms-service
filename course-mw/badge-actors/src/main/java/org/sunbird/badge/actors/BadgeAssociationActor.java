@@ -10,7 +10,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
-import org.sunbird.actor.core.BaseActor;
+import org.sunbird.actor.base.BaseActor;
 import org.sunbird.badge.dao.ContentBadgeAssociationDao;
 import org.sunbird.badge.dao.impl.ContentBadgeAssociationDaoImpl;
 import org.sunbird.badge.service.BadgeAssociationService;

@@ -19,8 +19,6 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import org.sunbird.actor.router.RequestRouter;
-import org.sunbird.actorutil.systemsettings.impl.SystemSettingClientImpl;
 import org.sunbird.cassandraimpl.CassandraOperationImpl;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
@@ -36,14 +34,7 @@ import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.Util;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({
-  ServiceFactory.class,
-  EsClientFactory.class,
-  RequestRouter.class,
-  SystemSettingClientImpl.class,
-  CourseBatchUtil.class,
-  Util.class
-})
+@PrepareForTest({ServiceFactory.class, EsClientFactory.class, CourseBatchUtil.class, Util.class})
 @PowerMockIgnore({"javax.management.*"})
 public class CourseBatchManagementActorTest {
 
@@ -62,8 +53,6 @@ public class CourseBatchManagementActorTest {
   public void setUp() {
     mockCassandraOperation = mock(CassandraOperationImpl.class);
     ActorRef actorRef = mock(ActorRef.class);
-    PowerMockito.mockStatic(RequestRouter.class);
-    when(RequestRouter.getActor(Mockito.anyString())).thenReturn(actorRef);
     PowerMockito.mockStatic(ServiceFactory.class);
     when(ServiceFactory.getInstance()).thenReturn(mockCassandraOperation);
     PowerMockito.mockStatic(CourseBatchUtil.class);

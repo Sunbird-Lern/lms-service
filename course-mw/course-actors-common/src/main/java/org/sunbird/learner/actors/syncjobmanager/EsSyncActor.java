@@ -8,7 +8,7 @@ import com.google.common.util.concurrent.FutureCallback;
 import java.text.MessageFormat;
 import java.util.*;
 import org.apache.commons.collections.CollectionUtils;
-import org.sunbird.actor.core.BaseActor;
+import org.sunbird.actor.base.BaseActor;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.CassandraUtil;
 import org.sunbird.common.exception.ProjectCommonException;

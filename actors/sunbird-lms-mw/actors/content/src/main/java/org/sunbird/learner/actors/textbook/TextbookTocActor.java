@@ -202,7 +202,7 @@ public class TextbookTocActor extends BaseActor {
             + getConfigValue(JsonKey.SUNBIRD_CONTENT_SEARCH_URL);
     HttpResponse<String> updateResponse = null;
     ProjectLogger.log(
-        "TextbookTocActor:callSearchApiForContentIdsValidation : requestUrl=" + requestUrl+" and ",
+        "TextbookTocActor:callSearchApiForContentIdsValidation : requestUrl=" + requestUrl,
         LoggerEnum.INFO.name());
     try {
       updateResponse =

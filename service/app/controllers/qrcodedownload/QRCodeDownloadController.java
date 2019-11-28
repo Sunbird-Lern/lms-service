@@ -18,8 +18,8 @@ import javax.inject.Named;
 public class QRCodeDownloadController extends BaseController {
 
     @Inject
-    private ActorRef qrcodeDownloadActorRef;
     @Named("qrcode-download-management-actor")
+    private ActorRef qrcodeDownloadActorRef;
 
     public CompletionStage<Result> downloadQRCodes(Http.Request httpRequest) {
         ProjectLogger.log("Download QR Code method is called = " + httpRequest.body().asJson(), LoggerEnum.DEBUG.name());

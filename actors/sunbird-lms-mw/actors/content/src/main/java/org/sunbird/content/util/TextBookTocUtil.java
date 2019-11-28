@@ -189,15 +189,15 @@ public class TextBookTocUtil {
 
   public static String listToCsvString(List l){
     if (!l.isEmpty() && l.get(0) instanceof String) {
-      for(int index=0; index < l.size(); index++){
-        String entry = (String)l.get(index);
-        if(entry.startsWith("\"\"") && entry.endsWith("\"\"")){
-          l.set(index,entry.substring(2,entry.length()-2));
+      for (int index = 0; index < l.size(); index++) {
+        String entry = (String) l.get(index);
+        if (entry.startsWith("\"") && entry.endsWith("\"")) {
+          l.set(index, entry);
+          continue;
         }
-      l.set(index, "\"\""+l.get(index)+"\"\"");
+        l.set(index, "\"" + l.get(index) + "\"");
       }
-    }
-    else if(l.isEmpty()) {
+    } else if (l.isEmpty()) {
       return "";
     }
     return String.join(",", l);

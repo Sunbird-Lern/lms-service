@@ -202,7 +202,7 @@ public class TextbookTocActor extends BaseActor {
             + getConfigValue(JsonKey.SUNBIRD_CONTENT_SEARCH_URL);
     HttpResponse<String> updateResponse = null;
     ProjectLogger.log(
-        "TextbookTocActor:callSearchApiForContentIdsValidation : requestUrl=" + requestUrl,
+        "TextbookTocActor:callSearchApiForContentIdsValidation : requestUrl=" + requestUrl+" and ",
         LoggerEnum.INFO.name());
     try {
       updateResponse =
@@ -640,7 +640,7 @@ public class TextbookTocActor extends BaseActor {
           if (StringUtils.isNotBlank(dialCode)) {
             dialCodeList =
                 new ArrayList<String>(
-                    Arrays.asList(dialCode.substring(2, dialCode.length() - 2).split("\"\",\"\"")));
+                    Arrays.asList(dialCode.substring(1, dialCode.length() - 1).split("\",\"")));
             for (String dCode : dialCodeList) {
               if (!dialCodes.add(dCode.trim())) {
                 duplicateDialCodes.add(dCode.trim());
@@ -653,7 +653,7 @@ public class TextbookTocActor extends BaseActor {
             List<String> topicList =
                 new ArrayList<String>(
                     Arrays.asList(
-                        reqTopics.substring(2, reqTopics.length() - 2).split("\"\",\"\"")));
+                        reqTopics.substring(1, reqTopics.length() - 1).split("\",\"")));
             topicList.forEach(
                 s -> {
                   topics.add(s.trim());
@@ -1553,30 +1553,30 @@ public class TextbookTocActor extends BaseActor {
           (StringUtils.isNotBlank((String) metadata.get(JsonKey.KEYWORDS)))
               ? asList(
                   ((String) metadata.get(JsonKey.KEYWORDS))
-                      .substring(2, ((String) metadata.get(JsonKey.KEYWORDS)).length() - 2)
-                      .split("\"\",\"\""))
+                      .substring(1, ((String) metadata.get(JsonKey.KEYWORDS)).length() - 1)
+                      .split("\",\""))
               : null;
       List<String> gradeLevel =
           (StringUtils.isNotBlank((String) metadata.get(JsonKey.GRADE_LEVEL)))
               ? asList(
                   ((String) metadata.get(JsonKey.GRADE_LEVEL))
-                      .substring(2, ((String) metadata.get(JsonKey.GRADE_LEVEL)).length() - 2)
-                      .split("\"\",\"\""))
+                      .substring(1, ((String) metadata.get(JsonKey.GRADE_LEVEL)).length() - 1)
+                      .split("\",\""))
               : null;
       List<String> dialCodes =
           (StringUtils.isNotBlank((String) metadata.get(JsonKey.DIAL_CODES)))
               ? asList(
                   ((String) metadata.get(JsonKey.DIAL_CODES))
-                      .substring(2, ((String) metadata.get(JsonKey.DIAL_CODES)).length() - 2)
-                      .split("\"\",\"\""))
+                      .substring(1, ((String) metadata.get(JsonKey.DIAL_CODES)).length() - 1)
+                      .split("\",\""))
               : null;
 
       List<String> topics =
           (StringUtils.isNotBlank((String) metadata.get(JsonKey.TOPIC)))
               ? asList(
                   ((String) metadata.get(JsonKey.TOPIC))
-                      .substring(2, ((String) metadata.get(JsonKey.TOPIC)).length() - 2)
-                      .split("\"\",\"\""))
+                      .substring(1, ((String) metadata.get(JsonKey.TOPIC)).length() - 1)
+                      .split("\",\""))
               : null;
       newMeta.putAll(metadata);
       newMeta.remove(JsonKey.KEYWORDS);

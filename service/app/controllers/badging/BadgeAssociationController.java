@@ -16,14 +16,10 @@ import javax.inject.Named;
 import java.util.concurrent.CompletionStage;
 
 public class BadgeAssociationController extends BaseController {
-    private ActorRef badgeAssociationActorRef;
-
 
     @Inject
-    public BadgeAssociationController(@Named("badge-association-actor") ActorRef badgeAssociationActorRef) {
-        this.badgeAssociationActorRef = badgeAssociationActorRef;
-    }
-
+    @Named("badge-association-actor")
+    private ActorRef badgeAssociationActorRef;
 
   public CompletionStage<Result> createAssociation(Http.Request httpRequest) {
     return handleRequest(

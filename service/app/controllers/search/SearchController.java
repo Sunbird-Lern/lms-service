@@ -28,13 +28,9 @@ import javax.inject.Named;
  */
 public class SearchController extends BaseController {
 
-  private ActorRef esSyncActorRef;
-
-
   @Inject
-  public SearchController(@Named("es-sync-actor") ActorRef esSyncActorRef) {
-    this.esSyncActorRef = esSyncActorRef;
-  }
+  @Named("es-sync-actor")
+  private ActorRef esSyncActorRef;
 
   /**
    * This method will do data Sync form Cassandra db to Elasticsearch.

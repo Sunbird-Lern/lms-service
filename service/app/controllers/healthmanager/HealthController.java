@@ -23,13 +23,11 @@ import java.util.concurrent.CompletionStage;
 /** @author Manzarul */
 public class HealthController extends BaseController {
   private static List<String> list = new ArrayList<>();
-  private ActorRef healthActorRef;
 
 
   @Inject
-  public HealthController(@Named("health-actor") ActorRef healthActorRef) {
-    this.healthActorRef = healthActorRef;
-  }
+  @Named("health-actor")
+  private ActorRef healthActorRef;
   static {
     list.add("service");
     list.add("actor");

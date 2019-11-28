@@ -40,13 +40,9 @@ import static org.sunbird.common.exception.ProjectCommonException.throwClientErr
  */
 public class TextbookController extends BaseController {
 
-  private ActorRef textbookTocActorRef;
-
-
   @Inject
-  public TextbookController(@Named("textbook-toc-actor") ActorRef textbookTocActorRef) {
-    this.textbookTocActorRef = textbookTocActorRef;
-  }
+  @Named("textbook-toc-actor")
+  private ActorRef textbookTocActorRef;
 
   private static final int UPLOAD_TOC_TIMEOUT = 30;
 

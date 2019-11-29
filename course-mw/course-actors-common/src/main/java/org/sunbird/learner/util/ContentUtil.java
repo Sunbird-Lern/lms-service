@@ -31,11 +31,11 @@ import org.sunbird.common.responsecode.ResponseCode;
  *
  * @author Manzarul
  */
-public final class EkStepRequestUtil {
+public final class ContentUtil {
 
   private static ObjectMapper mapper = new ObjectMapper();
 
-  private EkStepRequestUtil() {}
+  private ContentUtil() {}
 
   private static final String CHARSETS_UTF_8 = "UTF-8";
 
@@ -99,7 +99,7 @@ public final class EkStepRequestUtil {
     return resMap;
   }
 
-  public static String ekStepCall(String baseURL, String apiURL, String authKey, String body)
+  public static String contentCall(String baseURL, String apiURL, String authKey, String body)
       throws IOException {
     HttpClient client = HttpClientBuilder.create().build();
     HttpPost post = new HttpPost(baseURL + PropertiesCache.getInstance().getProperty(apiURL));

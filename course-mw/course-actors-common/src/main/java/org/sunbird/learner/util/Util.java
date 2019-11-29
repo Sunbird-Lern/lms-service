@@ -26,7 +26,6 @@ import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.PropertiesCache;
-import org.sunbird.common.models.util.datasecurity.EncryptionService;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
@@ -53,9 +52,6 @@ public final class Util {
   public static final String DIALCODE_KEY_SPACE_NAME = "dialcodes";
   private static Properties prop = new Properties();
   private static Map<String, String> headers = new HashMap<>();
-  private static EncryptionService encryptionService =
-      org.sunbird.common.models.util.datasecurity.impl.ServiceFactory.getEncryptionServiceInstance(
-          null);
   private static ObjectMapper mapper = new ObjectMapper();
 
   static {
@@ -581,20 +577,6 @@ public final class Util {
     return actorMessage.getContext() != null && actorMessage.getContext().containsKey(key)
         ? (String) actorMessage.getContext().get(key)
         : "";
-  }
-
-  public static String validateRoles(List<String> roleList) {
-    Map<String, Object> roleMap = DataCacheHandler.getRoleMap();
-    if (null != roleMap && !roleMap.isEmpty()) {
-      for (String role : roleList) {
-        if (null == roleMap.get(role.trim())) {
-          return role + " is not a valid role.";
-        }
-      }
-    } else {
-      ProjectLogger.log("Roles are not cached.Please Cache it.");
-    }
-    return JsonKey.SUCCESS;
   }
 }
 

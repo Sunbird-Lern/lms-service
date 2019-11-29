@@ -25,7 +25,7 @@ import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.PropertiesCache;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
-import org.sunbird.learner.util.EkStepRequestUtil;
+import org.sunbird.learner.util.ContentUtil;
 
 public abstract class BaseMetricsActor extends BaseActor {
 
@@ -281,7 +281,7 @@ public abstract class BaseMetricsActor extends BaseActor {
     } else {
       authKey = JsonKey.BEARER + authKey;
     }
-    return EkStepRequestUtil.ekStepCall(baseURL, apiURL, authKey, body);
+    return ContentUtil.contentCall(baseURL, apiURL, authKey, body);
   }
 
   protected String formatKeyString(String key) {

@@ -26,7 +26,7 @@ import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.request.Request;
 import org.sunbird.helper.ServiceFactory;
-import org.sunbird.learner.util.EkStepRequestUtil;
+import org.sunbird.learner.util.ContentUtil;
 import org.sunbird.userorg.UserOrgServiceImpl;
 
 @RunWith(PowerMockRunner.class)
@@ -45,7 +45,7 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
     ServiceFactory.class,
     EsClientFactory.class,
     UserOrgServiceImpl.class,
-    EkStepRequestUtil.class
+    ContentUtil.class
   })
   public void createBatchInviteSuccess() {
     group =
@@ -53,7 +53,7 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
             .withCassandraMock(new CassandraMocker())
             .withESMock(new ESMocker())
             .withUserOrgMock(new UserOrgMocker())
-            .andStaticMock(EkStepRequestUtil.class);
+            .andStaticMock(ContentUtil.class);
     Map<String, Object> courseBatch =
         CustomObjectBuilder.getCourseBatchBuilder()
             .generateRandomFields()
@@ -64,7 +64,7 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
             .getESMockerService()
             .save(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
         .thenReturn(Futures.successful("randomESID"));
-    when(EkStepRequestUtil.searchContent(Mockito.anyString(), Mockito.anyMap()))
+    when(ContentUtil.searchContent(Mockito.anyString(), Mockito.anyMap()))
         .thenReturn(CustomObjectBuilder.getRandomCourse().get());
     when(group
             .getCassandraMockerService()

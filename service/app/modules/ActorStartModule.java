@@ -13,7 +13,6 @@ public class ActorStartModule extends AbstractModule implements AkkaGuiceSupport
     System.out.println("binding actors for dependency injection");
     final RouterConfig config = new FromConfig();
     for (ACTOR_NAMES actor : ACTOR_NAMES.values()) {
-      System.out.println("binding " + actor.getActorClass() + "=>" + actor.getActorName());
       bindActor(
           actor.getActorClass(),
           actor.getActorName(),

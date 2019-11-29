@@ -3,6 +3,14 @@ package controllers.healthmanager;
 
 import akka.actor.ActorRef;
 import controllers.BaseController;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.*;
@@ -11,25 +19,14 @@ import org.sunbird.common.request.Request;
 import play.mvc.Http;
 import play.mvc.Result;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-
 /** @author Manzarul */
 public class HealthController extends BaseController {
   private static List<String> list = new ArrayList<>();
-  private ActorRef healthActorRef;
-
 
   @Inject
-  public HealthController(@Named("health-actor") ActorRef healthActorRef) {
-    this.healthActorRef = healthActorRef;
-  }
+  @Named("health-actor")
+  private ActorRef healthActorRef;
+
   static {
     list.add("service");
     list.add("actor");

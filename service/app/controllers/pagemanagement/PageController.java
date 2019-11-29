@@ -4,6 +4,13 @@ package controllers.pagemanagement;
 import akka.actor.ActorRef;
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.BaseController;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
@@ -16,14 +23,6 @@ import play.mvc.Http;
 import play.mvc.Result;
 import util.Common;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.stream.Collectors;
-
 /**
  * This controller will handle all the request related to page api's.
  *
@@ -31,13 +30,9 @@ import java.util.stream.Collectors;
  */
 public class PageController extends BaseController {
 
-  private ActorRef pageManagementActorRef;
-
-
   @Inject
-  public PageController(@Named("page-management-actor") ActorRef pageManagementActorRef) {
-    this.pageManagementActorRef = pageManagementActorRef;
-  }
+  @Named("page-management-actor")
+  private ActorRef pageManagementActorRef;
 
   /**
    * This method will allow admin to create a page for view.
@@ -93,7 +88,8 @@ public class PageController extends BaseController {
    * @param pageId String
    * @return Promise<Result>
    */
-  public CompletionStage<Result> getPageSetting(String pageId, String organisationId, Http.Request httpRequest) {
+  public CompletionStage<Result> getPageSetting(
+      String pageId, String organisationId, Http.Request httpRequest) {
 
     try {
       ProjectLogger.log(
@@ -152,8 +148,8 @@ public class PageController extends BaseController {
       return actorResponseHandler(pageManagementActorRef, reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
       ProjectLogger.log(
-              "PageController:getPageData: Exception occurred with error message = " + e.getMessage(),
-              LoggerEnum.ERROR.name());
+          "PageController:getPageData: Exception occurred with error message = " + e.getMessage(),
+          LoggerEnum.ERROR.name());
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
   }

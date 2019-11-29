@@ -79,7 +79,7 @@ public class TextBookTocUtil {
     Response response = null;
     try {
       String requestUrl =
-              getConfigValue(EKSTEP_BASE_URL)
+          getConfigValue(EKSTEP_BASE_URL)
               + getConfigValue(urlPath)
               + "/"
               + id
@@ -178,28 +178,17 @@ public class TextBookTocUtil {
   public static Object stringify(Object o) {
     if (isNull(o)) return "";
     if (o instanceof List) {
-      return listToCsvString((List)o);
-    }
-    if (o instanceof String[]) {
-      List l = Arrays.asList((String[]) o);
-      return listToCsvString(l);
-    }
-    return o;
-  }
-
-  public static String listToCsvString(List l){
-    if (!l.isEmpty() && l.get(0) instanceof String) {
-      for(int index=0; index < l.size(); index++){
-        String entry = (String)l.get(index);
-        if(entry.startsWith("\"\"") && entry.endsWith("\"\"")){
-          l.set(index,entry.substring(2,entry.length()-2));
-        }
-      l.set(index, "\"\""+l.get(index)+"\"\"");
+      List l = (List) o;
+      if (!l.isEmpty() && l.get(0) instanceof String) {
+        return String.join(",", l);
       }
     }
-    else if(l.isEmpty()) {
-      return "";
+    if (o instanceof String[]) {
+      String[] l = (String[]) o;
+      if (l.length > 0) {
+        return String.join(",", l);
+      }
     }
-    return String.join(",", l);
+    return o;
   }
 }

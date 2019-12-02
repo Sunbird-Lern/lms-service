@@ -155,7 +155,7 @@ public class CourseBatchNotificationActor extends BaseActor {
     Map<String, Object> requestMap = new HashMap<String, Object>();
 
     requestMap.put(JsonKey.REQUEST, BackgroundOperations.emailService.name());
-    requestMap.put(JsonKey.BODY,"Notofication mail Body");
+    requestMap.put(JsonKey.BODY,"Notification mail Body");
     requestMap.put(JsonKey.ORG_NAME, courseBatchObject.get(JsonKey.ORG_NAME));
     requestMap.put(JsonKey.COURSE_LOGO_URL, contentDetails.get(JsonKey.APP_ICON));
     requestMap.put(JsonKey.START_DATE, courseBatchObject.get(JsonKey.START_DATE));

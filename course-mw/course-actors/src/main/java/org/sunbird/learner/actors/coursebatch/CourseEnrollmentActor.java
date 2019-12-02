@@ -384,12 +384,6 @@ public class CourseEnrollmentActor extends BaseActor {
     if (MapUtils.isNotEmpty(resultMap)) {
       esContents = (List<Map<String, Object>>) resultMap.get(JsonKey.CONTENT);
     }
-    if (CollectionUtils.isNotEmpty(esContents)) {
-      ProjectLogger.log("User Already Enrolled Course for batches :" + esContents, LoggerEnum.INFO);
-      ProjectCommonException.throwClientErrorException(
-          ResponseCode.userAlreadyEnrolledCourse,
-          ResponseCode.userAlreadyEnrolledCourse.getErrorMessage());
-    }
     return esContents;
   }
 }

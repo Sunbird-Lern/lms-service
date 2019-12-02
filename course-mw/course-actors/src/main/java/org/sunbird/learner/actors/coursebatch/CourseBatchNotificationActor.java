@@ -151,10 +151,11 @@ public class CourseBatchNotificationActor extends BaseActor {
     ProjectLogger.log("CourseBatchNotificationActor: createEmailRequest:  ", LoggerEnum.INFO);
     Map<String, Object> courseBatchObject = new ObjectMapper().convertValue(courseBatch, Map.class);
 
+    Map<String,Object> request = new HashMap<>();
     Map<String, Object> requestMap = new HashMap<String, Object>();
 
     requestMap.put(JsonKey.REQUEST, BackgroundOperations.emailService.name());
-
+    requestMap.put(JsonKey.BODY,"Notification mail Body");
     requestMap.put(JsonKey.ORG_NAME, courseBatchObject.get(JsonKey.ORG_NAME));
     requestMap.put(JsonKey.COURSE_LOGO_URL, contentDetails.get(JsonKey.APP_ICON));
     requestMap.put(JsonKey.START_DATE, courseBatchObject.get(JsonKey.START_DATE));
@@ -166,11 +167,12 @@ public class CourseBatchNotificationActor extends BaseActor {
         JsonKey.COURSE_BATCH_URL,
         getCourseBatchUrl(courseBatch.getCourseId(), courseBatch.getBatchId()));
     requestMap.put(JsonKey.SIGNATURE, courseBatchNotificationSignature);
-    requestMap.put(JsonKey.RECIPIENT_USERIDS, userId);
+    requestMap.put(JsonKey.RECIPIENT_USERIDS, Arrays.asList(userId));
+    request.put(JsonKey.REQUEST,requestMap);
     ProjectLogger.log(
         "CourseBatchNotificationActor:createEmailRequest: success  ", LoggerEnum.INFO);
 
-    return requestMap;
+    return request;
   }
 
   private String getCourseBatchUrl(String courseId, String batchId) {

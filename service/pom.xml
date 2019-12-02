@@ -48,6 +48,11 @@
             <artifactId>play-logback_${scala.major.version}</artifactId>
             <version>${play2.version}</version>
         </dependency>
+        <dependency>	
+			<groupId>com.typesafe.play</groupId>	
+			<artifactId>play-guice_${scala.major.version}</artifactId>	
+			<version>${play2.version}</version>	
+		</dependency>
 		<!--<dependency>-->
 			<!--<groupId>com.typesafe.play</groupId>-->
 			<!--<artifactId>play-netty-server_${scala.major.version}</artifactId>-->

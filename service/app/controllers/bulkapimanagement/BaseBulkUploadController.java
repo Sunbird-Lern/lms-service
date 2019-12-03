@@ -31,9 +31,9 @@ import play.mvc.Http.MultipartFormData.FilePart;
  */
 public class BaseBulkUploadController extends BaseController {
 
-  private final String FILE_SIZE_UNIT = "MB";
+  private static final String FILE_SIZE_UNIT = "MB";
 
-  private final Integer MB_to_byte = 1000000;
+  private static final Integer MB_to_byte = 1000000;
   /**
    * Helper method for creating and initialising a request for given operation for content type
    * Multiform data.
@@ -96,7 +96,7 @@ public class BaseBulkUploadController extends BaseController {
     reqObj.setRequestId(ExecutionContext.getRequestId());
     reqObj.setEnv(getEnvironment());
     map.put(JsonKey.OBJECT_TYPE, objectType);
-    map.put(JsonKey.CREATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
+    map.put(JsonKey.CREATED_BY, httpRequest.flash().getOptional(JsonKey.USER_ID).orElse(null));
     map.put(JsonKey.FILE, byteArray);
     HashMap<String, Object> innerMap = new HashMap<>();
     innerMap.put(JsonKey.DATA, map);

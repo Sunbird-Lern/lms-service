@@ -6,9 +6,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.collections.CollectionUtils;
-import org.sunbird.actor.background.BackgroundOperations;
 import org.sunbird.actor.base.BaseActor;
-import org.sunbird.common.models.util.*;
+import org.sunbird.common.models.util.ActorOperations;
+import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.LoggerEnum;
+import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.PropertiesCache;
 import org.sunbird.common.request.Request;
 import org.sunbird.learner.util.CourseBatchSchedulerUtil;
 import org.sunbird.models.course.batch.CourseBatch;
@@ -132,10 +135,8 @@ public class CourseBatchNotificationActor extends BaseActor {
     if (CollectionUtils.isEmpty(userIdList)) return;
 
     for (String userId : userIdList) {
-      Map<String, Object> requestMap = this.createEmailRequest(userId, courseBatch, contentDetails);
-
-      requestMap.put(JsonKey.SUBJECT, subject);
-      requestMap.put(JsonKey.EMAIL_TEMPLATE_TYPE, template);
+      Map<String, Object> requestMap =
+          createEmailRequest(userId, courseBatch, contentDetails, subject, template);
 
       ProjectLogger.log(
           "CourseBatchNotificationActor:triggerEmailNotification: requestMap = " + requestMap,
@@ -147,15 +148,19 @@ public class CourseBatchNotificationActor extends BaseActor {
 
   @SuppressWarnings("unchecked")
   private Map<String, Object> createEmailRequest(
-      String userId, CourseBatch courseBatch, Map<String, Object> contentDetails) {
-    ProjectLogger.log("CourseBatchNotificationActor: createEmailRequest:  ", LoggerEnum.INFO);
+      String userId,
+      CourseBatch courseBatch,
+      Map<String, Object> contentDetails,
+      String subject,
+      String template) {
     Map<String, Object> courseBatchObject = new ObjectMapper().convertValue(courseBatch, Map.class);
 
-    Map<String,Object> request = new HashMap<>();
+    Map<String, Object> request = new HashMap<>();
     Map<String, Object> requestMap = new HashMap<String, Object>();
 
-    requestMap.put(JsonKey.REQUEST, BackgroundOperations.emailService.name());
-    requestMap.put(JsonKey.BODY,"Notification mail Body");
+    requestMap.put(JsonKey.SUBJECT, subject);
+    requestMap.put(JsonKey.EMAIL_TEMPLATE_TYPE, template);
+    requestMap.put(JsonKey.BODY, "Notification mail Body");
     requestMap.put(JsonKey.ORG_NAME, courseBatchObject.get(JsonKey.ORG_NAME));
     requestMap.put(JsonKey.COURSE_LOGO_URL, contentDetails.get(JsonKey.APP_ICON));
     requestMap.put(JsonKey.START_DATE, courseBatchObject.get(JsonKey.START_DATE));
@@ -168,7 +173,7 @@ public class CourseBatchNotificationActor extends BaseActor {
         getCourseBatchUrl(courseBatch.getCourseId(), courseBatch.getBatchId()));
     requestMap.put(JsonKey.SIGNATURE, courseBatchNotificationSignature);
     requestMap.put(JsonKey.RECIPIENT_USERIDS, Arrays.asList(userId));
-    request.put(JsonKey.REQUEST,requestMap);
+    request.put(JsonKey.REQUEST, requestMap);
     ProjectLogger.log(
         "CourseBatchNotificationActor:createEmailRequest: success  ", LoggerEnum.INFO);
 
@@ -191,7 +196,7 @@ public class CourseBatchNotificationActor extends BaseActor {
       ProjectLogger.log(
           "CourseBatchNotificationActor:sendMail: Exception occurred with error message = "
               + e.getMessage(),
-          LoggerEnum.ERROR);
+          e);
     }
   }
 }

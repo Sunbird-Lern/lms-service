@@ -96,11 +96,11 @@
             <artifactId>badge-actors</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
-		<dependency>
+		<!--<dependency>
 			<groupId>org.sunbird</groupId>
 			<artifactId>sunbird-commons</artifactId>
 			<version>1.0-SNAPSHOT</version>
-		</dependency>
+		</dependency>-->
 		<!--<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>

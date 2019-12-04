@@ -51,6 +51,10 @@ public class CourseEnrollmentActor extends BaseActor {
   @Named("course-batch-notification-actor")
   private ActorRef courseBatchNotificationActorRef;
 
+  @Inject
+  @Named("background-job-manager-actor")
+  private ActorRef backgroundJobManagerActorRef;
+
   @Override
   public void onReceive(Request request) throws Throwable {
 
@@ -219,7 +223,7 @@ public class CourseEnrollmentActor extends BaseActor {
     request.setOperation(ActorOperations.INSERT_USR_COURSES_INFO_ELASTIC.getValue());
     request.getRequest().put(JsonKey.USER_COURSES, courseMap);
     try {
-      courseBatchNotificationActorRef.tell(request, getSelf());
+      backgroundJobManagerActorRef.tell(request, getSelf());
     } catch (Exception ex) {
       ProjectLogger.log("Exception Occurred during saving user count to Es : ", ex);
     }

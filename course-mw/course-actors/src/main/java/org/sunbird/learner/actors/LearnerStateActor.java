@@ -246,6 +246,7 @@ public class LearnerStateActor extends BaseActor {
         LoggerEnum.INFO.name());
     Map<String, Object> requestMap = new HashMap<>();
     requestMap.put(JsonKey.FILTERS, filters);
+    requestMap.put(JsonKey.LIMIT,courseIds.size());
     if (fields != null) requestMap.put(JsonKey.FIELDS, fields);
     Map<String, Map<String, Object>> request = new HashMap<>();
     request.put(JsonKey.REQUEST, requestMap);

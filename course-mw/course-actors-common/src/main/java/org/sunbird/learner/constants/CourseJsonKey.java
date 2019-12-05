@@ -27,4 +27,6 @@ public abstract class CourseJsonKey {
   public static final String ASSESMENT_CRITERIA = "ge, le, eq";
   public static final String SUNBIRD_SEND_EMAIL_NOTIFICATION_API =
       "sunbird_send_email_notifictaion_api";
+  public static final String CONTENT_STATUS="contentStatus";
+  public static final String SECONDS= "seconds";
 }

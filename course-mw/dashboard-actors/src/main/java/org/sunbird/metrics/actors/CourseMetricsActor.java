@@ -36,7 +36,6 @@ import scala.concurrent.Future;
 
 public class CourseMetricsActor extends BaseMetricsActor {
 
-  private static final String COURSE_PROGRESS_REPORT = "Course Progress Report";
   protected static final String CONTENT_ID = "content_id";
   private UserOrgService userOrgService = UserOrgServiceImpl.getInstance();
   private static ObjectMapper mapper = new ObjectMapper();
@@ -412,7 +411,7 @@ public class CourseMetricsActor extends BaseMetricsActor {
       Map<String, String> dateRange = getDateRange(periodStr);
       dateRangeFilter.put(GTE, (String) dateRange.get(STARTDATE));
       dateRangeFilter.put(
-          LTE, ((String) dateRange.get(ENDDATE)) + JsonKey.END_TIME_IN_HOUR_MINUTE_SECOND);
+          LTE, (dateRange.get(ENDDATE)) + JsonKey.END_TIME_IN_HOUR_MINUTE_SECOND);
       ProjectLogger.log(
           "CourseMetricsActor:courseProgressMetrics Date range is : " + dateRangeFilter,
           LoggerEnum.INFO.name());
@@ -425,7 +424,7 @@ public class CourseMetricsActor extends BaseMetricsActor {
     coursefields.add(JsonKey.BATCH_ID);
     coursefields.add(JsonKey.DATE_TIME);
     coursefields.add(JsonKey.PROGRESS);
-    coursefields.add("contentStatus");
+    coursefields.add(CourseJsonKey.CONTENT_STATUS);
     Future<Map<String, Object>> resultF =
         esService.search(
             createESRequest(filter, null, coursefields), EsType.usercourses.getTypeName());
@@ -809,7 +808,7 @@ public class CourseMetricsActor extends BaseMetricsActor {
       Map<String, Object> seriesData = new LinkedHashMap<>();
       seriesData.put(JsonKey.NAME, "Timespent for content consumption");
       seriesData.put(JsonKey.SPLIT, "content.sum(time_spent)");
-      seriesData.put(JsonKey.TIME_UNIT, "seconds");
+      seriesData.put(JsonKey.TIME_UNIT, CourseJsonKey.SECONDS);
       seriesData.put(GROUP_ID, "course.timespent.sum");
       seriesData.put("buckets", consumptionBucket);
       series.put("course.consumption.time_spent", seriesData);
@@ -835,7 +834,7 @@ public class CourseMetricsActor extends BaseMetricsActor {
       Map<String, Object> dataMap = new HashMap<>();
       dataMap.put(JsonKey.NAME, "Total time of Content consumption");
       dataMap.put(VALUE, resultData.get("m_total_ts"));
-      dataMap.put(JsonKey.TIME_UNIT, "seconds");
+      dataMap.put(JsonKey.TIME_UNIT, CourseJsonKey.SECONDS);
       snapshot.put("course.consumption.time_spent.count", dataMap);
       dataMap = new LinkedHashMap<>();
       dataMap.put(JsonKey.NAME, "User access course over time");
@@ -851,16 +850,10 @@ public class CourseMetricsActor extends BaseMetricsActor {
       snapshot.put("course.consumption.users_completed", dataMap);
       dataMap = new LinkedHashMap<>();
       dataMap.put(JsonKey.NAME, "Average time per user for course completion");
-      int avgTime =
-          courseCompletedData.get("avg_time_course_completed") == null
-              ? 0
-              : (courseCompletedData.get("avg_time_course_completed") instanceof Double)
-                  ? ((Double) courseCompletedData.get("avg_time_course_completed")).intValue()
-                  : (Integer) courseCompletedData.get("avg_time_course_completed");
+      int avgTime = getAverageCourseCompletionTime(courseCompletedData.get("avg_time_course_completed"));
       dataMap.put(VALUE, avgTime);
-      dataMap.put(JsonKey.TIME_UNIT, "seconds");
+      dataMap.put(JsonKey.TIME_UNIT, CourseJsonKey.SECONDS);
       snapshot.put("course.consumption.time_spent_completion_count", dataMap);
-
       Map<String, Object> responseMap = new HashMap<>();
       responseMap.put(JsonKey.SNAPSHOT, snapshot);
       responseMap.put(JsonKey.SERIES, series);
@@ -869,6 +862,15 @@ public class CourseMetricsActor extends BaseMetricsActor {
       ProjectLogger.log("Error occurred", e);
     }
     return result;
+  }
+
+  private int getAverageCourseCompletionTime(Object averageTime ){
+    if(averageTime == null)
+      return 0;
+    else
+    {
+      return averageTime instanceof Double?((Double) averageTime).intValue():(Integer)averageTime;
+    }
   }
 
   private String getSortyBy(String sortBy) {
@@ -905,13 +907,13 @@ public class CourseMetricsActor extends BaseMetricsActor {
         ContentSearchUtil.searchContentSync(
             null, requestBody, (Map<String, String>) request.getRequest().get(JsonKey.HEADER));
     if (contentsList == null) {
-      new ProjectCommonException(
+     throw new ProjectCommonException(
           ResponseCode.internalError.getErrorCode(),
           ResponseCode.internalError.getErrorMessage(),
           ResponseCode.SERVER_ERROR.getResponseCode());
     }
-    List<Map<String, Object>> contents =
-        ((List<Map<String, Object>>) (contentsList.get(JsonKey.CONTENTS)));
+      List<Map<String, Object>> contents =
+              ((List<Map<String, Object>>) (contentsList.get(JsonKey.CONTENTS)));
     return contents.get(0);
   }
 
@@ -947,10 +949,10 @@ public class CourseMetricsActor extends BaseMetricsActor {
     List<String> leafNodes = (List<String>) courseContent.get("leafNodes");
     userCoursesEsContent.put(COMPLETE_PERCENT, 0);
     userCoursesEsContent.put(JsonKey.LEAF_NODE_COUNT, courseContent.get(JsonKey.LEAF_NODE_COUNT));
-    if (userCoursesEsContent.get("contentStatus") != null
+    if (userCoursesEsContent.get(CourseJsonKey.CONTENT_STATUS) != null
         && CollectionUtils.isNotEmpty(leafNodes)) {
       Map<String, Object> contentStatus =
-          new ObjectMapper().convertValue(userCoursesEsContent.get("contentStatus"), Map.class);
+          new ObjectMapper().convertValue(userCoursesEsContent.get(CourseJsonKey.CONTENT_STATUS), Map.class);
       int contentIdscompleted =
           (int)
               contentStatus

@@ -58,10 +58,6 @@
 					<artifactId>guice</artifactId>
 				</exclusion>
 				<exclusion>
-					<groupId>com.google.inject</groupId>
-					<artifactId>guice</artifactId>
-				</exclusion>
-				<exclusion>
 					<groupId>com.google.inject.extensions</groupId>
 		    		<artifactId>guice-assistedinject</artifactId>
 				</exclusion>

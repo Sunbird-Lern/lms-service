@@ -97,6 +97,41 @@ public class CustomObjectBuilder {
     return new CustomObjectWrapper<List<Map<String, Object>>>(userList);
   }
 
+  public static CustomObjectWrapper<List<Map<String, Object>>> getRandomPageManagements(int size) {
+    List<Map<String, Object>> pageManagements = new ArrayList<>();
+    for (int i = 0; i < size; i++) {
+      Map<String, Object> map = new HashMap<>();
+      map.put(JsonKey.ID, "pageId" + (i + 1));
+      map.put(JsonKey.PAGE_NAME, "randomPageName" + (i + 1));
+      map.put(
+          JsonKey.APP_MAP,
+          Arrays.asList(
+              "{\"id\":\"randomSectionId1\",\"index\":1,\"group\":1}",
+              "{\"id\":\"randomSectionId2\",\"index\":1,\"group\":2}"));
+      map.put(
+          JsonKey.PORTAL_MAP,
+          Arrays.asList(
+              "{\"id\":\"randomSectionId1\",\"index\":1,\"group\":1}",
+              "{\"id\":\"randomSectionId2\",\"index\":1,\"group\":2}"));
+      map.put(JsonKey.ORGANISATION_ID, i < 3 ? "randomOrgId" + (i + 1) : null);
+      pageManagements.add(map);
+    }
+    return new CustomObjectWrapper<List<Map<String, Object>>>(pageManagements);
+  }
+
+  public static CustomObjectWrapper<List<Map<String, Object>>> getRandomPageSections(int size) {
+    List<Map<String, Object>> pageSections = new ArrayList<>();
+    for (int i = 0; i < size; i++) {
+      Map<String, Object> map = new HashMap<>();
+      map.put(JsonKey.ID, "randomSectionId" + (i + 1));
+      map.put(JsonKey.SECTION_DISPLAY, "{\"name\":{\"en\":\"Latest Courses\"}}");
+      map.put(JsonKey.SEARCH_QUERY, "{\"request\":{\"filters\":{\"contentType\":[\"Resource\"]}}}");
+      map.put(JsonKey.STATUS, 1);
+      pageSections.add(map);
+    }
+    return new CustomObjectWrapper<List<Map<String, Object>>>(pageSections);
+  }
+
   public static class CustomObjectWrapper<T> {
     private T t;
 

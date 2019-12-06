@@ -1,6 +1,5 @@
 package org.sunbird.learner.util;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -15,7 +14,6 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.builder.mocker.MockerBuilder;
-import org.sunbird.common.models.util.HttpUtil;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.PropertiesCache;
 import org.sunbird.dto.SearchDTO;
@@ -24,12 +22,7 @@ import org.sunbird.helper.CassandraConnectionManagerImpl;
 import org.sunbird.helper.CassandraConnectionMngrFactory;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({
-  PropertiesCache.class,
-  CassandraConnectionMngrFactory.class,
-  System.class,
-  HttpUtil.class
-})
+@PrepareForTest({PropertiesCache.class, CassandraConnectionMngrFactory.class, System.class})
 @PowerMockIgnore("javax.management.*")
 public class UtilTest {
 
@@ -143,16 +136,5 @@ public class UtilTest {
     queryMap.put(JsonKey.SOFT_CONSTRAINTS, softContraints);
     SearchDTO dto = Util.createSearchDto(queryMap);
     Assert.assertNotNull(dto);
-  }
-
-  @Test
-  public void getContentDataTest() throws IOException {
-    group.andStaticMock(HttpUtil.class);
-    PowerMockito.when(
-            HttpUtil.sendPostRequest(Mockito.anyString(), Mockito.anyString(), Mockito.any()))
-        .thenReturn("{\"result\":{\"content\":[]}}");
-    Map<String, Object> sectionMap = new HashMap<>();
-    Util.getContentData(sectionMap);
-    Assert.assertNotNull(sectionMap.get(JsonKey.CONTENTS));
   }
 }

@@ -67,18 +67,8 @@ public class DataCacheHandler implements Runnable {
     return pageMap;
   }
 
-  /** @param pageMap the pageMap to set */
-  public static void setPageMap(Map<String, Map<String, Object>> pageMap) {
-    DataCacheHandler.pageMap = pageMap;
-  }
-
   /** @return the sectionMap */
   public static Map<String, Map<String, Object>> getSectionMap() {
     return sectionMap;
-  }
-
-  /** @param sectionMap the sectionMap to set */
-  public static void setSectionMap(Map<String, Map<String, Object>> sectionMap) {
-    DataCacheHandler.sectionMap = sectionMap;
   }
 }

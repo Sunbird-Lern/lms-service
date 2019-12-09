@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
@@ -35,32 +36,27 @@ import org.sunbird.learner.util.Util;
  * that are linked to courses that are created userIds given
  */
 public class QRCodeDownloadManagementActor extends BaseActor {
-  private static final List<String> fields = Arrays.asList("identifier", "dialcodes", "name");
-  private static final Map<String, String> filtersHelperMap =
-      new HashMap<String, String>() {
-        {
-          put(JsonKey.USER_IDs, JsonKey.CREATED_BY);
-          put(JsonKey.STATUS, JsonKey.STATUS);
-          put(JsonKey.CONTENT_TYPE, JsonKey.CONTENT_TYPE);
-        }
-      };
+  private static final List<String> fields = Arrays.asList("identifier", JsonKey.DIAL_CODES, "name");
+  private static final Map<String, String> filtersHelperMap = new HashMap<>();
   private static Util.DbInfo courseDialCodeInfo =
       Util.dbInfoMap.get(JsonKey.SUNBIRD_COURSE_DIALCODES_DB);
   private static CassandraOperation cassandraOperation = ServiceFactory.getInstance();
 
+  static{
+    filtersHelperMap.put(JsonKey.USER_IDs, JsonKey.CREATED_BY);;
+    filtersHelperMap.put(JsonKey.STATUS, JsonKey.STATUS);
+    filtersHelperMap.put(JsonKey.CONTENT_TYPE, JsonKey.CONTENT_TYPE);
+  }
   @Override
   public void onReceive(Request request) throws Throwable {
     Util.initializeContext(request, TelemetryEnvKey.QR_CODE_DOWNLOAD);
     ExecutionContext.setRequestId(request.getRequestId());
     String requestedOperation = request.getOperation();
-    switch (requestedOperation) {
-      case "downloadQRCodes":
-        downloadQRCodes(request);
-        break;
-
-      default:
-        onReceiveUnsupportedOperation(requestedOperation);
-        break;
+    if(requestedOperation.equals("downloadQRCodes")){
+      downloadQRCodes(request);
+    }
+    else{
+      onReceiveUnsupportedOperation(requestedOperation);
     }
   }
 
@@ -83,22 +79,21 @@ public class QRCodeDownloadManagementActor extends BaseActor {
     Map<String, List<String>> dialCodesMap =
         contents
             .stream()
-            .filter(content -> content.get("dialcodes") != null)
+            .filter(content -> content.get(JsonKey.DIAL_CODES) != null)
             .filter(content -> content.get("name") != null)
             .collect(
                 Collectors.toMap(
                     content ->
                         ((String) content.get("identifier")) + "<<<" + (String) content.get("name"),
-                    content -> (List) content.get("dialcodes")));
+                    content -> (List) content.get(JsonKey.DIAL_CODES)));
     File file = generateCSVFile(dialCodesMap);
-    Response response = new Response();
     if (null == file)
       throw new ProjectCommonException(
           ResponseCode.errorProcessingFile.getErrorCode(),
           ResponseCode.errorProcessingFile.getErrorMessage(),
           ResponseCode.SERVER_ERROR.getResponseCode());
 
-    response = uploadFile(file);
+    Response response = uploadFile(file);
     sender().tell(response, self());
   }
 
@@ -112,9 +107,7 @@ public class QRCodeDownloadManagementActor extends BaseActor {
   private Map<String, Object> searchCourses(
       Map<String, Object> requestMap, Map<String, String> headers) {
     String request = prepareSearchRequest(requestMap);
-    Map<String, Object> searchResponse =
-        ContentSearchUtil.searchContentSync(null, request, headers);
-    return searchResponse;
+    return ContentSearchUtil.searchContentSync(null, request, headers);
   }
 
   /**
@@ -125,29 +118,20 @@ public class QRCodeDownloadManagementActor extends BaseActor {
    * @return
    */
   private String prepareSearchRequest(Map<String, Object> requestMap) {
-    Map<String, Object> searchRequestMap =
-        new HashMap<String, Object>() {
-          {
-            put(
-                JsonKey.FILTERS,
-                requestMap
+    Map<String, Object> searchRequestMap = new HashMap<>();
+    searchRequestMap.put(JsonKey.FILTERS,
+            requestMap
                     .keySet()
                     .stream()
                     .filter(key -> filtersHelperMap.containsKey(key))
                     .collect(
-                        Collectors.toMap(
-                            key -> filtersHelperMap.get(key), key -> requestMap.get(key))));
-            put(JsonKey.FIELDS, fields);
-            put(JsonKey.EXISTS, JsonKey.DIAL_CODES);
-            put(JsonKey.LIMIT, 200);
-          }
-        };
-    Map<String, Object> request =
-        new HashMap<String, Object>() {
-          {
-            put(JsonKey.REQUEST, searchRequestMap);
-          }
-        };
+                            Collectors.toMap(
+                                    key -> filtersHelperMap.get(key), key -> requestMap.get(key))));
+    searchRequestMap.put(JsonKey.FIELDS, fields);
+    searchRequestMap.put(JsonKey.EXISTS, JsonKey.DIAL_CODES);
+    searchRequestMap.put(JsonKey.LIMIT, 200);
+    Map<String, Object> request = new HashMap<>();
+    request.put(JsonKey.REQUEST, searchRequestMap);
     String requestJson = null;
     try {
       requestJson = new ObjectMapper().writeValueAsString(request);
@@ -194,7 +178,7 @@ public class QRCodeDownloadManagementActor extends BaseActor {
                               .append(getQRCodeImageUrl(dialCode));
                         });
               });
-      FileUtils.writeStringToFile(file, csvFile.toString());
+      FileUtils.writeStringToFile(file, csvFile.toString(), Charset.defaultCharset(), false);
     } catch (IOException e) {
       ProjectLogger.log(
           "QRCodeDownloadManagement:createCSVFile: Exception occurred with error message = "
@@ -221,7 +205,7 @@ public class QRCodeDownloadManagementActor extends BaseActor {
             Arrays.asList("url"));
     if (null != response && response.get(JsonKey.RESPONSE) != null) {
       Object obj = response.get(JsonKey.RESPONSE);
-      if (null != obj && obj instanceof List) {
+      if (obj instanceof List) {
         List<Map<String, Object>> listOfMap = (List<Map<String, Object>>) obj;
         if (CollectionUtils.isNotEmpty(listOfMap)) {
           return (String) listOfMap.get(0).get("url");

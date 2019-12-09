@@ -1,16 +1,10 @@
 package org.sunbird.learner.actors;
 
-import static org.sunbird.common.models.util.JsonKey.ID;
-
 import akka.dispatch.Futures;
 import akka.dispatch.Mapper;
 import akka.pattern.Patterns;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import java.io.IOException;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -29,6 +23,7 @@ import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.helper.ServiceFactory;
+import org.sunbird.learner.constants.CourseJsonKey;
 import org.sunbird.learner.util.ContentSearchUtil;
 import org.sunbird.learner.util.Util;
 import org.sunbird.notification.utils.JsonUtil;
@@ -38,6 +33,13 @@ import org.sunbird.userorg.UserOrgServiceImpl;
 import scala.concurrent.ExecutionContextExecutor;
 import scala.concurrent.Future;
 import scala.concurrent.Promise;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+
+import static org.sunbird.common.models.util.JsonKey.ID;
 
 /**
  * This actor will handle page management operation .
@@ -147,7 +149,6 @@ public class PageManagementActor extends BaseActor {
     ProjectLogger.log("Inside updatePageSection method", LoggerEnum.INFO);
     Map<String, Object> req = actorMessage.getRequest();
     // object of telemetry event...
-    Map<String, Object> targetObject = new HashMap<>();
     List<Map<String, Object>> correlatedObject = new ArrayList<>();
     @SuppressWarnings("unchecked")
     Map<String, Object> sectionMap = (Map<String, Object>) req.get(JsonKey.SECTION);
@@ -174,7 +175,7 @@ public class PageManagementActor extends BaseActor {
         cassandraOperation.updateRecord(
             sectionDbInfo.getKeySpace(), sectionDbInfo.getTableName(), sectionMap);
     sender().tell(response, self());
-    targetObject =
+    Map<String, Object> targetObject =
         TelemetryUtil.generateTargetObject(
             (String) sectionMap.get(JsonKey.ID),
             TelemetryEnvKey.PAGE_SECTION,
@@ -193,7 +194,6 @@ public class PageManagementActor extends BaseActor {
     @SuppressWarnings("unchecked")
     Map<String, Object> sectionMap = (Map<String, Object>) req.get(JsonKey.SECTION);
     // object of telemetry event...
-    Map<String, Object> targetObject = new HashMap<>();
     List<Map<String, Object>> correlatedObject = new ArrayList<>();
     String uniqueId = ProjectUtil.getUniqueIdFromTimestamp(actorMessage.getEnv());
     if (null != sectionMap.get(JsonKey.SEARCH_QUERY)) {
@@ -221,7 +221,7 @@ public class PageManagementActor extends BaseActor {
             sectionDbInfo.getKeySpace(), sectionDbInfo.getTableName(), sectionMap);
     response.put(JsonKey.SECTION_ID, uniqueId);
     sender().tell(response, self());
-    targetObject =
+    Map<String, Object> targetObject =
         TelemetryUtil.generateTargetObject(
             uniqueId, TelemetryEnvKey.PAGE_SECTION, JsonKey.CREATE, null);
     TelemetryUtil.telemetryProcessingCall(
@@ -245,7 +245,7 @@ public class PageManagementActor extends BaseActor {
   }
 
   @SuppressWarnings("unchecked")
-  private void getPageData(Request actorMessage) throws Exception {
+  private void getPageData(Request actorMessage){
     ProjectLogger.log("PageManagementActor:getPageData: start", LoggerEnum.INFO.name());
     String sectionQuery = null;
     Map<String, Object> filterMap = new HashMap<>();
@@ -316,7 +316,6 @@ public class PageManagementActor extends BaseActor {
         return;
       }
     }
-    String reqHashCode = requestHashCode;
     try {
       List<Future<Map<String, Object>>> sectionList = new ArrayList<>();
       if (arr != null) {
@@ -468,7 +467,6 @@ public class PageManagementActor extends BaseActor {
     Map<String, Object> req = actorMessage.getRequest();
     Map<String, Object> pageMap = (Map<String, Object>) req.get(JsonKey.PAGE);
     // object of telemetry event...
-    Map<String, Object> targetObject = new HashMap<>();
     List<Map<String, Object>> correlatedObject = new ArrayList<>();
     // default value for orgId
     if (StringUtils.isBlank((String) pageMap.get(JsonKey.ORGANISATION_ID))) {
@@ -515,7 +513,7 @@ public class PageManagementActor extends BaseActor {
             pageDbInfo.getKeySpace(), pageDbInfo.getTableName(), pageMap);
     sender().tell(response, self());
 
-    targetObject =
+    Map<String, Object> targetObject =
         TelemetryUtil.generateTargetObject(
             (String) pageMap.get(JsonKey.ID), JsonKey.PAGE, JsonKey.CREATE, null);
     TelemetryUtil.telemetryProcessingCall(
@@ -531,7 +529,6 @@ public class PageManagementActor extends BaseActor {
     Map<String, Object> req = actorMessage.getRequest();
     Map<String, Object> pageMap = (Map<String, Object>) req.get(JsonKey.PAGE);
     // object of telemetry event...
-    Map<String, Object> targetObject = new HashMap<>();
     List<Map<String, Object>> correlatedObject = new ArrayList<>();
     // default value for orgId
     String orgId = (String) pageMap.get(JsonKey.ORGANISATION_ID);
@@ -580,7 +577,7 @@ public class PageManagementActor extends BaseActor {
             pageDbInfo.getKeySpace(), pageDbInfo.getTableName(), pageMap);
     response.put(JsonKey.PAGE_ID, uniqueId);
     sender().tell(response, self());
-    targetObject = TelemetryUtil.generateTargetObject(uniqueId, JsonKey.PAGE, JsonKey.CREATE, null);
+    Map<String, Object> targetObject = TelemetryUtil.generateTargetObject(uniqueId, JsonKey.PAGE, JsonKey.CREATE, null);
     TelemetryUtil.telemetryProcessingCall(
         actorMessage.getRequest(), targetObject, correlatedObject);
 
@@ -615,13 +612,13 @@ public class PageManagementActor extends BaseActor {
       Object group,
       Object index,
       ExecutionContextExecutor ec)
-      throws Exception {
+      throws  IOException {
 
     ProjectLogger.log("PageManagementActor:getContentData: start", LoggerEnum.INFO.name());
     Map<String, Object> searchQueryMap =
         mapper.readValue((String) section.get(JsonKey.SEARCH_QUERY), HashMap.class);
     if (MapUtils.isEmpty(searchQueryMap)) {
-      searchQueryMap = new HashMap<String, Object>();
+      searchQueryMap = new HashMap<>();
       searchQueryMap.put(JsonKey.REQUEST, new HashMap<String, Object>());
     }
     Map<String, Object> request = (Map<String, Object>) searchQueryMap.get(JsonKey.REQUEST);
@@ -658,7 +655,7 @@ public class PageManagementActor extends BaseActor {
                 section.remove(JsonKey.PARAMS);
                 section.put(JsonKey.RES_MSG_ID, tempMap.get(JsonKey.RES_MSG_ID));
                 section.put(JsonKey.API_ID, tempMap.get(JsonKey.API_ID));
-                removeUnwantedData(section, "getPageData");
+                removeUnwantedData(section, CourseJsonKey.GET_PAGE_DATA);
                 ProjectLogger.log(
                     "PageManagementActor:getContentData:apply: section = " + section,
                     LoggerEnum.DEBUG.name());
@@ -672,9 +669,11 @@ public class PageManagementActor extends BaseActor {
     } else {
       Map<String, Object> esResponse =
           searchFromES((Map<String, Object>) searchQueryMap.get(JsonKey.REQUEST), dataSource);
-      section.put(JsonKey.COUNT, esResponse.get(JsonKey.COUNT));
-      section.put(JsonKey.CONTENTS, esResponse.get(JsonKey.CONTENT));
-      removeUnwantedData(section, "getPageData");
+      if(MapUtils.isNotEmpty(esResponse)) {
+        section.put(JsonKey.COUNT, esResponse.get(JsonKey.COUNT));
+        section.put(JsonKey.CONTENTS, esResponse.get(JsonKey.CONTENT));
+      }
+      removeUnwantedData(section, CourseJsonKey.GET_PAGE_DATA);
       final Promise promise = Futures.promise();
       promise.success(section);
       result = promise.future();
@@ -697,9 +696,7 @@ public class PageManagementActor extends BaseActor {
     }
 
     Future<Map<String, Object>> resultF = esService.search(searcDto, type);
-    Map<String, Object> result =
-        (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
-    return result;
+    return (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
   }
 
   @SuppressWarnings("unchecked")
@@ -777,7 +774,7 @@ public class PageManagementActor extends BaseActor {
     map.remove(JsonKey.CREATED_BY);
     map.remove(JsonKey.UPDATED_DATE);
     map.remove(JsonKey.UPDATED_BY);
-    if (from.equalsIgnoreCase("getPageData")) {
+    if (from.equalsIgnoreCase(CourseJsonKey.GET_PAGE_DATA)) {
       map.remove(JsonKey.STATUS);
     }
   }
@@ -828,10 +825,8 @@ public class PageManagementActor extends BaseActor {
     }
     ProjectLogger.log(
         "Fetching data from Cache for " + orgId + ":" + pageName, LoggerEnum.INFO.name());
-    Map<String, Object> pageMapData =
-        PageCacheLoaderService.getDataFromCache(
-            ActorOperations.GET_PAGE_DATA.getValue(), orgId + ":" + pageName, Map.class);
 
-    return pageMapData;
+    return PageCacheLoaderService.getDataFromCache(
+            ActorOperations.GET_PAGE_DATA.getValue(), orgId + ":" + pageName, Map.class);
   }
 }

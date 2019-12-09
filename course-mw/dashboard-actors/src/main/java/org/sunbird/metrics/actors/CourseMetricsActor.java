@@ -238,36 +238,7 @@ public class CourseMetricsActor extends BaseMetricsActor {
     }
 
     String batchId = (String) actorMessage.getRequest().get(JsonKey.BATCH_ID);
-    if (StringUtils.isBlank(batchId)) {
-      ProjectLogger.log(
-          "CourseMetricsActor:courseProgressMetricsReport: batchId is invalid (blank).",
-          LoggerEnum.INFO.name());
-      ProjectCommonException exception =
-          new ProjectCommonException(
-              ResponseCode.invalidCourseBatchId.getErrorCode(),
-              ResponseCode.invalidCourseBatchId.getErrorMessage(),
-              ResponseCode.CLIENT_ERROR.getResponseCode());
-      sender().tell(exception, self());
-      return;
-    }
-
-    // check batch exist in ES or not
-    Future<Map<String, Object>> courseBatchResultF =
-        esService.getDataByIdentifier(EsType.courseBatch.getTypeName(), batchId);
-    Map<String, Object> courseBatchResult =
-        (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(courseBatchResultF);
-    if (isNull(courseBatchResult) || courseBatchResult.size() == 0) {
-      ProjectLogger.log(
-          "CourseMetricsActor:courseProgressMetricsReport: batchId not found.",
-          LoggerEnum.INFO.name());
-      ProjectCommonException exception =
-          new ProjectCommonException(
-              ResponseCode.invalidCourseBatchId.getErrorCode(),
-              ResponseCode.invalidCourseBatchId.getErrorMessage(),
-              ResponseCode.CLIENT_ERROR.getResponseCode());
-      sender().tell(exception, self());
-      return;
-    }
+    validateAndGetCourseBatch(batchId);
     String courseMetricsContainer =
         ProjectUtil.getConfigValue(JsonKey.SUNBIRD_COURSE_METRICS_CONTANER);
     String courseMetricsReportFolder =
@@ -356,36 +327,7 @@ public class CourseMetricsActor extends BaseMetricsActor {
           ResponseCode.invalidUserId.getErrorMessage(),
           ResponseCode.CLIENT_ERROR.getResponseCode());
     }
-    if (StringUtils.isBlank(batchId)) {
-      ProjectLogger.log(
-          "CourseMetricsActor:courseProgressMetrics: batchId is invalid (blank).",
-          LoggerEnum.INFO.name());
-      ProjectCommonException exception =
-          new ProjectCommonException(
-              ResponseCode.invalidCourseBatchId.getErrorCode(),
-              ResponseCode.invalidCourseBatchId.getErrorMessage(),
-              ResponseCode.CLIENT_ERROR.getResponseCode());
-      sender().tell(exception, self());
-      return;
-    }
-
-    // check batch exist in ES or not
-    Future<Map<String, Object>> courseBatchResultF =
-        esService.getDataByIdentifier(EsType.courseBatch.getTypeName(), batchId);
-    Map<String, Object> courseBatchResult =
-        (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(courseBatchResultF);
-    if (isNull(courseBatchResult) || courseBatchResult.size() == 0) {
-      ProjectLogger.log(
-          "CourseMetricsActor:courseProgressMetrics: batchId not found.", LoggerEnum.INFO.name());
-      ProjectCommonException exception =
-          new ProjectCommonException(
-              ResponseCode.invalidCourseBatchId.getErrorCode(),
-              ResponseCode.invalidCourseBatchId.getErrorMessage(),
-              ResponseCode.CLIENT_ERROR.getResponseCode());
-      sender().tell(exception, self());
-      return;
-    }
-
+    Map<String,Object> courseBatchResult = validateAndGetCourseBatch(batchId);
     String courseId = (String) courseBatchResult.get(JsonKey.COURSE_ID);
     Map<String, Object> course = getcontentForCourse(actorMessage, courseId);
     if (ProjectUtil.isNull(course)) {
@@ -524,56 +466,14 @@ public class CourseMetricsActor extends BaseMetricsActor {
         map.remove(JsonKey.USER_ID);
         map.remove(JsonKey.BATCH_ID);
       }
-
-      Map<String, Object> responseMap = new LinkedHashMap<>();
-      Map<String, Object> userdataMap = new LinkedHashMap<>();
-      Map<String, Object> courseprogressdataMap = new LinkedHashMap<>();
-      Map<String, Object> valueMap = new LinkedHashMap<>();
-
-      userdataMap.put(JsonKey.NAME, "List of users enrolled for the course");
-      userdataMap.put("split", "content.sum(time_spent)");
-      userdataMap.put("buckets", useresContent);
-
-      courseprogressdataMap.put(JsonKey.NAME, "List of users enrolled for the course");
-      courseprogressdataMap.put("split", "content.sum(time_spent)");
-      courseprogressdataMap.put("buckets", esContent);
-
-      valueMap.put("course.progress.users_enrolled.count", userdataMap);
-      valueMap.put("course.progress.course_progress_per_user.count", courseprogressdataMap);
-
-      responseMap.put("period", periodStr);
-      responseMap.put("series", valueMap);
-
-      Response response = new Response();
-      response.putAll(responseMap);
+      Response response = createCourseProgressResponse(useresContent,esContent,periodStr);
       sender().tell(response, self());
     } else {
 
       ProjectLogger.log(
           "CourseMetricsActor:courseProgressMetrics: Course not found for given batchId.",
           LoggerEnum.INFO.name());
-
-      Map<String, Object> responseMap = new LinkedHashMap<>();
-      Map<String, Object> userdataMap = new LinkedHashMap<>();
-      Map<String, Object> courseprogressdataMap = new LinkedHashMap<>();
-      Map<String, Object> valueMap = new LinkedHashMap<>();
-
-      userdataMap.put(JsonKey.NAME, "List of users enrolled for the course");
-      userdataMap.put("split", "content.sum(time_spent)");
-      userdataMap.put("buckets", new ArrayList<>());
-
-      courseprogressdataMap.put(JsonKey.NAME, "List of users enrolled for the course");
-      courseprogressdataMap.put("split", "content.sum(time_spent)");
-      courseprogressdataMap.put("buckets", esContent);
-
-      valueMap.put("course.progress.users_enrolled.count", userdataMap);
-      valueMap.put("course.progress.course_progress_per_user.count", courseprogressdataMap);
-
-      responseMap.put("period", periodStr);
-      responseMap.put("series", valueMap);
-
-      Response response = new Response();
-      response.putAll(responseMap);
+      Response response = createCourseProgressResponse(null,esContent,periodStr);
       sender().tell(response, self());
     }
   }
@@ -614,15 +514,13 @@ public class CourseMetricsActor extends BaseMetricsActor {
       }
       Map<String, Object> rootOrgData = userOrgService.getOrganisationById(rootOrgId);
       if (null == rootOrgData || rootOrgData.isEmpty()) {
-        ProjectCommonException exception =
-            new ProjectCommonException(
+           throw new ProjectCommonException(
                 ResponseCode.invalidData.getErrorCode(),
                 ResponseCode.invalidData.getErrorMessage(),
                 ResponseCode.CLIENT_ERROR.getResponseCode());
-        sender().tell(exception, self());
       }
 
-      String channel = (String) rootOrgData.get(JsonKey.HASHTAGID);
+        String channel = (String) rootOrgData.get(JsonKey.HASHTAGID);
       ProjectLogger.log(
           "CourseMetricsActor:courseConsumptionMetrics: Root organisation hashtag id = " + channel,
           LoggerEnum.INFO.name());
@@ -636,7 +534,6 @@ public class CourseMetricsActor extends BaseMetricsActor {
               + e.getMessage(),
           e);
       sender().tell(e, self());
-      return;
     } catch (Exception e) {
       ProjectLogger.log(
           "CourseMetricsActor:courseConsumptionMetrics: Generic exception in getting course consumption data: "
@@ -663,7 +560,7 @@ public class CourseMetricsActor extends BaseMetricsActor {
       responseFormat =
           courseConsumptionResponseGenerator(periodStr, ekStepResponse, courseId, channel);
     } catch (Exception e) {
-      ProjectLogger.log("Error occurred", e);
+      ProjectLogger.log(CourseJsonKey.ERROR, e);
       throw new ProjectCommonException(
           ResponseCode.internalError.getErrorCode(),
           ResponseCode.internalError.getErrorMessage(),
@@ -683,46 +580,51 @@ public class CourseMetricsActor extends BaseMetricsActor {
   @SuppressWarnings("unchecked")
   private Map<String, Object> getCourseCompletedData(
       String periodStr, String courseId, String channel) {
-    Map<String, Object> dateRange = getStartAndEndDate(periodStr);
-    Map<String, Object> filter = new HashMap<>();
     Map<String, Object> resultMap = new HashMap<>();
-    filter.put(JsonKey.COURSE_ID, courseId);
-    Map<String, String> dateRangeFilter = new HashMap<>();
-    dateRangeFilter.put(GTE, (String) dateRange.get(STARTDATE));
-    dateRangeFilter.put(LTE, (String) dateRange.get(ENDDATE));
-    filter.put(JsonKey.DATE_TIME, dateRangeFilter);
-    filter.put(JsonKey.STATUS, ProjectUtil.ProgressStatus.COMPLETED.getValue());
+    try {
+      Map<String, Object> dateRange = getStartAndEndDate(periodStr);
+      Map<String, Object> filter = new HashMap<>();
+      filter.put(JsonKey.COURSE_ID, courseId);
+      Map<String, String> dateRangeFilter = new HashMap<>();
+      dateRangeFilter.put(GTE, (String) dateRange.get(STARTDATE));
+      dateRangeFilter.put(LTE, (String) dateRange.get(ENDDATE));
+      filter.put(JsonKey.DATE_TIME, dateRangeFilter);
+      filter.put(JsonKey.STATUS, ProjectUtil.ProgressStatus.COMPLETED.getValue());
 
-    List<String> coursefields = new ArrayList<>();
-    coursefields.add(JsonKey.USER_ID);
-    coursefields.add(JsonKey.STATUS);
+      List<String> coursefields = new ArrayList<>();
+      coursefields.add(JsonKey.USER_ID);
+      coursefields.add(JsonKey.STATUS);
 
-    Future<Map<String, Object>> resultF =
-        esService.search(
-            createESRequest(filter, null, coursefields), EsType.usercourses.getTypeName());
-    Map<String, Object> result =
-        (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
-    if (null == result || result.isEmpty()) {
-      throw new ProjectCommonException(
-          ResponseCode.noDataForConsumption.getErrorCode(),
-          ResponseCode.noDataForConsumption.getErrorMessage(),
-          ResponseCode.CLIENT_ERROR.getResponseCode());
+      Future<Map<String, Object>> resultF =
+              esService.search(
+                      createESRequest(filter, null, coursefields), EsType.usercourses.getTypeName());
+      Map<String, Object> result =
+              (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
+      if (null == result || result.isEmpty()) {
+        throw new ProjectCommonException(
+                ResponseCode.noDataForConsumption.getErrorCode(),
+                ResponseCode.noDataForConsumption.getErrorMessage(),
+                ResponseCode.CLIENT_ERROR.getResponseCode());
+      }
+      List<Map<String, Object>> esContent = (List<Map<String, Object>>) result.get(JsonKey.CONTENT);
+
+      List<String> userIds = new ArrayList<>();
+      Double timeConsumed = 0D;
+      for (Map<String, Object> entry : esContent) {
+        String userId = (String) entry.get(JsonKey.USER_ID);
+        timeConsumed = timeConsumed + getMetricsForUser(courseId, userId, periodStr, channel);
+        userIds.add(userId);
+      }
+      Integer usersCount = userIds.size();
+      resultMap.put(CourseJsonKey.USER_COUNT, usersCount);
+      if (0 == usersCount) {
+        resultMap.put(CourseJsonKey.AVG_TIME_COURSE_COMPLETED, 0);
+      } else {
+        resultMap.put(CourseJsonKey.AVG_TIME_COURSE_COMPLETED, timeConsumed / usersCount);
+      }
     }
-    List<Map<String, Object>> esContent = (List<Map<String, Object>>) result.get(JsonKey.CONTENT);
-
-    List<String> userIds = new ArrayList<>();
-    Double timeConsumed = 0D;
-    for (Map<String, Object> entry : esContent) {
-      String userId = (String) entry.get(JsonKey.USER_ID);
-      timeConsumed = timeConsumed + getMetricsForUser(courseId, userId, periodStr, channel);
-      userIds.add(userId);
-    }
-    Integer users_count = userIds.size();
-    resultMap.put("user_count", users_count);
-    if (0 == users_count) {
-      resultMap.put("avg_time_course_completed", 0);
-    } else {
-      resultMap.put("avg_time_course_completed", timeConsumed / users_count);
+    catch (Exception e) {
+      ProjectLogger.log(CourseJsonKey.ERROR, e);
     }
     return resultMap;
   }
@@ -754,9 +656,9 @@ public class CourseMetricsActor extends BaseMetricsActor {
           makePostRequest(analyticsBaseUrl, JsonKey.EKSTEP_METRICS_API_URL, requestStr);
       Map<String, Object> resultData = mapper.readValue(ekStepResponse, Map.class);
       resultData = (Map<String, Object>) resultData.get(JsonKey.RESULT);
-      userTimeConsumed = (Double) resultData.get("m_total_ts");
+      userTimeConsumed = (Double) resultData.get(CourseJsonKey.M_TOTAL_TS);
     } catch (Exception e) {
-      ProjectLogger.log("Error occurred", e);
+      ProjectLogger.log(CourseJsonKey.ERROR, e);
     }
     return userTimeConsumed;
   }
@@ -793,7 +695,7 @@ public class CourseMetricsActor extends BaseMetricsActor {
           metricsDate = new SimpleDateFormat("yyyy-MM-dd").format(date);
         }
         if (metricsDate.equalsIgnoreCase(bucketDate)) {
-          Double totalTimeSpent = (Double) res.get("m_total_ts");
+          Double totalTimeSpent = (Double) res.get(CourseJsonKey.M_TOTAL_TS);
           Integer totalUsers = (Integer) res.get("m_total_users_count");
           resData.put(VALUE, totalTimeSpent);
           userData.put(VALUE, totalUsers);
@@ -810,7 +712,7 @@ public class CourseMetricsActor extends BaseMetricsActor {
       seriesData.put(JsonKey.SPLIT, "content.sum(time_spent)");
       seriesData.put(JsonKey.TIME_UNIT, CourseJsonKey.SECONDS);
       seriesData.put(GROUP_ID, "course.timespent.sum");
-      seriesData.put("buckets", consumptionBucket);
+      seriesData.put(CourseJsonKey.BUCKETS, consumptionBucket);
       series.put("course.consumption.time_spent", seriesData);
       seriesData = new LinkedHashMap<>();
       if ("5w".equalsIgnoreCase(period)) {
@@ -820,20 +722,15 @@ public class CourseMetricsActor extends BaseMetricsActor {
       }
       seriesData.put(JsonKey.SPLIT, "content.users.count");
       seriesData.put(GROUP_ID, "course.users.count");
-      seriesData.put("buckets", userBucket);
+      seriesData.put(CourseJsonKey.BUCKETS, userBucket);
       series.put("course.consumption.content.users.count", seriesData);
-      Map<String, Object> courseCompletedData = new HashMap<>();
-      try {
-        courseCompletedData = getCourseCompletedData(period, courseId, channel);
-      } catch (Exception e) {
-        ProjectLogger.log("Error occurred", e);
-      }
+      Map<String, Object> courseCompletedData = getCourseCompletedData(period, courseId, channel);
       ProjectLogger.log("Course completed Data" + courseCompletedData);
       resultData = (Map<String, Object>) resultData.get(JsonKey.SUMMARY);
       Map<String, Object> snapshot = new LinkedHashMap<>();
       Map<String, Object> dataMap = new HashMap<>();
       dataMap.put(JsonKey.NAME, "Total time of Content consumption");
-      dataMap.put(VALUE, resultData.get("m_total_ts"));
+      dataMap.put(VALUE, resultData.get(CourseJsonKey.M_TOTAL_TS));
       dataMap.put(JsonKey.TIME_UNIT, CourseJsonKey.SECONDS);
       snapshot.put("course.consumption.time_spent.count", dataMap);
       dataMap = new LinkedHashMap<>();
@@ -843,14 +740,14 @@ public class CourseMetricsActor extends BaseMetricsActor {
       dataMap = new LinkedHashMap<>();
       dataMap.put(JsonKey.NAME, "Total users completed the course");
       int userCount =
-          courseCompletedData.get("user_count") == null
+          courseCompletedData.get(CourseJsonKey.USER_COUNT) == null
               ? 0
-              : (Integer) courseCompletedData.get("user_count");
+              : (Integer) courseCompletedData.get(CourseJsonKey.USER_COUNT);
       dataMap.put(VALUE, userCount);
       snapshot.put("course.consumption.users_completed", dataMap);
       dataMap = new LinkedHashMap<>();
       dataMap.put(JsonKey.NAME, "Average time per user for course completion");
-      int avgTime = getAverageCourseCompletionTime(courseCompletedData.get("avg_time_course_completed"));
+      int avgTime = getAverageCourseCompletionTime(courseCompletedData.get(CourseJsonKey.AVG_TIME_COURSE_COMPLETED));
       dataMap.put(VALUE, avgTime);
       dataMap.put(JsonKey.TIME_UNIT, CourseJsonKey.SECONDS);
       snapshot.put("course.consumption.time_spent_completion_count", dataMap);
@@ -859,7 +756,7 @@ public class CourseMetricsActor extends BaseMetricsActor {
       responseMap.put(JsonKey.SERIES, series);
       result = mapper.writeValueAsString(responseMap);
     } catch (Exception e) {
-      ProjectLogger.log("Error occurred", e);
+      ProjectLogger.log(CourseJsonKey.ERROR, e);
     }
     return result;
   }
@@ -923,7 +820,7 @@ public class CourseMetricsActor extends BaseMetricsActor {
     filters.put(JsonKey.CONTENT_TYPE, new String[] {JsonKey.COURSE});
     filters.put(JsonKey.IDENTIFIER, courseId);
     ProjectLogger.log(
-        "LearnerStateActor:prepareCourseSearchRequest: courseIds = " + courseId,
+        "CourseMetricsActor:prepareCourseSearchRequest: courseIds = " + courseId,
         LoggerEnum.INFO.name());
     Map<String, Object> requestMap = new HashMap<>();
     requestMap.put(JsonKey.FILTERS, filters);
@@ -936,7 +833,7 @@ public class CourseMetricsActor extends BaseMetricsActor {
       requestJson = new ObjectMapper().writeValueAsString(request);
     } catch (JsonProcessingException e) {
       ProjectLogger.log(
-          "LearnerStateActor:prepareCourseSearchRequest: Exception occurred with error message = "
+          "CourseMetricsActor:prepareCourseSearchRequest: Exception occurred with error message = "
               + e.getMessage(),
           e);
     }
@@ -970,5 +867,31 @@ public class CourseMetricsActor extends BaseMetricsActor {
       userCoursesEsContent.put(JsonKey.PROGRESS, contentIdscompleted);
       userCoursesEsContent.put(COMPLETE_PERCENT, completionPercentage);
     }
+  }
+
+  private Response createCourseProgressResponse(List<Map<String, Object>> useresContent,List<Map<String, Object>> esContent,String periodStr){
+    Map<String, Object> responseMap = new LinkedHashMap<>();
+    Map<String, Object> userdataMap = new LinkedHashMap<>();
+    Map<String, Object> courseprogressdataMap = new LinkedHashMap<>();
+    Map<String, Object> valueMap = new LinkedHashMap<>();
+    userdataMap.put(JsonKey.NAME, "List of users enrolled for the course");
+    userdataMap.put("split", "content.sum(time_spent)");
+
+    if(CollectionUtils.isNotEmpty(useresContent)) {
+      userdataMap.put("buckets", useresContent);
+    }
+    else{
+      userdataMap.put("buckets", new ArrayList<>());
+    }
+    courseprogressdataMap.put(JsonKey.NAME, "List of users enrolled for the course");
+    courseprogressdataMap.put("split", "content.sum(time_spent)");
+    courseprogressdataMap.put("buckets", esContent);
+    valueMap.put("course.progress.users_enrolled.count", userdataMap);
+    valueMap.put("course.progress.course_progress_per_user.count", courseprogressdataMap);
+    responseMap.put("period", periodStr);
+    responseMap.put("series", valueMap);
+    Response response = new Response();
+    response.putAll(responseMap);
+    return response;
   }
 }

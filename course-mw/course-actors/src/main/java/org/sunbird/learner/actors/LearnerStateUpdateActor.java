@@ -441,11 +441,11 @@ public class LearnerStateUpdateActor extends BaseActor {
             put(CourseJsonKey.ITERATION, 1);
           }
         });
+    String topic = ProjectUtil.getConfigValue("kafka_topics_instruction");
     ProjectLogger.log(
             "LearnerStateUpdateActor: pushInstructionEvent :Event Data "
-                    + data,
+                    + data+" and Topic "+topic,
             LoggerEnum.INFO.name());
-    String topic = ProjectUtil.getConfigValue("kafka_topics_instruction");
     InstructionEventGenerator.pushInstructionEvent(topic, data);
   }
 

@@ -83,10 +83,9 @@ public class CourseBatchCertificateActor extends BaseActor {
   }
 
   private void validateTemplateDetails(String templateId, Map<String, Object> template) {
-  //  Map<String, Object> templateDetails = CourseBatchUtil.validateTemplate(templateId);
+   Map<String, Object> templateDetails = CourseBatchUtil.validateTemplate(templateId);
     try {
-   //   template.put(JsonKey.NAME, templateDetails.get(JsonKey.NAME));
-      template.put(JsonKey.NAME, "Merit Certificate");
+      template.put(JsonKey.NAME, templateDetails.get(JsonKey.NAME));
       template.put(JsonKey.CRITERIA, mapper.writeValueAsString(template.get(JsonKey.CRITERIA)));
       if (template.get(CourseJsonKey.ISSUER) != null) {
         template.put(

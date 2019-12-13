@@ -26,7 +26,7 @@ import org.sunbird.common.models.util.ProjectUtil.EsType;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.util.CloudStorageUtil;
 import org.sunbird.learner.util.ContentSearchUtil;
-import org.sunbird.learner.util.EkStepRequestUtil;
+import org.sunbird.learner.util.ContentUtil;
 import org.sunbird.userorg.UserOrgServiceImpl;
 
 @RunWith(PowerMockRunner.class)
@@ -35,7 +35,7 @@ import org.sunbird.userorg.UserOrgServiceImpl;
   UserOrgServiceImpl.class,
   ContentSearchUtil.class,
   CloudStorageUtil.class,
-  EkStepRequestUtil.class
+  ContentUtil.class
 })
 @PowerMockIgnore({"javax.management.*"})
 public class CourseMetricsAdvActorTest extends SunbirdApplicationActorTest {
@@ -181,7 +181,7 @@ public class CourseMetricsAdvActorTest extends SunbirdApplicationActorTest {
 
   @Test
   public void courseConsumptionMetricsSuccess() throws IOException {
-    group.andStaticMock(EkStepRequestUtil.class);
+    group.andStaticMock(ContentUtil.class);
     when(group.getUserOrgMockerService().getUserById(Mockito.anyString()))
         .thenReturn(CustomObjectBuilder.getRandomUser().get());
     when(group.getUserOrgMockerService().getOrganisationById(Mockito.anyString()))
@@ -190,7 +190,7 @@ public class CourseMetricsAdvActorTest extends SunbirdApplicationActorTest {
             .getESMockerService()
             .search(Mockito.any(), Mockito.eq(EsType.usercourses.getTypeName())))
         .thenReturn(CustomObjectBuilder.getRandomUserCoursesList(5).asESSearchResult());
-    when(EkStepRequestUtil.ekStepCall(
+    when(ContentUtil.contentCall(
             Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
         .thenReturn(
             "{\"result\":{\"metrics\":[{\"key\":\"2019-09-04\", \"key_name\":\"2019-09-04\", \"d_period\":\"20190904\", \"m_total_ts\":100}], \"summary\":{\"m_total_ts\":100}}}");
@@ -205,7 +205,7 @@ public class CourseMetricsAdvActorTest extends SunbirdApplicationActorTest {
 
   @Test
   public void courseConsumptionMetricsWeekSuccess() throws IOException {
-    group.andStaticMock(EkStepRequestUtil.class);
+    group.andStaticMock(ContentUtil.class);
     when(group.getUserOrgMockerService().getUserById(Mockito.anyString()))
         .thenReturn(CustomObjectBuilder.getRandomUser().get());
     when(group.getUserOrgMockerService().getOrganisationById(Mockito.anyString()))
@@ -214,7 +214,7 @@ public class CourseMetricsAdvActorTest extends SunbirdApplicationActorTest {
             .getESMockerService()
             .search(Mockito.any(), Mockito.eq(EsType.usercourses.getTypeName())))
         .thenReturn(CustomObjectBuilder.getRandomUserCoursesList(5).asESSearchResult());
-    when(EkStepRequestUtil.ekStepCall(
+    when(ContentUtil.contentCall(
             Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
         .thenReturn(
             "{\"result\":{\"metrics\":[{\"key\":\"2019-09-04\", \"key_name\":\"2019-09-04\", \"d_period\":\"20190904\", \"m_total_ts\":100}], \"summary\":{\"m_total_ts\":100}}}");

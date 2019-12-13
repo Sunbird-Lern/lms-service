@@ -174,7 +174,7 @@ public class BadgeAssociationActor extends BaseActor {
   private Map<String, Object> getContentDetails(String contentId) {
     Map<String, String> headers = CourseBatchSchedulerUtil.headerMap;
     Map<String, Object> contentDetails =
-        CourseBatchSchedulerUtil.getCourseObjectFromEkStep(contentId, headers);
+        CourseBatchSchedulerUtil.getCourseObject(contentId, headers);
     if (MapUtils.isEmpty(contentDetails)) {
       ProjectCommonException.throwClientErrorException(ResponseCode.invalidContentId);
     }

@@ -2,7 +2,6 @@ package org.sunbird.learner.util;
 
 import static org.sunbird.common.models.util.ProjectLogger.log;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
@@ -15,18 +14,12 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.util.BadgingJsonKey;
-import org.sunbird.common.models.util.HttpUtil;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.PropertiesCache;
-import org.sunbird.common.models.util.datasecurity.EncryptionService;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
@@ -44,88 +37,39 @@ import org.sunbird.userorg.UserOrgServiceImpl;
 public final class Util {
 
   public static final Map<String, DbInfo> dbInfoMap = new HashMap<>();
-  private static UserOrgService userOrgService = UserOrgServiceImpl.getInstance();
   public static final int RECOMENDED_LIST_SIZE = 10;
-  private static PropertiesCache propertiesCache = PropertiesCache.getInstance();
   public static final int DEFAULT_ELASTIC_DATA_LIMIT = 10000;
   public static final String KEY_SPACE_NAME = "sunbird";
   public static final String COURSE_KEY_SPACE_NAME = "sunbird_courses";
   public static final String DIALCODE_KEY_SPACE_NAME = "dialcodes";
   private static Properties prop = new Properties();
-  private static Map<String, String> headers = new HashMap<>();
-  private static EncryptionService encryptionService =
-      org.sunbird.common.models.util.datasecurity.impl.ServiceFactory.getEncryptionServiceInstance(
-          null);
-  private static ObjectMapper mapper = new ObjectMapper();
 
   static {
     loadPropertiesFile();
     initializeDBProperty();
-    // EkStep HttpClient headers init
-    headers.put("content-type", "application/json");
-    headers.put("accept", "application/json");
   }
 
   private Util() {}
 
   /** This method will initialize the cassandra data base property */
   private static void initializeDBProperty() {
-    // setting db info (keyspace , table) into static map
-    // this map will be used during cassandra data base interaction.
-    // this map will have each DB name and it's corresponding keyspace and table
-    // name.
     dbInfoMap.put(
         JsonKey.LEARNER_COURSE_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "user_courses"));
     dbInfoMap.put(
         JsonKey.LEARNER_CONTENT_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "content_consumption"));
     dbInfoMap.put(
         JsonKey.COURSE_MANAGEMENT_DB, getDbInfoObject(KEY_SPACE_NAME, "course_management"));
-    dbInfoMap.put(JsonKey.USER_DB, getDbInfoObject(KEY_SPACE_NAME, "user"));
-    dbInfoMap.put(JsonKey.USER_AUTH_DB, getDbInfoObject(KEY_SPACE_NAME, "user_auth"));
-    dbInfoMap.put(JsonKey.ORG_DB, getDbInfoObject(KEY_SPACE_NAME, "organisation"));
     dbInfoMap.put(JsonKey.PAGE_MGMT_DB, getDbInfoObject(KEY_SPACE_NAME, "page_management"));
     dbInfoMap.put(JsonKey.PAGE_SECTION_DB, getDbInfoObject(KEY_SPACE_NAME, "page_section"));
     dbInfoMap.put(JsonKey.SECTION_MGMT_DB, getDbInfoObject(KEY_SPACE_NAME, "page_section"));
     dbInfoMap.put(JsonKey.ASSESSMENT_EVAL_DB, getDbInfoObject(KEY_SPACE_NAME, "assessment_eval"));
     dbInfoMap.put(JsonKey.ASSESSMENT_ITEM_DB, getDbInfoObject(KEY_SPACE_NAME, "assessment_item"));
-    dbInfoMap.put(JsonKey.ADDRESS_DB, getDbInfoObject(KEY_SPACE_NAME, "address"));
-    dbInfoMap.put(JsonKey.EDUCATION_DB, getDbInfoObject(KEY_SPACE_NAME, "user_education"));
-    dbInfoMap.put(JsonKey.JOB_PROFILE_DB, getDbInfoObject(KEY_SPACE_NAME, "user_job_profile"));
-    dbInfoMap.put(JsonKey.USR_ORG_DB, getDbInfoObject(KEY_SPACE_NAME, "user_org"));
-    dbInfoMap.put(JsonKey.USR_EXT_ID_DB, getDbInfoObject(KEY_SPACE_NAME, "user_external_identity"));
 
-    dbInfoMap.put(JsonKey.ORG_MAP_DB, getDbInfoObject(KEY_SPACE_NAME, "org_mapping"));
-    dbInfoMap.put(JsonKey.ORG_TYPE_DB, getDbInfoObject(KEY_SPACE_NAME, "org_type"));
-    dbInfoMap.put(JsonKey.ROLE, getDbInfoObject(KEY_SPACE_NAME, "role"));
-    dbInfoMap.put(JsonKey.MASTER_ACTION, getDbInfoObject(KEY_SPACE_NAME, "master_action"));
-    dbInfoMap.put(JsonKey.URL_ACTION, getDbInfoObject(KEY_SPACE_NAME, "url_action"));
-    dbInfoMap.put(JsonKey.ACTION_GROUP, getDbInfoObject(KEY_SPACE_NAME, "action_group"));
-    dbInfoMap.put(JsonKey.USER_ACTION_ROLE, getDbInfoObject(KEY_SPACE_NAME, "user_action_role"));
-    dbInfoMap.put(JsonKey.ROLE_GROUP, getDbInfoObject(KEY_SPACE_NAME, "role_group"));
-    dbInfoMap.put(JsonKey.USER_ORG_DB, getDbInfoObject(KEY_SPACE_NAME, "user_org"));
     dbInfoMap.put(
         JsonKey.BULK_OP_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "bulk_upload_process"));
     dbInfoMap.put(JsonKey.COURSE_BATCH_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "course_batch"));
-    dbInfoMap.put(
-        JsonKey.COURSE_PUBLISHED_STATUS, getDbInfoObject(KEY_SPACE_NAME, "course_publish_status"));
-    dbInfoMap.put(JsonKey.REPORT_TRACKING_DB, getDbInfoObject(KEY_SPACE_NAME, "report_tracking"));
-    dbInfoMap.put(JsonKey.BADGES_DB, getDbInfoObject(KEY_SPACE_NAME, "badge"));
-    dbInfoMap.put(JsonKey.USER_BADGES_DB, getDbInfoObject(KEY_SPACE_NAME, "user_badge"));
-    dbInfoMap.put(JsonKey.USER_NOTES_DB, getDbInfoObject(KEY_SPACE_NAME, "user_notes"));
-    dbInfoMap.put(JsonKey.MEDIA_TYPE_DB, getDbInfoObject(KEY_SPACE_NAME, "media_type"));
-    dbInfoMap.put(JsonKey.USER_SKILL_DB, getDbInfoObject(KEY_SPACE_NAME, "user_skills"));
-    dbInfoMap.put(JsonKey.SKILLS_LIST_DB, getDbInfoObject(KEY_SPACE_NAME, "skills"));
-    dbInfoMap.put(
-        JsonKey.TENANT_PREFERENCE_DB, getDbInfoObject(KEY_SPACE_NAME, "tenant_preference"));
-    dbInfoMap.put(JsonKey.GEO_LOCATION_DB, getDbInfoObject(KEY_SPACE_NAME, "geo_location"));
-
     dbInfoMap.put(JsonKey.CLIENT_INFO_DB, getDbInfoObject(KEY_SPACE_NAME, "client_info"));
-    dbInfoMap.put(JsonKey.SYSTEM_SETTINGS_DB, getDbInfoObject(KEY_SPACE_NAME, "system_settings"));
-
-    dbInfoMap.put(
-        BadgingJsonKey.USER_BADGE_ASSERTION_DB,
-        getDbInfoObject(KEY_SPACE_NAME, "user_badge_assertion"));
-
+    dbInfoMap.put(JsonKey.USER_AUTH_DB, getDbInfoObject(KEY_SPACE_NAME, "user_auth"));
     dbInfoMap.put(
         BadgingJsonKey.CONTENT_BADGE_ASSOCIATION_DB,
         getDbInfoObject(KEY_SPACE_NAME, "content_badge_association"));
@@ -466,41 +410,6 @@ public final class Util {
   }
 
   /**
-   * This method will make a call to EKStep content search api and final response will be appended
-   * with same requested map, with key "contents". Requester can read this key to collect the
-   * response.
-   *
-   * @param section String, Object>
-   */
-  public static void getContentData(Map<String, Object> section) {
-    String response = "";
-    JSONObject data;
-    JSONObject jObject;
-    try {
-      String baseSearchUrl = ProjectUtil.getConfigValue(JsonKey.SEARCH_SERVICE_API_BASE_URL);
-      headers.put(
-          JsonKey.AUTHORIZATION, JsonKey.BEARER + System.getenv(JsonKey.EKSTEP_AUTHORIZATION));
-      if (StringUtils.isBlank(headers.get(JsonKey.AUTHORIZATION))) {
-        headers.put(
-            JsonKey.AUTHORIZATION,
-            PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_AUTHORIZATION));
-      }
-      response =
-          HttpUtil.sendPostRequest(
-              baseSearchUrl
-                  + PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_CONTENT_SEARCH_URL),
-              (String) section.get(JsonKey.SEARCH_QUERY),
-              headers);
-      jObject = new JSONObject(response);
-      data = jObject.getJSONObject(JsonKey.RESULT);
-      JSONArray contentArray = data.getJSONArray(JsonKey.CONTENT);
-      section.put(JsonKey.CONTENTS, mapper.readValue(contentArray.toString(), Object[].class));
-    } catch (IOException | JSONException e) {
-      ProjectLogger.log(e.getMessage(), e);
-    }
-  }
-
-  /**
    * if Object is null then it will return true else false.
    *
    * @param obj Object
@@ -553,6 +462,7 @@ public final class Util {
         // assign rollup of user ...
         try {
           if (actorMessage.getRequest().get(JsonKey.REQUESTED_BY) != null) {
+            UserOrgService userOrgService = UserOrgServiceImpl.getInstance();
             Map<String, Object> result =
                 userOrgService.getUserById(
                     (String) actorMessage.getContext().get(JsonKey.REQUESTED_BY));
@@ -581,20 +491,6 @@ public final class Util {
     return actorMessage.getContext() != null && actorMessage.getContext().containsKey(key)
         ? (String) actorMessage.getContext().get(key)
         : "";
-  }
-
-  public static String validateRoles(List<String> roleList) {
-    Map<String, Object> roleMap = DataCacheHandler.getRoleMap();
-    if (null != roleMap && !roleMap.isEmpty()) {
-      for (String role : roleList) {
-        if (null == roleMap.get(role.trim())) {
-          return role + " is not a valid role.";
-        }
-      }
-    } else {
-      ProjectLogger.log("Roles are not cached.Please Cache it.");
-    }
-    return JsonKey.SUCCESS;
   }
 }
 

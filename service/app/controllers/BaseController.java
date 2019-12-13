@@ -238,19 +238,21 @@ public class BaseController extends Controller {
       } else {
         ProjectCommonException.throwClientErrorException(ResponseCode.invalidRequestData, null);
       }
-      if (pathId != null) {
-        request.getRequest().put(pathVariable, pathId);
-        request.getContext().put(pathVariable, pathId);
+      if (request != null) {
+        if (pathId != null) {
+          request.getRequest().put(pathVariable, pathId);
+          request.getContext().put(pathVariable, pathId);
+        }
+        if (requestValidatorFn != null) requestValidatorFn.apply(request);
+        if (headers != null) request.getContext().put(JsonKey.HEADER, headers);
+        if (StringUtils.isNotBlank(esObjectType)) {
+          List<String> esObjectTypeList = new ArrayList<>();
+          esObjectTypeList.add(esObjectType);
+          ((Map) (request.getRequest().get(JsonKey.FILTERS)))
+              .put(JsonKey.OBJECT_TYPE, esObjectTypeList);
+        }
+        request.getRequest().put(JsonKey.REQUESTED_BY, httpRequest.flash().get(JsonKey.USER_ID));
       }
-      if (requestValidatorFn != null) requestValidatorFn.apply(request);
-      if (headers != null) request.getContext().put(JsonKey.HEADER, headers);
-      if (StringUtils.isNotBlank(esObjectType)) {
-        List<String> esObjectTypeList = new ArrayList<>();
-        esObjectTypeList.add(esObjectType);
-        ((Map) (request.getRequest().get(JsonKey.FILTERS)))
-            .put(JsonKey.OBJECT_TYPE, esObjectTypeList);
-      }
-      request.getRequest().put(JsonKey.REQUESTED_BY, httpRequest.flash().get(JsonKey.USER_ID));
       return actorResponseHandler(actorRef, request, timeout, null, httpRequest);
     } catch (Exception e) {
       ProjectLogger.log(
@@ -367,20 +369,22 @@ public class BaseController extends Controller {
     }
     response.setId(getApiResponseId(request));
     response.setTs(ProjectUtil.getFormattedDate());
-    response.setResponseCode(ResponseCode.getHeaderResponseCode(exception.getResponseCode()));
-    ResponseCode code = ResponseCode.getResponse(exception.getCode());
-    if (code == null) {
-      code = ResponseCode.SERVER_ERROR;
-    }
-    response.setParams(createResponseParamObj(code, exception.getMessage()));
-    if (response.getParams() != null) {
-      response.getParams().setStatus(response.getParams().getStatus());
-      if (exception.getCode() != null) {
-        response.getParams().setStatus(exception.getCode());
+    if (exception != null) {
+      response.setResponseCode(ResponseCode.getHeaderResponseCode(exception.getResponseCode()));
+      ResponseCode code = ResponseCode.getResponse(exception.getCode());
+      if (code == null) {
+        code = ResponseCode.SERVER_ERROR;
       }
-      if (!StringUtils.isBlank(response.getParams().getErrmsg())
-          && response.getParams().getErrmsg().contains("{0}")) {
-        response.getParams().setErrmsg(exception.getMessage());
+      response.setParams(createResponseParamObj(code, exception.getMessage()));
+      if (response.getParams() != null) {
+        response.getParams().setStatus(response.getParams().getStatus());
+        if (exception.getCode() != null) {
+          response.getParams().setStatus(exception.getCode());
+        }
+        if (!StringUtils.isBlank(response.getParams().getErrmsg())
+            && response.getParams().getErrmsg().contains("{0}")) {
+          response.getParams().setErrmsg(exception.getMessage());
+        }
       }
     }
     OnRequestHandler.requestInfo.remove(request.flash().get(JsonKey.REQUEST_ID));

@@ -9,8 +9,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.application.test.SunbirdApplicationActorTest;
 import org.sunbird.builder.mocker.ESMocker;
@@ -24,10 +26,12 @@ import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.request.Request;
 import org.sunbird.kafka.client.InstructionEventGenerator;
+import org.sunbird.kafka.client.KafkaClient;
 import org.sunbird.learner.actors.certificate.service.CertificateActor;
 
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore("javax.management.*")
+@SuppressStaticInitializationFor("org.sunbird.kafka.client.KafkaClient")
 public class CertificateActorTest extends SunbirdApplicationActorTest {
 
   private MockerBuilder.MockersGroup group;
@@ -38,13 +42,12 @@ public class CertificateActorTest extends SunbirdApplicationActorTest {
   }
 
   @Test
-  @PrepareForTest({
-    EsClientFactory.class,
-    ElasticSearchHelper.class,
-    InstructionEventGenerator.class
-  })
-  public void issueCertificateTest() {
-    group = MockerBuilder.getFreshMockerGroup().withESMock(new ESMocker());
+  @PrepareForTest({EsClientFactory.class, ElasticSearchHelper.class, KafkaClient.class})
+  public void issueCertificateTest() throws Exception {
+    group =
+        MockerBuilder.getFreshMockerGroup()
+            .withESMock(new ESMocker())
+            .andStaticMock(KafkaClient.class);
     CustomObjectWrapper<Map<String, Object>> courseBatch =
         CustomObjectBuilder.getCourseBatchBuilder()
             .generateRandomFields()
@@ -52,6 +55,7 @@ public class CertificateActorTest extends SunbirdApplicationActorTest {
             .build();
     when(group.getESMockerService().getDataByIdentifier(Mockito.anyString(), Mockito.anyString()))
         .thenReturn(courseBatch.asESIdentifierResult());
+    PowerMockito.doNothing().when(KafkaClient.class, "send", Mockito.any(), Mockito.anyString());
     Request req = new Request();
     HashMap<String, Object> innerMap = new HashMap<>();
     innerMap.put(JsonKey.BATCH_ID, courseBatch.get().get(JsonKey.BATCH_ID));
@@ -66,13 +70,12 @@ public class CertificateActorTest extends SunbirdApplicationActorTest {
   }
 
   @Test
-  @PrepareForTest({
-    EsClientFactory.class,
-    ElasticSearchHelper.class,
-    InstructionEventGenerator.class
-  })
-  public void reIssueCertificateTest() {
-    group = MockerBuilder.getFreshMockerGroup().withESMock(new ESMocker());
+  @PrepareForTest({EsClientFactory.class, ElasticSearchHelper.class, KafkaClient.class})
+  public void reIssueCertificateTest() throws Exception {
+    group =
+        MockerBuilder.getFreshMockerGroup()
+            .withESMock(new ESMocker())
+            .andStaticMock(KafkaClient.class);
     CustomObjectWrapper<Map<String, Object>> courseBatch =
         CustomObjectBuilder.getCourseBatchBuilder()
             .generateRandomFields()
@@ -80,6 +83,7 @@ public class CertificateActorTest extends SunbirdApplicationActorTest {
             .build();
     when(group.getESMockerService().getDataByIdentifier(Mockito.anyString(), Mockito.anyString()))
         .thenReturn(courseBatch.asESIdentifierResult());
+    PowerMockito.doNothing().when(KafkaClient.class, "send", Mockito.any(), Mockito.anyString());
     Request req = new Request();
     HashMap<String, Object> innerMap = new HashMap<>();
     innerMap.put(JsonKey.BATCH_ID, courseBatch.get().get(JsonKey.BATCH_ID));

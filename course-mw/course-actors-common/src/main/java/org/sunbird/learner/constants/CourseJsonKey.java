@@ -35,5 +35,6 @@ public abstract class CourseJsonKey {
   public static final String BUCKETS = "buckets";
   public static final String ENROLLED_USER_LIST="List of users enrolled for the course";
   public static final String ERROR="Error occurred";
-   public static final String GET_PAGE_DATA="getPageData";
+  public static final String GET_PAGE_DATA="getPageData";
+  public static final String NOTIFY_TEMPLATE="notifyTemplate";
 }

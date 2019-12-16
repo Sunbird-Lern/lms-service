@@ -3,6 +3,9 @@ package controllers.badging;
 import akka.actor.ActorRef;
 import controllers.BaseController;
 import controllers.badging.validator.BadgeAssociationValidator;
+import java.util.concurrent.CompletionStage;
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.BadgingActorOperations;
 import org.sunbird.common.models.util.ProjectUtil.EsType;
@@ -11,19 +14,15 @@ import org.sunbird.common.request.Request;
 import play.mvc.Http;
 import play.mvc.Result;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import java.util.concurrent.CompletionStage;
-
 public class BadgeAssociationController extends BaseController {
 
-    @Inject
-    @Named("badge-association-actor")
-    private ActorRef badgeAssociationActorRef;
+  @Inject
+  @Named("badge-association-actor")
+  private ActorRef badgeAssociationActorRef;
 
   public CompletionStage<Result> createAssociation(Http.Request httpRequest) {
     return handleRequest(
-            badgeAssociationActorRef,
+        badgeAssociationActorRef,
         BadgingActorOperations.CREATE_BADGE_ASSOCIATION.getValue(),
         httpRequest.body().asJson(),
         (request) -> {
@@ -32,14 +31,14 @@ public class BadgeAssociationController extends BaseController {
         },
         null,
         null,
-            null,
+        null,
         true,
-            httpRequest);
+        httpRequest);
   }
 
   public CompletionStage<Result> removeAssociation(Http.Request httpRequest) {
     return handleRequest(
-            badgeAssociationActorRef,
+        badgeAssociationActorRef,
         BadgingActorOperations.REMOVE_BADGE_ASSOCIATION.getValue(),
         httpRequest.body().asJson(),
         (request) -> {
@@ -48,14 +47,14 @@ public class BadgeAssociationController extends BaseController {
         },
         null,
         null,
-            null,
+        null,
         true,
-            httpRequest);
+        httpRequest);
   }
 
   public CompletionStage<Result> searchAssociation(Http.Request httpRequest) {
     return handleSearchRequest(
-            badgeAssociationActorRef,
+        badgeAssociationActorRef,
         ActorOperations.COMPOSITE_SEARCH.getValue(),
         httpRequest.body().asJson(),
         request -> {
@@ -66,6 +65,6 @@ public class BadgeAssociationController extends BaseController {
         null,
         getAllRequestHeaders(httpRequest),
         EsType.badgeassociations.getTypeName(),
-            httpRequest);
+        httpRequest);
   }
 }

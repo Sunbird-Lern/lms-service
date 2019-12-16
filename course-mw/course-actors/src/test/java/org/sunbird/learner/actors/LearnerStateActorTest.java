@@ -42,7 +42,7 @@ import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.util.ContentSearchUtil;
-import org.sunbird.learner.util.EkStepRequestUtil;
+import org.sunbird.learner.util.ContentUtil;
 import scala.concurrent.Promise;
 
 /** @author arvind */
@@ -53,7 +53,7 @@ import scala.concurrent.Promise;
   EsClientFactory.class,
   ContentSearchUtil.class,
   ElasticSearchRestHighImpl.class,
-  EkStepRequestUtil.class
+  ContentUtil.class
 })
 @PowerMockIgnore({"javax.management.*", "javax.crypto.*", "javax.net.ssl.*", "javax.security.*"})
 public class LearnerStateActorTest {
@@ -80,7 +80,7 @@ public class LearnerStateActorTest {
     PowerMockito.mockStatic(EsClientFactory.class);
     PowerMockito.mockStatic(ContentSearchUtil.class);
     PowerMockito.mockStatic(ElasticSearchHelper.class);
-    PowerMockito.mockStatic(EkStepRequestUtil.class);
+    PowerMockito.mockStatic(ContentUtil.class);
     when(ServiceFactory.getInstance()).thenReturn(cassandraOperation);
     esService = mock(ElasticSearchRestHighImpl.class);
     when(EsClientFactory.getInstance(Mockito.anyString())).thenReturn(esService);
@@ -294,8 +294,7 @@ public class LearnerStateActorTest {
     l1.add(getMapforCourse("q3", "q3", "third"));
     courses.put(JsonKey.CONTENTS, l1);
 
-    when(EkStepRequestUtil.searchContent(Mockito.anyString(), Mockito.anyMap()))
-        .thenReturn(courses);
+    when(ContentUtil.searchContent(Mockito.anyString(), Mockito.anyMap())).thenReturn(courses);
   }
 
   private Map<String, Object> getMapforCourse(String id, String cId, String cName) {

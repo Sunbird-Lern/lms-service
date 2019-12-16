@@ -795,7 +795,7 @@ public class CourseBatchManagementActor extends BaseActor {
 
   @SuppressWarnings("unchecked")
   private void updateBatchCount(CourseBatch courseBatch) {
-    CourseBatchSchedulerUtil.doOperationInEkStepCourse(
+    CourseBatchSchedulerUtil.doOperationInContentCourse(
         courseBatch.getCourseId(), true, courseBatch.getEnrollmentType());
   }
 

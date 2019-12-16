@@ -15,12 +15,12 @@ import play.mvc.Result;
 
 public class CourseEnrollmentController extends BaseController {
 
-    @Inject
-    @Named("course-enrollment-actor")
+  @Inject
+  @Named("course-enrollment-actor")
   private ActorRef courseEnrollmentActorRef;
 
-    @Inject
-    @Named("learner-state-actor")
+  @Inject
+  @Named("learner-state-actor")
   private ActorRef learnerStateActorRef;
 
   public CompletionStage<Result> getEnrolledCourses(String uid, Http.Request httpRequest) {

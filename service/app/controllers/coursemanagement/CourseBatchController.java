@@ -25,12 +25,12 @@ import play.mvc.Result;
 
 public class CourseBatchController extends BaseController {
 
-    @Inject
-    @Named("course-batch-management-actor")
+  @Inject
+  @Named("course-batch-management-actor")
   private ActorRef courseBatchActorRef;
 
-    @Inject
-    @Named("search-handler-actor")
+  @Inject
+  @Named("search-handler-actor")
   private ActorRef compositeSearchActorRef;
 
   public CompletionStage<Result> createBatch(Http.Request httpRequest) {

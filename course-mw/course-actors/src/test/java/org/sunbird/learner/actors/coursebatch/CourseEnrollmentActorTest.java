@@ -36,13 +36,13 @@ import org.sunbird.common.models.util.ProjectUtil.ProgressStatus;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.helper.ServiceFactory;
-import org.sunbird.learner.util.EkStepRequestUtil;
+import org.sunbird.learner.util.ContentUtil;
 import scala.concurrent.Future;
 import scala.concurrent.Promise;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
-  EkStepRequestUtil.class,
+  ContentUtil.class,
   ServiceFactory.class,
   ElasticSearchHelper.class,
   EsClientFactory.class
@@ -67,7 +67,7 @@ public class CourseEnrollmentActorTest {
   @BeforeClass
   public static void setUp() {
     system = ActorSystem.create("system");
-    PowerMockito.mockStatic(EkStepRequestUtil.class);
+    PowerMockito.mockStatic(ContentUtil.class);
   }
 
   @Before

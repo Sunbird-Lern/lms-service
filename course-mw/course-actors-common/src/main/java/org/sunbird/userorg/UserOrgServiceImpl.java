@@ -17,6 +17,7 @@ import com.mashape.unirest.http.Unirest;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
@@ -30,16 +31,13 @@ public class UserOrgServiceImpl implements UserOrgService {
   private SSOManager ssoManager = SSOServiceFactory.getInstance();
   private ObjectMapper mapper = new ObjectMapper();
   private static final String FORWARD_SLASH = "/";
+  private static final String X_AUTHENTICATED_USER_TOKEN = "x-authenticated-user-token";
 
   private static UserOrgService instance = null;
 
-  public static UserOrgService getInstance() {
+  public static synchronized UserOrgService getInstance() {
     if (instance == null) {
-      synchronized (UserOrgServiceImpl.class) {
-        if (instance == null) {
-          instance = new UserOrgServiceImpl();
-        }
-      }
+      instance = new UserOrgServiceImpl();
     }
     return instance;
   }
@@ -78,15 +76,16 @@ public class UserOrgServiceImpl implements UserOrgService {
         httpResponse = Unirest.get(requestUrl).headers(headers).asString();
       }
       log(
-          "UserOrgServiceImpl:getResponse Response Status : " + httpResponse.getStatus(),
+          "UserOrgServiceImpl:getResponse Response Status : "
+              + (httpResponse != null ? httpResponse.getStatus() : null),
           ERROR.name());
-      if (StringUtils.isBlank(httpResponse.getBody())) {
+      if (httpResponse == null || StringUtils.isBlank(httpResponse.getBody())) {
         throwServerErrorException(
             ResponseCode.SERVER_ERROR, errorProcessingRequest.getErrorMessage());
       }
       responseBody = httpResponse.getBody();
       response = mapper.readValue(responseBody, Response.class);
-      if (!ResponseCode.OK.equals(response.getResponseCode())) {
+      if (response != null && !ResponseCode.OK.equals(response.getResponseCode())) {
 
         throw new ProjectCommonException(
             response.getResponseCode().name(),
@@ -129,28 +128,30 @@ public class UserOrgServiceImpl implements UserOrgService {
   public Map<String, Object> getOrganisationById(String id) {
     Map<String, Object> filterlist = new HashMap<>();
     filterlist.put(ID, id);
-    Map<String, Object> requestMap = getRequestMap(filterlist);
-    Map<String, String> headers = getdefaultHeaders();
-    Response response =
-        getUserOrgResponse(
-            getConfigValue(SUNBIRD_GET_ORGANISATION_API), HttpMethod.POST, requestMap, headers);
-    Map<String, Object> orgDetails = (Map<String, Object>) response.get(RESPONSE);
-    List<Map<String, Object>> list = (List<Map<String, Object>>) orgDetails.get(CONTENT);
-    return list.get(0);
+    List<Map<String, Object>> list = getOrganisations(filterlist);
+    return !CollectionUtils.isEmpty(list) ? list.get(0) : null;
   }
 
   @Override
   public List<Map<String, Object>> getOrganisationsByIds(List<String> ids) {
     Map<String, Object> filterlist = new HashMap<>();
     filterlist.put(ID, ids);
+    return getOrganisations(filterlist);
+  }
+
+  private List<Map<String, Object>> getOrganisations(Map<String, Object> filterlist) {
     Map<String, Object> requestMap = getRequestMap(filterlist);
     Map<String, String> headers = getdefaultHeaders();
     Response response =
         getUserOrgResponse(
             getConfigValue(SUNBIRD_GET_ORGANISATION_API), HttpMethod.POST, requestMap, headers);
-    Map<String, Object> orgMap = (Map<String, Object>) response.get(RESPONSE);
-    List<Map<String, Object>> orglist = (List<Map<String, Object>>) orgMap.get(CONTENT);
-    return orglist;
+    if (response != null) {
+      Map<String, Object> orgMap = (Map<String, Object>) response.get(RESPONSE);
+      if (orgMap != null) {
+        return (List<Map<String, Object>>) orgMap.get(CONTENT);
+      }
+    }
+    return null;
   }
 
   @Override
@@ -159,15 +160,13 @@ public class UserOrgServiceImpl implements UserOrgService {
     filterlist.put(ID, id);
     Map<String, Object> requestMap = getRequestMap(filterlist);
     Map<String, String> headers = getdefaultHeaders();
-    headers.put(
-        "x-authenticated-user-token",
-        ssoManager.login(
-            getConfigValue(JsonKey.SUNBIRD_SSO_USERNAME),
-            getConfigValue(JsonKey.SUNBIRD_SSO_PASSWORD)));
+    headers.put(X_AUTHENTICATED_USER_TOKEN, getAuthenticatedUserToken());
     String relativeUrl = getConfigValue(SUNBIRD_GET_SINGLE_USER_API) + FORWARD_SLASH + id;
     Response response = getUserOrgResponse(relativeUrl, HttpMethod.GET, requestMap, headers);
-    Map<String, Object> userMap = (Map<String, Object>) response.get(RESPONSE);
-    return userMap;
+    if (response != null) {
+      return (Map<String, Object>) response.get(RESPONSE);
+    }
+    return null;
   }
 
   @Override
@@ -175,47 +174,47 @@ public class UserOrgServiceImpl implements UserOrgService {
     Map<String, Object> filterlist = new HashMap<>();
     filterlist.put(ID, ids);
     Map<String, Object> requestMap = getRequestMap(filterlist);
-    Map<String, String> headers = getdefaultHeaders();
-    headers.put(
-        "x-authenticated-user-token",
-        ssoManager.login(
-            getConfigValue(JsonKey.SUNBIRD_SSO_USERNAME),
-            getConfigValue(JsonKey.SUNBIRD_SSO_PASSWORD)));
-    Response response =
-        getUserOrgResponse(
-            getConfigValue(SUNBIRD_GET_MULTIPLE_USER_API), HttpMethod.POST, requestMap, headers);
-    Map<String, Object> userMap = (Map<String, Object>) response.get(RESPONSE);
-    List<Map<String, Object>> userlist = (List<Map<String, Object>>) userMap.get(CONTENT);
-    return userlist;
+    return getUsersResponse(requestMap);
   }
 
   @Override
   public void sendEmailNotification(Map<String, Object> request) {
     Map<String, String> headers = getdefaultHeaders();
-    headers.put(
-        "x-authenticated-user-token",
-        ssoManager.login(
-            getConfigValue(JsonKey.SUNBIRD_SSO_USERNAME),
-            getConfigValue(JsonKey.SUNBIRD_SSO_PASSWORD)));
-    getUserOrgResponse(
-        getConfigValue(SUNBIRD_SEND_EMAIL_NOTIFICATION_API), HttpMethod.POST, request, headers);
+    headers.put(X_AUTHENTICATED_USER_TOKEN, getAuthenticatedUserToken());
+    Response response =
+        getUserOrgResponse(
+            getConfigValue(SUNBIRD_SEND_EMAIL_NOTIFICATION_API), HttpMethod.POST, request, headers);
+    if (response != null) {
+      log(
+          "UserOrgServiceImpl:sendEmailNotification Response" + response.get(RESPONSE),
+          INFO.name());
+    }
   }
 
   @Override
   public List<Map<String, Object>> getUsers(Map<String, Object> request) {
     Map<String, Object> requestMap = new HashMap<>();
     requestMap.put(JsonKey.REQUEST, request);
+    return getUsersResponse(requestMap);
+  }
+
+  private List<Map<String, Object>> getUsersResponse(Map<String, Object> requestMap) {
     Map<String, String> headers = getdefaultHeaders();
-    headers.put(
-        "x-authenticated-user-token",
-        ssoManager.login(
-            getConfigValue(JsonKey.SUNBIRD_SSO_USERNAME),
-            getConfigValue(JsonKey.SUNBIRD_SSO_PASSWORD)));
+    headers.put(X_AUTHENTICATED_USER_TOKEN, getAuthenticatedUserToken());
     Response response =
         getUserOrgResponse(
             getConfigValue(SUNBIRD_GET_MULTIPLE_USER_API), HttpMethod.POST, requestMap, headers);
-    Map<String, Object> userMap = (Map<String, Object>) response.get(RESPONSE);
-    List<Map<String, Object>> userlist = (List<Map<String, Object>>) userMap.get(CONTENT);
-    return userlist;
+    if (response != null) {
+      Map<String, Object> orgMap = (Map<String, Object>) response.get(RESPONSE);
+      if (orgMap != null) {
+        return (List<Map<String, Object>>) orgMap.get(CONTENT);
+      }
+    }
+    return null;
+  }
+
+  private String getAuthenticatedUserToken() {
+    return ssoManager.login(
+        getConfigValue(JsonKey.SUNBIRD_SSO_USERNAME), getConfigValue(JsonKey.SUNBIRD_SSO_PASSWORD));
   }
 }

@@ -61,6 +61,10 @@ public class LearnerStateUpdateActor extends BaseActor {
     ExecutionContext.setRequestId(request.getRequestId());
 
     if (request.getOperation().equalsIgnoreCase(ActorOperations.ADD_CONTENT.getValue())) {
+      ProjectLogger.log(
+              "LearnerStateUpdateActor: onReceive called for operation: "
+                      + request.getOperation(),
+              LoggerEnum.INFO.name());
       String userId = (String) request.getRequest().get(JsonKey.USER_ID);
       List<Map<String, Object>> assessments =
           (List<Map<String, Object>>) request.getRequest().get(JsonKey.ASSESSMENT_EVENTS);
@@ -438,6 +442,10 @@ public class LearnerStateUpdateActor extends BaseActor {
           }
         });
     String topic = ProjectUtil.getConfigValue("kafka_topics_instruction");
+    ProjectLogger.log(
+            "LearnerStateUpdateActor: pushInstructionEvent :Event Data "
+                    + data+" and Topic "+topic,
+            LoggerEnum.INFO.name());
     InstructionEventGenerator.pushInstructionEvent(topic, data);
   }
 

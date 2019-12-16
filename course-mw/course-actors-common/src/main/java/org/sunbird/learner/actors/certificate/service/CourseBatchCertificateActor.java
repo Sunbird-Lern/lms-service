@@ -7,6 +7,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.base.BaseActor;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
@@ -83,7 +86,7 @@ public class CourseBatchCertificateActor extends BaseActor {
   }
 
   private void validateTemplateDetails(String templateId, Map<String, Object> template) {
-    Map<String, Object> templateDetails = CourseBatchUtil.validateTemplate(templateId);
+   Map<String, Object> templateDetails = CourseBatchUtil.validateTemplate(templateId);
     try {
       template.put(JsonKey.NAME, templateDetails.get(JsonKey.NAME));
       template.put(JsonKey.CRITERIA, mapper.writeValueAsString(template.get(JsonKey.CRITERIA)));
@@ -95,6 +98,11 @@ public class CourseBatchCertificateActor extends BaseActor {
         template.put(
             CourseJsonKey.SIGNATORY_LIST,
             mapper.writeValueAsString(template.get(CourseJsonKey.SIGNATORY_LIST)));
+      }
+      if (MapUtils.isNotEmpty((Map<String,Object>)template.get(CourseJsonKey.NOTIFY_TEMPLATE))) {
+        template.put(
+                CourseJsonKey.NOTIFY_TEMPLATE,
+                mapper.writeValueAsString(template.get(CourseJsonKey.NOTIFY_TEMPLATE)));
       }
     } catch (JsonProcessingException ex) {
       ProjectCommonException.throwClientErrorException(
@@ -131,16 +139,30 @@ public class CourseBatchCertificateActor extends BaseActor {
           mapper.readValue(
               (String) template.get(JsonKey.CRITERIA),
               new TypeReference<HashMap<String, Object>>() {}));
-      template.put(
-          CourseJsonKey.SIGNATORY_LIST,
-          mapper.readValue(
-              (String) template.get(CourseJsonKey.SIGNATORY_LIST),
-              new TypeReference<List<Object>>() {}));
-      template.put(
-          CourseJsonKey.ISSUER,
-          mapper.readValue(
-              (String) template.get(CourseJsonKey.ISSUER),
-              new TypeReference<HashMap<String, Object>>() {}));
+      if(StringUtils.isNotEmpty((String)template.get(CourseJsonKey.SIGNATORY_LIST))) {
+        template.put(
+                CourseJsonKey.SIGNATORY_LIST,
+                mapper.readValue(
+                        (String) template.get(CourseJsonKey.SIGNATORY_LIST),
+                        new TypeReference<List<Object>>() {
+                        }));
+      }
+      if(StringUtils.isNotEmpty((String)template.get(CourseJsonKey.ISSUER))) {
+        template.put(
+                CourseJsonKey.ISSUER,
+                mapper.readValue(
+                        (String) template.get(CourseJsonKey.ISSUER),
+                        new TypeReference<HashMap<String, Object>>() {
+                        }));
+      }
+      if(StringUtils.isNotEmpty((String)template.get(CourseJsonKey.NOTIFY_TEMPLATE))) {
+        template.put(
+                CourseJsonKey.NOTIFY_TEMPLATE,
+                mapper.readValue(
+                        (String) template.get(CourseJsonKey.NOTIFY_TEMPLATE),
+                        new TypeReference<HashMap<String, Object>>() {
+                        }));
+      }
     } catch (Exception ex) {
       ProjectLogger.log(
           "CourseBatchCertificateActor:mapToObject Exception occurred with error message ==", ex);

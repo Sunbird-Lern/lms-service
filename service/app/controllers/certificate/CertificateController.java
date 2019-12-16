@@ -2,30 +2,29 @@ package controllers.certificate;
 
 import akka.actor.ActorRef;
 import controllers.BaseController;
+import java.util.concurrent.CompletionStage;
+import javax.inject.Inject;
+import javax.inject.Named;
 import org.sunbird.common.request.Request;
 import org.sunbird.learner.actor.operations.CourseActorOperations;
 import play.mvc.Http;
 import play.mvc.Result;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import java.util.concurrent.CompletionStage;
-
 public class CertificateController extends BaseController {
 
   public static final String REISSUE = "reIssue";
 
-    @Inject
-    @Named("course-batch-certificate-actor")
-    private ActorRef courseBatchCertificateActorRef;
+  @Inject
+  @Named("course-batch-certificate-actor")
+  private ActorRef courseBatchCertificateActorRef;
 
-    @Inject
-    @Named("certificate-actor")
-    private ActorRef certificateActorRef;
+  @Inject
+  @Named("certificate-actor")
+  private ActorRef certificateActorRef;
 
   public CompletionStage<Result> issueCertificate(Http.Request httpRequest) {
     return handleRequest(
-            certificateActorRef,
+        certificateActorRef,
         CourseActorOperations.ISSUE_CERTIFICATE.getValue(),
         httpRequest.body().asJson(),
         (request) -> {
@@ -40,7 +39,7 @@ public class CertificateController extends BaseController {
 
   public CompletionStage<Result> addCertificate(Http.Request httpRequest) {
     return handleRequest(
-            courseBatchCertificateActorRef,
+        courseBatchCertificateActorRef,
         CourseActorOperations.ADD_BATCH_CERTIFICATE.getValue(),
         httpRequest.body().asJson(),
         (request) -> {
@@ -54,7 +53,7 @@ public class CertificateController extends BaseController {
 
   public CompletionStage<Result> deleteCertificate(Http.Request httpRequest) {
     return handleRequest(
-            courseBatchCertificateActorRef,
+        courseBatchCertificateActorRef,
         CourseActorOperations.DELETE_BATCH_CERTIFICATE.getValue(),
         httpRequest.body().asJson(),
         (request) -> {

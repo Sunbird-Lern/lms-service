@@ -191,5 +191,22 @@ public class CertificateRequestValidator extends BaseRequestValidator {
             ResponseCode.CLIENT_ERROR.getResponseCode());
       }
     }
+    if (criteria.containsKey(JsonKey.USER)
+            && !(criteria.get(JsonKey.USER) instanceof Map)) {
+      throw new ProjectCommonException(
+              ResponseCode.dataTypeError.getErrorCode(),
+              MessageFormat.format(
+                      ResponseCode.dataTypeError.getErrorMessage(), JsonKey.USER, "Map"),
+              ResponseCode.CLIENT_ERROR.getResponseCode());
+    }
+    if (criteria.containsKey(JsonKey.USER)
+            && !((Map<String, Object>) criteria.get(JsonKey.USER))
+            .containsKey(JsonKey.ROOT_ORG_ID)) {
+      throw new ProjectCommonException(
+              ResponseCode.mandatoryParamsMissing.getErrorCode(),
+              MessageFormat.format(
+                      ResponseCode.mandatoryParamsMissing.getErrorMessage(), JsonKey.ROOT_ORG_ID),
+              ResponseCode.CLIENT_ERROR.getResponseCode());
+    }
   }
 }

@@ -14,6 +14,7 @@ import org.sunbird.actor.base.BaseActor;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.ExecutionContext;
@@ -58,10 +59,13 @@ public class CourseBatchCertificateActor extends BaseActor {
     Map<String, Object> template = (Map<String, Object>) batchRequest.get(CourseJsonKey.TEMPLATE);
     String templateId = (String) template.get(JsonKey.IDENTIFIER);
     validateTemplateDetails(templateId, template);
+    ProjectLogger.log("Validated certificate template to batchID: " +  batchId, LoggerEnum.INFO);
     courseBatchDao.addCertificateTemplateToCourseBatch(courseId, batchId, templateId, template);
+    ProjectLogger.log("Added certificate template to batchID: " +  batchId, LoggerEnum.INFO);
     Map<String, Object> courseBatch =
         mapESFieldsToObject(courseBatchDao.getCourseBatch(courseId, batchId));
     CourseBatchUtil.syncCourseBatchForeground(batchId, courseBatch);
+    ProjectLogger.log("Synced to es certificate template to batchID: " +  batchId, LoggerEnum.INFO);
     Response response = new Response();
     response.put(JsonKey.RESPONSE, JsonKey.SUCCESS);
     sender().tell(response, self());

@@ -1,6 +1,7 @@
 /** */
 package controllers.search;
 
+import akka.actor.ActorRef;
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.BaseController;
 import java.util.HashMap;
@@ -17,12 +18,19 @@ import java.util.concurrent.CompletionStage;
 import play.mvc.Http;
 import play.mvc.Result;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
 /**
  * This controller will handle all the request related user and organization search.
  *
  * @author Manzarul
  */
 public class SearchController extends BaseController {
+
+  @Inject
+  @Named("es-sync-actor")
+  private ActorRef esSyncActorRef;
 
   /**
    * This method will do data Sync form Cassandra db to Elasticsearch.
@@ -36,16 +44,6 @@ public class SearchController extends BaseController {
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
       RequestValidator.validateSyncRequest(reqObj);
       String operation = (String) reqObj.getRequest().get(JsonKey.OPERATION_FOR);
-      if ("keycloak".equalsIgnoreCase(operation)) {
-        reqObj.setOperation(ActorOperations.SYNC_KEYCLOAK.getValue());
-        reqObj.setRequestId(ExecutionContext.getRequestId());
-        reqObj.getRequest().put(JsonKey.CREATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
-        reqObj.setEnv(getEnvironment());
-        HashMap<String, Object> map = new HashMap<>();
-        map.put(JsonKey.DATA, reqObj.getRequest());
-        reqObj.setRequest(map);
-        return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
-      } else {
         reqObj.setOperation(ActorOperations.SYNC.getValue());
         reqObj.setRequestId(ExecutionContext.getRequestId());
         reqObj.getRequest().put(JsonKey.CREATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
@@ -53,8 +51,7 @@ public class SearchController extends BaseController {
         HashMap<String, Object> map = new HashMap<>();
         map.put(JsonKey.DATA, reqObj.getRequest());
         reqObj.setRequest(map);
-        return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
-      }
+        return actorResponseHandler(esSyncActorRef, reqObj, timeout, null, httpRequest);
 
     } catch (Exception e) {
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));

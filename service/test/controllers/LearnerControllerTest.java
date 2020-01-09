@@ -1,70 +1,59 @@
 package controllers;
 
-import static org.junit.Assert.assertEquals;
-import static play.test.Helpers.route;
+import static util.TestUtil.mapToJson;
 
+import actors.DummyActor;
 import com.fasterxml.jackson.databind.JsonNode;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.junit.Ignore;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.responsecode.ResponseCode;
 import play.libs.Json;
 import play.mvc.Http;
-import play.mvc.Http.RequestBuilder;
 import play.mvc.Result;
 import play.test.Helpers;
+import util.ACTOR_NAMES;
 
 /** @author arvind */
-@Ignore
-public class LearnerControllerTest extends BaseControllerTest {
+@RunWith(PowerMockRunner.class)
+@PowerMockIgnore("javax.management.*")
+public class LearnerControllerTest extends BaseApplicationTest {
 
   private static final String COURSE_ID = "course-123";
   private static final String USER_ID = "user-123";
   private static final String CONTENT_ID = "content-123";
   private static final String BATCH_ID = "batch-123";
+  private static final String CONTENT_STATE_UPDATE_URL = "/v1/content/state/update";
+  private static final String CONTENT_STATE_READ_URL = "/v1/content/state/read";
+
+  @Before
+  public void before() {
+    setup(Arrays.asList(ACTOR_NAMES.LEARNER_STATE_UPDATE_ACTOR,ACTOR_NAMES.LEARNER_STATE_ACTOR), DummyActor.class);
+  }
 
   @Test
   public void testUpdateContentStateSuccess() {
-    Map<String, Object> requestMap = new HashMap<>();
-    Map<String, Object> innerMap = new HashMap<>();
-    List<Object> list = new ArrayList<>();
-    Map<String, Object> map = new HashMap<>();
-    map.put(JsonKey.CONTENT_ID, CONTENT_ID);
-    map.put(JsonKey.STATUS, "Active");
-    map.put(JsonKey.LAST_UPDATED_TIME, "2017-12-18 10:47:30:707+0530");
-    list.add(map);
-    innerMap.put("contents", list);
-    innerMap.put("courseId", COURSE_ID);
-    requestMap.put(JsonKey.REQUEST, innerMap);
-    String data = mapToJson(requestMap);
-    JsonNode json = Json.parse(data);
-    RequestBuilder req =
-        new RequestBuilder().bodyJson(json).uri("/v1/content/state/update").method("PATCH");
-    req.headers(new Http.Headers(headerMap));
-    Result result = route(app, req);
-    String response = Helpers.contentAsString(result);
-    System.out.println(response);
-    assertEquals(200, result.status());
+    JsonNode json =
+        createUpdateContentStateRequest(CONTENT_ID, "Active", generateDatePattern(), COURSE_ID);
+    Http.RequestBuilder req =
+        new Http.RequestBuilder().uri(CONTENT_STATE_UPDATE_URL).bodyJson(json).method("PATCH");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals(200, result.status());
   }
 
   @Test
   public void testGetContentStateSuccess() {
-    Map<String, Object> requestMap = new HashMap<>();
-    Map<String, Object> innerMap = new HashMap<>();
-    innerMap.put(JsonKey.BATCH_ID, BATCH_ID);
-    innerMap.put(JsonKey.USER_ID, USER_ID);
-    requestMap.put(JsonKey.REQUEST, innerMap);
-    String data = mapToJson(requestMap);
-    JsonNode json = Json.parse(data);
-    RequestBuilder req =
-        new RequestBuilder().bodyJson(json).uri("/v1/content/state/read").method("POST");
-    req.headers(new Http.Headers(headerMap));
-    Result result = route(app, req);
-    assertEquals(200, result.status());
+    JsonNode json = createGetContentStateRequest(USER_ID, COURSE_ID, BATCH_ID);
+    Http.RequestBuilder req =
+        new Http.RequestBuilder().uri(CONTENT_STATE_READ_URL).bodyJson(json).method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals(200, result.status());
   }
 
   @Test
@@ -77,27 +66,28 @@ public class LearnerControllerTest extends BaseControllerTest {
     String data = mapToJson(requestMap);
 
     JsonNode json = Json.parse(data);
-    RequestBuilder req =
-        new RequestBuilder().bodyJson(json).uri("/v1/content/state/read").method("POST");
-
-    req.headers(new Http.Headers(headerMap));
-    Result result = route(app, req);
-    assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), result.status());
+    Http.RequestBuilder req =
+        new Http.RequestBuilder().uri(CONTENT_STATE_READ_URL).bodyJson(json).method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals(400, result.status());
   }
 
   @Test
   public void testGetContentStateFailureWithoutUserId() {
-    Map<String, Object> requestMap = new HashMap<>();
-    Map<String, Object> innerMap = new HashMap<>();
-    innerMap.put("courseId", COURSE_ID);
-    requestMap.put(JsonKey.REQUEST, innerMap);
-    String data = mapToJson(requestMap);
-    JsonNode json = Json.parse(data);
-    RequestBuilder req =
-        new RequestBuilder().bodyJson(json).uri("/v1/content/state/read").method("POST");
-    req.headers(new Http.Headers(headerMap));
-    Result result = route(app, req);
-    assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), result.status());
+    JsonNode json = createGetContentStateRequest(null, COURSE_ID, BATCH_ID);
+    Http.RequestBuilder req =
+        new Http.RequestBuilder().uri(CONTENT_STATE_READ_URL).bodyJson(json).method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals(400, result.status());
+  }
+
+  @Test
+  public void testGetContentStateFailureWithoutCourseId() {
+    JsonNode json = createGetContentStateRequest(USER_ID, null, BATCH_ID);
+    Http.RequestBuilder req =
+        new Http.RequestBuilder().uri(CONTENT_STATE_READ_URL).bodyJson(json).method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals(400, result.status());
   }
 
   @Test
@@ -108,7 +98,7 @@ public class LearnerControllerTest extends BaseControllerTest {
     Map<String, Object> map = new HashMap<>();
     map.put(JsonKey.CONTENT_ID, CONTENT_ID);
     map.put(JsonKey.STATUS, "Active");
-    map.put(JsonKey.LAST_UPDATED_TIME, "2017-12-18 10:47:30:707+0530");
+    map.put(JsonKey.LAST_UPDATED_TIME, generateDatePattern());
     list.add(map);
 
     List<Map<String, Object>> assData = new ArrayList<Map<String, Object>>();
@@ -127,12 +117,84 @@ public class LearnerControllerTest extends BaseControllerTest {
     requestMap.put(JsonKey.REQUEST, innerMap);
     String data = mapToJson(requestMap);
     JsonNode json = Json.parse(data);
-    RequestBuilder req =
-            new RequestBuilder().bodyJson(json).uri("/v1/content/state/update").method("PATCH");
-    req.headers(new Http.Headers(headerMap));
-    Result result = route(app, req);
-    String response = Helpers.contentAsString(result);
-    System.out.println(response);
-    assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), result.status());
+    Http.RequestBuilder req =
+        new Http.RequestBuilder().uri(CONTENT_STATE_UPDATE_URL).bodyJson(json).method("PATCH");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals(400, result.status());
+  }
+
+  @Test
+  public void testUpdateContentStateFailureWithoutContentId() {
+    JsonNode json =
+        createUpdateContentStateRequest(null, "Active", generateDatePattern(), COURSE_ID);
+    Http.RequestBuilder req =
+        new Http.RequestBuilder().uri(CONTENT_STATE_UPDATE_URL).bodyJson(json).method("PATCH");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals(400, result.status());
+  }
+
+  @Test
+  public void testUpdateContentStateFailureWithoutStatus() {
+    JsonNode json =
+        createUpdateContentStateRequest(CONTENT_ID, null, generateDatePattern(), COURSE_ID);
+    Http.RequestBuilder req =
+        new Http.RequestBuilder().uri(CONTENT_STATE_UPDATE_URL).bodyJson(json).method("PATCH");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals(400, result.status());
+  }
+
+  @Test
+  public void testUpdateContentStateFailureWithIncorrectDateFormat() {
+    JsonNode json =
+        createUpdateContentStateRequest(
+            CONTENT_ID, "Active", "18-12-2017 10:47:30:707+0530", COURSE_ID);
+    Http.RequestBuilder req =
+        new Http.RequestBuilder().uri(CONTENT_STATE_UPDATE_URL).bodyJson(json).method("PATCH");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals(400, result.status());
+  }
+
+  @Test
+  public void testPreflightAll() {
+    Http.RequestBuilder req = new Http.RequestBuilder().uri("/abcall").method("OPTIONS");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals(200, result.status());
+  }
+
+  private JsonNode createUpdateContentStateRequest(
+      String contentId, String status, String lastUpdatedTime, String courseId) {
+    Map<String, Object> requestMap = new HashMap<>();
+    Map<String, Object> innerMap = new HashMap<>();
+    List<Object> list = new ArrayList<>();
+    Map<String, Object> map = new HashMap<>();
+    map.put(JsonKey.CONTENT_ID, contentId);
+    map.put(JsonKey.STATUS, status);
+    map.put(JsonKey.LAST_UPDATED_TIME, lastUpdatedTime);
+    list.add(map);
+    innerMap.put("contents", list);
+    innerMap.put("courseId", courseId);
+    requestMap.put(JsonKey.REQUEST, innerMap);
+    String data = mapToJson(requestMap);
+    JsonNode json = Json.parse(data);
+    return json;
+  }
+
+  private JsonNode createGetContentStateRequest(String userId, String courseId, String batchId) {
+    Map<String, Object> requestMap = new HashMap<>();
+    Map<String, Object> innerMap = new HashMap<>();
+    innerMap.put(JsonKey.BATCH_ID, batchId);
+    innerMap.put(JsonKey.USER_ID, userId);
+    innerMap.put(JsonKey.COURSE_ID, courseId);
+    requestMap.put(JsonKey.REQUEST, innerMap);
+    String data = mapToJson(requestMap);
+    JsonNode json = Json.parse(data);
+    return json;
+  }
+
+  private String generateDatePattern() {
+    Date date = Calendar.getInstance().getTime();
+    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSSZ");
+    String strDate = dateFormat.format(date);
+    return strDate;
   }
 }

@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.sunbird</groupId>
-  <artifactId>lms-service</artifactId>
+  <artifactId>sunbird-lms-service</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>sunbird_lms_service</name>
@@ -19,7 +19,7 @@
   			<activeByDefault>true</activeByDefault>
   		</activation>
   		<modules>
-  			<module>actors/sunbird-lms-mw</module>
+  			<module>course-mw</module>
 	  		<module>service</module>
   		</modules>
   	</profile>
@@ -29,6 +29,56 @@
 	  		<module>service</module>
   		</modules>
   	</profile>
+  	<profile>
+        <id>jacoco</id>
+        <modules>
+  			<module>course-mw</module>
+	  		<module>service</module>
+  		</modules>
+        <build>
+            <plugins>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>0.8.4</version>
+                    <executions>
+                        <execution>
+                            <id>merge-results</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>merge</goal>
+                            </goals>
+                            <configuration>
+                                <fileSets>
+                                    <fileSet>
+                                        <directory>course-mw</directory>
+                                        <includes>
+                                            <include>**/target/coverage-reports/*.exec</include>
+                                        </includes>
+                                        <excludes>
+                                            <exclude>aggregate.exec</exclude>
+                                        </excludes>
+                                    </fileSet>
+                                </fileSets>
+                                <destFile>${project.build.directory}/aggregate.exec</destFile>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>post-merge-report</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>report</goal>
+                            </goals>
+                            <configuration>
+                                <dataFile>${project.build.directory}/aggregate.exec</dataFile>
+                                <outputDirectory>${project.reporting.outputDirectory}/jacoco-aggregate</outputDirectory>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </build>
+    </profile>
   </profiles>
   
   <build>

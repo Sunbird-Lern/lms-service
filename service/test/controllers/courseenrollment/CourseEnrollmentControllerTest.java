@@ -14,7 +14,9 @@ import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
+import util.ACTOR_NAMES;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,7 +36,7 @@ public class CourseEnrollmentControllerTest extends BaseApplicationTest {
 
   @Before
   public void before() {
-    setup(DummyActor.class);
+    setup(Arrays.asList(ACTOR_NAMES.COURSE_ENROLLEMENT_ACTOR,ACTOR_NAMES.LEARNER_STATE_ACTOR), DummyActor.class);
   }
 
   @Test

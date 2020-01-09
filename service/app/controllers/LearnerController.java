@@ -1,8 +1,8 @@
 /** */
 package controllers;
 
+import akka.actor.ActorRef;
 import com.fasterxml.jackson.databind.JsonNode;
-import java.util.HashMap;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerEnum;
@@ -11,12 +11,15 @@ import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.LearnerStateRequestValidator;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.request.RequestValidator;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Results;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.util.HashMap;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 /**
  * This controller will handler all the request related to learner state.
@@ -27,6 +30,13 @@ public class LearnerController extends BaseController {
 
     private LearnerStateRequestValidator validator = new LearnerStateRequestValidator();
 
+    @Inject
+    @Named("learner-state-update-actor")
+    private ActorRef learnerStateUpdateActorRef;
+
+    @Inject
+    @Named("learner-state-actor")
+    private ActorRef learnerStateActorRef;
     /**
      * This method will provide list of user content state. Content refer user activity {started,half
      * completed ,completed} against TOC (table of content).
@@ -39,7 +49,7 @@ public class LearnerController extends BaseController {
             Request request = createAndInitRequest(ActorOperations.GET_CONTENT.getValue(), requestJson, httpRequest);
             validator.validateGetContentState(request);
             request = transformUserId(request);
-            return actorResponseHandler(getActorRef(), request, timeout, JsonKey.CONTENT_LIST, httpRequest);
+            return actorResponseHandler(learnerStateActorRef, request, timeout, JsonKey.CONTENT_LIST, httpRequest);
         } catch (Exception e) {
             return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
         }
@@ -66,7 +76,7 @@ public class LearnerController extends BaseController {
             innerMap.put(JsonKey.ASSESSMENT_EVENTS, reqObj.getRequest().get(JsonKey.ASSESSMENT_EVENTS));
             innerMap.put(JsonKey.USER_ID, reqObj.getRequest().get(JsonKey.USER_ID));
             reqObj.setRequest(innerMap);
-            return actorResponseHandler(getActorRef(), reqObj, timeout, null, httpRequest);
+            return actorResponseHandler(learnerStateUpdateActorRef, reqObj, timeout, null, httpRequest);
         } catch (Exception e) {
             return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
         }

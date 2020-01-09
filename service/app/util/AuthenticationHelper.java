@@ -14,7 +14,6 @@ import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.util.Util;
 import org.sunbird.learner.util.Util.DbInfo;
-import org.sunbird.middleware.Application;
 import org.sunbird.services.sso.SSOManager;
 import org.sunbird.services.sso.SSOServiceFactory;
 
@@ -25,9 +24,6 @@ import org.sunbird.services.sso.SSOServiceFactory;
  * @author Manzarul
  */
 public class AuthenticationHelper {
-  static {
-    Application.checkCassandraConnection();
-  }
 
   private static boolean ssoEnabled =
       ((PropertiesCache.getInstance().getProperty(JsonKey.SSO_PUBLIC_KEY) != null)

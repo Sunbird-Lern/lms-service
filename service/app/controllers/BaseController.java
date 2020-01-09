@@ -20,7 +20,6 @@ import java.util.function.Function;
 import modules.ApplicationStart;
 import modules.OnRequestHandler;
 import org.apache.commons.lang3.StringUtils;
-import org.sunbird.actor.service.SunbirdMWService;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.response.ResponseParams;
@@ -51,17 +50,8 @@ public class BaseController extends Controller {
 
   private static final String version = "v1";
   public static final int AKKA_WAIT_TIME = 30;
-  private static Object actorRef = null;
   private TelemetryLmaxWriter lmaxWriter = TelemetryLmaxWriter.getInstance();
   protected Timeout timeout = new Timeout(AKKA_WAIT_TIME, TimeUnit.SECONDS);
-
-  static {
-    try {
-      actorRef = SunbirdMWService.getRequestRouter();
-    } catch (Exception ex) {
-      ProjectLogger.log("Exception occured while getting actor ref in base controller " + ex);
-    }
-  }
 
   private org.sunbird.common.request.Request initRequest(
       org.sunbird.common.request.Request request, String operation, Http.Request httpRequest) {
@@ -104,77 +94,54 @@ public class BaseController extends Controller {
   }
 
   protected CompletionStage<Result> handleRequest(
-      String operation, java.util.function.Function requestValidatorFn, Http.Request httpRequest) {
-    return handleRequest(operation, null, requestValidatorFn, null, null, false, httpRequest);
-  }
-
-  protected CompletionStage<Result> handleRequest(
+      ActorRef actorRef,
       String operation,
       JsonNode requestBodyJson,
       java.util.function.Function requestValidatorFn,
       Http.Request httpRequest) {
     return handleRequest(
-        operation, requestBodyJson, requestValidatorFn, null, null, true, httpRequest);
-  }
-
-  protected CompletionStage<Result> handleRequest(
-      String operation, String pathId, String pathVariable, Http.Request httpRequest) {
-    return handleRequest(operation, null, null, pathId, pathVariable, false, httpRequest);
-  }
-
-  protected CompletionStage<Result> handleRequest(
-      String operation,
-      String pathId,
-      String pathVariable,
-      boolean isJsonBodyRequired,
-      Http.Request httpRequest) {
-    return handleRequest(
-        operation, null, null, pathId, pathVariable, isJsonBodyRequired, httpRequest);
-  }
-
-  protected CompletionStage<Result> handleRequest(
-      String operation,
-      JsonNode requestBodyJson,
-      java.util.function.Function requestValidatorFn,
-      Map<String, String> headers,
-      Http.Request httpRequest) {
-    return handleRequest(
-        operation, requestBodyJson, requestValidatorFn, null, null, headers, true, httpRequest);
-  }
-
-  protected CompletionStage<Result> handleRequest(
-      String operation,
-      java.util.function.Function requestValidatorFn,
-      String pathId,
-      String pathVariable,
-      Http.Request httpRequest) {
-    return handleRequest(
-        operation, null, requestValidatorFn, pathId, pathVariable, false, httpRequest);
-  }
-
-  protected CompletionStage<Result> handleRequest(
-      String operation,
-      JsonNode requestBodyJson,
-      java.util.function.Function requestValidatorFn,
-      String pathId,
-      String pathVariable,
-      Http.Request httpRequest) {
-    return handleRequest(
-        operation, requestBodyJson, requestValidatorFn, pathId, pathVariable, true, httpRequest);
-  }
-
-  protected CompletionStage<Result> handleRequest(
-      String operation,
-      JsonNode requestBodyJson,
-      java.util.function.Function requestValidatorFn,
-      String pathId,
-      String pathVariable,
-      boolean isJsonBodyRequired,
-      Http.Request httpRequest) {
-    return handleRequest(
+        actorRef,
         operation,
         requestBodyJson,
         requestValidatorFn,
+        null,
+        null,
+        null,
+        true,
+        httpRequest);
+  }
+
+  protected CompletionStage<Result> handleRequest(
+      ActorRef actorRef,
+      String operation,
+      java.util.function.Function requestValidatorFn,
+      Http.Request httpRequest) {
+    return handleRequest(
+        actorRef, operation, null, requestValidatorFn, null, null, null, false, httpRequest);
+  }
+
+  protected CompletionStage<Result> handleRequest(
+      ActorRef actorRef,
+      String operation,
+      String pathId,
+      String pathVariable,
+      Http.Request httpRequest) {
+    return handleRequest(
+        actorRef, operation, null, null, pathId, pathVariable, null, false, httpRequest);
+  }
+
+  protected CompletionStage<Result> handleRequest(
+      ActorRef actorRef,
+      String operation,
+      String pathId,
+      String pathVariable,
+      boolean isJsonBodyRequired,
+      Http.Request httpRequest) {
+    return handleRequest(
+        actorRef,
+        operation,
+        null,
+        null,
         pathId,
         pathVariable,
         null,
@@ -183,6 +150,46 @@ public class BaseController extends Controller {
   }
 
   protected CompletionStage<Result> handleRequest(
+      ActorRef actorRef,
+      String operation,
+      JsonNode requestBodyJson,
+      java.util.function.Function requestValidatorFn,
+      Map<String, String> headers,
+      Http.Request httpRequest) {
+    return handleRequest(
+        actorRef,
+        operation,
+        requestBodyJson,
+        requestValidatorFn,
+        null,
+        null,
+        headers,
+        true,
+        httpRequest);
+  }
+
+  protected CompletionStage<Result> handleRequest(
+      ActorRef actorRef,
+      String operation,
+      JsonNode requestBodyJson,
+      java.util.function.Function requestValidatorFn,
+      String pathId,
+      String pathVariable,
+      Http.Request httpRequest) {
+    return handleRequest(
+        actorRef,
+        operation,
+        requestBodyJson,
+        requestValidatorFn,
+        pathId,
+        pathVariable,
+        null,
+        true,
+        httpRequest);
+  }
+
+  protected CompletionStage<Result> handleRequest(
+      ActorRef actorRef,
       String operation,
       JsonNode requestBodyJson,
       java.util.function.Function requestValidatorFn,
@@ -205,7 +212,7 @@ public class BaseController extends Controller {
       if (requestValidatorFn != null) requestValidatorFn.apply(request);
       if (headers != null) request.getContext().put(JsonKey.HEADER, headers);
 
-      return actorResponseHandler(getActorRef(), request, timeout, null, httpRequest);
+      return actorResponseHandler(actorRef, request, timeout, null, httpRequest);
     } catch (Exception e) {
       ProjectLogger.log(
           "BaseController:handleRequest: Exception occurred with error message = " + e.getMessage(),
@@ -215,6 +222,7 @@ public class BaseController extends Controller {
   }
 
   protected CompletionStage<Result> handleSearchRequest(
+      ActorRef actorRef,
       String operation,
       JsonNode requestBodyJson,
       java.util.function.Function requestValidatorFn,
@@ -243,23 +251,13 @@ public class BaseController extends Controller {
             .put(JsonKey.OBJECT_TYPE, esObjectTypeList);
       }
       request.getRequest().put(JsonKey.REQUESTED_BY, httpRequest.flash().get(JsonKey.USER_ID));
-      return actorResponseHandler(getActorRef(), request, timeout, null, httpRequest);
+      return actorResponseHandler(actorRef, request, timeout, null, httpRequest);
     } catch (Exception e) {
       ProjectLogger.log(
           "BaseController:handleRequest: Exception occurred with error message = " + e.getMessage(),
           e);
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
-  }
-
-  /**
-   * This method will provide remote Actor selection
-   *
-   * @return Object
-   */
-  public Object getActorRef() {
-
-    return actorRef;
   }
 
   /**
@@ -712,10 +710,6 @@ public class BaseController extends Controller {
       }
     }
     return builder.toString();
-  }
-
-  public static void setActorRef(Object obj) {
-    actorRef = obj;
   }
 
   private static Map<String, Object> genarateTelemetryInfoForError(Http.Request request) {

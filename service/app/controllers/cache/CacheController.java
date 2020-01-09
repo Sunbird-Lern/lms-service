@@ -1,23 +1,23 @@
 package controllers.cache;
 
-import org.sunbird.common.models.util.ActorOperations;
-import org.sunbird.common.models.util.JsonKey;
-
+import akka.actor.ActorRef;
 import controllers.BaseController;
 import java.util.concurrent.CompletionStage;
-
+import javax.inject.Inject;
+import javax.inject.Named;
+import org.sunbird.common.models.util.ActorOperations;
+import org.sunbird.common.models.util.JsonKey;
 import play.mvc.Http;
 import play.mvc.Result;
 
-public class CacheController extends BaseController{
-  
-  @SuppressWarnings("unchecked")
+public class CacheController extends BaseController {
+
+  @Inject
+  @Named("cache-management-actor")
+  private ActorRef actorRef;
+
   public CompletionStage<Result> clearCache(String mapName, Http.Request httpRequest) {
     return handleRequest(
-        ActorOperations.CLEAR_CACHE.getValue(),
-        mapName,
-        JsonKey.MAP_NAME,
-            httpRequest);
+        actorRef, ActorOperations.CLEAR_CACHE.getValue(), mapName, JsonKey.MAP_NAME, httpRequest);
   }
-
 }

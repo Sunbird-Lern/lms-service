@@ -23,6 +23,7 @@ import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
+import util.ACTOR_NAMES;
 
 /** Created by arvind on 6/12/17. */
 @RunWith(PowerMockRunner.class)
@@ -32,7 +33,7 @@ public class SearchControllerTest extends BaseApplicationTest {
 
   @Before
   public void before() {
-    setup(DummyActor.class);
+    setup(ACTOR_NAMES.ES_SYNC_ACTOR, DummyActor.class);
   }
 
   @Test

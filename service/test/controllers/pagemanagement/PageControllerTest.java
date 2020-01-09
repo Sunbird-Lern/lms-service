@@ -16,6 +16,7 @@ import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
+import util.ACTOR_NAMES;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -30,7 +31,7 @@ public class PageControllerTest extends BaseApplicationTest {
   public static String SECTION_ID="sectionId";
   @Before
   public void before() {
-    setup(DummyActor.class);
+    setup(ACTOR_NAMES.PAGE_MANAGEMENT_ACTOR,DummyActor.class);
   }
 
   @Test

@@ -27,9 +27,12 @@ import org.sunbird.common.models.util.ProjectUtil.ProgressStatus;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.kafka.client.InstructionEventGenerator;
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao;
 import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl;
 import org.sunbird.learner.actors.coursebatch.service.UserCoursesService;
+import org.sunbird.learner.constants.CourseJsonKey;
+import org.sunbird.learner.constants.InstructionEvent;
 import org.sunbird.learner.util.CourseBatchSchedulerUtil;
 import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.Util;
@@ -88,7 +91,7 @@ public class CourseBatchManagementActor extends BaseActor {
     }
   }
 
-  private void createCourseBatch(Request actorMessage) {
+  private void createCourseBatch(Request actorMessage) throws Throwable {
     Map<String, Object> request = actorMessage.getRequest();
     Map<String, Object> targetObject;
     List<Map<String, Object>> correlatedObject = new ArrayList<>();
@@ -129,7 +132,9 @@ public class CourseBatchManagementActor extends BaseActor {
     TelemetryUtil.addTargetObjectRollUp(rollUp, targetObject);
     TelemetryUtil.telemetryProcessingCall(request, targetObject, correlatedObject);
 
-    updateBatchCount(courseBatch);
+  //  updateBatchCount(courseBatch);
+      //Generate Instruction event. Send courseId for batch
+      pushInstructionEvent(courseId,courseBatchId);
     if (courseNotificationActive()) {
       batchOperationNotifier(courseBatch, null);
     }
@@ -445,6 +450,48 @@ public class CourseBatchManagementActor extends BaseActor {
     response.put(JsonKey.RESPONSE, result);
     sender().tell(response, self());
   }
+
+    private void pushInstructionEvent(String courseId, String batchId)
+            throws Exception {
+        Map<String, Object> data = new HashMap<>();
+
+        data.put(
+                CourseJsonKey.ACTOR,
+                new HashMap<String, Object>() {
+                    {
+                        put(JsonKey.ID, InstructionEvent.COURSE_BATCH_COUNT_UPDATE.getActorId());
+                        put(JsonKey.TYPE, InstructionEvent.COURSE_BATCH_COUNT_UPDATE.getActorType());
+                    }
+                });
+
+        data.put(
+                CourseJsonKey.OBJECT,
+                new HashMap<String, Object>() {
+                    {
+                        put(JsonKey.ID, courseId + CourseJsonKey.UNDERSCORE + batchId);
+                        put(JsonKey.TYPE, InstructionEvent.COURSE_BATCH_COUNT_UPDATE.getType());
+                    }
+                });
+
+        data.put(CourseJsonKey.ACTION, InstructionEvent.COURSE_BATCH_COUNT_UPDATE.getAction());
+
+        data.put(
+                CourseJsonKey.E_DATA,
+                new HashMap<String, Object>() {
+                    {
+                        put(JsonKey.COURSE_ID, courseId);
+                        put(JsonKey.BATCH_ID, batchId);
+                        put(CourseJsonKey.ACTION, InstructionEvent.COURSE_BATCH_COUNT_UPDATE.getAction());
+                        put(CourseJsonKey.ITERATION, 1);
+                    }
+                });
+        String topic = ProjectUtil.getConfigValue("kafka_topics_instruction");
+        ProjectLogger.log(
+                "CourseBatchManagementctor: pushInstructionEvent :Event Data "
+                        + data+" and Topic "+topic,
+                LoggerEnum.INFO.name());
+        InstructionEventGenerator.pushInstructionEvent(topic, data);
+    }
 
   private int setCourseBatchStatus(String startDate) {
     try {

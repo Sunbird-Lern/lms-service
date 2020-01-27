@@ -459,8 +459,8 @@ public class CourseBatchManagementActor extends BaseActor {
                 CourseJsonKey.ACTOR,
                 new HashMap<String, Object>() {
                     {
-                        put(JsonKey.ID, InstructionEvent.COURSE_BATCH_COUNT_UPDATE.getActorId());
-                        put(JsonKey.TYPE, InstructionEvent.COURSE_BATCH_COUNT_UPDATE.getActorType());
+                        put(JsonKey.ID, InstructionEvent.COURSE_BATCH_UPDATE.getActorId());
+                        put(JsonKey.TYPE, InstructionEvent.COURSE_BATCH_UPDATE.getActorType());
                     }
                 });
 
@@ -469,11 +469,11 @@ public class CourseBatchManagementActor extends BaseActor {
                 new HashMap<String, Object>() {
                     {
                         put(JsonKey.ID, courseId + CourseJsonKey.UNDERSCORE + batchId);
-                        put(JsonKey.TYPE, InstructionEvent.COURSE_BATCH_COUNT_UPDATE.getType());
+                        put(JsonKey.TYPE, InstructionEvent.COURSE_BATCH_UPDATE.getType());
                     }
                 });
 
-        data.put(CourseJsonKey.ACTION, InstructionEvent.COURSE_BATCH_COUNT_UPDATE.getAction());
+        data.put(CourseJsonKey.ACTION, InstructionEvent.COURSE_BATCH_UPDATE.getAction());
 
         data.put(
                 CourseJsonKey.E_DATA,
@@ -481,7 +481,7 @@ public class CourseBatchManagementActor extends BaseActor {
                     {
                         put(JsonKey.COURSE_ID, courseId);
                         put(JsonKey.BATCH_ID, batchId);
-                        put(CourseJsonKey.ACTION, InstructionEvent.COURSE_BATCH_COUNT_UPDATE.getAction());
+                        put(CourseJsonKey.ACTION, InstructionEvent.COURSE_BATCH_UPDATE.getAction());
                         put(CourseJsonKey.ITERATION, 1);
                     }
                 });

@@ -6,7 +6,7 @@ public enum InstructionEvent {
   ISSUE_COURSE_CERTIFICATE(
       "Course Certificate Generator", "System", "CourseCertificateGeneration", "issue-certificate"),
   COURSE_BATCH_UPDATE(
-      "Course Batch Count Updater", "System", "CourseBatchEnrolment", "course-batct");
+      "Course Batch Count Updater", "System", "CourseBatchEnrolment", "course-batch-update");
   private String actorId;
   private String actorType;
   private String type;
@@ -30,6 +30,27 @@ public enum InstructionEvent {
   public String getType() {
     return type;
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   public String getAction() {
     return action;

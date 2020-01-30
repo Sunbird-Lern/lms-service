@@ -31,27 +31,6 @@ public enum InstructionEvent {
     return type;
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   public String getAction() {
     return action;
   }

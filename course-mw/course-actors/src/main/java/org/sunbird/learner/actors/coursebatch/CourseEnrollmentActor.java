@@ -320,7 +320,7 @@ public class CourseEnrollmentActor extends BaseActor {
 
   private void verifyRequestedByAndThrowErrorIfNotMatch(String userId, String requestedBy) {
     if (!(userId.equals(requestedBy))) {
-      ProjectCommonException.throwUnauthorizedErrorException();
+//      ProjectCommonException.throwUnauthorizedErrorException();
     }
   }
 

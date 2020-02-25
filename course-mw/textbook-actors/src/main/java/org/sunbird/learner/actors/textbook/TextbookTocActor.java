@@ -51,6 +51,7 @@ import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.common.util.KeycloakRequiredActionLinkUtil;
 import org.sunbird.content.textbook.FileExtension;
 import org.sunbird.content.textbook.TextBookTocUploader;
 import org.sunbird.content.util.TextBookTocUtil;
@@ -472,8 +473,7 @@ public class TextbookTocActor extends BaseActor {
       headers.put("X-Channel-Id", channel);
       headers.put(
           "x-authenticated-user-token",
-          ssoManager.login(
-              getConfigValue(SUNBIRD_SSO_CLIENT_SECRET)));
+              KeycloakRequiredActionLinkUtil.getAdminAccessToken());
       String reqBody = mapper.writeValueAsString(requestMap);
       ProjectLogger.log(
           "Sized :TextBookTocUtil:callDialcodeSearchApi: size of request "

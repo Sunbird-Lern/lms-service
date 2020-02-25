@@ -22,13 +22,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.common.util.KeycloakRequiredActionLinkUtil;
 import org.sunbird.services.sso.SSOManager;
 import org.sunbird.services.sso.SSOServiceFactory;
 
 public class UserOrgServiceImpl implements UserOrgService {
 
-  private SSOManager ssoManager = SSOServiceFactory.getInstance();
   private ObjectMapper mapper = new ObjectMapper();
   private static final String FORWARD_SLASH = "/";
   private static final String X_AUTHENTICATED_USER_TOKEN = "x-authenticated-user-token";
@@ -214,7 +215,12 @@ public class UserOrgServiceImpl implements UserOrgService {
   }
 
   private String getAuthenticatedUserToken() {
-    return ssoManager.login(
-        getConfigValue(SUNBIRD_SSO_CLIENT_SECRET));
+    String accessToken = "";
+    try {
+      accessToken = KeycloakRequiredActionLinkUtil.getAdminAccessToken();
+    } catch (Exception e) {
+      ProjectLogger.log(e.getMessage(), e);
+    }
+    return accessToken;
   }
 }

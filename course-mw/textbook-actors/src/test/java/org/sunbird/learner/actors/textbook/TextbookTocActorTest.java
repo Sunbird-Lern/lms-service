@@ -50,7 +50,7 @@ import org.sunbird.services.sso.impl.KeyCloakServiceImpl;
   ProjectUtil.class,
   Unirest.class,
   SSOServiceFactory.class,
-  CloudStorageUtil.class
+  CloudStorageUtil.class, KeycloakRequiredActionLinkUtil.class
 })
 @PowerMockIgnore({"javax.management.*", "javax.net.ssl.*"})
 public class TextbookTocActorTest {

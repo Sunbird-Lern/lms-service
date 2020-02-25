@@ -473,8 +473,7 @@ public class TextbookTocActor extends BaseActor {
       headers.put(
           "x-authenticated-user-token",
           ssoManager.login(
-              getConfigValue(JsonKey.SUNBIRD_SSO_USERNAME),
-              getConfigValue(JsonKey.SUNBIRD_SSO_PASSWORD)));
+              getConfigValue(SUNBIRD_SSO_CLIENT_SECRET)));
       String reqBody = mapper.writeValueAsString(requestMap);
       ProjectLogger.log(
           "Sized :TextBookTocUtil:callDialcodeSearchApi: size of request "

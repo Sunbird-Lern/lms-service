@@ -215,6 +215,6 @@ public class UserOrgServiceImpl implements UserOrgService {
 
   private String getAuthenticatedUserToken() {
     return ssoManager.login(
-        getConfigValue(JsonKey.SUNBIRD_SSO_USERNAME), getConfigValue(JsonKey.SUNBIRD_SSO_PASSWORD));
+        getConfigValue(SUNBIRD_SSO_CLIENT_SECRET));
   }
 }

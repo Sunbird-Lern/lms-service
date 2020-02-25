@@ -78,7 +78,7 @@ public class TextbookTocActorTest {
     PowerMockito.mockStatic(CloudStorageUtil.class);
     KeyCloakServiceImpl ssoManager = PowerMockito.mock(KeyCloakServiceImpl.class);
     when(SSOServiceFactory.getInstance()).thenReturn(ssoManager);
-    when(ssoManager.login(Mockito.anyString(), Mockito.anyString())).thenReturn("aValidAuthToken");
+    when(ssoManager.login(Mockito.anyString())).thenReturn("aValidAuthToken");
     system = ActorSystem.create("system");
     when(ProjectUtil.getConfigValue(JsonKey.TEXTBOOK_TOC_MAX_CSV_ROWS)).thenReturn("5");
     when(ProjectUtil.getConfigValue(JsonKey.TEXTBOOK_TOC_MANDATORY_FIELDS))

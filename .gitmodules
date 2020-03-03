@@ -1,4 +1,4 @@
 [submodule "course-mw/sunbird-utils"]
 	path = course-mw/sunbird-utils
-	url = https://github.com/amitpriyadarshi/sunbird-utils.git
+	url = https://github.com/project-sunbird/sunbird-utils.git
         branch = release-2.8.0

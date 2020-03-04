@@ -117,7 +117,7 @@ public class CourseEnrollmentActor extends BaseActor {
     sender().tell(result, self());
     if (userCourseResult == null) {
       courseMap.put(JsonKey.DATE_TIME, ProjectUtil.formatDate(new Timestamp(new Date().getTime())));
-//      updateUserCoursesToES(courseMap);
+      updateUserCoursesToES(courseMap);
 
     } else {
       ProjectLogger.log(

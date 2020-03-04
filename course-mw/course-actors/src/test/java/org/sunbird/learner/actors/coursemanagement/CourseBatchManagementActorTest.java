@@ -29,12 +29,13 @@ import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.helper.ServiceFactory;
+import org.sunbird.kafka.client.InstructionEventGenerator;
 import org.sunbird.learner.actors.coursebatch.CourseBatchManagementActor;
 import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.Util;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ServiceFactory.class, EsClientFactory.class, CourseBatchUtil.class, Util.class})
+@PrepareForTest({ServiceFactory.class, EsClientFactory.class, CourseBatchUtil.class, Util.class, InstructionEventGenerator.class})
 @PowerMockIgnore({"javax.management.*"})
 public class CourseBatchManagementActorTest {
 
@@ -73,6 +74,8 @@ public class CourseBatchManagementActorTest {
     when(mockCassandraOperation.getRecordById(
             Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
         .thenReturn(mockGetRecordByIdResponse);
+    PowerMockito.mockStatic(InstructionEventGenerator.class);
+    doNothing().when(InstructionEventGenerator.class);
     TestKit probe = new TestKit(system);
     ActorRef subject = system.actorOf(props);
     Request reqObj = new Request();
@@ -108,6 +111,8 @@ public class CourseBatchManagementActorTest {
 
     PowerMockito.doNothing().when(CourseBatchUtil.class);
     CourseBatchUtil.syncCourseBatchForeground(BATCH_ID, new HashMap<>());
+    PowerMockito.mockStatic(InstructionEventGenerator.class);
+    doNothing().when(InstructionEventGenerator.class);
 
     TestKit probe = new TestKit(system);
     ActorRef subject = system.actorOf(props);

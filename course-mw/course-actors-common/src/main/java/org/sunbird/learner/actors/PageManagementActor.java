@@ -254,14 +254,11 @@ public class PageManagementActor extends BaseActor {
     String source = (String) req.get(JsonKey.SOURCE);
     String orgId = (String) req.get(JsonKey.ORGANISATION_ID);
     String urlQueryString = (String) actorMessage.getContext().get(JsonKey.URL_QUERY_STRING);
+    Map<String, Object> sections = (Map<String, Object>) req.getOrDefault(JsonKey.SECTIONS, new HashMap<>());
     Map<String, String> headers =
         (Map<String, String>) actorMessage.getRequest().get(JsonKey.HEADER);
     filterMap.putAll(req);
-    filterMap.remove(JsonKey.PAGE_NAME);
-    filterMap.remove(JsonKey.SOURCE);
-    filterMap.remove(JsonKey.ORG_CODE);
-    filterMap.remove(JsonKey.FILTERS);
-    filterMap.remove(JsonKey.CREATED_BY);
+    filterMap.keySet().removeAll(Arrays.asList(JsonKey.PAGE_NAME, JsonKey.SOURCE, JsonKey.ORG_CODE, JsonKey.FILTERS, JsonKey.CREATED_BY, JsonKey.SECTIONS));
     Map<String, Object> reqFilters = (Map<String, Object>) req.get(JsonKey.FILTERS);
 
     Map<String, Object> pageMap = getPageMapData(pageName, orgId);
@@ -303,6 +300,7 @@ public class PageManagementActor extends BaseActor {
       reqMap.put(JsonKey.FILTERS, reqFilters);
       reqMap.put(JsonKey.HEADER, headers);
       reqMap.put(JsonKey.FILTER, filterMap);
+      reqMap.put(JsonKey.SECTIONS, sections);
       reqMap.put(JsonKey.URL_QUERY_STRING, urlQueryString);
       requestHashCode = HashGeneratorUtil.getHashCode(JsonUtil.toJson(reqMap));
       Response cachedResponse =
@@ -322,7 +320,7 @@ public class PageManagementActor extends BaseActor {
       if (arr != null) {
         for (Object obj : arr) {
           Map<String, Object> sectionMap = (Map<String, Object>) obj;
-
+          reqFilters = (Map<String, Object>) req.get(JsonKey.FILTERS);
           if (MapUtils.isNotEmpty(sectionMap)) {
 
             Map<String, Object> sectionData =
@@ -341,6 +339,7 @@ public class PageManagementActor extends BaseActor {
                       urlQueryString,
                       sectionMap.get(JsonKey.GROUP),
                       sectionMap.get(JsonKey.INDEX),
+                      sections,
                       context().dispatcher());
               sectionList.add(contentFuture);
             }
@@ -614,6 +613,7 @@ public class PageManagementActor extends BaseActor {
       String urlQueryString,
       Object group,
       Object index,
+      Map<String, Object> sectionFilters,
       ExecutionContextExecutor ec)
       throws Exception {
 
@@ -633,9 +633,13 @@ public class PageManagementActor extends BaseActor {
     }
     request.put("limit", 10);
 
-    Map<String, Object> filters = (Map<String, Object>) request.get(JsonKey.FILTERS);
-
-    applyFilters(filters, reqFilters);
+    Map<String, Object> filters = (Map<String, Object>) request.getOrDefault(JsonKey.FILTERS, new HashMap<String, Object>());
+    if(sectionFilters.containsKey(section.get(ID))){
+      applySectionLevelFilters((String)section.get(ID), sectionFilters, filters);
+    } else {
+      applyFilters(filters, reqFilters);
+    }
+    
     String queryRequestBody = mapper.writeValueAsString(searchQueryMap);
     if (StringUtils.isBlank(queryRequestBody)) {
       queryRequestBody = (String) section.get(JsonKey.SEARCH_QUERY);
@@ -680,6 +684,13 @@ public class PageManagementActor extends BaseActor {
       result = promise.future();
       ProjectLogger.log("PageManagementActor:getContentData: end", LoggerEnum.INFO.name());
       return result;
+    }
+  }
+
+  private void applySectionLevelFilters(String sectionId, Map<String, Object> sectionFilters, Map<String, Object> filters) {
+    Map<String, Object> sectionFilter = (Map<String, Object>) sectionFilters.get(sectionId);
+    if(MapUtils.isNotEmpty(sectionFilter)){
+      filters.putAll((Map<String, Object>) sectionFilter.getOrDefault(JsonKey.FILTERS, new HashMap<String, Object>()));
     }
   }
 

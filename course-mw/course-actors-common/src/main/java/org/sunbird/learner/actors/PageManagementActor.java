@@ -365,6 +365,7 @@ public class PageManagementActor extends BaseActor {
       for(Map<String, Object> section : sectionList){
         String sectionId = (String) section.get(ID);
         String dynamicFilters = (String) section.getOrDefault(DYNAMIC_FILTERS, "optional");
+        ProjectLogger.log("section :: " + section, LoggerEnum.INFO);
         ProjectLogger.log("dynamicFilters :: " + dynamicFilters, LoggerEnum.INFO);
         ProjectLogger.log("sectionFilters" + sectionFilters, LoggerEnum.INFO);
         if(MapUtils.isEmpty((Map<String, Object>) sectionFilters.get(sectionId)) && "required".equalsIgnoreCase(dynamicFilters)){

@@ -366,7 +366,6 @@ public class PageManagementActor extends BaseActor {
         String sectionId = (String) section.get(ID);
         Map<String, Object> sectionData = new HashMap<String, Object>(PageCacheLoaderService.getDataFromCache(ActorOperations.GET_SECTION.getValue(),sectionId,Map.class));
         if(MapUtils.isNotEmpty(sectionData)){
-          ProjectLogger.log("sectionData :::: "+ sectionData, LoggerEnum.INFO);
           String dynamicFilters = (String) sectionData.getOrDefault(DYNAMIC_FILTERS, "optional");
           if(MapUtils.isEmpty((Map<String, Object>) sectionFilters.get(sectionId)) && StringUtils.equalsIgnoreCase("required", dynamicFilters)){
             ProjectCommonException.throwClientErrorException(ResponseCode.errorInvalidPageSection,"Section level filers are mandatory for this section: " + sectionId);

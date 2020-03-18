@@ -5,6 +5,7 @@ import static org.sunbird.common.models.util.JsonKey.ID;
 import akka.dispatch.Futures;
 import akka.dispatch.Mapper;
 import akka.pattern.Patterns;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import java.io.IOException;
@@ -38,6 +39,7 @@ import org.sunbird.userorg.UserOrgServiceImpl;
 import scala.concurrent.ExecutionContextExecutor;
 import scala.concurrent.Future;
 import scala.concurrent.Promise;
+import scala.concurrent.java8.FuturesConvertersImpl;
 
 /**
  * This actor will handle page management operation .
@@ -54,6 +56,7 @@ public class PageManagementActor extends BaseActor {
   private UserOrgService userOrgService = UserOrgServiceImpl.getInstance();
   private boolean isCacheEnabled = false;
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
+  private static final String DYNAMIC_FILTERS = "dynamicFilters";
 
   @Override
   public void onReceive(Request request) throws Throwable {
@@ -254,7 +257,7 @@ public class PageManagementActor extends BaseActor {
     String source = (String) req.get(JsonKey.SOURCE);
     String orgId = (String) req.get(JsonKey.ORGANISATION_ID);
     String urlQueryString = (String) actorMessage.getContext().get(JsonKey.URL_QUERY_STRING);
-    Map<String, Object> sections = (Map<String, Object>) req.getOrDefault(JsonKey.SECTIONS, new HashMap<>());
+    Map<String, Object> sectionFilters = (Map<String, Object>) req.getOrDefault(JsonKey.SECTIONS, new HashMap<>());
     Map<String, String> headers =
         (Map<String, String>) actorMessage.getRequest().get(JsonKey.HEADER);
     filterMap.putAll(req);
@@ -279,9 +282,9 @@ public class PageManagementActor extends BaseActor {
         sectionQuery = (String) pageMap.get(JsonKey.APP_MAP);
       }
     }
-    Object[] arr = null;
+    List<Map<String,Object>> arr = null;
     try {
-      arr = mapper.readValue(sectionQuery, Object[].class);
+      arr = mapper.readValue(sectionQuery, new TypeReference<List<Map<String, Object>>>(){});
     } catch (Exception e) {
       ProjectLogger.log(
           "PageManagementActor:getPageData: Exception occurred with error message =  "
@@ -300,7 +303,7 @@ public class PageManagementActor extends BaseActor {
       reqMap.put(JsonKey.FILTERS, reqFilters);
       reqMap.put(JsonKey.HEADER, headers);
       reqMap.put(JsonKey.FILTER, filterMap);
-      reqMap.put(JsonKey.SECTIONS, sections);
+      reqMap.put(JsonKey.SECTIONS, sectionFilters);
       reqMap.put(JsonKey.URL_QUERY_STRING, urlQueryString);
       requestHashCode = HashGeneratorUtil.getHashCode(JsonUtil.toJson(reqMap));
       Response cachedResponse =
@@ -316,39 +319,9 @@ public class PageManagementActor extends BaseActor {
     }
     String reqHashCode = requestHashCode;
     try {
-      List<Future<Map<String, Object>>> sectionList = new ArrayList<>();
-      if (arr != null) {
-        for (Object obj : arr) {
-          Map<String, Object> sectionMap = (Map<String, Object>) obj;
-          reqFilters = (Map<String, Object>) req.get(JsonKey.FILTERS);
-          if (MapUtils.isNotEmpty(sectionMap)) {
-
-            Map<String, Object> sectionData =
-                new HashMap<String, Object>(
-                    PageCacheLoaderService.getDataFromCache(
-                        ActorOperations.GET_SECTION.getValue(),
-                        (String) sectionMap.get(JsonKey.ID),
-                        Map.class));
-            if (MapUtils.isNotEmpty(sectionData)) {
-              Future<Map<String, Object>> contentFuture =
-                  getContentData(
-                      sectionData,
-                      reqFilters,
-                      headers,
-                      filterMap,
-                      urlQueryString,
-                      sectionMap.get(JsonKey.GROUP),
-                      sectionMap.get(JsonKey.INDEX),
-                      sections,
-                      context().dispatcher());
-              sectionList.add(contentFuture);
-            }
-          }
-        }
-      }
-
-      Future<Iterable<Map<String, Object>>> sectionsFuture =
-          Futures.sequence(sectionList, getContext().dispatcher());
+      List<String> ignoredSections = new ArrayList<>();
+      List<Future<Map<String, Object>>> sectionList = getSectionData(arr, reqFilters, urlQueryString, headers, sectionFilters, filterMap, ignoredSections);
+      Future<Iterable<Map<String, Object>>> sectionsFuture = Futures.sequence(sectionList, getContext().dispatcher());
       Map<String, Object> finalPageMap = pageMap;
       Future<Response> response =
           sectionsFuture.map(
@@ -360,6 +333,7 @@ public class PageManagementActor extends BaseActor {
                   result.put(JsonKey.NAME, finalPageMap.get(JsonKey.NAME));
                   result.put(JsonKey.ID, finalPageMap.get(JsonKey.ID));
                   result.put(JsonKey.SECTIONS, sectionList);
+                  result.put("ignoredSections", ignoredSections);
                   Response response = new Response();
                   response.put(JsonKey.RESPONSE, result);
                   ProjectLogger.log(
@@ -383,6 +357,30 @@ public class PageManagementActor extends BaseActor {
               + e.getMessage(),
           e);
     }
+  }
+
+  private List<Future<Map<String, Object>>> getSectionData(List<Map<String, Object>> sectionList, Map<String, Object> reqFilters, String urlQueryString, Map<String, String> headers, Map<String, Object> sectionFilters, Map<String, Object> filterMap, List<String> ignoredSections) throws Exception {
+    List<Future<Map<String, Object>>> data = new ArrayList<>();
+    if(CollectionUtils.isNotEmpty(sectionList)) {
+      for(Map<String, Object> section : sectionList){
+        String sectionId = (String) section.get(ID);
+        Map<String, Object> sectionData = new HashMap<String, Object>(PageCacheLoaderService.getDataFromCache(ActorOperations.GET_SECTION.getValue(),sectionId,Map.class));
+        if(MapUtils.isNotEmpty(sectionData)){
+          String dynamicFilters = (String) sectionData.getOrDefault(DYNAMIC_FILTERS, "optional");
+          Map<String, Object> sectionFilter = (Map<String, Object>) sectionFilters.get(sectionId);
+          if(MapUtils.isEmpty(sectionFilter) && StringUtils.equalsIgnoreCase("required", dynamicFilters)){
+            ProjectCommonException.throwClientErrorException(ResponseCode.errorInvalidPageSection,"Section level filers are mandatory for this section: " + sectionId);
+          }
+          if( MapUtils.isEmpty(sectionFilter) && StringUtils.equalsIgnoreCase("ignore", dynamicFilters)){
+            ignoredSections.add(sectionId);
+            continue;
+          }
+          Future<Map<String, Object>> contentFuture = getContentData(sectionData, reqFilters, headers, filterMap, urlQueryString, section.get(JsonKey.GROUP), section.get(JsonKey.INDEX), sectionFilters, context().dispatcher());
+          data.add(contentFuture);
+        }
+      }
+    }
+    return data;
   }
 
   @SuppressWarnings("unchecked")

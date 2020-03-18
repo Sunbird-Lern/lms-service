@@ -39,6 +39,7 @@ import org.sunbird.userorg.UserOrgServiceImpl;
 import scala.concurrent.ExecutionContextExecutor;
 import scala.concurrent.Future;
 import scala.concurrent.Promise;
+import scala.concurrent.java8.FuturesConvertersImpl;
 
 /**
  * This actor will handle page management operation .
@@ -364,6 +365,8 @@ public class PageManagementActor extends BaseActor {
       for(Map<String, Object> section : sectionList){
         String sectionId = (String) section.get(ID);
         String dynamicFilters = (String) section.getOrDefault(DYNAMIC_FILTERS, "optional");
+        ProjectLogger.log("dynamicFilters :: " + dynamicFilters, LoggerEnum.INFO);
+        ProjectLogger.log("sectionFilters" + sectionFilters, LoggerEnum.INFO);
         if(MapUtils.isEmpty((Map<String, Object>) sectionFilters.get(sectionId)) && "required".equalsIgnoreCase(dynamicFilters)){
           ProjectCommonException.throwClientErrorException(ResponseCode.errorInvalidPageSection,"Section level filers are mandatory for this section: " + sectionId);
         }

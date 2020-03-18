@@ -364,19 +364,16 @@ public class PageManagementActor extends BaseActor {
     if(CollectionUtils.isNotEmpty(sectionList)) {
       for(Map<String, Object> section : sectionList){
         String sectionId = (String) section.get(ID);
-        String dynamicFilters = (String) section.getOrDefault(DYNAMIC_FILTERS, "optional");
-        ProjectLogger.log("section :: " + section, LoggerEnum.INFO);
-        ProjectLogger.log("dynamicFilters :: " + dynamicFilters, LoggerEnum.INFO);
-        ProjectLogger.log("sectionFilters" + sectionFilters, LoggerEnum.INFO);
-        if(MapUtils.isEmpty((Map<String, Object>) sectionFilters.get(sectionId)) && "required".equalsIgnoreCase(dynamicFilters)){
-          ProjectCommonException.throwClientErrorException(ResponseCode.errorInvalidPageSection,"Section level filers are mandatory for this section: " + sectionId);
-        }
-        if( MapUtils.isEmpty((Map<String, Object>) sectionFilters.get(sectionId)) && "ignore".equalsIgnoreCase(dynamicFilters)){
-          ignoredSections.add(sectionId);
-          continue;
-        }
         Map<String, Object> sectionData = new HashMap<String, Object>(PageCacheLoaderService.getDataFromCache(ActorOperations.GET_SECTION.getValue(),sectionId,Map.class));
         if(MapUtils.isNotEmpty(sectionData)){
+          String dynamicFilters = (String) sectionData.getOrDefault(DYNAMIC_FILTERS, "optional");
+          if(MapUtils.isEmpty((Map<String, Object>) sectionFilters.get(sectionId)) && "required".equalsIgnoreCase(dynamicFilters)){
+            ProjectCommonException.throwClientErrorException(ResponseCode.errorInvalidPageSection,"Section level filers are mandatory for this section: " + sectionId);
+          }
+          if( MapUtils.isEmpty((Map<String, Object>) sectionFilters.get(sectionId)) && "ignore".equalsIgnoreCase(dynamicFilters)){
+            ignoredSections.add(sectionId);
+            continue;
+          }
           Future<Map<String, Object>> contentFuture = getContentData(sectionData, reqFilters, headers, filterMap, urlQueryString, section.get(JsonKey.GROUP), section.get(JsonKey.INDEX), sectionFilters, context().dispatcher());
           data.add(contentFuture);
         }

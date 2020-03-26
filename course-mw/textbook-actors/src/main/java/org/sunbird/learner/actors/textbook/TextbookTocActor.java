@@ -1354,7 +1354,7 @@ public class TextbookTocActor extends BaseActor {
   private Response linkDialCodeApiCall(
       Map<String, Object> updateRequest, String channel, String tbId) throws Exception {
     String requestUrl =
-        getConfigValue(JsonKey.EKSTEP_BASE_URL)
+        getConfigValue(JsonKey.LEARNING_SERVICE_BASE_URL)
             + getConfigValue(JsonKey.LINK_DIAL_CODE_API)
             + "/"
             + tbId;

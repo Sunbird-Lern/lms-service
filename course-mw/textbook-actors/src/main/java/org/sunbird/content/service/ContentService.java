@@ -115,7 +115,7 @@ public class ContentService {
       ProjectLogger.log(
           "ContentService:updateEkstepContent: updating badgeAssociations details to Ekstep ",
           LoggerEnum.INFO.name());
-      String contentUpdateBaseUrl = ProjectUtil.getConfigValue(JsonKey.EKSTEP_BASE_URL);
+      String contentUpdateBaseUrl = ProjectUtil.getConfigValue(JsonKey.LEARNING_SERVICE_BASE_URL);
       String requestBody = getRequestBody(attributeName, activeBadges);
       System.out.println(requestBody);
       response =

@@ -720,48 +720,48 @@ public class PageManagementActor extends BaseActor {
    */
   private void applyFilters(Map<String, Object> filters, Map<String, Object> reqFilters) {
     if (null != reqFilters) {
-      Set<Entry<String, Object>> entrySet = reqFilters.entrySet();
-      for (Entry<String, Object> entry : entrySet) {
-        String key = entry.getKey();
-        if (filters.containsKey(key)) {
-          Object obj = entry.getValue();
-          if (obj instanceof List) {
+      reqFilters.entrySet().forEach(entry -> {
+        if (filters.containsKey(entry.getKey())) {
+          String key = entry.getKey();
+          if (entry.getValue() instanceof List) {
             if (filters.get(key) instanceof List) {
               Set<Object> set = new HashSet<>((List<Object>) filters.get(key));
-              set.addAll((List<Object>) obj);
+              set.addAll((List<Object>) entry.getValue());
               ((List<Object>) filters.get(key)).clear();
               ((List<Object>) filters.get(key)).addAll(set);
             } else if (filters.get(key) instanceof Map) {
-              filters.put(key, obj);
+              filters.put(key, entry.getValue());
             } else {
-              if (!(((List<Object>) obj).contains(filters.get(key)))) {
-                ((List<Object>) obj).add(filters.get(key));
+              List<Object> list = new ArrayList<>();
+              list.addAll((List<Object>) entry.getValue());
+              if (!(((List<Object>) entry.getValue()).contains(filters.get(key)))) {
+                list.add(filters.get(key));
               }
-              filters.put(key, obj);
+              filters.put(key, list);
             }
-          } else if (obj instanceof Map) {
-            filters.put(key, obj);
+          } else if (entry.getValue() instanceof Map) {
+            filters.put(key, entry.getValue());
           } else {
             if (filters.get(key) instanceof List) {
-              if (!(((List<Object>) filters.get(key)).contains(obj))) {
-                ((List<Object>) filters.get(key)).add(obj);
+              if (!(((List<Object>) filters.get(key)).contains(entry.getValue()))) {
+                ((List<Object>) filters.get(key)).add(entry.getValue());
               }
             } else if (filters.get(key) instanceof Map) {
-              filters.put(key, obj);
+              filters.put(key, entry.getValue());
             } else {
               List<Object> list = new ArrayList<>();
               list.add(filters.get(key));
-              list.add(obj);
+              list.add(entry.getValue());
               filters.put(key, list);
             }
           }
         } else {
-          filters.put(key, entry.getValue());
+          filters.put(entry.getKey(), entry.getValue());
         }
-      }
+      });
     }
   }
-
+  
   private Map<String, Object> getPageSetting(Map<String, Object> pageDO) {
 
     Map<String, Object> responseMap = new HashMap<>();

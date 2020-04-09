@@ -155,6 +155,6 @@ public class CertificateActor extends BaseActor {
           }
         });
     String topic = ProjectUtil.getConfigValue("kafka_topics_certificate_instruction");
-    InstructionEventGenerator.pushInstructionEvent(topic, data);
+    InstructionEventGenerator.pushInstructionEvent(batchId, topic, data);
   }
 }

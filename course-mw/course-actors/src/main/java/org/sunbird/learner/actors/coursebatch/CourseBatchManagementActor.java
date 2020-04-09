@@ -490,7 +490,7 @@ public class CourseBatchManagementActor extends BaseActor {
                 "CourseBatchManagementctor: pushInstructionEvent :Event Data "
                         + data+" and Topic "+topic,
                 LoggerEnum.INFO.name());
-        InstructionEventGenerator.pushInstructionEvent(topic, data);
+        InstructionEventGenerator.pushInstructionEvent(batchId, topic, data);
     }
 
   private int setCourseBatchStatus(String startDate) {

@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -116,7 +118,7 @@ public class SearchHandlerActor extends BaseActor {
   }
 
   private void populateCreatorDetails(Map<String, Object> result) throws Exception {
-	  List<Map<String, Object>> content = (List<Map<String, Object>>) ((Map<String, Object>) result.getOrDefault("response", new HashMap<String, Object>())).getOrDefault("content", new ArrayList<Map<String, Object>>());
+    List<Map<String, Object>> content = (List<Map<String, Object>>) result.getOrDefault("content", new ArrayList<Map<String, Object>>());
     if(CollectionUtils.isNotEmpty(content)){
 	    List<String> creatorIds = content.stream().filter(map -> map.containsKey("createdBy")).map(map -> (String) map.get("createdBy")).collect(Collectors.toList());
         Map<String, Object> creatorDetails = getCreatorDetails(creatorIds);
@@ -129,8 +131,6 @@ public class SearchHandlerActor extends BaseActor {
   private Map<String, Object> getCreatorDetails(List<String> creatorIds) throws Exception {
     String userSearchUrl = ProjectUtil.getConfigValue(JsonKey.USER_SEARCH_BASE_URL) + "/v1/user/search";
     List<String> fields = Arrays.asList(ProjectUtil.getConfigValue(JsonKey.CREATOR_DETAILS_FIELDS).split(","));
-    if(!fields.contains("id"))
-        fields.add("id");
     String reqStr = getUserSearchRequest(creatorIds, fields);
 	  List<Map<String, Object>> tempResult = makePostRequest(userSearchUrl, reqStr);
 	  return CollectionUtils.isNotEmpty(tempResult) ? tempResult.stream().collect(Collectors.toMap(s -> (String) s.remove("id"), s -> s)) : new HashMap<String, Object>();
@@ -149,13 +149,13 @@ public class SearchHandlerActor extends BaseActor {
   }
 
   private List<Map<String, Object>> makePostRequest(String url, String req) throws Exception {
-		Map<String, String> headers = new HashMap<String, String>() {{
-			put(JsonKey.CONTENT_TYPE, "application/json");
-			put(JsonKey.X_AUTHENTICATED_USER_TOKEN, KeycloakRequiredActionLinkUtil.getAdminAccessToken());
-		}};
-		HttpUtilResponse resp = HttpUtil.doPostRequest(url, req, headers);
-		Response response = getResponse(resp.getBody());
-		return (List<Map<String, Object>>) ((Map<String, Object>) response.getResult().getOrDefault("response", new HashMap<String, Object>())).getOrDefault("content", new ArrayList<Map<String, Object>>());
+    Map<String, String> headers = new HashMap<String, String>() {{
+      put("Content-Type", "application/json");
+      put(JsonKey.X_AUTHENTICATED_USER_TOKEN, KeycloakRequiredActionLinkUtil.getAdminAccessToken());
+    }};
+    HttpUtilResponse resp = HttpUtil.doPostRequest(url, req, headers);
+    Response response = getResponse(resp.getBody());
+    return (List<Map<String, Object>>) ((Map<String, Object>) response.getResult().getOrDefault("response", new HashMap<String, Object>())).getOrDefault("content", new ArrayList<Map<String, Object>>());
   }
 
   private Response getResponse(String body) {

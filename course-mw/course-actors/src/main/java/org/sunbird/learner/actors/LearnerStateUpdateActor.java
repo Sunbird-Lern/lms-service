@@ -446,7 +446,7 @@ public class LearnerStateUpdateActor extends BaseActor {
             "LearnerStateUpdateActor: pushInstructionEvent :Event Data "
                     + data+" and Topic "+topic,
             LoggerEnum.INFO.name());
-    InstructionEventGenerator.pushInstructionEvent(topic, data);
+    InstructionEventGenerator.pushInstructionEvent(userId, topic, data);
   }
 
   private void syncAssessmentData(Map<String, Object> assessmentData) throws Exception {

@@ -57,6 +57,7 @@ public class PageManagementActor extends BaseActor {
   private boolean isCacheEnabled = false;
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private static final String DYNAMIC_FILTERS = "dynamicFilters";
+  private static List<String> userProfilePropList = Arrays.asList("board");
 
   @Override
   public void onReceive(Request request) throws Throwable {
@@ -89,6 +90,8 @@ public class PageManagementActor extends BaseActor {
         .getOperation()
         .equalsIgnoreCase(ActorOperations.GET_ALL_SECTION.getValue())) {
       getAllSections();
+    } else if (request.getOperation().equalsIgnoreCase(ActorOperations.GET_DIAL_PAGE_DATA.getValue())) {
+      getDialPageData(request);
     } else {
       ProjectLogger.log(
           "PageManagementActor: Invalid operation request : " + request.getOperation(),
@@ -323,7 +326,7 @@ public class PageManagementActor extends BaseActor {
       List<Future<Map<String, Object>>> sectionList = getSectionData(arr, reqFilters, urlQueryString, headers, sectionFilters, filterMap, ignoredSections);
       Future<Iterable<Map<String, Object>>> sectionsFuture = Futures.sequence(sectionList, getContext().dispatcher());
       Map<String, Object> finalPageMap = pageMap;
-      Future<Response> response =
+        Future<Response> response =
           sectionsFuture.map(
               new Mapper<Iterable<Map<String, Object>>, Response>() {
                 @Override
@@ -842,5 +845,145 @@ public class PageManagementActor extends BaseActor {
             ActorOperations.GET_PAGE_DATA.getValue(), orgId + ":" + pageName, Map.class);
 
     return pageMapData;
+  }
+  
+  private void getDialPageData(Request request) {
+    ProjectLogger.log("PageManagementActor:getDialPageData: start", LoggerEnum.INFO.name());
+    Map<String, Object> req = (Map<String, Object>) request.getRequest().get(JsonKey.PAGE);
+    String pageName = (String) req.get(JsonKey.PAGE_NAME);
+    String source = (String) req.get(JsonKey.SOURCE);
+    String orgId = (String) req.get(JsonKey.ORGANISATION_ID);
+    String urlQueryString = (String) request.getContext().get(JsonKey.URL_QUERY_STRING);
+    Map<String, Object> sectionFilters = (Map<String, Object>) req.getOrDefault(JsonKey.SECTIONS, new HashMap<>());
+    Map<String, String> headers = (Map<String, String>) request.getRequest().get(JsonKey.HEADER);
+
+    Map<String, Object> filterMap = new HashMap<>();
+    filterMap.putAll(req);
+    filterMap.keySet().removeAll(Arrays.asList(JsonKey.PAGE_NAME, JsonKey.SOURCE, JsonKey.ORG_CODE, JsonKey.FILTERS, JsonKey.CREATED_BY, JsonKey.SECTIONS));
+    
+    Map<String, Object> reqFilters = (Map<String, Object>) req.get(JsonKey.FILTERS);
+    Map<String, Object> userProfile = (Map<String, Object>) req.getOrDefault("userProfile", new HashMap<String, Object>());
+
+    Map<String, Object> pageMap = getPageMapData(pageName, orgId);
+    if (null == pageMap && StringUtils.isNotBlank(orgId)) pageMap = getPageMapData(pageName, "NA");
+
+    if (null == pageMap) {
+      throw new ProjectCommonException(
+              ResponseCode.pageDoesNotExist.getErrorCode(),
+              ResponseCode.pageDoesNotExist.getErrorMessage(),
+              ResponseCode.RESOURCE_NOT_FOUND.getResponseCode());
+    }
+
+    String sectionQuery = null;
+      if (source.equalsIgnoreCase(ProjectUtil.Source.WEB.getValue())) {
+        sectionQuery = (String) pageMap.getOrDefault(JsonKey.PORTAL_MAP, "");
+      } else {
+        sectionQuery = (String) pageMap.getOrDefault(JsonKey.APP_MAP, "");
+      }  
+    
+    
+    try {
+      List<Map<String,Object>> arr = mapper.readValue(sectionQuery, new TypeReference<List<Map<String, Object>>>(){});
+      if (isCacheEnabled) {
+        Map<String, Object> reqMap = new HashMap<>();
+        reqMap.put(JsonKey.SECTION, arr);
+        reqMap.put(JsonKey.FILTERS, reqFilters);
+        reqMap.put(JsonKey.HEADER, headers);
+        reqMap.put(JsonKey.FILTER, filterMap);
+        reqMap.put(JsonKey.SECTIONS, sectionFilters);
+        reqMap.put(JsonKey.URL_QUERY_STRING, urlQueryString);
+        String requestHashCode = HashGeneratorUtil.getHashCode(JsonUtil.toJson(reqMap));
+        Response cachedResponse =
+                PageCacheLoaderService.getDataFromCache(
+                        JsonKey.PAGE_ASSEMBLE, requestHashCode, Response.class);
+        if (StringUtils.isNotBlank(requestHashCode) && cachedResponse != null) {
+          ProjectLogger.log(
+                  "PageManagementActor : getPageData : response returned from cache",
+                  LoggerEnum.INFO.name());
+          sender().tell(cachedResponse, self());
+          return;
+        }
+      }
+      List<String> ignoredSections = new ArrayList<>();
+      List<Future<Map<String, Object>>> sectionList = getSectionData(arr, reqFilters, urlQueryString, headers, sectionFilters, filterMap, ignoredSections);
+      Future<Iterable<Map<String, Object>>> sectionsFuture = Futures.sequence(sectionList, getContext().dispatcher());
+      Map<String, Object> finalPageMap = pageMap;
+      Future<Response> response =
+              sectionsFuture.map(
+                      new Mapper<Iterable<Map<String, Object>>, Response>() {
+                        @Override
+                        public Response apply(Iterable<Map<String, Object>> sections) {
+                          List<Map<String, Object>> sectionList = getUserProfileData(Lists.newArrayList(sections), userProfile);
+                          Map<String, Object> result = new HashMap<>();
+                          result.put(JsonKey.NAME, finalPageMap.get(JsonKey.NAME));
+                          result.put(JsonKey.ID, finalPageMap.get(JsonKey.ID));
+                          result.put(JsonKey.SECTIONS, sectionList);
+                          result.put("ignoredSections", ignoredSections);
+                          Response response = new Response();
+                          response.put(JsonKey.RESPONSE, result);
+                          ProjectLogger.log(
+                                  "PageManagementActor:getPageData:apply: Response before caching it = "
+                                          + response,
+                                  LoggerEnum.INFO);
+                          return response;
+                        }
+                      },
+                      getContext().dispatcher());
+      Patterns.pipe(response, getContext().dispatcher()).to(sender());
+    }
+    catch (Exception e) {
+      ProjectLogger.log(
+              "PageManagementActor:getPageData: Exception occurred with error message = "
+                      + e.getMessage(),
+              LoggerEnum.ERROR);
+      ProjectLogger.log(
+              "PageManagementActor:getPageData: Exception occurred with error message = "
+                      + e.getMessage(),
+              e);
+    }
+  }
+
+  private List<Map<String, Object>> getUserProfileData(List<Map<String, Object>> sectionList, Map<String, Object> userProfile) {
+    if(MapUtils.isEmpty(userProfile)) {
+      return sectionList;
+    } else {
+      // filter all sections containing collectionCount > 1
+      List<Map<String, Object>> filteredSections = sectionList.stream().filter(section -> (Integer) section.getOrDefault("collectionsCount", 0) > 0).collect(Collectors.toList());
+      Map<String, Object> filteredUserProfile = userProfilePropList.stream().collect(Collectors.toMap(key -> key, key -> userProfile.get(key)));
+      filteredUserProfile.values().removeIf(Objects::isNull);
+      // filter collections containing shallow copy && having board given in the userProfile,
+      if(CollectionUtils.isNotEmpty(filteredSections) && MapUtils.isNotEmpty(filteredUserProfile)){
+        for(Map<String, Object> section: filteredSections) {
+          List<Map<String, Object>> collections = (List<Map<String, Object>>) section.get("collections");
+          List<Map<String, Object>> shallowCopied = collections.stream().filter(content -> ((String)content.getOrDefault("originData", "")).contains("shallow")).collect(Collectors.toList());
+          List<Map<String, Object>> originCollections = collections.stream().filter(content -> !content.containsKey("originData")).collect(Collectors.toList());
+          List<Map<String, Object>> filteredShallowCopied = shallowCopied.stream().filter(content -> {
+            List<String> matchedProps = new ArrayList<>();
+            filteredUserProfile.entrySet().forEach(entry -> {
+              List<String> userProfileVal = getStringListFromObj(entry.getValue());
+              List<String> contentVal = getStringListFromObj(content.get(entry.getKey()));
+              if (userProfileVal.containsAll(contentVal)) matchedProps.add(entry.getKey());
+            });
+            return matchedProps.containsAll(filteredUserProfile.keySet());
+          }).collect(Collectors.toList());
+          if(CollectionUtils.isNotEmpty(filteredShallowCopied)){
+            section.put("collections", filteredShallowCopied);
+            section.put("collectionsCount", filteredShallowCopied.size());
+          } else {
+            section.put("collections", originCollections);
+            section.put("collectionsCount", originCollections.size());
+          }
+        }
+      }
+      return sectionList;    
+    }
+  }
+  
+  private List<String> getStringListFromObj(Object obj) {
+    if(obj instanceof List){
+      return (List<String>) obj;
+    } else {
+      return Arrays.asList((String)obj);
+    }
   }
 }

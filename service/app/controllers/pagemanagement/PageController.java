@@ -155,6 +155,35 @@ public class PageController extends BaseController {
   }
 
   /**
+   * This method will provide completed data for a particular page.
+   *
+   * @return Promise<Result>
+   */
+  public CompletionStage<Result> getDialPageData(Http.Request httpRequest) {
+
+    try {
+      JsonNode requestData = httpRequest.body().asJson();
+      Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
+      RequestValidator.validateGetPageData(reqObj);
+      reqObj.setOperation(ActorOperations.GET_DIAL_PAGE_DATA.getValue());
+      reqObj.setRequestId(ExecutionContext.getRequestId());
+      reqObj.setEnv(getEnvironment());
+      reqObj.getContext().put(JsonKey.URL_QUERY_STRING, getQueryString(httpRequest.queryString()));
+      reqObj.getRequest().put(JsonKey.CREATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
+      HashMap<String, Object> map = new HashMap<>();
+      map.put(JsonKey.PAGE, reqObj.getRequest());
+      map.put(JsonKey.HEADER, getAllRequestHeaders(httpRequest));
+      reqObj.setRequest(map);
+      return actorResponseHandler(pageManagementActorRef, reqObj, timeout, null, httpRequest);
+    } catch (Exception e) {
+      ProjectLogger.log(
+              "PageController:getPageData: Exception occurred with error message = " + e.getMessage(),
+              LoggerEnum.ERROR.name());
+      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
+    }
+  }
+
+  /**
    * Method to get all request headers
    *
    * @param request play.mvc.Http.Request

@@ -9,8 +9,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -44,6 +42,7 @@ public class SearchHandlerActor extends BaseActor {
   private String topn = PropertiesCache.getInstance().getProperty(JsonKey.SEARCH_TOP_N);
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private ObjectMapper mapper = new ObjectMapper();
+  private static final String CREATED_BY = "createdBy";
 
   @SuppressWarnings({"unchecked", "rawtypes"})
   @Override
@@ -120,10 +119,10 @@ public class SearchHandlerActor extends BaseActor {
   private void populateCreatorDetails(Map<String, Object> result) throws Exception {
     List<Map<String, Object>> content = (List<Map<String, Object>>) result.getOrDefault("content", new ArrayList<Map<String, Object>>());
     if(CollectionUtils.isNotEmpty(content)){
-	    List<String> creatorIds = content.stream().filter(map -> map.containsKey("createdBy")).map(map -> (String) map.get("createdBy")).collect(Collectors.toList());
+	    List<String> creatorIds = content.stream().filter(map -> map.containsKey(CREATED_BY)).map(map -> (String) map.get(CREATED_BY)).collect(Collectors.toList());
         Map<String, Object> creatorDetails = getCreatorDetails(creatorIds);
         if(MapUtils.isNotEmpty(creatorDetails)){
-	      content.stream().filter(map -> creatorDetails.containsKey((String) map.get("createdBy"))).map(map -> map.put("creatorDetails", creatorDetails.get((String) map.get("createdBy")))).collect(Collectors.toList());
+	      content.stream().filter(map -> creatorDetails.containsKey((String) map.get(CREATED_BY))).map(map -> map.put("creatorDetails", creatorDetails.get((String) map.get(CREATED_BY)))).collect(Collectors.toList());
         }
     }
   }

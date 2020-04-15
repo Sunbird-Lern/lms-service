@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.ListUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.base.BaseActor;
@@ -78,6 +79,8 @@ public class PageManagementActor extends BaseActor {
         .getOperation()
         .equalsIgnoreCase(ActorOperations.GET_PAGE_SETTINGS.getValue())) {
       getPageSettings();
+    } else if (request.getOperation().equalsIgnoreCase(ActorOperations.GET_DIAL_PAGE_DATA.getValue())) {
+      getDIALPageData(request);
     } else if (request.getOperation().equalsIgnoreCase(ActorOperations.GET_PAGE_DATA.getValue())) {
       getPageData(request);
     } else if (request.getOperation().equalsIgnoreCase(ActorOperations.CREATE_SECTION.getValue())) {
@@ -90,8 +93,6 @@ public class PageManagementActor extends BaseActor {
         .getOperation()
         .equalsIgnoreCase(ActorOperations.GET_ALL_SECTION.getValue())) {
       getAllSections();
-    } else if (request.getOperation().equalsIgnoreCase(ActorOperations.GET_DIAL_PAGE_DATA.getValue())) {
-      getDialPageData(request);
     } else {
       ProjectLogger.log(
           "PageManagementActor: Invalid operation request : " + request.getOperation(),
@@ -847,8 +848,7 @@ public class PageManagementActor extends BaseActor {
     return pageMapData;
   }
   
-  private void getDialPageData(Request request) {
-    ProjectLogger.log("PageManagementActor:getDialPageData: start", LoggerEnum.INFO.name());
+  private void getDIALPageData(Request request) {
     Map<String, Object> req = (Map<String, Object>) request.getRequest().get(JsonKey.PAGE);
     String pageName = (String) req.get(JsonKey.PAGE_NAME);
     String source = (String) req.get(JsonKey.SOURCE);
@@ -956,13 +956,13 @@ public class PageManagementActor extends BaseActor {
         for(Map<String, Object> section: filteredSections) {
           List<Map<String, Object>> collections = (List<Map<String, Object>>) section.get("collections");
           List<Map<String, Object>> shallowCopied = collections.stream().filter(content -> ((String)content.getOrDefault("originData", "")).contains("shallow")).collect(Collectors.toList());
-          List<Map<String, Object>> originCollections = collections.stream().filter(content -> !content.containsKey("originData")).collect(Collectors.toList());
+          List<Map<String, Object>> originCollections = collections.stream().filter(content -> (!content.containsKey("originData") || !((String)content.getOrDefault("originData", "")).contains("shallow"))).collect(Collectors.toList());
           List<Map<String, Object>> filteredShallowCopied = shallowCopied.stream().filter(content -> {
             List<String> matchedProps = new ArrayList<>();
             filteredUserProfile.entrySet().forEach(entry -> {
               List<String> userProfileVal = getStringListFromObj(entry.getValue());
               List<String> contentVal = getStringListFromObj(content.get(entry.getKey()));
-              if (userProfileVal.containsAll(contentVal)) matchedProps.add(entry.getKey());
+              if (CollectionUtils.containsAny(contentVal, userProfileVal)) matchedProps.add(entry.getKey());
             });
             return matchedProps.containsAll(filteredUserProfile.keySet());
           }).collect(Collectors.toList());

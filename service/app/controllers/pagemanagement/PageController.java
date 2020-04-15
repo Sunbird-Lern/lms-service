@@ -159,7 +159,7 @@ public class PageController extends BaseController {
    *
    * @return Promise<Result>
    */
-  public CompletionStage<Result> getDialPageData(Http.Request httpRequest) {
+  public CompletionStage<Result> getDIALPageData(Http.Request httpRequest) {
 
     try {
       JsonNode requestData = httpRequest.body().asJson();

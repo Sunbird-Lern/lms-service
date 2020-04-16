@@ -720,8 +720,8 @@ public class BaseController extends Controller {
 
     Map<String, Object> map = new HashMap<>();
     Map<String, Object> requestInfo =
-        OnRequestHandler.requestInfo.get(request.flash().get(JsonKey.REQUEST_ID));
-    Map<String, Object> contextInfo = (Map<String, Object>) requestInfo.get(JsonKey.CONTEXT);
+        OnRequestHandler.requestInfo.getOrDefault(request.flash().get(JsonKey.REQUEST_ID), new HashMap<String, Object>());
+    Map<String, Object> contextInfo = (Map<String, Object>) requestInfo.getOrDefault(JsonKey.CONTEXT, new HashMap<String, Object>());
     Map<String, Object> params = new HashMap<>();
     params.put(JsonKey.ERR_TYPE, JsonKey.API_ACCESS);
 

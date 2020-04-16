@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -24,9 +22,9 @@ import org.sunbird.common.models.util.ProjectUtil.EsType;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
-import org.sunbird.common.util.KeycloakRequiredActionLinkUtil;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.learner.actors.coursebatch.service.UserCoursesService;
+import org.sunbird.learner.util.JsonUtil;
 import org.sunbird.learner.util.Util;
 import org.sunbird.telemetry.util.TelemetryLmaxWriter;
 import org.sunbird.telemetry.util.TelemetryUtil;
@@ -41,7 +39,6 @@ public class SearchHandlerActor extends BaseActor {
 
   private String topn = PropertiesCache.getInstance().getProperty(JsonKey.SEARCH_TOP_N);
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
-  private ObjectMapper mapper = new ObjectMapper();
   private static final String CREATED_BY = "createdBy";
 
   @SuppressWarnings({"unchecked", "rawtypes"})
@@ -55,7 +52,7 @@ public class SearchHandlerActor extends BaseActor {
     if (request.getOperation().equalsIgnoreCase(ActorOperations.COMPOSITE_SEARCH.getValue())) {
       Instant instant = Instant.now();
       Map<String, Object> searchQueryMap = request.getRequest();
-      Boolean getCreatorFlag = (Boolean) searchQueryMap.remove("creatorDetails");
+      Boolean showCreator = (Boolean) searchQueryMap.remove("creatorDetails");
       Object objectType =
           ((Map<String, Object>) searchQueryMap.get(JsonKey.FILTERS)).get(JsonKey.OBJECT_TYPE);
       String[] types = null;
@@ -100,7 +97,7 @@ public class SearchHandlerActor extends BaseActor {
         }
         Response response = new Response();
         if (result != null) {
-          if (BooleanUtils.isTrue(getCreatorFlag))
+          if (BooleanUtils.isTrue(showCreator))
             populateCreatorDetails(result);
           response.put(JsonKey.RESPONSE, result);
         } else {
@@ -144,15 +141,11 @@ public class SearchHandlerActor extends BaseActor {
         put("fields", fields);
       }});
     }};
-    return mapper.writeValueAsString(reqMap);
+    return JsonUtil.serialize(reqMap);
   }
 
   private List<Map<String, Object>> makePostRequest(String url, String req) throws Exception {
-    Map<String, String> headers = new HashMap<String, String>() {{
-      put("Content-Type", "application/json");
-      put(JsonKey.X_AUTHENTICATED_USER_TOKEN, KeycloakRequiredActionLinkUtil.getAdminAccessToken());
-    }};
-    HttpUtilResponse resp = HttpUtil.doPostRequest(url, req, headers);
+    HttpUtilResponse resp = HttpUtil.doPostRequest(url, req, HttpUtil.getHeader(null));
     Response response = getResponse(resp.getBody());
     return (List<Map<String, Object>>) ((Map<String, Object>) response.getResult().getOrDefault("response", new HashMap<String, Object>())).getOrDefault("content", new ArrayList<Map<String, Object>>());
   }
@@ -160,7 +153,7 @@ public class SearchHandlerActor extends BaseActor {
   private Response getResponse(String body) {
 		Response resp = new Response();
 		try {
-			resp = mapper.readValue(body, Response.class);
+			resp = JsonUtil.deserialize(body, Response.class);
 		} catch (Exception e) {
 			throw new ProjectCommonException(
 					ResponseCode.unableToParseData.getErrorCode(),

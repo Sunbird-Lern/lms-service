@@ -72,7 +72,7 @@ public class SearchHandlerActorTest {
   private static TestActorRef<SearchHandlerActor> actorRef;
 
   @BeforeClass
-  public static void setUp() throws Exception {
+  public static void setUp() {
     system = ActorSystem.create("system");
     actorRef = TestActorRef.create(system, props, "testSearchHandler");
     PowerMockito.mockStatic(ServiceFactory.class);
@@ -80,18 +80,11 @@ public class SearchHandlerActorTest {
     mockStatic(UserCoursesDaoImpl.class);
     userCoursesDao = PowerMockito.mock(UserCoursesDaoImpl.class);
     when(UserCoursesDaoImpl.getInstance()).thenReturn(userCoursesDao);
-    mockStatic(HttpUtil.class);
-    mockStatic(KeycloakRequiredActionLinkUtil.class);
-    mockStatic(ProjectUtil.class);
-    String body = "{\"id\":\"api.user.search\",\"ver\":\"v1\",\"ts\":\"2020-04-15 14:59:51:094+0000\",\"params\":{\"resmsgid\":null,\"msgid\":null,\"err\":null,\"status\":\"success\",\"errmsg\":null},\"responseCode\":\"OK\",\"result\":{\"response\":{\"count\":1,\"content\":[{\"lastName\":\"User\",\"firstName\":\"Reviewer\",\"id\":\"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\"}]}}}";
-    when(HttpUtil.doPostRequest(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap())).thenReturn(new HttpUtilResponse(body, 400));
-    when(KeycloakRequiredActionLinkUtil.getAdminAccessToken()).thenReturn("testAuthToken");
-    when(ProjectUtil.getConfigValue("user_search_base_url")).thenReturn("http://test.com/api");
-    when(ProjectUtil.getConfigValue("sunbird_user_search_cretordetails_fields")).thenReturn("id,firstName,lastName");
+
   }
 
   @Before
-  public void beforeTest() {
+  public void beforeTest() throws Exception {
     PowerMockito.mockStatic(EsClientFactory.class);
     esService = mock(ElasticSearchRestHighImpl.class);
     when(EsClientFactory.getInstance(Mockito.anyString())).thenReturn(esService);
@@ -105,6 +98,15 @@ public class SearchHandlerActorTest {
     when(cassandraOperation.getRecordsByProperties(
             Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList()))
         .thenReturn(getRecordByPropertyResponse());
+    mockStatic(ProjectUtil.class);
+    when(ProjectUtil.getConfigValue("user_search_base_url")).thenReturn("http://test.com/api");
+    when(ProjectUtil.getConfigValue("sunbird_user_search_cretordetails_fields")).thenReturn("id,firstName,lastName");
+    when(ProjectUtil.getConfigValue("sunbird_api_request_lower_case_fields")).thenReturn("compositeSearch,testOperation");
+    mockStatic(KeycloakRequiredActionLinkUtil.class);
+    when(KeycloakRequiredActionLinkUtil.getAdminAccessToken()).thenReturn("testAuthToken");
+    mockStatic(HttpUtil.class);
+    String body = "{\"id\":\"api.user.search\",\"ver\":\"v1\",\"ts\":\"2020-04-15 14:59:51:094+0000\",\"params\":{\"resmsgid\":null,\"msgid\":null,\"err\":null,\"status\":\"success\",\"errmsg\":null},\"responseCode\":\"OK\",\"result\":{\"response\":{\"count\":1,\"content\":[{\"lastName\":\"User\",\"firstName\":\"Reviewer\",\"id\":\"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\"}]}}}";
+    when(HttpUtil.doPostRequest(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap())).thenReturn(new HttpUtilResponse(body, 200));
   }
 
   private static Response getRecordByPropertyResponse() {

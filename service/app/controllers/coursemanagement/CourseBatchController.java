@@ -105,6 +105,7 @@ public class CourseBatchController extends BaseController {
           "CourseBatchController: search called with data = " + requestData,
           LoggerEnum.DEBUG.name());
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
+        reqObj.put("creatorDetails", httpRequest.queryString().containsKey("creatorDetails"));
       reqObj.setOperation(ActorOperations.COMPOSITE_SEARCH.getValue());
       reqObj.setRequestId(ExecutionContext.getRequestId());
       reqObj.setEnv(getEnvironment());

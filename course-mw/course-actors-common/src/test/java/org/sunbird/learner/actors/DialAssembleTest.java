@@ -64,4 +64,17 @@ public class DialAssembleTest {
             Assert.assertNotEquals("JK", content.get("board"));
         });
     }
+
+    @Test
+    public void testWithoutUserProfile() throws Exception {
+        List<Map<String, Object>> sectionList = mapper.readValue(sectionsStr, new TypeReference<List<Map<String, Object>>>(){});
+        Map<String, Object> userProfile = new HashMap<String, Object>();
+        Method method = PageManagementActor.class.getDeclaredMethod("getUserProfileData", List.class, Map.class);
+        method.setAccessible(true);
+        List<Map<String, Object>> response = (List<Map<String, Object>>) method.invoke(actorRef.underlyingActor(), sectionList, userProfile);
+        Assert.assertNotEquals(0, response.get(0).get("collectionsCount"));
+        ((List<Map<String, Object>>)response.get(0).get("collections")).forEach(content -> {
+            Assert.assertTrue(!content.containsKey("originData") || !((String)content.getOrDefault("originData", "")).contains("shallow"));
+        });
+    }
 }

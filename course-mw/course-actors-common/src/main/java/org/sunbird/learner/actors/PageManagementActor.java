@@ -65,38 +65,29 @@ public class PageManagementActor extends BaseActor {
     Util.initializeContext(request, TelemetryEnvKey.PAGE);
 
     ExecutionContext.setRequestId(request.getRequestId());
-    ProjectLogger.log(
-        "PageManagementActor: Request recieved : " + request.getRequest(), LoggerEnum.INFO.name());
-    if (request.getOperation().equalsIgnoreCase(ActorOperations.CREATE_PAGE.getValue())) {
+    if(request.getOperation().equalsIgnoreCase(ActorOperations.GET_DIAL_PAGE_DATA.getValue())) {
+      getDIALPageData(request);
+    } else if(request.getOperation().equalsIgnoreCase(ActorOperations.GET_PAGE_DATA.getValue())) {
+      getPageData(request);
+    } else if (request.getOperation().equalsIgnoreCase(ActorOperations.GET_PAGE_SETTING.getValue())) {
+      getPageSetting(request);
+    } if (request.getOperation().equalsIgnoreCase(ActorOperations.CREATE_PAGE.getValue())) {
       createPage(request);
     } else if (request.getOperation().equalsIgnoreCase(ActorOperations.UPDATE_PAGE.getValue())) {
       updatePage(request);
-    } else if (request
-        .getOperation()
-        .equalsIgnoreCase(ActorOperations.GET_PAGE_SETTING.getValue())) {
-      getPageSetting(request);
-    } else if (request
-        .getOperation()
-        .equalsIgnoreCase(ActorOperations.GET_PAGE_SETTINGS.getValue())) {
+    } else if (request.getOperation().equalsIgnoreCase(ActorOperations.GET_PAGE_SETTINGS.getValue())) {
       getPageSettings();
-    } else if (request.getOperation().equalsIgnoreCase(ActorOperations.GET_DIAL_PAGE_DATA.getValue())) {
-      getDIALPageData(request);
-    } else if (request.getOperation().equalsIgnoreCase(ActorOperations.GET_PAGE_DATA.getValue())) {
-      getPageData(request);
     } else if (request.getOperation().equalsIgnoreCase(ActorOperations.CREATE_SECTION.getValue())) {
       createPageSection(request);
     } else if (request.getOperation().equalsIgnoreCase(ActorOperations.UPDATE_SECTION.getValue())) {
       updatePageSection(request);
     } else if (request.getOperation().equalsIgnoreCase(ActorOperations.GET_SECTION.getValue())) {
       getSection(request);
-    } else if (request
-        .getOperation()
-        .equalsIgnoreCase(ActorOperations.GET_ALL_SECTION.getValue())) {
+    } else if (request.getOperation().equalsIgnoreCase(ActorOperations.GET_ALL_SECTION.getValue())) {
       getAllSections();
     } else {
-      ProjectLogger.log(
-          "PageManagementActor: Invalid operation request : " + request.getOperation(),
-          LoggerEnum.ERROR.name());
+      ProjectLogger.log("PageManagementActor: Invalid operation request : " + request.getOperation(),
+              LoggerEnum.ERROR.name());
       onReceiveUnsupportedOperation(request.getOperation());
     }
   }
@@ -944,6 +935,46 @@ public class PageManagementActor extends BaseActor {
   }
 
   private List<Map<String, Object>> getUserProfileData(List<Map<String, Object>> sectionList, Map<String, Object> userProfile) {
+    List<Map<String, Object>> filteredSections = sectionList.stream().filter(section -> (Integer) section.getOrDefault("collectionsCount", 0) > 0).collect(Collectors.toList());
+    if(CollectionUtils.isNotEmpty(filteredSections)) {
+      if(MapUtils.isNotEmpty(userProfile)) {
+        Map<String, Object> filteredUserProfile = userProfilePropList.stream().collect(Collectors.toMap(key -> key, key -> userProfile.get(key)));
+        filteredUserProfile.values().removeIf(Objects::isNull);
+        // filter collections containing shallow copy && having board given in the userProfile,
+        if(MapUtils.isNotEmpty(filteredUserProfile)){
+          for(Map<String, Object> section: filteredSections) {
+            List<Map<String, Object>> collections = (List<Map<String, Object>>) section.get("collections");
+            List<Map<String, Object>> shallowCopied = collections.stream().filter(content -> ((String)content.getOrDefault("originData", "")).contains("shallow")).collect(Collectors.toList());
+            List<Map<String, Object>> originCollections = collections.stream().filter(content -> (!content.containsKey("originData") || !((String)content.getOrDefault("originData", "")).contains("shallow"))).collect(Collectors.toList());
+            List<Map<String, Object>> filteredShallowCopied = shallowCopied.stream().filter(content -> {
+              List<String> matchedProps = new ArrayList<>();
+              filteredUserProfile.entrySet().forEach(entry -> {
+                List<String> userProfileVal = getStringListFromObj(entry.getValue());
+                List<String> contentVal = getStringListFromObj(content.get(entry.getKey()));
+                if (CollectionUtils.containsAny(contentVal, userProfileVal)) matchedProps.add(entry.getKey());
+              });
+              return matchedProps.containsAll(filteredUserProfile.keySet());
+            }).collect(Collectors.toList());
+            if(CollectionUtils.isNotEmpty(filteredShallowCopied)){
+              section.put("collections", filteredShallowCopied);
+              section.put("collectionsCount", filteredShallowCopied.size());
+            } else {
+              section.put("collections", originCollections);
+              section.put("collectionsCount", originCollections.size());
+            }
+          }
+        } else {
+          populateOriginCollections(filteredSections, sectionList);
+        }
+      } else {
+        populateOriginCollections(filteredSections, sectionList);
+      }
+      
+    }
+    return sectionList;
+    /*
+    
+    
     if(MapUtils.isEmpty(userProfile)) {
       return sectionList;
     } else {
@@ -976,9 +1007,18 @@ public class PageManagementActor extends BaseActor {
         }
       }
       return sectionList;    
+    }*/
+  }
+
+  private void populateOriginCollections(List<Map<String, Object>> filteredSections, List<Map<String, Object>> sectionList) {
+    for(Map<String, Object> section: filteredSections) {
+      List<Map<String, Object>> collections = (List<Map<String, Object>>) section.get("collections");
+      List<Map<String, Object>> originCollections = collections.stream().filter(content -> (!content.containsKey("originData") || !((String)content.getOrDefault("originData", "")).contains("shallow"))).collect(Collectors.toList());
+      section.put("collections", originCollections);
+      section.put("collectionsCount", originCollections.size());
     }
   }
-  
+
   private List<String> getStringListFromObj(Object obj) {
     if(obj instanceof List){
       return (List<String>) obj;

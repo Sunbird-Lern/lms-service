@@ -71,7 +71,7 @@ public class PageManagementActor extends BaseActor {
       getPageData(request);
     } else if (request.getOperation().equalsIgnoreCase(ActorOperations.GET_PAGE_SETTING.getValue())) {
       getPageSetting(request);
-    } if (request.getOperation().equalsIgnoreCase(ActorOperations.CREATE_PAGE.getValue())) {
+    } else if (request.getOperation().equalsIgnoreCase(ActorOperations.CREATE_PAGE.getValue())) {
       createPage(request);
     } else if (request.getOperation().equalsIgnoreCase(ActorOperations.UPDATE_PAGE.getValue())) {
       updatePage(request);
@@ -935,7 +935,7 @@ public class PageManagementActor extends BaseActor {
   }
 
   private List<Map<String, Object>> getUserProfileData(List<Map<String, Object>> sectionList, Map<String, Object> userProfile) {
-    List<Map<String, Object>> filteredSections = sectionList.stream().filter(section -> (Integer) section.getOrDefault("collectionsCount", 0) > 0).collect(Collectors.toList());
+    /*List<Map<String, Object>> filteredSections = sectionList.stream().filter(section -> (Integer) section.getOrDefault("collectionsCount", 0) > 0).collect(Collectors.toList());
     if(CollectionUtils.isNotEmpty(filteredSections)) {
       if(MapUtils.isNotEmpty(userProfile)) {
         Map<String, Object> filteredUserProfile = userProfilePropList.stream().collect(Collectors.toMap(key -> key, key -> userProfile.get(key)));
@@ -971,11 +971,19 @@ public class PageManagementActor extends BaseActor {
       }
       
     }
-    return sectionList;
-    /*
+    return sectionList;*/
     
     
     if(MapUtils.isEmpty(userProfile)) {
+      List<Map<String, Object>> filteredSections = sectionList.stream().filter(section -> (Integer) section.getOrDefault("collectionsCount", 0) > 0).collect(Collectors.toList());
+      if(CollectionUtils.isNotEmpty(filteredSections)){
+        for(Map<String, Object> section: filteredSections) {
+          List<Map<String, Object>> collections = (List<Map<String, Object>>) section.get("collections");
+          List<Map<String, Object>> originCollections = collections.stream().filter(content -> (!content.containsKey("originData") || !((String)content.getOrDefault("originData", "")).contains("shallow"))).collect(Collectors.toList());
+          section.put("collections", originCollections);
+          section.put("collectionsCount", originCollections.size());
+        }
+      }
       return sectionList;
     } else {
       // filter all sections containing collectionCount > 1
@@ -983,31 +991,40 @@ public class PageManagementActor extends BaseActor {
       Map<String, Object> filteredUserProfile = userProfilePropList.stream().collect(Collectors.toMap(key -> key, key -> userProfile.get(key)));
       filteredUserProfile.values().removeIf(Objects::isNull);
       // filter collections containing shallow copy && having board given in the userProfile,
-      if(CollectionUtils.isNotEmpty(filteredSections) && MapUtils.isNotEmpty(filteredUserProfile)){
-        for(Map<String, Object> section: filteredSections) {
-          List<Map<String, Object>> collections = (List<Map<String, Object>>) section.get("collections");
-          List<Map<String, Object>> shallowCopied = collections.stream().filter(content -> ((String)content.getOrDefault("originData", "")).contains("shallow")).collect(Collectors.toList());
-          List<Map<String, Object>> originCollections = collections.stream().filter(content -> (!content.containsKey("originData") || !((String)content.getOrDefault("originData", "")).contains("shallow"))).collect(Collectors.toList());
-          List<Map<String, Object>> filteredShallowCopied = shallowCopied.stream().filter(content -> {
-            List<String> matchedProps = new ArrayList<>();
-            filteredUserProfile.entrySet().forEach(entry -> {
-              List<String> userProfileVal = getStringListFromObj(entry.getValue());
-              List<String> contentVal = getStringListFromObj(content.get(entry.getKey()));
-              if (CollectionUtils.containsAny(contentVal, userProfileVal)) matchedProps.add(entry.getKey());
-            });
-            return matchedProps.containsAll(filteredUserProfile.keySet());
-          }).collect(Collectors.toList());
-          if(CollectionUtils.isNotEmpty(filteredShallowCopied)){
-            section.put("collections", filteredShallowCopied);
-            section.put("collectionsCount", filteredShallowCopied.size());
-          } else {
+      if(CollectionUtils.isNotEmpty(filteredSections)) {
+        if(MapUtils.isNotEmpty(filteredUserProfile)) {
+          for (Map<String, Object> section : filteredSections) {
+            List<Map<String, Object>> collections = (List<Map<String, Object>>) section.get("collections");
+            List<Map<String, Object>> shallowCopied = collections.stream().filter(content -> ((String) content.getOrDefault("originData", "")).contains("shallow")).collect(Collectors.toList());
+            List<Map<String, Object>> originCollections = collections.stream().filter(content -> (!content.containsKey("originData") || !((String) content.getOrDefault("originData", "")).contains("shallow"))).collect(Collectors.toList());
+            List<Map<String, Object>> filteredShallowCopied = shallowCopied.stream().filter(content -> {
+              List<String> matchedProps = new ArrayList<>();
+              filteredUserProfile.entrySet().forEach(entry -> {
+                List<String> userProfileVal = getStringListFromObj(entry.getValue());
+                List<String> contentVal = getStringListFromObj(content.get(entry.getKey()));
+                if (CollectionUtils.containsAny(contentVal, userProfileVal)) matchedProps.add(entry.getKey());
+              });
+              return matchedProps.containsAll(filteredUserProfile.keySet());
+            }).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(filteredShallowCopied)) {
+              section.put("collections", filteredShallowCopied);
+              section.put("collectionsCount", filteredShallowCopied.size());
+            } else {
+              section.put("collections", originCollections);
+              section.put("collectionsCount", originCollections.size());
+            }
+          }
+        } else {
+          for(Map<String, Object> section: filteredSections) {
+            List<Map<String, Object>> collections = (List<Map<String, Object>>) section.get("collections");
+            List<Map<String, Object>> originCollections = collections.stream().filter(content -> (!content.containsKey("originData") || !((String)content.getOrDefault("originData", "")).contains("shallow"))).collect(Collectors.toList());
             section.put("collections", originCollections);
             section.put("collectionsCount", originCollections.size());
           }
         }
       }
       return sectionList;    
-    }*/
+    }
   }
 
   private void populateOriginCollections(List<Map<String, Object>> filteredSections, List<Map<String, Object>> sectionList) {

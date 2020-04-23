@@ -71,7 +71,7 @@ public class PageManagementActor extends BaseActor {
       getPageData(request);
     } else if (request.getOperation().equalsIgnoreCase(ActorOperations.GET_PAGE_SETTING.getValue())) {
       getPageSetting(request);
-    } if (request.getOperation().equalsIgnoreCase(ActorOperations.CREATE_PAGE.getValue())) {
+    } else if (request.getOperation().equalsIgnoreCase(ActorOperations.CREATE_PAGE.getValue())) {
       createPage(request);
     } else if (request.getOperation().equalsIgnoreCase(ActorOperations.UPDATE_PAGE.getValue())) {
       updatePage(request);

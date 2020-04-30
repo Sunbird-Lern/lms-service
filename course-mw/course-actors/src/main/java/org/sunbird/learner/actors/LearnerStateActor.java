@@ -66,13 +66,14 @@ public class LearnerStateActor extends BaseActor {
 
   public void getCourse(Request request) throws Exception {
     String userId = (String) request.getRequest().get(JsonKey.USER_ID);
-    Map<String, Object> result = userCoursesService.getActiveUserCourses(userId);
-    List<Map<String, Object>> updatedCourses = calculateProgressForUserCourses(request, result);
+    Map<String, Object> result = userCoursesService.getActiveEnrollments(userId);
+    List<Map<String, Object>> updatedCourses = new ArrayList<>();
     if (MapUtils.isNotEmpty(result)) {
+      updatedCourses = getCourseDetails(request, result);
       addCourseDetails(request, updatedCourses);
     } else {
       ProjectLogger.log(
-          "LearnerStateActor:getCourse: returning batch without course details",
+          "LearnerStateActor:getCourse: returning batch without course details for userID: " + userId,
           LoggerEnum.INFO.name());
     }
     Response response = new Response();
@@ -90,20 +91,6 @@ public class LearnerStateActor extends BaseActor {
     if (CollectionUtils.isEmpty(batches)) {
       return;
     }
-    String requestBody = prepareCourseSearchRequest(batches, null);
-    ProjectLogger.log(
-        MessageFormatter.format(
-                "LearnerStateActor:addCourseDetails: request body = {0}, query string = {1}",
-                requestBody, (String) request.getContext().get(JsonKey.URL_QUERY_STRING))
-            .getMessage(),
-        LoggerEnum.INFO.name());
-
-    Map<String, Object> contents = null;
-    contents =
-        ContentSearchUtil.searchContentSync(
-            (String) request.getContext().get(JsonKey.URL_QUERY_STRING),
-            requestBody,
-            (Map<String, String>) request.getRequest().get(JsonKey.HEADER));
 
     Map<String, Object> courseBatchesMap = null;
     List<String> requestedFields = null;
@@ -118,7 +105,6 @@ public class LearnerStateActor extends BaseActor {
       if (CollectionUtils.isNotEmpty(requestedFields))
         courseBatchesMap = getCourseBatch(batches, requestedFields);
     }
-
     Map<String, Object> courseBatches = new HashMap<>();
     if (MapUtils.isNotEmpty(courseBatchesMap)) {
       List<Map<String, Object>> courses =
@@ -131,7 +117,7 @@ public class LearnerStateActor extends BaseActor {
           "LearnerStateActor:addCourseDetails: coursesBathces = " + courseBatches,
           LoggerEnum.INFO.name());
     }
-    mergeDetailsAndSendCourses(contents, batches, courseBatches);
+    mergeDetailsAndSendCourses(batches, courseBatches);
   }
 
   private Map<String, Object> getCourseBatch(
@@ -161,13 +147,8 @@ public class LearnerStateActor extends BaseActor {
   }
 
   public void mergeDetailsAndSendCourses(
-      Map<String, Object> coursesContents,
       List<Map<String, Object>> batches,
       Map<String, Object> courseBatches) {
-
-    ProjectLogger.log(
-        "LearnerStateActor:mergeDetailsAndSendCourses coursesContents =" + coursesContents,
-        LoggerEnum.INFO.name());
 
     if (MapUtils.isNotEmpty(courseBatches)) {
       ProjectLogger.log(
@@ -177,12 +158,8 @@ public class LearnerStateActor extends BaseActor {
           LoggerEnum.INFO.name());
     }
 
-    Map<String, Object> contentsByCourseId = getContentAsMap(coursesContents);
-
     List<Map<String, Object>> batchesWithCourseDetails =
-        getMergedContents(batches, contentsByCourseId, JsonKey.CONTENT, JsonKey.COURSE_ID);
-    batchesWithCourseDetails =
-        getMergedContents(batchesWithCourseDetails, courseBatches, JsonKey.BATCH, JsonKey.BATCH_ID);
+        getMergedContents(batches, courseBatches, JsonKey.BATCH, JsonKey.BATCH_ID);
 
     Response response = new Response();
     response.put(JsonKey.COURSES, batchesWithCourseDetails);
@@ -323,22 +300,13 @@ public class LearnerStateActor extends BaseActor {
     }
   }
 
-  private List<Map<String, Object>> calculateProgressForUserCourses(
+  private List<Map<String, Object>> getCourseDetails(
       Request request, Map<String, Object> result) throws Exception {
     List<Map<String, Object>> activeCourses =
         (List<Map<String, Object>>) (result.get(JsonKey.CONTENT));
     List<Map<String, Object>> contentsForCourses = getcontentsForCourses(request, activeCourses);
-    Set<String> courseIds = new HashSet<>();
     Map<String, Map<String, Object>> contentIdsMapForCourses = new HashMap<>();
     if (contentsForCourses != null) {
-      courseIds =
-          contentsForCourses
-              .stream()
-              .map(course -> (String) course.get(JsonKey.IDENTIFIER))
-              .collect(Collectors.toSet());
-      ProjectLogger.log(
-          "LearnerStateActor:prepareCourseSearchRequest:Response courseIds = " + courseIds,
-          LoggerEnum.INFO.name());
       contentIdsMapForCourses =
           contentsForCourses
               .stream()
@@ -348,7 +316,6 @@ public class LearnerStateActor extends BaseActor {
 
     List<Map<String, Object>> updatedCourses = new ArrayList<>();
     for (Map<String, Object> course : activeCourses) {
-      course.put(COMPLETE_PERCENT, Integer.valueOf("0"));
       if (!contentIdsMapForCourses.containsKey(course.get(JsonKey.COURSE_ID))) {
         continue;
       }
@@ -359,29 +326,7 @@ public class LearnerStateActor extends BaseActor {
       course.put(JsonKey.LEAF_NODE_COUNT, courseContent.get(JsonKey.LEAF_NODE_COUNT));
       course.put(JsonKey.COURSE_LOGO_URL, courseContent.get(JsonKey.APP_ICON));
       course.put(JsonKey.CONTENT_ID, course.get(JsonKey.COURSE_ID));
-      List<String> leafNodes = (List<String>) courseContent.get("leafNodes");
-      if (course.get("contentStatus") != null && CollectionUtils.isNotEmpty(leafNodes)) {
-        Map<String, Object> contentStatus =
-            new ObjectMapper()
-                .readValue(
-                    ((String) course.get("contentStatus")).replaceAll("\\\\", ""), Map.class);
-        int contentIdscompleted =
-            (int)
-                contentStatus
-                    .entrySet()
-                    .stream()
-                    .filter(
-                        content ->
-                            ProjectUtil.ProgressStatus.COMPLETED.getValue()
-                                == (Integer) content.getValue())
-                    .filter(content -> (leafNodes).contains((String) content.getKey()))
-                    .count();
-
-        Integer completionPercentage =
-            (int) Math.round((contentIdscompleted * 100.0) / (leafNodes).size());
-        course.put(JsonKey.PROGRESS, contentIdscompleted);
-        course.put(COMPLETE_PERCENT, completionPercentage);
-      }
+      course.put(JsonKey.CONTENT, courseContent);
       updatedCourses.add(course);
     }
     return updatedCourses;
@@ -389,20 +334,13 @@ public class LearnerStateActor extends BaseActor {
 
   private List<Map<String, Object>> getcontentsForCourses(
       Request request, List<Map<String, Object>> activeCourses) {
-    List<String> fields = new ArrayList<>();
-    fields.add(JsonKey.IDENTIFIER);
-    fields.add(JsonKey.DESCRIPTION);
-    fields.add(JsonKey.NAME);
-    fields.add(JsonKey.LEAF_NODE_COUNT);
-    fields.add(JsonKey.APP_ICON);
-    fields.add("leafNodes");
-    String requestBody = prepareCourseSearchRequest(activeCourses, fields);
+    String requestBody = prepareCourseSearchRequest(activeCourses, null);
     ProjectLogger.log(
         "LearnerStateActor:getcontentsForCourses: Request Body = " + requestBody,
         LoggerEnum.INFO.name());
     Map<String, Object> contentsList =
         ContentSearchUtil.searchContentSync(
-            null, requestBody, (Map<String, String>) request.getRequest().get(JsonKey.HEADER));
+                (String) request.getContext().get(JsonKey.URL_QUERY_STRING), requestBody, (Map<String, String>) request.getRequest().get(JsonKey.HEADER));
     if (contentsList == null) {
       new ProjectCommonException(
           ResponseCode.internalError.getErrorCode(),
@@ -427,7 +365,7 @@ public class LearnerStateActor extends BaseActor {
     content.add(map);
     Map<String, Object> result = new HashMap<>();
     result.put(JsonKey.CONTENT, content);
-    List<Map<String, Object>> updatedCourses = calculateProgressForUserCourses(request, result);
+    List<Map<String, Object>> updatedCourses = getCourseDetails(request, result);
     if (MapUtils.isEmpty(result)) {
       ProjectLogger.log(
           "LearnerStateActor:getCourse: returning batch without course details",

@@ -935,104 +935,63 @@ public class PageManagementActor extends BaseActor {
   }
 
   private List<Map<String, Object>> getUserProfileData(List<Map<String, Object>> sectionList, Map<String, Object> userProfile) {
-    /*List<Map<String, Object>> filteredSections = sectionList.stream().filter(section -> (Integer) section.getOrDefault("collectionsCount", 0) > 0).collect(Collectors.toList());
-    if(CollectionUtils.isNotEmpty(filteredSections)) {
-      if(MapUtils.isNotEmpty(userProfile)) {
-        Map<String, Object> filteredUserProfile = userProfilePropList.stream().collect(Collectors.toMap(key -> key, key -> userProfile.get(key)));
-        filteredUserProfile.values().removeIf(Objects::isNull);
-        // filter collections containing shallow copy && having board given in the userProfile,
-        if(MapUtils.isNotEmpty(filteredUserProfile)){
-          for(Map<String, Object> section: filteredSections) {
-            List<Map<String, Object>> collections = (List<Map<String, Object>>) section.get("collections");
-            List<Map<String, Object>> shallowCopied = collections.stream().filter(content -> ((String)content.getOrDefault("originData", "")).contains("shallow")).collect(Collectors.toList());
-            List<Map<String, Object>> originCollections = collections.stream().filter(content -> (!content.containsKey("originData") || !((String)content.getOrDefault("originData", "")).contains("shallow"))).collect(Collectors.toList());
-            List<Map<String, Object>> filteredShallowCopied = shallowCopied.stream().filter(content -> {
-              List<String> matchedProps = new ArrayList<>();
-              filteredUserProfile.entrySet().forEach(entry -> {
-                List<String> userProfileVal = getStringListFromObj(entry.getValue());
-                List<String> contentVal = getStringListFromObj(content.get(entry.getKey()));
-                if (CollectionUtils.containsAny(contentVal, userProfileVal)) matchedProps.add(entry.getKey());
-              });
-              return matchedProps.containsAll(filteredUserProfile.keySet());
-            }).collect(Collectors.toList());
-            if(CollectionUtils.isNotEmpty(filteredShallowCopied)){
-              section.put("collections", filteredShallowCopied);
-              section.put("collectionsCount", filteredShallowCopied.size());
-            } else {
-              section.put("collections", originCollections);
-              section.put("collectionsCount", originCollections.size());
-            }
-          }
-        } else {
-          populateOriginCollections(filteredSections, sectionList);
-        }
-      } else {
-        populateOriginCollections(filteredSections, sectionList);
+    List<Map<String, Object>> filteredSectionsContents = sectionList.stream().filter(section -> CollectionUtils.isNotEmpty((List<Map<String, Object>>) section.get("contents"))).collect(Collectors.toList());
+    List<Map<String, Object>> filteredSectionsCollections = sectionList.stream().filter(section -> (Integer) section.getOrDefault("collectionsCount", 0) > 0).collect(Collectors.toList());
+    // if user profile is empty - take only origin content (collections or contents)
+    if (MapUtils.isEmpty(userProfile)) {
+      if(CollectionUtils.isNotEmpty(filteredSectionsCollections)){
+        filterData(filteredSectionsCollections, new HashMap<String, Object>(), "collections");
+      } else if (CollectionUtils.isNotEmpty(filteredSectionsContents)) {
+        filterData(filteredSectionsContents, new HashMap<String, Object>(), "contents");
       }
-      
-    }
-    return sectionList;*/
-    
-    
-    if(MapUtils.isEmpty(userProfile)) {
-      List<Map<String, Object>> filteredSections = sectionList.stream().filter(section -> (Integer) section.getOrDefault("collectionsCount", 0) > 0).collect(Collectors.toList());
-      if(CollectionUtils.isNotEmpty(filteredSections)){
-        for(Map<String, Object> section: filteredSections) {
-          List<Map<String, Object>> collections = (List<Map<String, Object>>) section.get("collections");
-          List<Map<String, Object>> originCollections = collections.stream().filter(content -> (!content.containsKey("originData") || !((String)content.getOrDefault("originData", "")).contains("shallow"))).collect(Collectors.toList());
-          section.put("collections", originCollections);
-          section.put("collectionsCount", originCollections.size());
-        }
-      }
-      return sectionList;
     } else {
-      // filter all sections containing collectionCount > 1
-      List<Map<String, Object>> filteredSections = sectionList.stream().filter(section -> (Integer) section.getOrDefault("collectionsCount", 0) > 0).collect(Collectors.toList());
       Map<String, Object> filteredUserProfile = userProfilePropList.stream().collect(Collectors.toMap(key -> key, key -> userProfile.get(key)));
       filteredUserProfile.values().removeIf(Objects::isNull);
-      // filter collections containing shallow copy && having board given in the userProfile,
-      if(CollectionUtils.isNotEmpty(filteredSections)) {
-        if(MapUtils.isNotEmpty(filteredUserProfile)) {
-          for (Map<String, Object> section : filteredSections) {
-            List<Map<String, Object>> collections = (List<Map<String, Object>>) section.get("collections");
-            List<Map<String, Object>> shallowCopied = collections.stream().filter(content -> ((String) content.getOrDefault("originData", "")).contains("shallow")).collect(Collectors.toList());
-            List<Map<String, Object>> originCollections = collections.stream().filter(content -> (!content.containsKey("originData") || !((String) content.getOrDefault("originData", "")).contains("shallow"))).collect(Collectors.toList());
-            List<Map<String, Object>> filteredShallowCopied = shallowCopied.stream().filter(content -> {
-              List<String> matchedProps = new ArrayList<>();
-              filteredUserProfile.entrySet().forEach(entry -> {
-                List<String> userProfileVal = getStringListFromObj(entry.getValue());
-                List<String> contentVal = getStringListFromObj(content.get(entry.getKey()));
-                if (CollectionUtils.containsAny(contentVal, userProfileVal)) matchedProps.add(entry.getKey());
-              });
-              return matchedProps.containsAll(filteredUserProfile.keySet());
-            }).collect(Collectors.toList());
-            if (CollectionUtils.isNotEmpty(filteredShallowCopied)) {
-              section.put("collections", filteredShallowCopied);
-              section.put("collectionsCount", filteredShallowCopied.size());
-            } else {
-              section.put("collections", originCollections);
-              section.put("collectionsCount", originCollections.size());
-            }
-          }
-        } else {
-          for(Map<String, Object> section: filteredSections) {
-            List<Map<String, Object>> collections = (List<Map<String, Object>>) section.get("collections");
-            List<Map<String, Object>> originCollections = collections.stream().filter(content -> (!content.containsKey("originData") || !((String)content.getOrDefault("originData", "")).contains("shallow"))).collect(Collectors.toList());
-            section.put("collections", originCollections);
-            section.put("collectionsCount", originCollections.size());
-          }
+      if (MapUtils.isNotEmpty(filteredUserProfile)) {
+        if(CollectionUtils.isNotEmpty(filteredSectionsCollections)){
+          filterData(filteredSectionsCollections, filteredUserProfile, "collections");
+        } else if (CollectionUtils.isNotEmpty(filteredSectionsContents)) {
+          filterData(filteredSectionsContents, filteredUserProfile, "contents");
         }
       }
-      return sectionList;    
     }
+    ProjectLogger.log("PageManagementActor:getUserProfileData ::::: final value returned = " + sectionList, LoggerEnum.INFO);
+    return sectionList;
   }
 
-  private void populateOriginCollections(List<Map<String, Object>> filteredSections, List<Map<String, Object>> sectionList) {
-    for(Map<String, Object> section: filteredSections) {
-      List<Map<String, Object>> collections = (List<Map<String, Object>>) section.get("collections");
-      List<Map<String, Object>> originCollections = collections.stream().filter(content -> (!content.containsKey("originData") || !((String)content.getOrDefault("originData", "")).contains("shallow"))).collect(Collectors.toList());
-      section.put("collections", originCollections);
-      section.put("collectionsCount", originCollections.size());
+  private void filterData(List<Map<String, Object>> filteredSections, Map<String, Object> filteredUserProfile, String param) {
+    if (CollectionUtils.isNotEmpty(filteredSections)) {
+      for (Map<String, Object> section : filteredSections) {
+        List<Map<String, Object>> data = (List<Map<String, Object>>) section.get(param);
+        List<Map<String, Object>> originData = data.stream().filter(content -> (!((String) content.getOrDefault("originData", "")).contains("shallow"))).collect(Collectors.toList());
+        List<Map<String, Object>> shallowCopiedData = data.stream().filter(content -> ((String) content.getOrDefault("originData", "")).contains("shallow")).collect(Collectors.toList());
+        if (MapUtils.isNotEmpty(filteredUserProfile)) {
+          List<Map<String, Object>> filteredShallowCopied = shallowCopiedData.stream().filter(content -> {
+            List<String> matchedProps = new ArrayList<>();
+            filteredUserProfile.entrySet().forEach(entry -> {
+              List<String> userProfileVal = getStringListFromObj(entry.getValue());
+              List<String> contentVal = getStringListFromObj(content.getOrDefault(entry.getKey(), ""));
+              if (CollectionUtils.containsAny(contentVal, userProfileVal)) matchedProps.add(entry.getKey());
+            });
+            return matchedProps.containsAll(filteredUserProfile.keySet());
+          }).collect(Collectors.toList());
+          // if user profile matched with data - take only shallow copied data (contents or collections.)
+          if (CollectionUtils.isNotEmpty(filteredShallowCopied)) {
+            section.put(param, filteredShallowCopied);
+            if (StringUtils.equalsIgnoreCase("collections", param))
+              section.put("collectionsCount", filteredShallowCopied.size());
+          } else {
+            // if user profile not matched with data (e.g: board) - take only origin data (contents or collections)
+            section.put(param, originData);
+            if (StringUtils.equalsIgnoreCase("collections", param))
+              section.put("collectionsCount", originData.size());
+          }
+        } else {
+          section.put(param, originData);
+          if (StringUtils.equalsIgnoreCase("collections", param))
+            section.put("collectionsCount", originData.size());
+        }
+      }
     }
   }
 

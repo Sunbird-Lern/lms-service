@@ -978,18 +978,18 @@ public class PageManagementActor extends BaseActor {
           // if user profile matched with data - take only shallow copied data (contents or collections.)
           if (CollectionUtils.isNotEmpty(filteredShallowCopied)) {
             section.put(param, filteredShallowCopied);
-            if (StringUtils.equalsIgnoreCase("collections", param))
-              section.put("collectionsCount", filteredShallowCopied.size());
+            String key = StringUtils.equalsIgnoreCase("collections", param)? "collectionsCount" : "count";
+            section.put(key, filteredShallowCopied.size());
           } else {
             // if user profile not matched with data (e.g: board) - take only origin data (contents or collections)
             section.put(param, originData);
-            if (StringUtils.equalsIgnoreCase("collections", param))
-              section.put("collectionsCount", originData.size());
+            String key = StringUtils.equalsIgnoreCase("collections", param)? "collectionsCount" : "count";
+            section.put(key, originData.size());
           }
         } else {
           section.put(param, originData);
-          if (StringUtils.equalsIgnoreCase("collections", param))
-            section.put("collectionsCount", originData.size());
+          String key = StringUtils.equalsIgnoreCase("collections", param)? "collectionsCount" : "count";
+          section.put(key, originData.size());
         }
       }
     }

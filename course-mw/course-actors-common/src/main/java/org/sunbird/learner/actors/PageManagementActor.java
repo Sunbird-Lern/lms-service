@@ -937,8 +937,12 @@ public class PageManagementActor extends BaseActor {
   private List<Map<String, Object>> getUserProfileData(List<Map<String, Object>> sectionList, Map<String, Object> userProfile) {
     List<Map<String, Object>> filteredSectionsContents = sectionList.stream().filter(section -> CollectionUtils.isNotEmpty((List<Map<String, Object>>) section.get("contents"))).collect(Collectors.toList());
     List<Map<String, Object>> filteredSectionsCollections = sectionList.stream().filter(section -> (Integer) section.getOrDefault("collectionsCount", 0) > 0).collect(Collectors.toList());
+    ProjectLogger.log("PageManagementActor:getUserProfileData ::::: userProfile = " + userProfile, LoggerEnum.INFO);
+    ProjectLogger.log("PageManagementActor:getUserProfileData ::::: filteredSectionsContents = " + filteredSectionsContents, LoggerEnum.INFO);
+    ProjectLogger.log("PageManagementActor:getUserProfileData ::::: filteredSectionsCollections = " + filteredSectionsCollections, LoggerEnum.INFO);
     // if user profile is empty - take only origin content (collections or contents)
     if (MapUtils.isEmpty(userProfile)) {
+      ProjectLogger.log("PageManagementActor:getUserProfileData ::::: userProfile is blank", LoggerEnum.INFO);
       if(CollectionUtils.isNotEmpty(filteredSectionsCollections)){
         filterData(filteredSectionsCollections, new HashMap<String, Object>(), "collections");
       } else if (CollectionUtils.isNotEmpty(filteredSectionsContents)) {
@@ -955,6 +959,7 @@ public class PageManagementActor extends BaseActor {
         }
       }
     }
+    ProjectLogger.log("PageManagementActor:getUserProfileData ::::: final value returned = " + sectionList, LoggerEnum.INFO);
     System.out.println("final value returned from getUserProfileData :::: "+sectionList);
     return sectionList;
   }
@@ -963,8 +968,12 @@ public class PageManagementActor extends BaseActor {
     if (CollectionUtils.isNotEmpty(filteredSections)) {
       for (Map<String, Object> section : filteredSections) {
         List<Map<String, Object>> data = (List<Map<String, Object>>) section.get(param);
-        List<Map<String, Object>> originData = data.stream().filter(content -> (!content.containsKey("originData") || !((String) content.getOrDefault("originData", "")).contains("shallow"))).collect(Collectors.toList());
+        List<Map<String, Object>> originData = data.stream().filter(content -> (!((String) content.getOrDefault("originData", "")).contains("shallow"))).collect(Collectors.toList());
         List<Map<String, Object>> shallowCopiedData = data.stream().filter(content -> ((String) content.getOrDefault("originData", "")).contains("shallow")).collect(Collectors.toList());
+        ProjectLogger.log("PageManagementActor:filterData ::::: param = " + param, LoggerEnum.INFO);
+        ProjectLogger.log("PageManagementActor:filterData ::::: data = " + data, LoggerEnum.INFO);
+        ProjectLogger.log("PageManagementActor:filterData ::::: originData = " + originData, LoggerEnum.INFO);
+        ProjectLogger.log("PageManagementActor:filterData ::::: shallowCopiedData = " + shallowCopiedData, LoggerEnum.INFO);
         System.out.println("data :::: "+data);
         System.out.println("originData :::: "+originData);
         System.out.println("shallowCopiedData :::: "+shallowCopiedData);
@@ -974,15 +983,20 @@ public class PageManagementActor extends BaseActor {
             List<Map<String, Object>> filteredShallowCopied = shallowCopiedData.stream().filter(content -> {
               List<String> matchedProps = new ArrayList<>();
               filteredUserProfile.entrySet().forEach(entry -> {
+                ProjectLogger.log("PageManagementActor:filterData ::::: "+"entry  ::: key :::"+entry.getKey()+" , value ::: "+entry.getValue(), LoggerEnum.INFO);
                 System.out.println("entry  ::: key :::"+entry.getKey()+" , value ::: "+entry.getValue());
                 List<String> userProfileVal = getStringListFromObj(entry.getValue());
+                ProjectLogger.log("PageManagementActor:filterData ::::: userProfileVal = " + userProfileVal, LoggerEnum.INFO);
                 System.out.println("userProfileVal  :::: "+userProfileVal);
                 List<String> contentVal = getStringListFromObj(content.getOrDefault(entry.getKey(),""));
                 System.out.println("contentVal :::: "+contentVal);
+                ProjectLogger.log("PageManagementActor:filterData ::::: contentVal = " + contentVal, LoggerEnum.INFO);
                 System.out.println(" matched :::: "+CollectionUtils.containsAny(contentVal, userProfileVal));
+                ProjectLogger.log("PageManagementActor:filterData ::::: matched = " + CollectionUtils.containsAny(contentVal, userProfileVal), LoggerEnum.INFO);
                 if (CollectionUtils.containsAny(contentVal, userProfileVal)) matchedProps.add(entry.getKey());
               });
               System.out.println("matchedProps :::: "+matchedProps);
+              ProjectLogger.log("PageManagementActor:filterData ::::: matchedProps = " + matchedProps, LoggerEnum.INFO);
               return matchedProps.containsAll(filteredUserProfile.keySet());
             }).collect(Collectors.toList());
             System.out.println("filteredShallowCopied :::: "+filteredShallowCopied);

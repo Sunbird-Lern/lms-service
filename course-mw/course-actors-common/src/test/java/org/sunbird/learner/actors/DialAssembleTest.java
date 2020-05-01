@@ -113,7 +113,7 @@ public class DialAssembleTest {
         Method method = PageManagementActor.class.getDeclaredMethod("getUserProfileData", List.class, Map.class);
         method.setAccessible(true);
         List<Map<String, Object>> response = (List<Map<String, Object>>) method.invoke(actorRef.underlyingActor(), sectionList, userProfile);
-        Assert.assertNotEquals(0, response.get(0).get("count"));
+        Assert.assertEquals(2, response.get(0).get("count"));
         Assert.assertEquals("KA", ((List<Map<String, Object>>)response.get(0).get("contents")).get(0).get("board"));
         Assert.assertEquals("MH", ((List<Map<String, Object>>)response.get(0).get("contents")).get(1).get("board"));
     }

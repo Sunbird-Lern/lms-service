@@ -15,8 +15,10 @@ import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
 public class CourseEnrollmentController extends BaseController {
@@ -38,7 +40,7 @@ public class CourseEnrollmentController extends BaseController {
           Request request = (Request) req;
           Map<String, String[]> queryParams = new HashMap<>(httpRequest.queryString());
           if(queryParams.containsKey("fields")) {
-              List<String> fields = new ArrayList<>(Arrays.asList(queryParams.get("fields")[0].split(",")));
+              Set<String> fields = new HashSet<>(Arrays.asList(queryParams.get("fields")[0].split(",")));
               fields.addAll(Arrays.asList(JsonKey.NAME, JsonKey.DESCRIPTION, JsonKey.LEAF_NODE_COUNT, JsonKey.APP_ICON));
               queryParams.put("fields", fields.toArray(new String[0]));
           }

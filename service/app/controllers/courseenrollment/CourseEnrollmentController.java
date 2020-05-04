@@ -3,15 +3,23 @@ package controllers.courseenrollment;
 import akka.actor.ActorRef;
 import controllers.BaseController;
 import controllers.courseenrollment.validator.CourseEnrollmentRequestValidator;
-import java.util.concurrent.CompletionStage;
-import javax.inject.Inject;
-import javax.inject.Named;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
 import play.mvc.Http;
 import play.mvc.Result;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletionStage;
 
 public class CourseEnrollmentController extends BaseController {
 
@@ -30,9 +38,15 @@ public class CourseEnrollmentController extends BaseController {
         httpRequest.body().asJson(),
         (req) -> {
           Request request = (Request) req;
+          Map<String, String[]> queryParams = new HashMap<>(httpRequest.queryString());
+          if(queryParams.containsKey("fields")) {
+              Set<String> fields = new HashSet<>(Arrays.asList(queryParams.get("fields")[0].split(",")));
+              fields.addAll(Arrays.asList(JsonKey.NAME, JsonKey.DESCRIPTION, JsonKey.LEAF_NODE_COUNT, JsonKey.APP_ICON));
+              queryParams.put("fields", fields.toArray(new String[0]));
+          }
           request
               .getContext()
-              .put(JsonKey.URL_QUERY_STRING, getQueryString(httpRequest.queryString()));
+              .put(JsonKey.URL_QUERY_STRING, getQueryString(queryParams));
           request
               .getContext()
               .put(JsonKey.BATCH_DETAILS, httpRequest.queryString().get(JsonKey.BATCH_DETAILS));

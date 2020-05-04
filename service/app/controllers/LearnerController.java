@@ -73,7 +73,7 @@ public class LearnerController extends BaseController {
       reqObj.setEnv(getEnvironment());
       HashMap<String, Object> innerMap = new HashMap<>();
       innerMap.put(JsonKey.CONTENTS, reqObj.getRequest().get(JsonKey.CONTENTS));
-      innerMap.put(JsonKey.REQUESTED_BY, httpRequest.getHeaders().get(JsonKey.USER_ID).orElse(""));
+      innerMap.put(JsonKey.REQUESTED_BY, innerMap.put(JsonKey.REQUESTED_BY, httpRequest.flash().get(JsonKey.USER_ID)));
       innerMap.put(JsonKey.ASSESSMENT_EVENTS, reqObj.getRequest().get(JsonKey.ASSESSMENT_EVENTS));
       innerMap.put(JsonKey.USER_ID, reqObj.getRequest().get(JsonKey.USER_ID));
       reqObj.setRequest(innerMap);

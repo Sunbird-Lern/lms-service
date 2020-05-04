@@ -28,9 +28,11 @@ public class RequestValidatorTest {
     Map<String, Object> requestObj = new HashMap<>();
     requestObj.put(JsonKey.CONTENT_ID, "do_1233343");
     requestObj.put(JsonKey.STATUS, "Completed");
+    requestObj.put(JsonKey.COURSE_ID, "do_1233213123343");
     listOfMap.add(requestObj);
     Map<String, Object> innerMap = new HashMap<>();
     innerMap.put(JsonKey.CONTENTS, listOfMap);
+    innerMap.put(JsonKey.USER_ID, "user123");
     request.setRequest(innerMap);
     try {
       RequestValidator.validateUpdateContent(request);
@@ -71,12 +73,13 @@ public class RequestValidatorTest {
     listOfMap.add(requestObj);
     Map<String, Object> innerMap = new HashMap<>();
     innerMap.put(JsonKey.CONTENTS, listOfMap);
+    innerMap.put(JsonKey.USER_ID, "user123");
     request.setRequest(innerMap);
     try {
       RequestValidator.validateUpdateContent(request);
     } catch (ProjectCommonException e) {
       assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
-      assertEquals(ResponseCode.contentIdRequiredError.getErrorCode(), e.getCode());
+      assertEquals(ResponseCode.courseIdRequiredError.getErrorCode(), e.getCode());
     }
   }
 
@@ -86,9 +89,11 @@ public class RequestValidatorTest {
     List<Map<String, Object>> listOfMap = new ArrayList<>();
     Map<String, Object> requestObj = new HashMap<>();
     requestObj.put(JsonKey.CONTENT_ID, "do_1233343");
+    requestObj.put(JsonKey.COURSE_ID, "do_123334123123");
     listOfMap.add(requestObj);
     Map<String, Object> innerMap = new HashMap<>();
     innerMap.put(JsonKey.CONTENTS, listOfMap);
+    innerMap.put(JsonKey.USER_ID, "user123");
     request.setRequest(innerMap);
     try {
       RequestValidator.validateUpdateContent(request);
@@ -102,10 +107,9 @@ public class RequestValidatorTest {
   public void testValidteUpdateContentFailureWithEmptyContents() {
     Request request = new Request();
     List<Map<String, Object>> listOfMap = new ArrayList<>();
-    Map<String, Object> requestObj = new HashMap<>();
-    requestObj.put(JsonKey.CONTENT_ID, "do_1233343");
     Map<String, Object> innerMap = new HashMap<>();
     innerMap.put(JsonKey.CONTENTS, listOfMap);
+    innerMap.put(JsonKey.USER_ID, "user123");
     request.setRequest(innerMap);
     try {
       RequestValidator.validateUpdateContent(request);

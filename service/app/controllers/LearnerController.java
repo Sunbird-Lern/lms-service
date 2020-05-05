@@ -15,10 +15,10 @@ import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.LearnerStateRequestValidator;
 import org.sunbird.common.request.Request;
-import org.sunbird.common.request.RequestValidator;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Results;
+import util.RequestValidator;
 
 /**
  * This controller will handler all the request related to learner state.

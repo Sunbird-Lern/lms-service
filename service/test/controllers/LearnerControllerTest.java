@@ -168,10 +168,12 @@ public class LearnerControllerTest extends BaseApplicationTest {
     List<Object> list = new ArrayList<>();
     Map<String, Object> map = new HashMap<>();
     map.put(JsonKey.CONTENT_ID, contentId);
+    map.put(JsonKey.COURSE_ID, courseId);
     map.put(JsonKey.STATUS, status);
     map.put(JsonKey.LAST_UPDATED_TIME, lastUpdatedTime);
     list.add(map);
     innerMap.put("contents", list);
+    innerMap.put("userId", USER_ID);
     innerMap.put("courseId", courseId);
     requestMap.put(JsonKey.REQUEST, innerMap);
     String data = mapToJson(requestMap);

@@ -140,7 +140,7 @@ public class UserCoursesService {
     sync(updateAttributes, userCourses.getBatchId(), userCourses.getUserId());
   }
 
-  public Map<String, Object> getActiveUserCourses(String userId) {
+  public Map<String, Object> getActiveEnrollments(String userId) {
     Map<String, Object> filter = new HashMap<>();
     filter.put(JsonKey.USER_ID, userId);
     filter.put(JsonKey.ACTIVE, ProjectUtil.ActiveStatus.ACTIVE.getValue());

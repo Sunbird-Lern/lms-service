@@ -457,30 +457,6 @@ public final class Util {
       requestContext.put(JsonKey.REQUEST_ID, actorMessage.getRequestId());
       requestContext.put(JsonKey.DEVICE_ID, deviceId);
 
-      if (JsonKey.USER.equalsIgnoreCase(
-          (String) actorMessage.getContext().get(JsonKey.ACTOR_TYPE))) {
-        // assign rollup of user ...
-        try {
-          if (actorMessage.getRequest().get(JsonKey.REQUESTED_BY) != null) {
-            UserOrgService userOrgService = UserOrgServiceImpl.getInstance();
-            Map<String, Object> result =
-                userOrgService.getUserById(
-                    (String) actorMessage.getContext().get(JsonKey.REQUESTED_BY));
-            if (result != null) {
-              String rootOrgId = (String) result.get(JsonKey.ROOT_ORG_ID);
-
-              if (StringUtils.isNotBlank(rootOrgId)) {
-                Map<String, String> rollup = new HashMap<>();
-
-                rollup.put("l1", rootOrgId);
-                requestContext.put(JsonKey.ROLLUP, rollup);
-              }
-            }
-          }
-        } catch (Exception e) {
-          log("Util:initializeContext:Exception occurred with error message = ", e);
-        }
-      }
       context.setRequestContext(requestContext);
       // and global context will be set at the time of creation of thread local
       // automatically ...

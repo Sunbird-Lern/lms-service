@@ -2,6 +2,9 @@
 package controllers.healthmanager;
 
 import akka.actor.ActorRef;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import controllers.BaseController;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,6 +25,7 @@ import play.mvc.Result;
 /** @author Manzarul */
 public class HealthController extends BaseController {
   private static List<String> list = new ArrayList<>();
+  private static ObjectMapper mapper = new ObjectMapper();
 
   @Inject
   @Named("health-actor")
@@ -33,6 +37,7 @@ public class HealthController extends BaseController {
     list.add("cassandra");
     list.add("es");
     list.add("ekstep");
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
   }
 
   /**
@@ -59,8 +64,8 @@ public class HealthController extends BaseController {
    *
    * @return CompletionStage<Result>
    */
-  public CompletionStage<Result> getLearnerServiceHealth(String val, Http.Request httpRequest) {
-    ProjectLogger.log("Call to get play service health api = " + val, LoggerEnum.INFO.name());
+  public CompletionStage<Result> getLearnerServiceHealth(String val, Http.Request httpRequest) throws JsonProcessingException {
+    ProjectLogger.log("Call to get play service health api = " + val);
     Map<String, Object> finalResponseMap = new HashMap<>();
     List<Map<String, Object>> responseList = new ArrayList<>();
     if (list.contains(val) && !JsonKey.SERVICE.equalsIgnoreCase(val)) {
@@ -79,7 +84,7 @@ public class HealthController extends BaseController {
         }
       }
     } else {
-      responseList.add(ProjectUtil.createCheckResponse(JsonKey.LEARNER_SERVICE, false, null));
+      responseList.add(ProjectUtil.createCheckResponse("Course_Service", false, null));
       finalResponseMap.put(JsonKey.CHECKS, responseList);
       finalResponseMap.put(JsonKey.NAME, "Learner service health");
       finalResponseMap.put(JsonKey.Healthy, true);
@@ -88,7 +93,8 @@ public class HealthController extends BaseController {
       response.setId("learner.service.health.api");
       response.setVer(getApiVersion(httpRequest.path()));
       response.setTs(ExecutionContext.getRequestId());
-      return CompletableFuture.completedFuture(ok(play.libs.Json.toJson(response)));
+      String result = mapper.writeValueAsString(response);
+      return CompletableFuture.completedFuture(play.mvc.Results.ok(result).as("application/json"));
     }
   }
 

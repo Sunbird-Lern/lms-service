@@ -86,6 +86,10 @@
 					<artifactId>cassandra-unit</artifactId>
 					<groupId>org.cassandraunit</groupId>
 				</exclusion>
+				<exclusion>
+					<artifactId>jackson-core</artifactId>
+					<groupId>com.fasterxml.jackson.core</groupId>
+				</exclusion>
 			</exclusions>
 		</dependency>
         <dependency>
@@ -112,6 +116,12 @@
 			<groupId>org.sunbird</groupId>
 			<artifactId>sunbird-commons</artifactId>
 			<version>1.0-SNAPSHOT</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>jackson-core</artifactId>
+					<groupId>com.fasterxml.jackson.core</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 			<!--<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>

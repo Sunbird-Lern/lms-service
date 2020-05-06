@@ -86,14 +86,6 @@
 					<artifactId>cassandra-unit</artifactId>
 					<groupId>org.cassandraunit</groupId>
 				</exclusion>
-				<exclusion>
-					<artifactId>jackson-databind</artifactId>
-					<groupId>com.fasterxml.jackson.core</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>jackson-core</artifactId>
-					<groupId>com.fasterxml.jackson.core</groupId>
-				</exclusion>
 			</exclusions>
 		</dependency>
         <dependency>
@@ -120,16 +112,6 @@
 			<groupId>org.sunbird</groupId>
 			<artifactId>sunbird-commons</artifactId>
 			<version>1.0-SNAPSHOT</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>jackson-databind</artifactId>
-					<groupId>com.fasterxml.jackson.core</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>jackson-core</artifactId>
-					<groupId>com.fasterxml.jackson.core</groupId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 			<!--<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -157,14 +139,6 @@
 				<exclusion>
 					<groupId>com.google.guava</groupId>
 					<artifactId>guava</artifactId>
-				</exclusion>
-				<exclusion>
-					<artifactId>jackson-databind</artifactId>
-					<groupId>com.fasterxml.jackson.core</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>jackson-annotations</artifactId>
-					<groupId>com.fasterxml.jackson.core</groupId>
 				</exclusion>
 			</exclusions>
 		</dependency>

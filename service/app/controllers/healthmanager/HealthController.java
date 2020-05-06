@@ -5,6 +5,7 @@ import akka.actor.ActorRef;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import controllers.BaseController;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -93,7 +94,8 @@ public class HealthController extends BaseController {
       response.setId("learner.service.health.api");
       response.setVer(getApiVersion(httpRequest.path()));
       response.setTs(ExecutionContext.getRequestId());
-      String result = mapper.writeValueAsString(response);
+      Gson gson = new Gson();
+      String result = gson.toJson(response);
       return CompletableFuture.completedFuture(play.mvc.Results.ok(result).as("application/json"));
     }
   }

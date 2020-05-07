@@ -37,10 +37,12 @@ import org.sunbird.models.user.courses.UserCourses;
 import org.sunbird.telemetry.util.TelemetryUtil;
 import scala.concurrent.Future;
 
+import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
+
 public class CourseEnrollmentActor extends BaseActor {
 
   private static String EKSTEP_COURSE_SEARCH_QUERY =
-      "{\"request\": {\"filters\":{\"contentType\": [\"Course\"], \"objectType\": [\"Content\"], \"identifier\": \"COURSE_ID_PLACEHOLDER\", \"status\": [\"Live\", \"Unlisted\"]},\"limit\": 1}}";
+      "{\"request\": {\"filters\":{\"contentType\": CONTENT_TYPES_PLACEHOLDER, \"objectType\": [\"Content\"], \"identifier\": \"COURSE_ID_PLACEHOLDER\", \"status\": [\"Live\", \"Unlisted\"]},\"limit\": 1}}";
 
   private CourseBatchDao courseBatchDao = new CourseBatchDaoImpl();
   private UserCoursesDao userCourseDao = UserCoursesDaoImpl.getInstance();
@@ -235,7 +237,8 @@ public class CourseEnrollmentActor extends BaseActor {
     ProjectLogger.log("Requested course id is ==" + courseId, LoggerEnum.INFO.name());
     if (!StringUtils.isBlank(courseId)) {
       try {
-        String query = EKSTEP_COURSE_SEARCH_QUERY.replaceAll("COURSE_ID_PLACEHOLDER", courseId);
+        String batchContentTypes = getConfigValue(JsonKey.SUNBIRD_BATCH_CONTENT_TYPES);
+        String query = EKSTEP_COURSE_SEARCH_QUERY.replaceAll("COURSE_ID_PLACEHOLDER", courseId).replace("CONTENT_TYPES_PLACEHOLDER",batchContentTypes);
         Map<String, Object> result = ContentUtil.searchContent(query, headers);
         if (null != result && !result.isEmpty() && result.get(JsonKey.CONTENTS) != null) {
           return ((List<Map<String, Object>>) result.get(JsonKey.CONTENTS)).get(0);

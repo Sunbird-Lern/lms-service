@@ -237,7 +237,7 @@ public class CourseEnrollmentActor extends BaseActor {
     ProjectLogger.log("Requested course id is ==" + courseId, LoggerEnum.INFO.name());
     if (!StringUtils.isBlank(courseId)) {
       try {
-        String batchContentTypes = Arrays.stream(getConfigValue(JsonKey.SUNBIRD_BATCH_CONTENT_TYPES).split(",")).map(item -> "\"" + item + "\"").collect(Collectors.joining(", ","[","]"));
+        String batchContentTypes = Arrays.stream(getConfigValue(JsonKey.SUNBIRD_BATCH_CONTENT_TYPES).split(",")).map(item -> "\"" + item.trim() + "\"").collect(Collectors.joining(", ","[","]"));
         String query = EKSTEP_COURSE_SEARCH_QUERY.replaceAll("COURSE_ID_PLACEHOLDER", courseId).replace("CONTENT_TYPES_PLACEHOLDER", batchContentTypes);
         Map<String, Object> result = ContentUtil.searchContent(query, headers);
         if (null != result && !result.isEmpty() && result.get(JsonKey.CONTENTS) != null) {

@@ -12,8 +12,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.application.test.SunbirdApplicationActorTest;
 import org.sunbird.builder.mocker.CassandraMocker;
@@ -26,11 +28,14 @@ import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.request.Request;
 import org.sunbird.helper.ServiceFactory;
+import org.sunbird.kafka.client.InstructionEventGenerator;
+import org.sunbird.kafka.client.KafkaClient;
 import org.sunbird.learner.util.ContentUtil;
 import org.sunbird.userorg.UserOrgServiceImpl;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ServiceFactory.class})
+@SuppressStaticInitializationFor("org.sunbird.kafka.client.KafkaClient")
+@PrepareForTest({ServiceFactory.class, InstructionEventGenerator.class, KafkaClient.class})
 @PowerMockIgnore("javax.management.*")
 public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest {
 
@@ -45,9 +50,9 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
     ServiceFactory.class,
     EsClientFactory.class,
     UserOrgServiceImpl.class,
-    ContentUtil.class
+    ContentUtil.class,  InstructionEventGenerator.class, KafkaClient.class
   })
-  public void createBatchInviteSuccess() {
+  public void createBatchInviteSuccess() throws Exception {
     group =
         MockerBuilder.getFreshMockerGroup()
             .withCassandraMock(new CassandraMocker())
@@ -73,6 +78,16 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
             new CustomObjectBuilder.CustomObjectWrapper<Boolean>(true).asCassandraResponse());
     when(group.getUserOrgMockerService().getOrganisationById(Mockito.anyString()))
         .thenReturn(CustomObjectBuilder.getRandomOrg().get());
+    PowerMockito.mockStatic(InstructionEventGenerator.class);
+    PowerMockito.mockStatic(KafkaClient.class);
+    PowerMockito.doNothing()
+            .when(InstructionEventGenerator.class,
+                    "pushInstructionEvent",
+                    Mockito.anyString(),
+                    Mockito.anyMap());
+
+    PowerMockito.doNothing()
+            .when(KafkaClient.class, "send", Mockito.anyString(), Mockito.anyString());
     String orgId = ((List<String>) courseBatch.get(JsonKey.COURSE_CREATED_FOR)).get(0);
     when(group.getUserOrgMockerService().getUsersByIds(Mockito.anyList()))
         .then(

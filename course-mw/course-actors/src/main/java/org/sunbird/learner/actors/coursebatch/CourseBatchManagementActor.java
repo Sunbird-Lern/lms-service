@@ -180,7 +180,7 @@ public class CourseBatchManagementActor extends BaseActor {
   }
 
   @SuppressWarnings("unchecked")
-  private void updateCourseBatch(Request actorMessage) {
+  private void updateCourseBatch(Request actorMessage) throws Exception {
     Map<String, Object> targetObject = null;
     Map<String, Object> participantsMap = new HashMap<>();
 
@@ -221,7 +221,7 @@ public class CourseBatchManagementActor extends BaseActor {
     rollUp.put("l1", courseBatch.getCourseId());
     TelemetryUtil.addTargetObjectRollUp(rollUp, targetObject);
     TelemetryUtil.telemetryProcessingCall(courseBatchMap, targetObject, correlatedObject);
-
+    pushInstructionEvent((String) request.get(JsonKey.COURSE_ID),batchId);
     if (courseNotificationActive()) {
       batchOperationNotifier(courseBatch, participantsMap);
     }

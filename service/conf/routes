@@ -38,6 +38,7 @@ PATCH	/v1/page/update				  @controllers.pagemanagement.PageController.updatePage
 GET	    /v1/page/read/:pageId    		  @controllers.pagemanagement.PageController.getPageSetting(pageId:String, organisationId:String ?= null, request: play.mvc.Http.Request)
 GET	    /v1/page/all/settings			  @controllers.pagemanagement.PageController.getPageSettings(request: play.mvc.Http.Request)
 POST     /v1/page/assemble		  @controllers.pagemanagement.PageController.getPageData(request: play.mvc.Http.Request)
+POST     /v1/dial/assemble		  @controllers.pagemanagement.PageController.getDIALPageData(request: play.mvc.Http.Request)
 
 # Page Section Management APIs
 POST	/v1/page/section/create				  @controllers.pagemanagement.PageController.createPageSection(request: play.mvc.Http.Request)

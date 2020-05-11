@@ -29,6 +29,7 @@ public class RequestInterceptor {
     short var = 1;
     apiHeaderIgnoreMap.put("/service/health", var);
     apiHeaderIgnoreMap.put("/v1/page/assemble", var);
+    apiHeaderIgnoreMap.put("/v1/dial/assemble", var);
     apiHeaderIgnoreMap.put("/health", var);
     apiHeaderIgnoreMap.put("/v1/data/sync", var);
     apiHeaderIgnoreMap.put("/v1/content/link", var);

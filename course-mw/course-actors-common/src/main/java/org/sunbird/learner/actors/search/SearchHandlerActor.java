@@ -2,20 +2,29 @@ package org.sunbird.learner.actors.search;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang.BooleanUtils;
 import org.sunbird.actor.base.BaseActor;
 import org.sunbird.common.ElasticSearchHelper;
+import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.inf.ElasticSearchService;
+import org.sunbird.common.models.response.HttpUtilResponse;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.*;
 import org.sunbird.common.models.util.ProjectUtil.EsType;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.learner.actors.coursebatch.service.UserCoursesService;
+import org.sunbird.learner.util.JsonUtil;
 import org.sunbird.learner.util.Util;
 import org.sunbird.telemetry.util.TelemetryLmaxWriter;
 import org.sunbird.telemetry.util.TelemetryUtil;
@@ -30,6 +39,7 @@ public class SearchHandlerActor extends BaseActor {
 
   private String topn = PropertiesCache.getInstance().getProperty(JsonKey.SEARCH_TOP_N);
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
+  private static final String CREATED_BY = "createdBy";
 
   @SuppressWarnings({"unchecked", "rawtypes"})
   @Override
@@ -42,6 +52,7 @@ public class SearchHandlerActor extends BaseActor {
     if (request.getOperation().equalsIgnoreCase(ActorOperations.COMPOSITE_SEARCH.getValue())) {
       Instant instant = Instant.now();
       Map<String, Object> searchQueryMap = request.getRequest();
+      Boolean showCreator = (Boolean) searchQueryMap.remove("creatorDetails");
       Object objectType =
           ((Map<String, Object>) searchQueryMap.get(JsonKey.FILTERS)).get(JsonKey.OBJECT_TYPE);
       String[] types = null;
@@ -86,6 +97,8 @@ public class SearchHandlerActor extends BaseActor {
         }
         Response response = new Response();
         if (result != null) {
+          if (BooleanUtils.isTrue(showCreator))
+            populateCreatorDetails(result);
           response.put(JsonKey.RESPONSE, result);
         } else {
           result = new HashMap<>();
@@ -98,6 +111,56 @@ public class SearchHandlerActor extends BaseActor {
     } else {
       onReceiveUnsupportedOperation(request.getOperation());
     }
+  }
+
+  private void populateCreatorDetails(Map<String, Object> result) throws Exception {
+    List<Map<String, Object>> content = (List<Map<String, Object>>) result.getOrDefault("content", new ArrayList<Map<String, Object>>());
+    if(CollectionUtils.isNotEmpty(content)){
+	    List<String> creatorIds = content.stream().filter(map -> map.containsKey(CREATED_BY)).map(map -> (String) map.get(CREATED_BY)).collect(Collectors.toList());
+        Map<String, Object> creatorDetails = getCreatorDetails(creatorIds);
+        if(MapUtils.isNotEmpty(creatorDetails)){
+	      content.stream().filter(map -> creatorDetails.containsKey((String) map.get(CREATED_BY))).map(map -> map.put("creatorDetails", creatorDetails.get((String) map.get(CREATED_BY)))).collect(Collectors.toList());
+        }
+    }
+  }
+
+  private Map<String, Object> getCreatorDetails(List<String> creatorIds) throws Exception {
+    String userSearchUrl = ProjectUtil.getConfigValue(JsonKey.USER_SEARCH_BASE_URL) + "/v1/user/search";
+    List<String> fields = Arrays.asList(ProjectUtil.getConfigValue(JsonKey.CREATOR_DETAILS_FIELDS).split(","));
+    String reqStr = getUserSearchRequest(creatorIds, fields);
+	  List<Map<String, Object>> tempResult = makePostRequest(userSearchUrl, reqStr);
+	  return CollectionUtils.isNotEmpty(tempResult) ? tempResult.stream().collect(Collectors.toMap(s -> (String) s.remove("id"), s -> s)) : new HashMap<String, Object>();
+  }
+
+  private String getUserSearchRequest(List<String> creatorIds, List<String> fields) throws Exception {
+    Map<String, Object> reqMap = new HashMap<String, Object>() {{
+      put("request", new HashMap<String, Object>() {{
+        put("filters", new HashMap<String, Object>() {{
+          put("id", creatorIds);
+        }});
+        put("fields", fields);
+      }});
+    }};
+    return JsonUtil.serialize(reqMap);
+  }
+
+  private List<Map<String, Object>> makePostRequest(String url, String req) throws Exception {
+    HttpUtilResponse resp = HttpUtil.doPostRequest(url, req, HttpUtil.getHeader(null));
+    Response response = getResponse(resp.getBody());
+    return (List<Map<String, Object>>) ((Map<String, Object>) response.getResult().getOrDefault("response", new HashMap<String, Object>())).getOrDefault("content", new ArrayList<Map<String, Object>>());
+  }
+
+  private Response getResponse(String body) {
+		Response resp = new Response();
+		try {
+			resp = JsonUtil.deserialize(body, Response.class);
+		} catch (Exception e) {
+			throw new ProjectCommonException(
+					ResponseCode.unableToParseData.getErrorCode(),
+					ResponseCode.unableToParseData.getErrorMessage(),
+					ResponseCode.SERVER_ERROR.getResponseCode());
+		}
+		return resp;
   }
 
   private List<String> getParticipantList(String id) {

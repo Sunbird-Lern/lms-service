@@ -18,6 +18,7 @@ import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.cassandraimpl.CassandraOperationImpl;
 import org.sunbird.common.exception.ProjectCommonException;
@@ -29,12 +30,15 @@ import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.helper.ServiceFactory;
+import org.sunbird.kafka.client.InstructionEventGenerator;
+import org.sunbird.kafka.client.KafkaClient;
 import org.sunbird.learner.actors.coursebatch.CourseBatchManagementActor;
 import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.Util;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ServiceFactory.class, EsClientFactory.class, CourseBatchUtil.class, Util.class})
+@SuppressStaticInitializationFor("org.sunbird.kafka.client.KafkaClient")
+@PrepareForTest({ServiceFactory.class, EsClientFactory.class, CourseBatchUtil.class, Util.class, InstructionEventGenerator.class, KafkaClient.class})
 @PowerMockIgnore({"javax.management.*"})
 public class CourseBatchManagementActorTest {
 
@@ -50,8 +54,19 @@ public class CourseBatchManagementActorTest {
   private String existingEnrollmentEndDate = "";
 
   @Before
-  public void setUp() {
+  public void setUp() throws Exception {
     mockCassandraOperation = mock(CassandraOperationImpl.class);
+    PowerMockito.mockStatic(InstructionEventGenerator.class);
+    PowerMockito.mockStatic(KafkaClient.class);
+    PowerMockito.doNothing()
+            .when(
+                    InstructionEventGenerator.class,
+                    "pushInstructionEvent",
+                    Mockito.anyString(),
+                    Mockito.anyMap());
+
+    PowerMockito.doNothing()
+            .when(KafkaClient.class, "send", Mockito.anyString(), Mockito.anyString());
     ActorRef actorRef = mock(ActorRef.class);
     PowerMockito.mockStatic(ServiceFactory.class);
     when(ServiceFactory.getInstance()).thenReturn(mockCassandraOperation);
@@ -69,10 +84,11 @@ public class CourseBatchManagementActorTest {
       String startDate,
       String enrollmentEndDate,
       String endDate,
-      Response mockGetRecordByIdResponse) {
+      Response mockGetRecordByIdResponse) throws Exception {
     when(mockCassandraOperation.getRecordById(
             Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
         .thenReturn(mockGetRecordByIdResponse);
+   
     TestKit probe = new TestKit(system);
     ActorRef subject = system.actorOf(props);
     Request reqObj = new Request();
@@ -96,7 +112,7 @@ public class CourseBatchManagementActorTest {
       String enrollmentEndDate,
       String endDate,
       Response mockGetRecordByIdResponse,
-      Response mockUpdateRecordResponse) {
+      Response mockUpdateRecordResponse) throws Exception {
 
     when(mockCassandraOperation.getRecordById(
             Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
@@ -221,7 +237,7 @@ public class CourseBatchManagementActorTest {
   }
 
   @Test
-  public void testUpdateEnrollmentEndDateFailureBeforeStartDate() {
+  public void testUpdateEnrollmentEndDateFailureBeforeStartDate() throws Exception {
     int batchProgressStatus = ProjectUtil.ProgressStatus.NOT_STARTED.getValue();
     Response mockGetRecordByIdResponse = getMockCassandraRecordByIdResponse(batchProgressStatus);
     ProjectCommonException exception =
@@ -238,7 +254,7 @@ public class CourseBatchManagementActorTest {
   }
 
   @Test
-  public void testUpdateEnrollmentEndDateFailureAfterEndDate() {
+  public void testUpdateEnrollmentEndDateFailureAfterEndDate() throws Exception {
     int batchProgressStatus = ProjectUtil.ProgressStatus.NOT_STARTED.getValue();
     Response mockGetRecordByIdResponse = getMockCassandraRecordByIdResponse(batchProgressStatus);
     ProjectCommonException exception =
@@ -255,7 +271,7 @@ public class CourseBatchManagementActorTest {
   }
 
   @Test
-  public void testUpdateStartedCourseBatchFailureWithStartDate() {
+  public void testUpdateStartedCourseBatchFailureWithStartDate() throws Exception {
 
     int batchProgressStatus = ProjectUtil.ProgressStatus.STARTED.getValue();
     Response mockGetRecordByIdResponse = getMockCassandraRecordByIdResponse(batchProgressStatus);
@@ -269,7 +285,7 @@ public class CourseBatchManagementActorTest {
   }
 
   @Test
-  public void testUpdateStartedCourseBatchFailureWithEndDate() {
+  public void testUpdateStartedCourseBatchFailureWithEndDate() throws Exception {
 
     int batchProgressStatus = ProjectUtil.ProgressStatus.STARTED.getValue();
     Response mockGetRecordByIdResponse = getMockCassandraRecordByIdResponse(batchProgressStatus);
@@ -283,7 +299,7 @@ public class CourseBatchManagementActorTest {
   }
 
   @Test
-  public void testUpdateStartedCourseBatchFailureWithDifferentStartDateAndEndDate() {
+  public void testUpdateStartedCourseBatchFailureWithDifferentStartDateAndEndDate() throws Exception {
 
     int batchProgressStatus = ProjectUtil.ProgressStatus.STARTED.getValue();
     Response mockGetRecordByIdResponse = getMockCassandraRecordByIdResponse(batchProgressStatus);
@@ -300,7 +316,7 @@ public class CourseBatchManagementActorTest {
   }
 
   @Test
-  public void testUpdateStartedCourseBatchSuccessWithFutureEndDate() {
+  public void testUpdateStartedCourseBatchSuccessWithFutureEndDate() throws Exception {
 
     int batchProgressStatus = ProjectUtil.ProgressStatus.STARTED.getValue();
     Response mockGetRecordByIdResponse = getMockCassandraRecordByIdResponse(batchProgressStatus);
@@ -316,7 +332,7 @@ public class CourseBatchManagementActorTest {
   }
 
   @Test
-  public void testUpdateStartedCourseBatchSuccessWithEnrollmentEndEndDate() {
+  public void testUpdateStartedCourseBatchSuccessWithEnrollmentEndEndDate() throws Exception {
 
     int batchProgressStatus = ProjectUtil.ProgressStatus.NOT_STARTED.getValue();
     Response mockGetRecordByIdResponse = getMockCassandraRecordByIdResponse(batchProgressStatus);
@@ -333,7 +349,7 @@ public class CourseBatchManagementActorTest {
   }
 
   @Test
-  public void testUpdateNotStartedCourseBatchSuccessWithFutureStartDate() {
+  public void testUpdateNotStartedCourseBatchSuccessWithFutureStartDate() throws Exception {
 
     int batchProgressStatus = ProjectUtil.ProgressStatus.NOT_STARTED.getValue();
     Response mockGetRecordByIdResponse = getMockCassandraRecordByIdResponse(batchProgressStatus);
@@ -349,7 +365,7 @@ public class CourseBatchManagementActorTest {
   }
 
   @Test
-  public void testUpdateNotStartedCourseBatchFailureWithFutureEndDate() {
+  public void testUpdateNotStartedCourseBatchFailureWithFutureEndDate() throws Exception {
 
     int batchProgressStatus = ProjectUtil.ProgressStatus.NOT_STARTED.getValue();
     Response mockGetRecordByIdResponse = getMockCassandraRecordByIdResponse(batchProgressStatus);
@@ -363,7 +379,7 @@ public class CourseBatchManagementActorTest {
   }
 
   @Test
-  public void testUpdateNotStartedCourseBatchSuccessWithFutureStartDateAndEndDate() {
+  public void testUpdateNotStartedCourseBatchSuccessWithFutureStartDateAndEndDate() throws Exception {
 
     int batchProgressStatus = ProjectUtil.ProgressStatus.NOT_STARTED.getValue();
     Response mockGetRecordByIdResponse = getMockCassandraRecordByIdResponse(batchProgressStatus);
@@ -379,7 +395,7 @@ public class CourseBatchManagementActorTest {
   }
 
   @Test
-  public void testUpdateNotStartedCourseBatchFailureWithPastStartDate() {
+  public void testUpdateNotStartedCourseBatchFailureWithPastStartDate() throws Exception {
 
     int batchProgressStatus = ProjectUtil.ProgressStatus.NOT_STARTED.getValue();
     Response mockGetRecordByIdResponse = getMockCassandraRecordByIdResponse(batchProgressStatus);
@@ -394,7 +410,7 @@ public class CourseBatchManagementActorTest {
   }
 
   @Test
-  public void testUpdateNotStartedCourseBatchFailureWithPastEndDate() {
+  public void testUpdateNotStartedCourseBatchFailureWithPastEndDate() throws Exception {
 
     int batchProgressStatus = ProjectUtil.ProgressStatus.NOT_STARTED.getValue();
     Response mockGetRecordByIdResponse = getMockCassandraRecordByIdResponse(batchProgressStatus);
@@ -408,7 +424,7 @@ public class CourseBatchManagementActorTest {
   }
 
   @Test
-  public void testUpdateNotStartedCourseBatchFailureWithEndDateBeforeFutureStartDate() {
+  public void testUpdateNotStartedCourseBatchFailureWithEndDateBeforeFutureStartDate() throws Exception {
 
     int batchProgressStatus = ProjectUtil.ProgressStatus.NOT_STARTED.getValue();
     Response mockGetRecordByIdResponse = getMockCassandraRecordByIdResponse(batchProgressStatus);
@@ -425,7 +441,7 @@ public class CourseBatchManagementActorTest {
   }
 
   @Test
-  public void testUpdateCompletedCourseBatchFailureWithStartDate() {
+  public void testUpdateCompletedCourseBatchFailureWithStartDate() throws Exception {
 
     int batchProgressStatus = ProjectUtil.ProgressStatus.COMPLETED.getValue();
     Response mockGetRecordByIdResponse = getMockCassandraRecordByIdResponse(batchProgressStatus);
@@ -439,7 +455,7 @@ public class CourseBatchManagementActorTest {
   }
 
   @Test
-  public void testUpdateCompletedCourseBatchFailureWithEndDate() {
+  public void testUpdateCompletedCourseBatchFailureWithEndDate() throws Exception {
 
     int batchProgressStatus = ProjectUtil.ProgressStatus.COMPLETED.getValue();
     Response mockGetRecordByIdResponse = getMockCassandraRecordByIdResponse(batchProgressStatus);
@@ -453,7 +469,7 @@ public class CourseBatchManagementActorTest {
   }
 
   @Test
-  public void testUpdateCompletedCourseBatchFailureWithStartDateAndEndDate() {
+  public void testUpdateCompletedCourseBatchFailureWithStartDateAndEndDate() throws Exception {
 
     int batchProgressStatus = ProjectUtil.ProgressStatus.COMPLETED.getValue();
     Response mockGetRecordByIdResponse = getMockCassandraRecordByIdResponse(batchProgressStatus);

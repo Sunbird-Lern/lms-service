@@ -174,7 +174,7 @@ public final class CourseBatchSchedulerUtil {
     String response = "";
     try {
       ProjectLogger.log("updating content details to Ekstep start", LoggerEnum.INFO.name());
-      String contentUpdateBaseUrl = ProjectUtil.getConfigValue(JsonKey.EKSTEP_BASE_URL);
+      String contentUpdateBaseUrl = ProjectUtil.getConfigValue(JsonKey.LEARNING_SERVICE_BASE_URL);
       response =
           HttpUtil.sendPatchRequest(
               contentUpdateBaseUrl

@@ -479,4 +479,55 @@ public class RequestValidatorTest {
     }
     Assert.assertFalse(response);
   }
+
+
+  @Test
+  public void testValdateUpdateContentWithAssessmentEvents() {
+    Request request = new Request();
+    boolean response = false;
+    List<Map<String, Object>> listOfMap = new ArrayList<>();
+    Map<String, Object> requestObj = new HashMap<>();
+    requestObj.put(JsonKey.EVENTS, new ArrayList<Map<String, Object>>(){{
+      add(new HashMap<String, Object>(){{
+        put("ets", System.currentTimeMillis());
+      }});
+    }});
+    requestObj.put(JsonKey.STATUS, "Completed");
+    requestObj.put(JsonKey.USER_ID, "user123");
+    requestObj.put(JsonKey.COURSE_ID, "do_123");
+    requestObj.put(JsonKey.BATCH_ID, "01234");
+    requestObj.put(JsonKey.ASSESSMENT_TS, System.currentTimeMillis());
+    requestObj.put(JsonKey.CONTENT_ID, "do_1234");
+    requestObj.put(JsonKey.ATTEMPT_ID, "attempt1");
+    listOfMap.add(requestObj);
+    Map<String, Object> innerMap = new HashMap<>();
+    innerMap.put(JsonKey.ASSESSMENT_EVENTS, listOfMap);
+    request.setRequest(innerMap);
+    try {
+      RequestValidator.validateUpdateContent(request);
+      response = true;
+    } catch (ProjectCommonException e) {
+    }
+    assertEquals(true, response);
+  }
+
+  @Test
+  public void testValdateUpdateContentWithAllEmpty() {
+    Request request = new Request();
+    boolean response = false;
+    List<Map<String, Object>> listOfMap = new ArrayList<>();
+    Map<String, Object> requestObj = new HashMap<>();
+    listOfMap.add(requestObj);
+    Map<String, Object> innerMap = new HashMap<>();
+    innerMap.put(JsonKey.ASSESSMENT_EVENTS, listOfMap);
+    request.setRequest(innerMap);
+    try {
+      RequestValidator.validateUpdateContent(request);
+      response = true;
+    } catch (ProjectCommonException e) {
+      assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+      assertEquals(ResponseCode.userIdRequired.getErrorCode(), e.getCode());
+    }
+    assertEquals(false, response);
+  }
 }

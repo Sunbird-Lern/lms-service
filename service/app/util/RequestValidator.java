@@ -23,6 +23,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * This call will do validation for all incoming request data.
@@ -42,13 +43,7 @@ public final class RequestValidator {
    */
   @SuppressWarnings("unchecked")
   public static void validateUpdateContent(Request contentRequestDto) {
-    if (!contentRequestDto.getRequest().containsKey(JsonKey.USER_ID)
-            || StringUtils.isBlank((String) contentRequestDto.get(JsonKey.USER_ID))) {
-      throw new ProjectCommonException(
-              ResponseCode.userIdRequired.getErrorCode(),
-              ResponseCode.userIdRequired.getErrorMessage(),
-              ERROR_CODE);
-    }
+    setUserIdToRequest(contentRequestDto);
     List<Map<String, Object>> list =
             (List<Map<String, Object>>) (contentRequestDto.getRequest().get(JsonKey.CONTENTS));
     if(CollectionUtils.isNotEmpty(list)) {
@@ -164,6 +159,34 @@ public final class RequestValidator {
           }
         }
       }
+  }
+
+  private static void setUserIdToRequest(Request contentRequestDto) {
+    if (!contentRequestDto.getRequest().containsKey(JsonKey.USER_ID)
+            || StringUtils.isBlank((String) contentRequestDto.get(JsonKey.USER_ID))) {
+      List<Map<String, Object>> contentList =
+              (List<Map<String, Object>>) (contentRequestDto.getRequest().get(JsonKey.CONTENTS));
+      List<Map<String, Object>> assessmentList =
+              (List<Map<String, Object>>) (contentRequestDto.getRequest().get(JsonKey.ASSESSMENT_EVENTS));
+      List userList = null;
+      if(CollectionUtils.isNotEmpty(contentList)) {
+        userList = contentList.stream().map(content -> content.getOrDefault(JsonKey.USER_ID, ""))
+                .filter(value ->  StringUtils.isNotBlank((String) value)).distinct().collect(Collectors.toList());
+        
+      } else if(CollectionUtils.isNotEmpty(assessmentList)) {
+        userList = assessmentList.stream().map(content -> content.getOrDefault(JsonKey.USER_ID, ""))
+                .filter(value ->  StringUtils.isNotBlank((String) value)).distinct().collect(Collectors.toList());
+      }
+      
+      if(CollectionUtils.isEmpty(userList) || StringUtils.isBlank((String)userList.get(0))) {
+        throw new ProjectCommonException(
+                ResponseCode.userIdRequired.getErrorCode(),
+                ResponseCode.userIdRequired.getErrorMessage(),
+                ERROR_CODE);
+      } else {
+        contentRequestDto.put(JsonKey.USER_ID, (String)userList.get(0));
+      }
+    }
   }
 
   /**

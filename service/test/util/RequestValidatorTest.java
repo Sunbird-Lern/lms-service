@@ -510,4 +510,24 @@ public class RequestValidatorTest {
     }
     assertEquals(true, response);
   }
+
+  @Test
+  public void testValdateUpdateContentWithAllEmpty() {
+    Request request = new Request();
+    boolean response = false;
+    List<Map<String, Object>> listOfMap = new ArrayList<>();
+    Map<String, Object> requestObj = new HashMap<>();
+    listOfMap.add(requestObj);
+    Map<String, Object> innerMap = new HashMap<>();
+    innerMap.put(JsonKey.ASSESSMENT_EVENTS, listOfMap);
+    request.setRequest(innerMap);
+    try {
+      RequestValidator.validateUpdateContent(request);
+      response = true;
+    } catch (ProjectCommonException e) {
+      assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+      assertEquals(ResponseCode.userIdRequired.getErrorCode(), e.getCode());
+    }
+    assertEquals(false, response);
+  }
 }

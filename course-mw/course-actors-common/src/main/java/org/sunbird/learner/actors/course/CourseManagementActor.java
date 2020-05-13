@@ -10,7 +10,7 @@ import org.sunbird.learner.util.Util;
 public class CourseManagementActor extends BaseActor {
     @Override
     public void onReceive(Request request) throws Throwable {
-        Util.initializeContext(request, TelemetryEnvKey.COURSE_CREATE);
+        Util.initializeContext(request, "COURSE_CREATE");
         ExecutionContext.setRequestId(request.getRequestId());
         String requestedOperation = request.getOperation();
         switch (requestedOperation) {

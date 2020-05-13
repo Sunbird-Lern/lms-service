@@ -10,6 +10,7 @@ import org.sunbird.learner.actors.bulkupload.BulkUploadManagementActor;
 import org.sunbird.learner.actors.cache.CacheManagementActor;
 import org.sunbird.learner.actors.certificate.service.CertificateActor;
 import org.sunbird.learner.actors.certificate.service.CourseBatchCertificateActor;
+import org.sunbird.learner.actors.course.CourseManagementActor;
 import org.sunbird.learner.actors.coursebatch.CourseBatchManagementActor;
 import org.sunbird.learner.actors.coursebatch.CourseBatchNotificationActor;
 import org.sunbird.learner.actors.coursebatch.CourseEnrollmentActor;
@@ -42,7 +43,9 @@ public enum ACTOR_NAMES {
       BulkUploadBackGroundJobActor.class, "bulk-upload-background-job-actor"),
   ES_SYNC_ACTOR(EsSyncActor.class, "es-sync-actor"),
   COURSE_BATCH_NOTIFICATION_ACTOR(CourseBatchNotificationActor.class, "course-batch-notification-actor"),
-    BACKGROUND_JOB_MANAGER_ACTOR(BackgroundJobManager.class, "background-job-manager-actor");
+    BACKGROUND_JOB_MANAGER_ACTOR(BackgroundJobManager.class, "background-job-manager-actor"),
+  COURSE_MANAGEMENT_ACTOR(
+          CourseManagementActor.class, "course-management-actor");
 
   private ACTOR_NAMES(Class clazz, String name) {
     actorClass = clazz;

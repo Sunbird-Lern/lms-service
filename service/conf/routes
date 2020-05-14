@@ -75,4 +75,4 @@ PATCH /v1/course/batch/cert/template/remove           @controllers.certificate.C
 POST  /v1/course/qrcode/download                @controllers.qrcodedownload.QRCodeDownloadController.downloadQRCodes(request: play.mvc.Http.Request)
 
 #Course create APIs
-POST /course/v1/create              @controllers.coursemanagement.CourseController.createCourse(request: play.mvc.Http.Request)
+POST /v1/course/create              @controllers.coursemanagement.CourseController.createCourse(request: play.mvc.Http.Request)

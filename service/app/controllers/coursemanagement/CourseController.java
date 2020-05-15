@@ -2,9 +2,11 @@ package controllers.coursemanagement;
 
 import akka.actor.ActorRef;
 import controllers.BaseController;
+import controllers.coursemanagement.validator.CourseCreateRequestValidator;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.request.Request;
 import play.mvc.Http;
 import play.mvc.Result;
 
@@ -26,7 +28,10 @@ public class CourseController extends BaseController {
                 courseActorRef,
                 ActorOperations.CREATE_COURSE.getValue(),
                 httpRequest.body().asJson(),
-                null,
+                (request) -> {
+                    CourseCreateRequestValidator.validateRequest((Request) request);
+                    return null;
+                },
                 httpRequest);
     }
 }

@@ -43,9 +43,6 @@ public class CourseManagementActor extends BaseActor {
 
     private void createCourse(Request request) throws Exception {
         Map<String, Object> contentMap = new HashMap<>();
-        if(null == request.get("course")){
-           ProjectCommonException.throwClientErrorException(ResponseCode.RESOURCE_NOT_FOUND, "Please provide course");
-        }
         contentMap.putAll((Map<String, Object>) request.get("course"));
         String requestUrl;
         if (request.getRequest().containsKey("source")) {
@@ -60,7 +57,7 @@ public class CourseManagementActor extends BaseActor {
             put("Content-Type", "application/json");
             put("X-Channel-Id", (String) request.getContext().get("channel"));
         }};
-        Map<String, Object> requestMap = new HashMap<String, Object>(){{
+        Map<String, Object> requestMap = new HashMap<String, Object>() {{
             put("request", new HashMap<String, Object>() {{
                 put("content", contentMap);
             }});
@@ -92,7 +89,7 @@ public class CourseManagementActor extends BaseActor {
                         Object obj = Optional.ofNullable(resultMap.get(JsonKey.TB_MESSAGES)).orElse("");
                         if (obj instanceof List) {
                             message += ((List<String>) obj).stream().collect(Collectors.joining(";"));
-                        } else if(StringUtils.isNotEmpty(response.getParams().getErrmsg())){
+                        } else if (StringUtils.isNotEmpty(response.getParams().getErrmsg())) {
                             message += response.getParams().getErrmsg();
                         } else {
                             message += String.valueOf(obj);

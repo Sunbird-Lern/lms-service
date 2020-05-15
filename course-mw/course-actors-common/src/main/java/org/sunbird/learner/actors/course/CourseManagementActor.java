@@ -9,6 +9,8 @@ import org.sunbird.actor.base.BaseActor;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;;
 import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.LoggerEnum;
+import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
@@ -68,9 +70,21 @@ public class CourseManagementActor extends BaseActor {
                             .headers(headers)
                             .body(mapper.writeValueAsString(requestMap))
                             .asString();
+            ProjectLogger.log(
+                    "CourseManagementActor:createCourse : Request for course create : "
+                            + mapper.writeValueAsString(requestMap),
+                    LoggerEnum.INFO.name());
 
+            ProjectLogger.log(
+                    "Sized: CourseManagementActor:createCourse : size of request : "
+                            + mapper.writeValueAsString(requestMap).getBytes().length,
+                    LoggerEnum.INFO);
             if (null != updateResponse) {
                 Response response = mapper.readValue(updateResponse.getBody(), Response.class);
+                ProjectLogger.log(
+                        "Sized: CourseManagementActor:createCourse : size of response : "
+                                + updateResponse.getBody().getBytes().length,
+                        LoggerEnum.INFO);
                 if (response.getResponseCode().getResponseCode() == ResponseCode.OK.getResponseCode()) {
                     if (request.getRequest().containsKey("source")) {
                         Map<String, Object> node_id = (Map<String, Object>) response.get("node_id");
@@ -104,6 +118,7 @@ public class CourseManagementActor extends BaseActor {
                 ProjectCommonException.throwClientErrorException(ResponseCode.CLIENT_ERROR);
             }
         } catch (Exception ex) {
+            ProjectLogger.log("CourseManagementActor:createCourse : course create error ", ex);
             if (ex instanceof ProjectCommonException) {
                 throw ex;
             } else {

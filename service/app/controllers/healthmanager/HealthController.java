@@ -59,8 +59,8 @@ public class HealthController extends BaseController {
    *
    * @return CompletionStage<Result>
    */
-  public CompletionStage<Result> getLearnerServiceHealth(String val, Http.Request httpRequest) {
-    ProjectLogger.log("Call to get play service health api = " + val, LoggerEnum.INFO.name());
+  public CompletionStage<Result> getServiceHealth(Http.Request httpRequest) {
+    ProjectLogger.log("Call to get play service health for service.", LoggerEnum.INFO.name());
     Map<String, Object> finalResponseMap = new HashMap<>();
     List<Map<String, Object>> responseList = new ArrayList<>();
     responseList.add(ProjectUtil.createCheckResponse(JsonKey.LEARNER_SERVICE, false, null));

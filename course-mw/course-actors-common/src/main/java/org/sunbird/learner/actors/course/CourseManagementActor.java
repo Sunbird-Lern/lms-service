@@ -46,23 +46,23 @@ public class CourseManagementActor extends BaseActor {
 
     private void createCourse(Request request) throws Exception {
         Map<String, Object> contentMap = new HashMap<>();
-        contentMap.putAll((Map<String, Object>) request.get("course"));
+        contentMap.putAll((Map<String, Object>) request.get(JsonKey.COURSE));
         String requestUrl;
-        if (request.getRequest().containsKey("source")) {
-            contentMap.put("copyScheme", "TextBookToCourse");
-            contentMap.put("courseType", "CurriculumCourse");
-            requestUrl = getConfigValue(EKSTEP_BASE_URL) + "/content/v3/copy/" + request.get("source") + "?type=deep";
+        if (request.getRequest().containsKey(JsonKey.SOURCE)) {
+            contentMap.put(JsonKey.COPY_SCHEME, JsonKey.TEXT_BOOK_TO_COURSE);
+            contentMap.put(JsonKey.COURSE_TYPE, JsonKey.CURRICULUM_COURSE);
+            requestUrl = getConfigValue(EKSTEP_BASE_URL) + "/content/v3/copy/" + request.get(JsonKey.SOURCE) + "?type=deep";
         } else {
-            contentMap.put("courseType", "TrainingCourse");
+            contentMap.put(JsonKey.COURSE_TYPE, JsonKey.TRAINING_COURSE);
             requestUrl = getConfigValue(EKSTEP_BASE_URL) + "/content/v3/create";
         }
         Map<String, String> headers = new HashMap<String, String>() {{
             put("Content-Type", "application/json");
-            put("X-Channel-Id", (String) request.getContext().get("channel"));
+            put("X-Channel-Id", (String) request.getContext().get(JsonKey.CHANNEL));
         }};
         Map<String, Object> requestMap = new HashMap<String, Object>() {{
-            put("request", new HashMap<String, Object>() {{
-                put("content", contentMap);
+            put(JsonKey.REQUEST, new HashMap<String, Object>() {{
+                put(JsonKey.CONTENT, contentMap);
             }});
         }};
         try {
@@ -87,14 +87,14 @@ public class CourseManagementActor extends BaseActor {
                                 + updateResponse.getBody().getBytes().length,
                         LoggerEnum.INFO);
                 if (response.getResponseCode().getResponseCode() == ResponseCode.OK.getResponseCode()) {
-                    if (request.getRequest().containsKey("source")) {
+                    if (request.getRequest().containsKey(JsonKey.SOURCE)) {
                         Map<String, Object> node_id = (Map<String, Object>) response.get("node_id");
-                        response.put("identifier", node_id.get(request.get("source")));
+                        response.put(JsonKey.IDENTIFIER, node_id.get(request.get(JsonKey.SOURCE)));
                     }
                     response.getResult().remove("node_id");
                     response.getResult().put("course_id", response.get("identifier"));
-                    response.getResult().put("identifier", response.get("identifier"));
-                    response.getResult().put("versionKey", response.get("versionKey"));
+                    response.getResult().put(JsonKey.IDENTIFIER, response.get(JsonKey.IDENTIFIER));
+                    response.getResult().put(JsonKey.VERSION_KEY, response.get(JsonKey.VERSION_KEY));
                     sender().tell(response, self());
                 } else {
                     Map<String, Object> resultMap =

@@ -2,6 +2,7 @@ package controllers.coursemanagement.validator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.exception.ProjectCommonException;
+import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 
@@ -14,16 +15,16 @@ public class CourseCreateRequestValidator {
     public static void validateRequest(Request request) {
         try {
             String message = "";
-            if (null == request.get("course")) {
+            if (null == request.get(JsonKey.COURSE)) {
                 message += "Error due to missing request body or course";
                 setErrorMessage(message);
             }
-            if (!request.getRequest().containsKey("source")) {
-                if (!StringUtils.equals("Course", (String) ((Map<String, Object>) request.get("course")).get("contentType"))) {
+            if (!request.getRequest().containsKey(JsonKey.SOURCE)) {
+                if (!StringUtils.equals("Course", (String) ((Map<String, Object>) request.get("course")).get(JsonKey.CONTENT_TYPE))) {
                     message += "contentType should be Course";
                     setErrorMessage(message);
                 }
-                if (!StringUtils.equals("application/vnd.ekstep.content-collection", (String) ((Map<String, Object>) request.get("course")).get("mimeType"))) {
+                if (!StringUtils.equals(JsonKey.CONTENT_MIME_TYPE_COLLECTION, (String) ((Map<String, Object>) request.get(JsonKey.COURSE)).get(JsonKey.MIME_TYPE))) {
                     message += "mimeType should be collection";
                     setErrorMessage(message);
                 }

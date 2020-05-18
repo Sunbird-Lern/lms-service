@@ -18,14 +18,11 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
-import org.sunbird.common.responsecode.ResponseCode;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,7 +44,7 @@ public class CourseManagementActorTest {
 
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         PowerMockito.mockStatic(ProjectUtil.class);
         PowerMockito.mockStatic(Unirest.class);
         system = ActorSystem.create("system");
@@ -56,45 +53,26 @@ public class CourseManagementActorTest {
     }
 
     @Test
-    public void testCourseCreateSuccess() throws UnirestException, IOException {
+    public void testCourseCreateSuccess() throws UnirestException {
         mockResponseUnirest();
-        Response response = (Response) doRequest(false, createCourseRequest());
+        Response response = (Response) doRequest(createCourseRequest());
         Assert.assertNotNull(response);
     }
 
     @Test
-    public void testCourseCreateCopySuccess() throws UnirestException, IOException {
+    public void testCourseCreateCopySuccess() throws UnirestException {
         mockResponseUnirest();
-        Response response = (Response) doRequest(false, createCourseCopyRequest());
+        Response response = (Response) doRequest(createCourseCopyRequest());
         Assert.assertNotNull(response);
     }
 
-    @Test
-    public void testCourseCreateFailure() throws UnirestException, IOException {
-        mockResponseUnirest();
-        Response response = (Response) doRequest(false, createCourseInvalidRequest());
-        Assert.assertNotNull(ResponseCode.customServerError.getErrorCode(), response.getResponseCode());
-    }
-
-    @Test
-    public void testCourseCreateCopyFailure() throws UnirestException, IOException {
-        mockResponseUnirest();
-        Response response = (Response) doRequest(false, createCourseCopyInvalidRequest());
-        Assert.assertNotNull(ResponseCode.customServerError.getErrorCode(), response.getResponseCode());
-    }
-
-    private Object doRequest(boolean error, Map<String, Object> data) throws IOException {
+    private Object doRequest(Map<String, Object> data) {
         TestKit probe = new TestKit(system);
         ActorRef toc = system.actorOf(props);
         Request request = new Request();
         request.getRequest().put(JsonKey.COURSE, data);
         request.setOperation("createCourse");
         toc.tell(request, probe.getRef());
-        if (error) {
-            ProjectCommonException res =
-                    probe.expectMsgClass(duration("10 second"), ProjectCommonException.class);
-            return res;
-        }
         Response response = probe.expectMsgClass(duration("10 second"), Response.class);
         return response;
     }
@@ -112,14 +90,14 @@ public class CourseManagementActorTest {
 
     private Map<String, Object> createCourseRequest() {
         Map<String, Object> courseMap = new HashMap<>();
-        courseMap.put("name", "Test_CurriculumCourse With 3 Units");
-        courseMap.put("description", "Test_CurriculumCourse description");
-        courseMap.put("mimeType", "application/vnd.ekstep.content-collection");
-        courseMap.put("contentType", "Course");
-        courseMap.put("code", "Test_CurriculumCourse");
+        courseMap.put(JsonKey.NAME, "Test_CurriculumCourse With 3 Units");
+        courseMap.put(JsonKey.DESCRIPTION, "Test_CurriculumCourse description");
+        courseMap.put(JsonKey.MIME_TYPE, "application/vnd.ekstep.content-collection");
+        courseMap.put(JsonKey.CONTENT_TYPE, "Course");
+        courseMap.put(JsonKey.CODE, "Test_CurriculumCourse");
         Map<String, Object> requestMap = new HashMap<String, Object>() {{
-            put("request", new HashMap<String, Object>() {{
-                put("course", courseMap);
+            put(JsonKey.REQUEST, new HashMap<String, Object>() {{
+                put(JsonKey.COURSE, courseMap);
             }});
         }};
         return requestMap;
@@ -127,51 +105,20 @@ public class CourseManagementActorTest {
 
     private Map<String, Object> createCourseCopyRequest() {
         Map<String, Object> courseMap = new HashMap<>();
-        courseMap.put("name", "Test_CurriculumCourse With 3 Units");
-        courseMap.put("code", "Test_CurriculumCourse");
-        courseMap.put("copyScheme", "TextBookToCourse");
-        courseMap.put("createdBy", "testCreatedBy");
-        courseMap.put("createdFor", Arrays.asList("abc"));
-        courseMap.put("framework", "testFramework");
-        courseMap.put("organisation", Arrays.asList("abc"));
+        courseMap.put(JsonKey.NAME, "Test_CurriculumCourse With 3 Units");
+        courseMap.put(JsonKey.CODE, "Test_CurriculumCourse");
+        courseMap.put(JsonKey.COPY_SCHEME, "TextBookToCourse");
+        courseMap.put(JsonKey.CREATED_BY, "testCreatedBy");
+        courseMap.put(JsonKey.COURSE_CREATED_FOR, Arrays.asList("abc"));
+        courseMap.put(JsonKey.FRAMEWORK, "testFramework");
+        courseMap.put(JsonKey.ORGANISATION, Arrays.asList("abc"));
         Map<String, Object> requestMap = new HashMap<String, Object>() {{
-            put("request", new HashMap<String, Object>() {{
-                put("source", "do_123");
-                put("course", courseMap);
+            put(JsonKey.REQUEST, new HashMap<String, Object>() {{
+                put(JsonKey.SOURCE, "do_123");
+                put(JsonKey.COURSE, courseMap);
             }});
         }};
         return requestMap;
     }
 
-    private Map<String, Object> createCourseInvalidRequest() {
-        Map<String, Object> courseMap = new HashMap<>();
-        courseMap.put("name", "Test_CurriculumCourse With 3 Units");
-        courseMap.put("description", "Test_CurriculumCourse description");
-        courseMap.put("mimeType", "invalidMimeType");
-        courseMap.put("contentType", "Course");
-        courseMap.put("code", "Test_CurriculumCourse");
-        Map<String, Object> requestMap = new HashMap<String, Object>() {{
-            put("request", new HashMap<String, Object>() {{
-                put("course", courseMap);
-            }});
-        }};
-        return requestMap;
-    }
-
-    private Map<String, Object> createCourseCopyInvalidRequest() {
-        Map<String, Object> courseMap = new HashMap<>();
-        courseMap.put("name", "Test_CurriculumCourse With 3 Units");
-        courseMap.put("code", "Test_CurriculumCourse");
-        courseMap.put("copyScheme", "TextBookToCourse");
-        courseMap.put("createdBy", "testCreatedBy");
-        courseMap.put("createdFor", Arrays.asList("abc"));
-        courseMap.put("organisation", Arrays.asList("abc"));
-        Map<String, Object> requestMap = new HashMap<String, Object>() {{
-            put("request", new HashMap<String, Object>() {{
-                put("source", "do_123");
-                put("course", courseMap);
-            }});
-        }};
-        return requestMap;
-    }
 }

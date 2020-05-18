@@ -49,7 +49,9 @@ public class CourseManagementActor extends BaseActor {
         contentMap.putAll((Map<String, Object>) request.get(JsonKey.COURSE));
         String requestUrl;
         if (request.getRequest().containsKey(JsonKey.SOURCE)) {
-            contentMap.put(JsonKey.COPY_SCHEME, JsonKey.TEXT_BOOK_TO_COURSE);
+            if(!((Map<String, Object>) request.get(JsonKey.COURSE)).containsKey(JsonKey.COPY_SCHEME)) {
+                contentMap.put(JsonKey.COPY_SCHEME, JsonKey.TEXT_BOOK_TO_COURSE);
+            }
             contentMap.put(JsonKey.COURSE_TYPE, JsonKey.CURRICULUM_COURSE);
             requestUrl = getConfigValue(EKSTEP_BASE_URL) + "/content/v3/copy/" + request.get(JsonKey.SOURCE) + "?type=deep";
         } else {
@@ -88,11 +90,11 @@ public class CourseManagementActor extends BaseActor {
                         LoggerEnum.INFO);
                 if (response.getResponseCode().getResponseCode() == ResponseCode.OK.getResponseCode()) {
                     if (request.getRequest().containsKey(JsonKey.SOURCE)) {
-                        Map<String, Object> node_id = (Map<String, Object>) response.get("node_id");
+                        Map<String, Object> node_id = (Map<String, Object>) response.get(JsonKey.NODE_ID);
                         response.put(JsonKey.IDENTIFIER, node_id.get(request.get(JsonKey.SOURCE)));
                     }
-                    response.getResult().remove("node_id");
-                    response.getResult().put("course_id", response.get("identifier"));
+                    response.getResult().remove(JsonKey.NODE_ID);
+                    response.getResult().put(JsonKey.COURSEID, response.get(JsonKey.IDENTIFIER));
                     response.getResult().put(JsonKey.IDENTIFIER, response.get(JsonKey.IDENTIFIER));
                     response.getResult().put(JsonKey.VERSION_KEY, response.get(JsonKey.VERSION_KEY));
                     sender().tell(response, self());

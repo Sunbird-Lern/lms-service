@@ -61,8 +61,7 @@ public final class RequestValidator {
         }
         if (null != map.get(JsonKey.LAST_COMPLETED_TIME)) {
           boolean bool =
-                  ProjectUtil.isDateValidFormat(
-                          "yyyy-MM-dd HH:mm:ss:SSSZ", (String) map.get(JsonKey.LAST_COMPLETED_TIME));
+                  ProjectUtil.isDateValidFormat("yyyy-MM-dd HH:mm:ss:SSSZ", (String) map.get(JsonKey.LAST_COMPLETED_TIME));
           if (!bool) {
             throw new ProjectCommonException(
                     ResponseCode.dateFormatError.getErrorCode(),
@@ -70,32 +69,28 @@ public final class RequestValidator {
                     ERROR_CODE);
           }
         }
-        if (!map.containsKey(JsonKey.COURSE_ID)
-                || StringUtils.isBlank((String) map.get(JsonKey.COURSE_ID))) {
+        if (StringUtils.isBlank((String) map.get(JsonKey.BATCH_ID))) {
+          throw new ProjectCommonException(
+                  ResponseCode.courseBatchIdRequired.getErrorCode(),
+                  ResponseCode.courseBatchIdRequired.getErrorMessage(),
+                  ERROR_CODE);
+        }
+        if (StringUtils.isBlank((String) map.get(JsonKey.COURSE_ID))) {
           throw new ProjectCommonException(
                   ResponseCode.courseIdRequired.getErrorCode(),
                   ResponseCode.courseIdRequiredError.getErrorMessage(),
                   ERROR_CODE);
         }
-        if (map.containsKey(JsonKey.CONTENT_ID)) {
-
-          if (null == map.get(JsonKey.CONTENT_ID)) {
-            throw new ProjectCommonException(
-                    ResponseCode.contentIdRequired.getErrorCode(),
-                    ResponseCode.contentIdRequiredError.getErrorMessage(),
-                    ERROR_CODE);
-          }
-          if (ProjectUtil.isNull(map.get(JsonKey.STATUS))) {
-            throw new ProjectCommonException(
-                    ResponseCode.contentStatusRequired.getErrorCode(),
-                    ResponseCode.contentStatusRequired.getErrorMessage(),
-                    ERROR_CODE);
-          }
-
-        } else {
+        if (StringUtils.isBlank((String) map.get(JsonKey.CONTENT_ID))) {
           throw new ProjectCommonException(
                   ResponseCode.contentIdRequired.getErrorCode(),
                   ResponseCode.contentIdRequiredError.getErrorMessage(),
+                  ERROR_CODE);
+        }
+        if (ProjectUtil.isNull(map.get(JsonKey.STATUS))) {
+          throw new ProjectCommonException(
+                  ResponseCode.contentStatusRequired.getErrorCode(),
+                  ResponseCode.contentStatusRequired.getErrorMessage(),
                   ERROR_CODE);
         }
       }
@@ -111,40 +106,35 @@ public final class RequestValidator {
                 ERROR_CODE);
           }
 
-          if (!map.containsKey(JsonKey.COURSE_ID)
-              || StringUtils.isBlank((String) map.get(JsonKey.COURSE_ID))) {
+          if (StringUtils.isBlank((String) map.get(JsonKey.COURSE_ID))) {
             throw new ProjectCommonException(
                 ResponseCode.courseIdRequired.getErrorCode(),
                 ResponseCode.courseIdRequiredError.getErrorMessage(),
                 ERROR_CODE);
           }
 
-          if (!map.containsKey(JsonKey.CONTENT_ID)
-              || StringUtils.isBlank((String) map.get(JsonKey.CONTENT_ID))) {
+          if (StringUtils.isBlank((String) map.get(JsonKey.CONTENT_ID))) {
             throw new ProjectCommonException(
                 ResponseCode.contentIdRequired.getErrorCode(),
                 ResponseCode.contentIdRequiredError.getErrorMessage(),
                 ERROR_CODE);
           }
 
-          if (!map.containsKey(JsonKey.BATCH_ID)
-              || StringUtils.isBlank((String) map.get(JsonKey.BATCH_ID))) {
+          if (StringUtils.isBlank((String) map.get(JsonKey.BATCH_ID))) {
             throw new ProjectCommonException(
                 ResponseCode.courseBatchIdRequired.getErrorCode(),
                 ResponseCode.courseBatchIdRequired.getErrorMessage(),
                 ERROR_CODE);
           }
 
-          if (!map.containsKey(JsonKey.USER_ID)
-              || StringUtils.isBlank((String) map.get(JsonKey.USER_ID))) {
+          if (StringUtils.isBlank((String) map.get(JsonKey.USER_ID))) {
             throw new ProjectCommonException(
                 ResponseCode.userIdRequired.getErrorCode(),
                 ResponseCode.userIdRequired.getErrorMessage(),
                 ERROR_CODE);
           }
 
-          if (!map.containsKey(JsonKey.ATTEMPT_ID)
-              || StringUtils.isBlank((String) map.get(JsonKey.ATTEMPT_ID))) {
+          if (StringUtils.isBlank((String) map.get(JsonKey.ATTEMPT_ID))) {
             throw new ProjectCommonException(
                 ResponseCode.attemptIdRequired.getErrorCode(),
                 ResponseCode.attemptIdRequired.getErrorMessage(),

@@ -23,8 +23,10 @@ import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.responsecode.ResponseCode;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,6 +60,27 @@ public class CourseManagementActorTest {
         mockResponseUnirest();
         Response response = (Response) doRequest(false, createCourseRequest());
         Assert.assertNotNull(response);
+    }
+
+    @Test
+    public void testCourseCreateCopySuccess() throws UnirestException, IOException {
+        mockResponseUnirest();
+        Response response = (Response) doRequest(false, createCourseCopyRequest());
+        Assert.assertNotNull(response);
+    }
+
+    @Test
+    public void testCourseCreateFailure() throws UnirestException, IOException {
+        mockResponseUnirest();
+        Response response = (Response) doRequest(false, createCourseInvalidRequest());
+        Assert.assertNotNull(ResponseCode.customServerError.getErrorCode(), response.getResponseCode());
+    }
+
+    @Test
+    public void testCourseCreateCopyFailure() throws UnirestException, IOException {
+        mockResponseUnirest();
+        Response response = (Response) doRequest(false, createCourseCopyInvalidRequest());
+        Assert.assertNotNull(ResponseCode.customServerError.getErrorCode(), response.getResponseCode());
     }
 
     private Object doRequest(boolean error, Map<String, Object> data) throws IOException {
@@ -96,6 +119,56 @@ public class CourseManagementActorTest {
         courseMap.put("code", "Test_CurriculumCourse");
         Map<String, Object> requestMap = new HashMap<String, Object>() {{
             put("request", new HashMap<String, Object>() {{
+                put("course", courseMap);
+            }});
+        }};
+        return requestMap;
+    }
+
+    private Map<String, Object> createCourseCopyRequest() {
+        Map<String, Object> courseMap = new HashMap<>();
+        courseMap.put("name", "Test_CurriculumCourse With 3 Units");
+        courseMap.put("code", "Test_CurriculumCourse");
+        courseMap.put("copyScheme", "TextBookToCourse");
+        courseMap.put("createdBy", "testCreatedBy");
+        courseMap.put("createdFor", Arrays.asList("abc"));
+        courseMap.put("framework", "testFramework");
+        courseMap.put("organisation", Arrays.asList("abc"));
+        Map<String, Object> requestMap = new HashMap<String, Object>() {{
+            put("request", new HashMap<String, Object>() {{
+                put("source", "do_123");
+                put("course", courseMap);
+            }});
+        }};
+        return requestMap;
+    }
+
+    private Map<String, Object> createCourseInvalidRequest() {
+        Map<String, Object> courseMap = new HashMap<>();
+        courseMap.put("name", "Test_CurriculumCourse With 3 Units");
+        courseMap.put("description", "Test_CurriculumCourse description");
+        courseMap.put("mimeType", "invalidMimeType");
+        courseMap.put("contentType", "Course");
+        courseMap.put("code", "Test_CurriculumCourse");
+        Map<String, Object> requestMap = new HashMap<String, Object>() {{
+            put("request", new HashMap<String, Object>() {{
+                put("course", courseMap);
+            }});
+        }};
+        return requestMap;
+    }
+
+    private Map<String, Object> createCourseCopyInvalidRequest() {
+        Map<String, Object> courseMap = new HashMap<>();
+        courseMap.put("name", "Test_CurriculumCourse With 3 Units");
+        courseMap.put("code", "Test_CurriculumCourse");
+        courseMap.put("copyScheme", "TextBookToCourse");
+        courseMap.put("createdBy", "testCreatedBy");
+        courseMap.put("createdFor", Arrays.asList("abc"));
+        courseMap.put("organisation", Arrays.asList("abc"));
+        Map<String, Object> requestMap = new HashMap<String, Object>() {{
+            put("request", new HashMap<String, Object>() {{
+                put("source", "do_123");
                 put("course", courseMap);
             }});
         }};

@@ -15,15 +15,15 @@ public class CourseCreateRequestValidator {
         try {
             String message = "";
             if (null == request.get("course")) {
-                message += "Please provide course";
+                message += "Error due to missing request body or course";
                 setErrorMessage(message);
             }
             if (!request.getRequest().containsKey("source")) {
-                if (!StringUtils.equals("Course", (String)((Map<String, Object>) request.get("course")).get("contentType"))) {
+                if (!StringUtils.equals("Course", (String) ((Map<String, Object>) request.get("course")).get("contentType"))) {
                     message += "contentType should be Course";
                     setErrorMessage(message);
                 }
-                if (!StringUtils.equals("application/vnd.ekstep.content-collection", (String)((Map<String, Object>) request.get("course")).get("mimeType"))) {
+                if (!StringUtils.equals("application/vnd.ekstep.content-collection", (String) ((Map<String, Object>) request.get("course")).get("mimeType"))) {
                     message += "mimeType should be collection";
                     setErrorMessage(message);
                 }
@@ -42,8 +42,8 @@ public class CourseCreateRequestValidator {
 
     private static void setErrorMessage(String message) {
         ProjectCommonException.throwClientErrorException(
-                ResponseCode.customClientError,
+                ResponseCode.missingData,
                 MessageFormat.format(
-                        ResponseCode.customClientError.getErrorMessage(), message));
+                        ResponseCode.missingData.getErrorMessage(), message));
     }
 }

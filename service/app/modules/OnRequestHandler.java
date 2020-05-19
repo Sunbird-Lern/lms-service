@@ -9,7 +9,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.BadgingJsonKey;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
@@ -71,6 +70,8 @@ public class OnRequestHandler implements ActionCreator {
         } else {
           result = delegate.call(request);
         }
+        Map<String,Object> reqInfo = requestInfo.remove(ExecutionContext.getRequestId());
+        reqInfo = null;
         return result.thenApply(res -> res.withHeader("Access-Control-Allow-Origin", "*"));
       }
     };
@@ -115,7 +116,7 @@ public class OnRequestHandler implements ActionCreator {
     request.flash().put(JsonKey.SIGNUP_TYPE, signType);
     request.flash().put(JsonKey.REQUEST_SOURCE, source);
     ExecutionContext context = ExecutionContext.getCurrent();
-    Map<String, Object> reqContext = new HashMap<>();
+    Map<String, Object> reqContext = new WeakHashMap<>();
     // set env and channel to the
     Optional<String> optionalChannel = request.header(HeaderParam.CHANNEL_ID.getName());
     String channel;
@@ -164,9 +165,9 @@ public class OnRequestHandler implements ActionCreator {
       request.flash().put(JsonKey.ACTOR_TYPE, JsonKey.CONSUMER);
     }
     context.setRequestContext(reqContext);
-    Map<String, Object> map = new ConcurrentHashMap<>();
+    Map<String, Object> map = new WeakHashMap<>();
     map.put(JsonKey.CONTEXT, TelemetryUtil.getTelemetryContext());
-    Map<String, Object> additionalInfo = new HashMap<>();
+    Map<String, Object> additionalInfo = new WeakHashMap<>();
     additionalInfo.put(JsonKey.URL, url);
     additionalInfo.put(JsonKey.METHOD, methodName);
     additionalInfo.put(JsonKey.START_TIME, startTime);

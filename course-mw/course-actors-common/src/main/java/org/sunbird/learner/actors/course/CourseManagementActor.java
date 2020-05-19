@@ -8,7 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.base.BaseActor;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;;
-import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.keys.*;
 import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.TelemetryEnvKey;
@@ -46,25 +46,25 @@ public class CourseManagementActor extends BaseActor {
 
     private void createCourse(Request request) throws Exception {
         Map<String, Object> contentMap = new HashMap<>();
-        contentMap.putAll((Map<String, Object>) request.get(JsonKey.COURSE));
+        contentMap.putAll((Map<String, Object>) request.get(SunbirdKey.COURSE));
         String requestUrl;
-        if (request.getRequest().containsKey(JsonKey.SOURCE)) {
-            if(!((Map<String, Object>) request.get(JsonKey.COURSE)).containsKey(JsonKey.COPY_SCHEME)) {
-                contentMap.put(JsonKey.COPY_SCHEME, JsonKey.TEXT_BOOK_TO_COURSE);
+        if (request.getRequest().containsKey(SunbirdKey.SOURCE)) {
+            if(!((Map<String, Object>) request.get(SunbirdKey.COURSE)).containsKey(SunbirdKey.COPY_SCHEME)) {
+                contentMap.put(SunbirdKey.COPY_SCHEME, SunbirdKey.TEXT_BOOK_TO_COURSE);
             }
-            contentMap.put(JsonKey.COURSE_TYPE, JsonKey.CURRICULUM_COURSE);
-            requestUrl = getConfigValue(EKSTEP_BASE_URL) + "/content/v3/copy/" + request.get(JsonKey.SOURCE) + "?type=deep";
+            contentMap.put(SunbirdKey.COURSE_TYPE, SunbirdKey.CURRICULUM_COURSE);
+            requestUrl = getConfigValue(EKSTEP_BASE_URL) + "/content/v3/copy/" + request.get(SunbirdKey.SOURCE) + "?type=deep";
         } else {
-            contentMap.put(JsonKey.COURSE_TYPE, JsonKey.TRAINING_COURSE);
+            contentMap.put(SunbirdKey.COURSE_TYPE, SunbirdKey.TRAINING_COURSE);
             requestUrl = getConfigValue(EKSTEP_BASE_URL) + "/content/v3/create";
         }
         Map<String, String> headers = new HashMap<String, String>() {{
-            put("Content-Type", "application/json");
-            put("X-Channel-Id", (String) request.getContext().get(JsonKey.CHANNEL));
+            put(SunbirdKey.CONTENT_TYPE, SunbirdKey.APPLICATION_JSON);
+            put(SunbirdKey.X_CHANNEL_ID, (String) request.getContext().get(SunbirdKey.CHANNEL));
         }};
         Map<String, Object> requestMap = new HashMap<String, Object>() {{
-            put(JsonKey.REQUEST, new HashMap<String, Object>() {{
-                put(JsonKey.CONTENT, contentMap);
+            put(SunbirdKey.REQUEST, new HashMap<String, Object>() {{
+                put(SunbirdKey.CONTENT, contentMap);
             }});
         }};
         try {
@@ -89,21 +89,21 @@ public class CourseManagementActor extends BaseActor {
                                 + updateResponse.getBody().getBytes().length,
                         LoggerEnum.INFO);
                 if (response.getResponseCode().getResponseCode() == ResponseCode.OK.getResponseCode()) {
-                    if (request.getRequest().containsKey(JsonKey.SOURCE)) {
-                        Map<String, Object> node_id = (Map<String, Object>) response.get(JsonKey.NODE_ID);
-                        response.put(JsonKey.IDENTIFIER, node_id.get(request.get(JsonKey.SOURCE)));
+                    if (request.getRequest().containsKey(SunbirdKey.SOURCE)) {
+                        Map<String, Object> node_id = (Map<String, Object>) response.get(SunbirdKey.NODE_ID);
+                        response.put(SunbirdKey.IDENTIFIER, node_id.get(request.get(SunbirdKey.SOURCE)));
                     }
-                    response.getResult().remove(JsonKey.NODE_ID);
-                    response.getResult().put(JsonKey.COURSEID, response.get(JsonKey.IDENTIFIER));
-                    response.getResult().put(JsonKey.IDENTIFIER, response.get(JsonKey.IDENTIFIER));
-                    response.getResult().put(JsonKey.VERSION_KEY, response.get(JsonKey.VERSION_KEY));
+                    response.getResult().remove(SunbirdKey.NODE_ID);
+                    response.getResult().put(SunbirdKey.COURSE_ID, response.get(SunbirdKey.IDENTIFIER));
+                    response.getResult().put(SunbirdKey.IDENTIFIER, response.get(SunbirdKey.IDENTIFIER));
+                    response.getResult().put(SunbirdKey.VERSION_KEY, response.get(SunbirdKey.VERSION_KEY));
                     sender().tell(response, self());
                 } else {
                     Map<String, Object> resultMap =
                             Optional.ofNullable(response.getResult()).orElse(new HashMap<>());
                     String message = "Course creation failed ";
                     if (MapUtils.isNotEmpty(resultMap)) {
-                        Object obj = Optional.ofNullable(resultMap.get(JsonKey.TB_MESSAGES)).orElse("");
+                        Object obj = Optional.ofNullable(resultMap.get(SunbirdKey.TB_MESSAGES)).orElse("");
                         if (obj instanceof List) {
                             message += ((List<String>) obj).stream().collect(Collectors.joining(";"));
                         } else if (StringUtils.isNotEmpty(response.getParams().getErrmsg())) {

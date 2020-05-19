@@ -22,6 +22,7 @@ import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
+import org.sunbird.keys.*;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -70,7 +71,7 @@ public class CourseManagementActorTest {
         TestKit probe = new TestKit(system);
         ActorRef toc = system.actorOf(props);
         Request request = new Request();
-        request.getRequest().put(JsonKey.COURSE, data);
+        request.getRequest().put(SunbirdKey.COURSE, data);
         request.setOperation("createCourse");
         toc.tell(request, probe.getRef());
         Response response = probe.expectMsgClass(duration("10 second"), Response.class);
@@ -90,14 +91,14 @@ public class CourseManagementActorTest {
 
     private Map<String, Object> createCourseRequest() {
         Map<String, Object> courseMap = new HashMap<>();
-        courseMap.put(JsonKey.NAME, "Test_CurriculumCourse With 3 Units");
-        courseMap.put(JsonKey.DESCRIPTION, "Test_CurriculumCourse description");
-        courseMap.put(JsonKey.MIME_TYPE, "application/vnd.ekstep.content-collection");
-        courseMap.put(JsonKey.CONTENT_TYPE, "Course");
-        courseMap.put(JsonKey.CODE, "Test_CurriculumCourse");
+        courseMap.put(SunbirdKey.NAME, "Test_CurriculumCourse With 3 Units");
+        courseMap.put(SunbirdKey.DESCRIPTION, "Test_CurriculumCourse description");
+        courseMap.put(SunbirdKey.MIME_TYPE, "application/vnd.ekstep.content-collection");
+        courseMap.put(SunbirdKey.CONTENT_TYPE, "Course");
+        courseMap.put(SunbirdKey.CODE, "Test_CurriculumCourse");
         Map<String, Object> requestMap = new HashMap<String, Object>() {{
-            put(JsonKey.REQUEST, new HashMap<String, Object>() {{
-                put(JsonKey.COURSE, courseMap);
+            put(SunbirdKey.REQUEST, new HashMap<String, Object>() {{
+                put(SunbirdKey.COURSE, courseMap);
             }});
         }};
         return requestMap;
@@ -105,17 +106,17 @@ public class CourseManagementActorTest {
 
     private Map<String, Object> createCourseCopyRequest() {
         Map<String, Object> courseMap = new HashMap<>();
-        courseMap.put(JsonKey.NAME, "Test_CurriculumCourse With 3 Units");
-        courseMap.put(JsonKey.CODE, "Test_CurriculumCourse");
-        courseMap.put(JsonKey.COPY_SCHEME, "TextBookToCourse");
-        courseMap.put(JsonKey.CREATED_BY, "testCreatedBy");
-        courseMap.put(JsonKey.COURSE_CREATED_FOR, Arrays.asList("abc"));
-        courseMap.put(JsonKey.FRAMEWORK, "testFramework");
-        courseMap.put(JsonKey.ORGANISATION, Arrays.asList("abc"));
+        courseMap.put(SunbirdKey.NAME, "Test_CurriculumCourse With 3 Units");
+        courseMap.put(SunbirdKey.CODE, "Test_CurriculumCourse");
+        courseMap.put(SunbirdKey.COPY_SCHEME, "TextBookToCourse");
+        courseMap.put(SunbirdKey.CREATED_BY, "testCreatedBy");
+        courseMap.put(SunbirdKey.COURSE_CREATED_FOR, Arrays.asList("abc"));
+        courseMap.put(SunbirdKey.FRAMEWORK, "testFramework");
+        courseMap.put(SunbirdKey.ORGANISATION, Arrays.asList("abc"));
         Map<String, Object> requestMap = new HashMap<String, Object>() {{
-            put(JsonKey.REQUEST, new HashMap<String, Object>() {{
-                put(JsonKey.SOURCE, "do_123");
-                put(JsonKey.COURSE, courseMap);
+            put(SunbirdKey.REQUEST, new HashMap<String, Object>() {{
+                put(SunbirdKey.SOURCE, "do_123");
+                put(SunbirdKey.COURSE, courseMap);
             }});
         }};
         return requestMap;

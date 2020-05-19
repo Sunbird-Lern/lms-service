@@ -25,6 +25,7 @@ import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
+import org.sunbird.keys.SunbirdKey;
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao;
 import org.sunbird.learner.actors.coursebatch.dao.UserCoursesDao;
 import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl;
@@ -237,7 +238,7 @@ public class CourseEnrollmentActor extends BaseActor {
     ProjectLogger.log("Requested course id is ==" + courseId, LoggerEnum.INFO.name());
     if (!StringUtils.isBlank(courseId)) {
       try {
-        String ContentCourseTypes = Arrays.stream(getConfigValue(JsonKey.SUNBIRD_CONTENT_COURSE_TYPES).split(",")).map(item -> "\"" + item.trim() + "\"").collect(Collectors.joining(", ","[","]"));
+        String ContentCourseTypes = Arrays.stream(getConfigValue(SunbirdKey.SUNBIRD_CONTENT_COURSE_TYPES).split(",")).map(item -> "\"" + item.trim() + "\"").collect(Collectors.joining(", ","[","]"));
         String query = EKSTEP_COURSE_SEARCH_QUERY.replaceAll("COURSE_ID_PLACEHOLDER", courseId).replaceAll("COURSE_TYPES_PLACEHOLDER", ContentCourseTypes);
         Map<String, Object> result = ContentUtil.searchContent(query, headers);
         if (null != result && !result.isEmpty() && result.get(JsonKey.CONTENTS) != null) {

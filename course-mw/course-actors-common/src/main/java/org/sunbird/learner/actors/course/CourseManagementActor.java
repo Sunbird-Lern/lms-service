@@ -59,7 +59,7 @@ public class CourseManagementActor extends BaseActor {
             requestUrl = getConfigValue(EKSTEP_BASE_URL) + "/content/v3/create";
         }
         Map<String, String> headers = new HashMap<String, String>() {{
-            put(SunbirdKey.CONTENT_TYPE, SunbirdKey.APPLICATION_JSON);
+            put(SunbirdKey.CONTENT_TYPE_HEADER, SunbirdKey.APPLICATION_JSON);
             put(SunbirdKey.X_CHANNEL_ID, (String) request.getContext().get(SunbirdKey.CHANNEL));
         }};
         Map<String, Object> requestMap = new HashMap<String, Object>() {{

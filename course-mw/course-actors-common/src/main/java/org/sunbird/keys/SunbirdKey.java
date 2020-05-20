@@ -17,7 +17,7 @@ public final class SunbirdKey {
     public static final String CONTENT = "content";
     public static final String VERSION_KEY = "versionKey";
     public static final String TB_MESSAGES = "messages";
-    public static final String CONTENT_TYPE = "Content-Type";
+    public static final String CONTENT_TYPE = "contentType";
     public static final String X_CHANNEL_ID = "X-Channel-Id";
     public static final String APPLICATION_JSON = "application/json";
     public static final String NAME = "name";
@@ -29,6 +29,7 @@ public final class SunbirdKey {
     public static final String FRAMEWORK = "framework";
     public static final String ORGANISATION = "organisation";
     public static final String CONTENT_MIME_TYPE_COLLECTION = "application/vnd.ekstep.content-collection";
+    public static final String CONTENT_TYPE_HEADER = "Content-Type";
     public static final String SUNBIRD_CONTENT_COURSE_TYPES = "sunbird_content_course_types";
 
     private SunbirdKey() {}

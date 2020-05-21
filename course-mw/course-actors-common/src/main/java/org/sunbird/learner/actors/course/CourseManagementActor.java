@@ -52,10 +52,8 @@ public class CourseManagementActor extends BaseActor {
             if(!((Map<String, Object>) request.get(SunbirdKey.COURSE)).containsKey(SunbirdKey.COPY_SCHEME)) {
                 contentMap.put(SunbirdKey.COPY_SCHEME, SunbirdKey.TEXT_BOOK_TO_COURSE);
             }
-            contentMap.put(SunbirdKey.COURSE_TYPE, SunbirdKey.CURRICULUM_COURSE);
             requestUrl = getConfigValue(EKSTEP_BASE_URL) + "/content/v3/copy/" + request.get(SunbirdKey.SOURCE) + "?type=deep";
         } else {
-            contentMap.put(SunbirdKey.COURSE_TYPE, SunbirdKey.TRAINING_COURSE);
             requestUrl = getConfigValue(EKSTEP_BASE_URL) + "/content/v3/create";
         }
         Map<String, String> headers = new HashMap<String, String>() {{

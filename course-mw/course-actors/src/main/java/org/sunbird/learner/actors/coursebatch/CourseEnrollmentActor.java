@@ -43,7 +43,7 @@ import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
 public class CourseEnrollmentActor extends BaseActor {
 
   private static String EKSTEP_COURSE_SEARCH_QUERY =
-      "{\"request\": {\"filters\":{\"courseType\": \"COURSE_TYPES_PLACEHOLDER\", \"contentType\": [\"Course\"], \"objectType\": [\"Content\"], \"identifier\": \"COURSE_ID_PLACEHOLDER\", \"status\": [\"Live\", \"Unlisted\"]},\"limit\": 1}}";
+      "{\"request\": {\"filters\":{\"contentType\": [\"Course\"], \"objectType\": [\"Content\"], \"identifier\": \"COURSE_ID_PLACEHOLDER\", \"status\": [\"Live\", \"Unlisted\"]},\"limit\": 1}}";
 
   private CourseBatchDao courseBatchDao = new CourseBatchDaoImpl();
   private UserCoursesDao userCourseDao = UserCoursesDaoImpl.getInstance();
@@ -238,8 +238,7 @@ public class CourseEnrollmentActor extends BaseActor {
     ProjectLogger.log("Requested course id is ==" + courseId, LoggerEnum.INFO.name());
     if (!StringUtils.isBlank(courseId)) {
       try {
-        String ContentCourseTypes = Arrays.stream(getConfigValue(SunbirdKey.SUNBIRD_CONTENT_COURSE_TYPES).split(",")).map(item -> "\"" + item.trim() + "\"").collect(Collectors.joining(", ","[","]"));
-        String query = EKSTEP_COURSE_SEARCH_QUERY.replaceAll("COURSE_ID_PLACEHOLDER", courseId).replaceAll("COURSE_TYPES_PLACEHOLDER", ContentCourseTypes);
+        String query = EKSTEP_COURSE_SEARCH_QUERY.replaceAll("COURSE_ID_PLACEHOLDER", courseId);
         Map<String, Object> result = ContentUtil.searchContent(query, headers);
         if (null != result && !result.isEmpty() && result.get(JsonKey.CONTENTS) != null) {
           return ((List<Map<String, Object>>) result.get(JsonKey.CONTENTS)).get(0);

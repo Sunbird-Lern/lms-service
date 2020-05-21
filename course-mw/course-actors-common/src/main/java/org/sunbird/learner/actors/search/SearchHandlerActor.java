@@ -26,8 +26,9 @@ import org.sunbird.dto.SearchDTO;
 import org.sunbird.learner.actors.coursebatch.service.UserCoursesService;
 import org.sunbird.learner.util.JsonUtil;
 import org.sunbird.learner.util.Util;
-import org.sunbird.telemetry.util.TelemetryLmaxWriter;
+import org.sunbird.telemetry.util.TelemetryEvents;
 import org.sunbird.telemetry.util.TelemetryUtil;
+import org.sunbird.telemetry.util.TelemetryWriter;
 import scala.concurrent.Future;
 
 /**
@@ -183,7 +184,7 @@ public class SearchHandlerActor extends BaseActor {
     // response
     Request req = new Request();
     req.setRequest(telemetryRequestForSearch(telemetryContext, params));
-    TelemetryLmaxWriter.getInstance().submitMessage(req);
+    TelemetryWriter.write(req);
   }
 
   private List<Map<String, Object>> generateTopnResult(Map<String, Object> result) {
@@ -214,7 +215,7 @@ public class SearchHandlerActor extends BaseActor {
     Map<String, Object> map = new HashMap<>();
     map.put(JsonKey.CONTEXT, telemetryContext);
     map.put(JsonKey.PARAMS, params);
-    map.put(JsonKey.TELEMETRY_EVENT_TYPE, "SEARCH");
+    map.put(JsonKey.TELEMETRY_EVENT_TYPE, TelemetryEvents.SEARCH.getName());
     return map;
   }
 }

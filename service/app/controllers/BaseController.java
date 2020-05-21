@@ -4,19 +4,9 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.pattern.PatternsCS;
 import akka.util.Timeout;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.File;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import modules.ApplicationStart;
 import modules.OnRequestHandler;
 import org.apache.commons.lang3.StringUtils;
@@ -32,7 +22,7 @@ import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.HeaderParam;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.telemetry.util.TelemetryEvents;
-import org.sunbird.telemetry.util.TelemetryLmaxWriter;
+import org.sunbird.telemetry.util.TelemetryWriter;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
@@ -41,6 +31,18 @@ import play.mvc.Result;
 import play.mvc.Results;
 import util.AuthenticationHelper;
 
+import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+
 /**
  * This controller we can use for writing some common method.
  *
@@ -48,9 +50,9 @@ import util.AuthenticationHelper;
  */
 public class BaseController extends Controller {
 
+  private static ObjectMapper objectMapper = new ObjectMapper();
   private static final String version = "v1";
   public static final int AKKA_WAIT_TIME = 30;
-  private TelemetryLmaxWriter lmaxWriter = TelemetryLmaxWriter.getInstance();
   protected Timeout timeout = new Timeout(AKKA_WAIT_TIME, TimeUnit.SECONDS);
 
   private org.sunbird.common.request.Request initRequest(
@@ -361,7 +363,7 @@ public class BaseController extends Controller {
     ProjectLogger.log(
         exception != null ? exception.getMessage() : "Message is not coming",
         exception,
-        genarateTelemetryInfoForError(request));
+            generateTelemetryInfoForError(request));
     Response response = new Response();
     response.setVer("");
     if (request != null) {
@@ -387,7 +389,6 @@ public class BaseController extends Controller {
         }
       }
     }
-    OnRequestHandler.requestInfo.remove(request.flash().get(JsonKey.REQUEST_ID));
     return response;
   }
 
@@ -418,55 +419,6 @@ public class BaseController extends Controller {
    * @return Result
    */
   public Result createCommonResponse(Object response, String key, Http.Request request) {
-    String requestId = request.flash().getOptional(JsonKey.REQUEST_ID).orElse(null);
-    if (requestId != null && OnRequestHandler.requestInfo.containsKey(requestId)) {
-      Map<String, Object> requestInfo = OnRequestHandler.requestInfo.get(requestId);
-      org.sunbird.common.request.Request req = new org.sunbird.common.request.Request();
-      try {
-        Map<String, Object> params = (Map<String, Object>) requestInfo.get(JsonKey.ADDITIONAL_INFO);
-
-        params.put(JsonKey.LOG_TYPE, JsonKey.API_ACCESS);
-        params.put(JsonKey.MESSAGE, "");
-        params.put(JsonKey.METHOD, request.method());
-        // calculate  the total time consume
-        long startTime = (Long) params.get(JsonKey.START_TIME);
-        params.put(JsonKey.DURATION, calculateApiTimeTaken(startTime));
-        ProjectLogger.log(
-            "BaseController:createCommonResponse api taken time="
-                + params.get(JsonKey.DURATION)
-                + " for messageId="
-                + requestId,
-            LoggerEnum.INFO);
-        removeFields(params, JsonKey.START_TIME);
-        params.put(
-            JsonKey.STATUS,
-            String.valueOf(((Response) response).getResponseCode().getResponseCode()));
-        params.put(JsonKey.LOG_LEVEL, JsonKey.INFO);
-        req.setRequest(
-            generateTelemetryRequestForController(
-                TelemetryEvents.LOG.getName(),
-                params,
-                (Map<String, Object>) requestInfo.get(JsonKey.CONTEXT)));
-        // if any request is coming form /v1/telemetry/save then don't generate the telemetry log
-        // for it.
-        lmaxWriter.submitMessage(req);
-      } catch (Exception ex) {
-        ProjectLogger.log(
-            "BaseController:createCommonResponse Exception in writing telemetry for request "
-                + requestId,
-            ex);
-      } finally {
-        // remove request info from map
-        OnRequestHandler.requestInfo.remove(requestId);
-        ProjectLogger.log(
-            "BaseController:createCommonResponse removed details for messageId=" + requestId,
-            LoggerEnum.INFO);
-      }
-    } else {
-      ProjectLogger.log(
-          "BaseController:createCommonResponse request details not found requestId=" + requestId,
-          LoggerEnum.ERROR);
-    }
     Response courseResponse = (Response) response;
     if (!StringUtils.isBlank(key)) {
       Object value = courseResponse.getResult().get(JsonKey.RESPONSE);
@@ -521,7 +473,7 @@ public class BaseController extends Controller {
    */
   public Result createCommonExceptionResponse(Exception e, Http.Request request) {
     Request req = request;
-    ProjectLogger.log(e.getMessage(), e, genarateTelemetryInfoForError(request));
+    ProjectLogger.log(e.getMessage(), e, generateTelemetryInfoForError(request));
     ProjectCommonException exception = null;
     if (e instanceof ProjectCommonException) {
       exception = (ProjectCommonException) e;
@@ -533,13 +485,15 @@ public class BaseController extends Controller {
               ResponseCode.SERVER_ERROR.getResponseCode());
     }
 
-    Map<String, Object> requestInfo =
-        OnRequestHandler.requestInfo.get(request.flash().get(JsonKey.REQUEST_ID));
+    String requestContext = request.flash().getOptional(JsonKey.CONTEXT).get();
+    Map<String, Object> requestInfo = objectMapper.convertValue(requestContext, new TypeReference<Map<String, Object>>() {});
     org.sunbird.common.request.Request reqForTelemetry = new org.sunbird.common.request.Request();
     Map<String, Object> params = (Map<String, Object>) requestInfo.get(JsonKey.ADDITIONAL_INFO);
     params.put(JsonKey.LOG_TYPE, JsonKey.API_ACCESS);
     params.put(JsonKey.MESSAGE, "");
     params.put(JsonKey.METHOD, request.method());
+    params.put("err", exception.getResponseCode() + "");
+    params.put("errtype", exception.getCode());
     // calculate  the total time consume
     long startTime = (Long) params.get(JsonKey.START_TIME);
     params.put(JsonKey.DURATION, calculateApiTimeTaken(startTime));
@@ -552,7 +506,7 @@ public class BaseController extends Controller {
             TelemetryEvents.ERROR.getName(),
             params,
             (Map<String, Object>) requestInfo.get(JsonKey.CONTEXT)));
-    lmaxWriter.submitMessage(reqForTelemetry);
+    TelemetryWriter.write(reqForTelemetry);
 
     // cleaning request info ...
     return Results.status(
@@ -716,12 +670,11 @@ public class BaseController extends Controller {
     return builder.toString();
   }
 
-  private static Map<String, Object> genarateTelemetryInfoForError(Http.Request request) {
+  private static Map<String, Object> generateTelemetryInfoForError(Http.Request request) {
 
     Map<String, Object> map = new HashMap<>();
-    Map<String, Object> requestInfo =
-        OnRequestHandler.requestInfo.getOrDefault(request.flash().get(JsonKey.REQUEST_ID), new HashMap<String, Object>());
-    Map<String, Object> contextInfo = (Map<String, Object>) requestInfo.getOrDefault(JsonKey.CONTEXT, new HashMap<String, Object>());
+    String requestContext = request.flash().getOptional(JsonKey.CONTEXT).get();
+    Map<String, Object> contextInfo = objectMapper.convertValue(requestContext, new TypeReference<Map<String, Object>>() {});
     Map<String, Object> params = new HashMap<>();
     params.put(JsonKey.ERR_TYPE, JsonKey.API_ACCESS);
 

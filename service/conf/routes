@@ -4,7 +4,7 @@ OPTIONS    /*all                        @controllers.LearnerController.preflight
 
 # Health Check APIs
 GET  /health                                  @controllers.healthmanager.HealthController.getHealth(request: play.mvc.Http.Request)
-GET  /:service/health                      @controllers.healthmanager.HealthController.getLearnerServiceHealth(service:String, request: play.mvc.Http.Request)
+GET  /service/health                      @controllers.healthmanager.HealthController.getServiceHealth(request: play.mvc.Http.Request)
 
 # Sync API
 POST /v1/data/sync                          @controllers.search.SearchController.sync(request: play.mvc.Http.Request)

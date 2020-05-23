@@ -1,15 +1,18 @@
 package org.sunbird.learner.actors.coursebatch;
 
-import static org.sunbird.common.models.util.JsonKey.ID;
-import static org.sunbird.common.models.util.JsonKey.PARTICIPANTS;
+import static org.sunbird.common.models.util.JsonKey.*;
 import static org.sunbird.common.models.util.ProjectLogger.log;
+import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
+import static org.sunbird.common.responsecode.ResponseCode.SERVER_ERROR;
 
 import akka.actor.ActorRef;
+import akka.util.Timeout;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -28,11 +31,13 @@ import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.kafka.client.InstructionEventGenerator;
+import org.sunbird.keys.SunbirdKey;
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao;
 import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl;
 import org.sunbird.learner.actors.coursebatch.service.UserCoursesService;
 import org.sunbird.learner.constants.CourseJsonKey;
 import org.sunbird.learner.constants.InstructionEvent;
+import org.sunbird.learner.util.ContentSearchUtil;
 import org.sunbird.learner.util.CourseBatchSchedulerUtil;
 import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.Util;
@@ -40,7 +45,9 @@ import org.sunbird.models.course.batch.CourseBatch;
 import org.sunbird.telemetry.util.TelemetryUtil;
 import org.sunbird.userorg.UserOrgService;
 import org.sunbird.userorg.UserOrgServiceImpl;
+import scala.concurrent.Await;
 import scala.concurrent.Future;
+import scala.concurrent.duration.Duration;
 
 public class CourseBatchManagementActor extends BaseActor {
 
@@ -817,19 +824,57 @@ public class CourseBatchManagementActor extends BaseActor {
     return false;
   }
 
-  private Map<String, Object> getContentDetails(String courseId, Map<String, String> headers) {
-    Map<String, Object> ekStepContent =
-        CourseEnrollmentActor.getCourseObjectFromEkStep(courseId, headers);
-    if (null == ekStepContent || ekStepContent.size() == 0) {
-      ProjectLogger.log(
-          "CourseBatchManagementActor:getEkStepContent: Not found course for ID = " + courseId,
-          LoggerEnum.INFO.name());
-      throw new ProjectCommonException(
-          ResponseCode.invalidCourseId.getErrorCode(),
-          ResponseCode.invalidCourseId.getErrorMessage(),
-          ResponseCode.CLIENT_ERROR.getResponseCode());
+  public Map<String, Object> getContentDetails(String courseId, Map<String, String> headers) throws Exception {
+    ProjectLogger.log("CourseBatchManagementActor:getContentDetails: Requested course id is ==" + courseId, LoggerEnum.INFO.name());
+    if (!StringUtils.isBlank(courseId)) {
+      try {
+        Map<String,String> newHeader = new HashMap<String, String>() {{
+          put(SunbirdKey.CONTENT_TYPE_HEADER, SunbirdKey.APPLICATION_JSON);
+        }};
+       // String requestUrl = "http://11.2.6.6/content" + "/content/v3/read/" + courseId + "?fields=status,contentType";
+        String requestUrl = getConfigValue(EKSTEP_BASE_URL) + "/content/v3/read/" + courseId + "?fields=status,contentType";
+        Future<Map<String, Object>> future = ContentSearchUtil.getContent(requestUrl, newHeader, context().dispatcher());
+        Timeout timeout = new Timeout(Duration.create(30, TimeUnit.SECONDS));
+        Map<String, Object> result = Await.result(future, timeout.duration());
+        if (null != result && !result.isEmpty() && result.get(SunbirdKey.CONTENT) != null) {
+          Map<String, Object> content = (Map<String, Object>) result.get(SunbirdKey.CONTENT);
+//          if (getConfigValue(SunbirdKey.BATCH_CREATE_STATUS).contains((String) content.get(SunbirdKey.STATUS)) &&
+//                  StringUtils.equals((String) content.get(SunbirdKey.CONTENT_TYPE), getConfigValue(SunbirdKey.BATCH_CREATE_CONTENT_TYPE))) {
+          if (SunbirdKey.BATCH_CREATE_STATUS.contains(content.get(SunbirdKey.STATUS)) &&
+                  StringUtils.equals((String) content.get(SunbirdKey.CONTENT_TYPE), SunbirdKey.BATCH_CREATE_CONTENT_TYPE)) {
+            return content;
+          } else {
+            ProjectLogger.log(
+                    "CourseBatchManagementActor:getContentDetails: Not found course for ID = " + courseId,
+                    LoggerEnum.INFO.name());
+            throw new ProjectCommonException(
+                    ResponseCode.invalidCourseId.getErrorCode(),
+                    ResponseCode.invalidCourseId.getErrorMessage(),
+                    ResponseCode.CLIENT_ERROR.getResponseCode());
+          }
+        } else {
+          ProjectLogger.log(
+                  "CourseBatchManagementActor:getContentDetails: Content not found for requested courseId "
+                          + courseId,
+                  LoggerEnum.INFO.name());
+          throw new ProjectCommonException(
+                  ResponseCode.resourceNotFound.getErrorCode(),
+                  ResponseCode.resourceNotFound.getErrorMessage(),
+                  ResponseCode.CLIENT_ERROR.getResponseCode());
+        }
+      } catch (Exception ex) {
+        ProjectLogger.log("CourseBatchManagementActor:getContentDetails : course get error ", ex);
+        if (ex instanceof ProjectCommonException) {
+          throw ex;
+        } else {
+          throw new ProjectCommonException(
+                  ResponseCode.CLIENT_ERROR.getErrorCode(),
+                  ResponseCode.CLIENT_ERROR.getErrorMessage(),
+                  SERVER_ERROR.getResponseCode());
+        }
+      }
     }
-    return ekStepContent;
+    return null;
   }
 
   private void validateContentOrg(List<String> createdFor) {

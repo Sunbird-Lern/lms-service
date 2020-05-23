@@ -168,4 +168,39 @@ public class ContentSearchUtil {
     }
     return list;
   }
+
+  public static Future<Map<String, Object>> getContent(
+          String urlString,
+          Map<String, String> headers,
+          ExecutionContextExecutor ec) {
+    String logMsgPrefix = "ContentSearchUtil:getContent: ";
+
+    Unirest.clearDefaultHeaders();
+    BaseRequest request =
+            Unirest.get(urlString).headers(getUpdatedHeaders(headers));
+    Future<HttpResponse<JsonNode>> response = RestUtil.executeAsync(request);
+
+    return response.map(
+            new Mapper<HttpResponse<JsonNode>, Map<String, Object>>() {
+              @Override
+              public Map<String, Object> apply(HttpResponse<JsonNode> response) {
+                try {
+                  if (RestUtil.isSuccessful(response)) {
+                    JSONObject result = response.getBody().getObject().getJSONObject("result");
+                    Map<String, Object> resultMap = jsonToMap(result);
+                    return resultMap;
+                  } else {
+                    ProjectLogger.log(
+                            logMsgPrefix + "Search content failed. Error response = " + response.getBody());
+                    return null;
+                  }
+                } catch (Exception e) {
+                  ProjectLogger.log(
+                          logMsgPrefix + "Exception occurred with error message = " + e.getMessage(), e);
+                  return null;
+                }
+              }
+            },
+            ec);
+  }
 }

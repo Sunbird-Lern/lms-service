@@ -38,21 +38,21 @@ import org.sunbird.userorg.UserOrgServiceImpl;
 @PrepareForTest({ServiceFactory.class, InstructionEventGenerator.class, KafkaClient.class})
 @PowerMockIgnore("javax.management.*")
 public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest {
-//
-//  private MockerBuilder.MockersGroup group;
-//
-//  public CourseBatchManagementActorTest() {
-//    init(CourseBatchManagementActor.class);
-//  }
-//
-//  @Test
-//  @PrepareForTest({
-//    ServiceFactory.class,
-//    EsClientFactory.class,
-//    UserOrgServiceImpl.class,
-//    ContentUtil.class,  InstructionEventGenerator.class, KafkaClient.class
-//  })
-//  public void createBatchInviteSuccess() throws Exception {
+
+  private MockerBuilder.MockersGroup group;
+
+  public CourseBatchManagementActorTest() {
+    init(CourseBatchManagementActor.class);
+  }
+
+  @Test
+  @PrepareForTest({
+    ServiceFactory.class,
+    EsClientFactory.class,
+    UserOrgServiceImpl.class,
+    ContentUtil.class,  InstructionEventGenerator.class, KafkaClient.class
+  })
+  public void createBatchInviteSuccess() throws Exception {
 //    group =
 //        MockerBuilder.getFreshMockerGroup()
 //            .withCassandraMock(new CassandraMocker())
@@ -117,11 +117,11 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
 //    Response response = executeInTenSeconds(req, Response.class);
 //    Assert.assertNotNull(response);
 //    Assert.assertNotNull(response.get(JsonKey.BATCH_ID));
-//  }
-//
-//  @Test
-//  @PrepareForTest({EsClientFactory.class})
-//  public void getBatchSuccess() {
+  }
+
+  @Test
+  @PrepareForTest({EsClientFactory.class})
+  public void getBatchSuccess() {
 //    group = MockerBuilder.getFreshMockerGroup().withESMock(new ESMocker());
 //    when(group.getESMockerService().getDataByIdentifier(Mockito.anyString(), Mockito.anyString()))
 //        .thenReturn(CustomObjectBuilder.getRandomCourseBatch().asESIdentifierResult());
@@ -130,5 +130,5 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
 //    req.getContext().put(JsonKey.BATCH_ID, "randomBatchId");
 //    Response response = executeInTenSeconds(req, Response.class);
 //    Assert.assertNotNull(response);
-//  }
+  }
 }

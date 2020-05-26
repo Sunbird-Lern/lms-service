@@ -485,8 +485,8 @@ public class BaseController extends Controller {
               ResponseCode.SERVER_ERROR.getResponseCode());
     }
 
-    String requestContext = request.flash().getOptional(JsonKey.CONTEXT).get();
-    Map<String, Object> requestInfo = objectMapper.convertValue(requestContext, new TypeReference<Map<String, Object>>() {});
+    String requestId = request.flash().getOptional(request.flash().get(JsonKey.REQUEST_ID)).get();
+    Map<String, Object> requestInfo = objectMapper.convertValue(request.flash().get(requestId), new TypeReference<Map<String, Object>>() {});
     org.sunbird.common.request.Request reqForTelemetry = new org.sunbird.common.request.Request();
     Map<String, Object> params = (Map<String, Object>) requestInfo.get(JsonKey.ADDITIONAL_INFO);
     params.put(JsonKey.LOG_TYPE, JsonKey.API_ACCESS);
@@ -673,8 +673,11 @@ public class BaseController extends Controller {
   private static Map<String, Object> generateTelemetryInfoForError(Http.Request request) {
 
     Map<String, Object> map = new HashMap<>();
-    String requestContext = request.flash().getOptional(JsonKey.CONTEXT).get();
-    Map<String, Object> contextInfo = objectMapper.convertValue(requestContext, new TypeReference<Map<String, Object>>() {});
+
+    String requestContext = request.flash().getOptional(request.flash().get(JsonKey.REQUEST_ID)).get();
+    Map<String, Object> requestInfo = objectMapper.convertValue(requestContext, new TypeReference<Map<String, Object>>() {});
+    Map<String, Object> contextInfo = (Map<String, Object>) requestInfo.getOrDefault(JsonKey.CONTEXT, new HashMap<String, Object>());
+    
     Map<String, Object> params = new HashMap<>();
     params.put(JsonKey.ERR_TYPE, JsonKey.API_ACCESS);
 

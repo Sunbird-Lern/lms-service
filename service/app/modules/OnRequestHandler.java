@@ -175,7 +175,7 @@ public class OnRequestHandler implements ActionCreator {
       // additional info contains info other than context info ...
       map.put(JsonKey.ADDITIONAL_INFO, additionalInfo);
       request.flash().put(JsonKey.REQUEST_ID, requestId);
-      request.flash().put(JsonKey.CONTEXT, mapper.writeValueAsString(map));
+      request.flash().put(requestId, mapper.writeValueAsString(map));
     } catch (Exception e) {
       ProjectCommonException.throwServerErrorException(ResponseCode.SERVER_ERROR);
     }

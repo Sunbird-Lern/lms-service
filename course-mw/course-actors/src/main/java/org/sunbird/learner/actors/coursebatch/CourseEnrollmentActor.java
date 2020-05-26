@@ -256,6 +256,25 @@ public class CourseEnrollmentActor extends BaseActor {
     return null;
   }
 
+  @SuppressWarnings("unchecked")
+  public static Map<String, Object> getCourseObject(String courseId) {
+    ProjectLogger.log("Requested course id is ==" + courseId, LoggerEnum.INFO.name());
+    if (!StringUtils.isBlank(courseId)) {
+      try {
+        Map<String, Object> result = ContentUtil.getContent(courseId);
+        if (null != result && !result.isEmpty() && result.get(JsonKey.CONTENT) != null) {
+          return (Map<String, Object>)result.get(JsonKey.CONTENT);
+        } else {
+          ProjectLogger.log("CourseEnrollmentActor:getCourseObjectFromEkStep: Content not found for requested courseId " + courseId,
+                  LoggerEnum.INFO.name());
+        }
+      } catch (Exception e) {
+        ProjectLogger.log(e.getMessage(), e);
+      }
+    }
+    return null;
+  }
+
   /*
    * This method will validate courseBatch details before enrolling and
    * unenrolling

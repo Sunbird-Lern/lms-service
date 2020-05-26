@@ -20,6 +20,9 @@ import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.PropertiesCache;
 import org.sunbird.common.responsecode.ResponseCode;
 
+import static org.sunbird.common.models.util.JsonKey.EKSTEP_BASE_URL;
+import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
+
 /**
  * This class will make the call to EkStep content search
  *
@@ -116,5 +119,34 @@ public final class ContentUtil {
         "BaseMetricsActor:makePostRequest: Response from analytics store for metrics = " + result,
         LoggerEnum.INFO.name());
     return result;
+  }
+
+  public static Map<String, Object> getContent(String courseId) {
+    Map<String, Object> resMap = new HashMap<>();
+    Map<String, String> headers = new HashMap<>();
+    try {
+      String baseContentreadUrl = ProjectUtil.getConfigValue(JsonKey.EKSTEP_BASE_URL) + "/content/v3/read/" + courseId + "?fields=status,contentType";
+      headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+      if (StringUtils.isBlank(headers.get(JsonKey.AUTHORIZATION))) {
+        headers.put(JsonKey.AUTHORIZATION, PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_AUTHORIZATION));
+      }
+      ProjectLogger.log("making call for content read **** ==" + courseId, LoggerEnum.INFO.name());
+      String response = HttpUtil.sendGetRequest(baseContentreadUrl, headers);
+
+      ProjectLogger.log("Content read response is **** == " + response, LoggerEnum.INFO.name());
+      Map<String, Object> data = mapper.readValue(response, Map.class);
+      if (MapUtils.isNotEmpty(data)) {
+        data = (Map<String, Object>) data.get(JsonKey.RESULT);
+        if (MapUtils.isNotEmpty(data)) {
+          Object content = data.get(JsonKey.CONTENT);
+          resMap.put(JsonKey.CONTENT, content);
+        }
+      } else {
+        ProjectLogger.log("EkStepRequestUtil:searchContent No data found", LoggerEnum.INFO.name());
+      }
+    } catch (IOException e) {
+      ProjectLogger.log("Error found during contnet search parse==" + e.getMessage(), e);
+    }
+    return resMap;
   }
 }

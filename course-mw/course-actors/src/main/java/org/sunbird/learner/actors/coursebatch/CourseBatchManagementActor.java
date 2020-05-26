@@ -819,7 +819,17 @@ public class CourseBatchManagementActor extends BaseActor {
 
   private Map<String, Object> getContentDetails(String courseId, Map<String, String> headers) {
     Map<String, Object> ekStepContent =
-        CourseEnrollmentActor.getCourseObjectFromEkStep(courseId, headers);
+        CourseEnrollmentActor.getCourseObject(courseId);
+    ProjectLogger.log(
+            "CourseBatchManagementActor:getEkStepContent: Not found course for ID *** = " + courseId,
+            LoggerEnum.INFO.name());
+    ProjectLogger.log(
+            "CourseBatchManagementActor:getEkStepContent: Not found course for status *** = " + ekStepContent.get("status"),
+            LoggerEnum.INFO.name());
+    ProjectLogger.log(
+            "CourseBatchManagementActor:getEkStepContent: Not found course for contentType *** = " + ekStepContent.get("contenttype"),
+            LoggerEnum.INFO.name());
+
     if (null == ekStepContent || ekStepContent.size() == 0) {
       ProjectLogger.log(
           "CourseBatchManagementActor:getEkStepContent: Not found course for ID = " + courseId,

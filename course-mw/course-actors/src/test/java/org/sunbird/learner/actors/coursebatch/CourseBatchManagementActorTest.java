@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -45,6 +46,7 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
     init(CourseBatchManagementActor.class);
   }
 
+  @Ignore
   @Test
   @PrepareForTest({
     ServiceFactory.class,

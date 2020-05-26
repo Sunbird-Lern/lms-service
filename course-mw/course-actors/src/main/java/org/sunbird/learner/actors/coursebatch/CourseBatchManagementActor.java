@@ -831,17 +831,14 @@ public class CourseBatchManagementActor extends BaseActor {
         Map<String,String> newHeader = new HashMap<String, String>() {{
           put(SunbirdKey.CONTENT_TYPE_HEADER, SunbirdKey.APPLICATION_JSON);
         }};
-       // String requestUrl = "http://11.2.6.6/content" + "/content/v3/read/" + courseId + "?fields=status,contentType";
         String requestUrl = getConfigValue(EKSTEP_BASE_URL) + "/content/v3/read/" + courseId + "?fields=status,contentType";
         Future<Map<String, Object>> future = ContentSearchUtil.getContent(requestUrl, newHeader, context().dispatcher());
         Timeout timeout = new Timeout(Duration.create(30, TimeUnit.SECONDS));
         Map<String, Object> result = Await.result(future, timeout.duration());
         if (null != result && !result.isEmpty() && result.get(SunbirdKey.CONTENT) != null) {
           Map<String, Object> content = (Map<String, Object>) result.get(SunbirdKey.CONTENT);
-//          if (getConfigValue(SunbirdKey.BATCH_CREATE_STATUS).contains((String) content.get(SunbirdKey.STATUS)) &&
-//                  StringUtils.equals((String) content.get(SunbirdKey.CONTENT_TYPE), getConfigValue(SunbirdKey.BATCH_CREATE_CONTENT_TYPE))) {
-          if (SunbirdKey.BATCH_CREATE_STATUS.contains(content.get(SunbirdKey.STATUS)) &&
-                  StringUtils.equals((String) content.get(SunbirdKey.CONTENT_TYPE), SunbirdKey.BATCH_CREATE_CONTENT_TYPE)) {
+          if (getConfigValue(SunbirdKey.BATCH_CREATE_STATUS).contains((String) content.get(SunbirdKey.STATUS)) &&
+                  StringUtils.equals((String) content.get(SunbirdKey.CONTENT_TYPE), getConfigValue(SunbirdKey.BATCH_CREATE_CONTENT_TYPE))) {
             return content;
           } else {
             ProjectLogger.log(

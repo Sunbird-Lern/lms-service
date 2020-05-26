@@ -31,9 +31,8 @@ public final class SunbirdKey {
     public static final String CONTENT_MIME_TYPE_COLLECTION = "application/vnd.ekstep.content-collection";
     public static final String CONTENT_TYPE_HEADER = "Content-Type";
     public static final String STATUS = "status";
-    //public static final String BATCH_CREATE_STATUS = "batch_create_status";
-    public static final List<String> BATCH_CREATE_STATUS = new ArrayList<String>(){{add("Live"); add("Unlisted");}};
-    //public static final String BATCH_CREATE_CONTENT_TYPE = "batch_create_content_type";
-    public static final String BATCH_CREATE_CONTENT_TYPE = "Course";
+    public static final String BATCH_CREATE_STATUS = "batch_create_status";
+    public static final String BATCH_CREATE_CONTENT_TYPE = "batch_create_content_type";
+
     private SunbirdKey() {}
 }

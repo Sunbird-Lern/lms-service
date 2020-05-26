@@ -826,8 +826,8 @@ public class CourseBatchManagementActor extends BaseActor {
             " :: content: " + ekStepContent, LoggerEnum.INFO.name());
     if (null == ekStepContent ||
             ekStepContent.size() == 0 ||
-            StringUtils.equalsIgnoreCase(validContenttype, (String)ekStepContent.get("contentType")) ||
-            validCourseStatus.contains((String)ekStepContent.get("status"))) {
+            !StringUtils.equalsIgnoreCase(validContenttype, (String)ekStepContent.get("contentType")) ||
+            !validCourseStatus.contains((String)ekStepContent.get("status"))) {
 
       ProjectLogger.log(
           "CourseBatchManagementActor:getEkStepContent: Not found course for ID = " + courseId,

@@ -49,6 +49,8 @@ public class CourseBatchManagementActor extends BaseActor {
   private UserCoursesService userCoursesService = new UserCoursesService();
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+  private List<String> validCourseStatus = Arrays.asList("Live", "Unlisted");
+  private String validContenttype = "Course";
 
   @Inject
   @Named("course-batch-notification-actor")
@@ -820,17 +822,13 @@ public class CourseBatchManagementActor extends BaseActor {
   private Map<String, Object> getContentDetails(String courseId, Map<String, String> headers) {
     Map<String, Object> ekStepContent =
         CourseEnrollmentActor.getCourseObject(courseId);
-    ProjectLogger.log(
-            "CourseBatchManagementActor:getEkStepContent: Not found course for ID *** = " + courseId,
-            LoggerEnum.INFO.name());
-    ProjectLogger.log(
-            "CourseBatchManagementActor:getEkStepContent: Not found course for status *** = " + ekStepContent.get("status"),
-            LoggerEnum.INFO.name());
-    ProjectLogger.log(
-            "CourseBatchManagementActor:getEkStepContent: Not found course for contentType *** = " + ekStepContent.get("contenttype"),
-            LoggerEnum.INFO.name());
+    ProjectLogger.log("CourseBatchManagementActor:getEkStepContent: courseId: " + courseId,
+            " :: content: " + ekStepContent, LoggerEnum.INFO.name());
+    if (null == ekStepContent ||
+            ekStepContent.size() == 0 ||
+            StringUtils.equalsIgnoreCase(validContenttype, (String)ekStepContent.get("contentType")) ||
+            validCourseStatus.contains((String)ekStepContent.get("status"))) {
 
-    if (null == ekStepContent || ekStepContent.size() == 0) {
       ProjectLogger.log(
           "CourseBatchManagementActor:getEkStepContent: Not found course for ID = " + courseId,
           LoggerEnum.INFO.name());

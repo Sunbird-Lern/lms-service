@@ -90,6 +90,6 @@ public class ContentUtilTest {
             .thenReturn("{\"content\":{\"contentType\":\"Course\",\"identifier\":\"do_1130293726460805121168\",\"languageCode\":[\"en\"],\"status\":\"Live\"}}");
     Map<String, Object> result = ContentUtil.getContent("do_1130293726460805121168");
     Assert.assertNotNull(result);
-    Assert.assertNotNull(result.get(JsonKey.CONTENTS));
+    Assert.assertNotNull(result.get(JsonKey.CONTENT));
   }
 }

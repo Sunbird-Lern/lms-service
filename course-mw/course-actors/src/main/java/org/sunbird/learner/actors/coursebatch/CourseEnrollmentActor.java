@@ -25,7 +25,6 @@ import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
-import org.sunbird.keys.SunbirdKey;
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao;
 import org.sunbird.learner.actors.coursebatch.dao.UserCoursesDao;
 import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl;
@@ -38,7 +37,6 @@ import org.sunbird.models.user.courses.UserCourses;
 import org.sunbird.telemetry.util.TelemetryUtil;
 import scala.concurrent.Future;
 
-import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
 
 public class CourseEnrollmentActor extends BaseActor {
 
@@ -248,6 +246,25 @@ public class CourseEnrollmentActor extends BaseActor {
               "CourseEnrollmentActor:getCourseObjectFromEkStep: Content not found for requested courseId "
                   + courseId,
               LoggerEnum.INFO.name());
+        }
+      } catch (Exception e) {
+        ProjectLogger.log(e.getMessage(), e);
+      }
+    }
+    return null;
+  }
+
+  @SuppressWarnings("unchecked")
+  public static Map<String, Object> getCourseObject(String courseId) {
+    ProjectLogger.log("Requested course id is == " + courseId, LoggerEnum.INFO.name());
+    if (!StringUtils.isBlank(courseId)) {
+      try {
+        Map<String, Object> result = ContentUtil.getContent(courseId);
+        if (null != result && !result.isEmpty() && result.get(JsonKey.CONTENT) != null) {
+          return (Map<String, Object>)result.get(JsonKey.CONTENT);
+        } else {
+          ProjectLogger.log("CourseEnrollmentActor:getCourseObjectFromEkStep: Content not found for requested courseId " + courseId,
+                  LoggerEnum.INFO.name());
         }
       } catch (Exception e) {
         ProjectLogger.log(e.getMessage(), e);

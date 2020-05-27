@@ -110,7 +110,9 @@ public class CourseBatchManagementActor extends BaseActor {
     courseBatch.setStatus(setCourseBatchStatus((String) request.get(JsonKey.START_DATE)));
     String courseId = (String) request.get(JsonKey.COURSE_ID);
     Map<String, Object> contentDetails = getContentDetails(courseId, headers);
-    courseBatch.setContentDetails(contentDetails, requestedBy);
+    courseBatch.setCreatedDate(ProjectUtil.getFormattedDate());
+    if(StringUtils.isBlank(courseBatch.getCreatedBy()))
+    	courseBatch.setCreatedBy(requestedBy);
     validateContentOrg(courseBatch.getCreatedFor());
     validateMentors(courseBatch);
     courseBatch.setBatchId(courseBatchId);

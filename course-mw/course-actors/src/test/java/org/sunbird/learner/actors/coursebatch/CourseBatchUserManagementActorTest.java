@@ -1,7 +1,6 @@
 package org.sunbird.learner.actors.coursebatch;
 
 import static org.powermock.api.mockito.PowerMockito.when;
-
 import akka.dispatch.Futures;
 import java.util.Arrays;
 import java.util.HashMap;

@@ -4,6 +4,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
 
 import akka.dispatch.Futures;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.Assert;
@@ -50,7 +51,7 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
     ServiceFactory.class,
     EsClientFactory.class,
     UserOrgServiceImpl.class,
-    ContentUtil.class,  InstructionEventGenerator.class, KafkaClient.class
+    ContentUtil.class,  InstructionEventGenerator.class, KafkaClient.class, CourseEnrollmentActor.class
   })
   public void createBatchInviteSuccess() throws Exception {
     group =
@@ -111,6 +112,9 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
                     .get(0);
               }
             });
+    PowerMockito.mockStatic(CourseEnrollmentActor.class);
+    mockCourseEnrollmentActor();
+
     Request req = new Request();
     req.setOperation("createBatch");
     req.setRequest(courseBatch);
@@ -130,5 +134,14 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
     req.getContext().put(JsonKey.BATCH_ID, "randomBatchId");
     Response response = executeInTenSeconds(req, Response.class);
     Assert.assertNotNull(response);
+  }
+
+  private void mockCourseEnrollmentActor(){
+    Map<String, Object> courseMap = new HashMap<String, Object>() {{
+      put("contentType", "Course");
+      put("status", "Live");
+    }};
+    when(CourseEnrollmentActor.getCourseObject(
+            Mockito.anyString())).thenReturn(courseMap);
   }
 }

@@ -87,7 +87,7 @@ public class ContentUtilTest {
   @Test
   public void getContentTest() throws IOException {
     PowerMockito.when(HttpUtil.sendGetRequest(Mockito.anyString(), Mockito.any()))
-            .thenReturn("{\"content\":{\"contentType\":\"Course\",\"identifier\":\"do_1130293726460805121168\",\"languageCode\":[\"en\"],\"status\":\"Live\"}}");
+            .thenReturn("{\"result\":{\"content\":{\"contentType\":\"Course\",\"identifier\":\"do_1130293726460805121168\",\"languageCode\":[\"en\"],\"status\":\"Live\"}}}");
     Map<String, Object> result = ContentUtil.getContent("do_1130293726460805121168");
     Assert.assertNotNull(result);
     Assert.assertNotNull(result.get(JsonKey.CONTENT));

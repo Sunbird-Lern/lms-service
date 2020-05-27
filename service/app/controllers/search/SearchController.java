@@ -13,7 +13,6 @@ import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.request.RequestValidator;
 import play.mvc.Http;
@@ -43,7 +42,7 @@ public class SearchController extends BaseController {
       RequestValidator.validateSyncRequest(reqObj);
       String operation = (String) reqObj.getRequest().get(JsonKey.OPERATION_FOR);
       reqObj.setOperation(ActorOperations.SYNC.getValue());
-      reqObj.setRequestId(ExecutionContext.getRequestId());
+      reqObj.setRequestId(httpRequest.flash().getOptional(JsonKey.REQUEST_ID).get());
       reqObj.getRequest().put(JsonKey.CREATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
       reqObj.setEnv(getEnvironment());
       HashMap<String, Object> map = new HashMap<>();

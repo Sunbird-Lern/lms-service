@@ -1,12 +1,5 @@
 package org.sunbird.learner.actors.search;
 
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -17,9 +10,15 @@ import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.HttpUtilResponse;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.*;
+import org.sunbird.common.models.util.ActorOperations;
+import org.sunbird.common.models.util.HttpUtil;
+import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.LoggerEnum;
+import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.ProjectUtil.EsType;
-import org.sunbird.common.request.ExecutionContext;
+import org.sunbird.common.models.util.PropertiesCache;
+import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
@@ -27,9 +26,16 @@ import org.sunbird.learner.actors.coursebatch.service.UserCoursesService;
 import org.sunbird.learner.util.JsonUtil;
 import org.sunbird.learner.util.Util;
 import org.sunbird.telemetry.util.TelemetryEvents;
-import org.sunbird.telemetry.util.TelemetryUtil;
 import org.sunbird.telemetry.util.TelemetryWriter;
 import scala.concurrent.Future;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * This class will handle search operation for all different type of index and types
@@ -48,7 +54,6 @@ public class SearchHandlerActor extends BaseActor {
     request.toLower();
     Util.initializeContext(request, TelemetryEnvKey.USER);
     // set request id fto thread loacl...
-    ExecutionContext.setRequestId(request.getRequestId());
 
     if (request.getOperation().equalsIgnoreCase(ActorOperations.COMPOSITE_SEARCH.getValue())) {
       Instant instant = Instant.now();
@@ -107,7 +112,7 @@ public class SearchHandlerActor extends BaseActor {
         }
         sender().tell(response, self());
         // create search telemetry event here ...
-        generateSearchTelemetryEvent(searchDto, types, result);
+        generateSearchTelemetryEvent(searchDto, types, result, request.getContext());
       }
     } else {
       onReceiveUnsupportedOperation(request.getOperation());
@@ -170,9 +175,7 @@ public class SearchHandlerActor extends BaseActor {
   }
 
   private void generateSearchTelemetryEvent(
-      SearchDTO searchDto, String[] types, Map<String, Object> result) {
-
-    Map<String, Object> telemetryContext = TelemetryUtil.getTelemetryContext();
+      SearchDTO searchDto, String[] types, Map<String, Object> result, Map<String, Object> context) {
 
     Map<String, Object> params = new HashMap<>();
     params.put(JsonKey.TYPE, String.join(",", types));
@@ -183,7 +186,7 @@ public class SearchHandlerActor extends BaseActor {
     params.put(JsonKey.TOPN, generateTopnResult(result)); // need to get topn value from
     // response
     Request req = new Request();
-    req.setRequest(telemetryRequestForSearch(telemetryContext, params));
+    req.setRequest(telemetryRequestForSearch(context, params));
     TelemetryWriter.write(req);
   }
 

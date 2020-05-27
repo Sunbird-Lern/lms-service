@@ -24,7 +24,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.learner.actors.textbook.TextbookActorOperation;
@@ -122,7 +121,7 @@ public class TextbookController extends BaseController {
           "TextbookController:createAndInitUploadRequest : Exception occurred while closing stream");
     }
     reqObj.setOperation(operation);
-    reqObj.setRequestId(ExecutionContext.getRequestId());
+    reqObj.setRequestId(httpRequest.flash().getOptional(JsonKey.REQUEST_ID).get());
     reqObj.setEnv(getEnvironment());
     map.put(JsonKey.OBJECT_TYPE, objectType);
     map.put(JsonKey.CREATED_BY, httpRequest.flash().get(JsonKey.USER_ID));

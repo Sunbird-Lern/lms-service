@@ -1,25 +1,16 @@
 package modules;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import controllers.BaseController;
-import java.lang.reflect.Method;
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil;
-import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.HeaderParam;
 import org.sunbird.common.responsecode.ResponseCode;
-import org.sunbird.telemetry.util.TelemetryUtil;
 import play.http.ActionCreator;
 import play.libs.Json;
 import play.mvc.Action;
@@ -27,6 +18,16 @@ import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Results;
 import util.RequestInterceptor;
+
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.WeakHashMap;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 public class OnRequestHandler implements ActionCreator {
 
@@ -45,7 +46,6 @@ public class OnRequestHandler implements ActionCreator {
       UUID uuid = UUID.randomUUID();
       requestId = uuid.toString();
     }
-    ExecutionContext.setRequestId(requestId);
     return new Action.Simple() {
       @Override
       public CompletionStage<Result> call(Http.Request request) {
@@ -115,7 +115,6 @@ public class OnRequestHandler implements ActionCreator {
       }
       request.flash().put(JsonKey.SIGNUP_TYPE, signType);
       request.flash().put(JsonKey.REQUEST_SOURCE, source);
-      ExecutionContext context = ExecutionContext.getCurrent();
       Map<String, Object> reqContext = new WeakHashMap<>();
       // set env and channel to the
       Optional<String> optionalChannel = request.header(HeaderParam.CHANNEL_ID.getName());
@@ -132,7 +131,7 @@ public class OnRequestHandler implements ActionCreator {
       reqContext.put(JsonKey.CHANNEL, channel);
       request.flash().put(JsonKey.CHANNEL, channel);
       reqContext.put(JsonKey.ENV, getEnv(request));
-      reqContext.put(JsonKey.REQUEST_ID, ExecutionContext.getRequestId());
+      reqContext.put(JsonKey.REQUEST_ID, requestId);
       Optional<String> optionalAppId = request.header(HeaderParam.X_APP_ID.getName());
       // check if in request header X-app-id is coming then that need to
       // be pass in search telemetry.
@@ -164,9 +163,8 @@ public class OnRequestHandler implements ActionCreator {
         request.flash().put(JsonKey.ACTOR_ID, consumerId);
         request.flash().put(JsonKey.ACTOR_TYPE, JsonKey.CONSUMER);
       }
-      context.setRequestContext(reqContext);
       Map<String, Object> map = new WeakHashMap<>();
-      map.put(JsonKey.CONTEXT, TelemetryUtil.getTelemetryContext());
+      map.put(JsonKey.CONTEXT, reqContext);
       Map<String, Object> additionalInfo = new WeakHashMap<>();
       additionalInfo.put(JsonKey.URL, url);
       additionalInfo.put(JsonKey.METHOD, methodName);

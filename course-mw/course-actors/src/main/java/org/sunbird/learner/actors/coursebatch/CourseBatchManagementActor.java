@@ -24,7 +24,6 @@ import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.*;
 import org.sunbird.common.models.util.ProjectUtil.ProgressStatus;
-import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.kafka.client.InstructionEventGenerator;
@@ -63,7 +62,6 @@ public class CourseBatchManagementActor extends BaseActor {
   public void onReceive(Request request) throws Throwable {
 
     Util.initializeContext(request, TelemetryEnvKey.BATCH);
-    ExecutionContext.setRequestId(request.getRequestId());
 
     String requestedOperation = request.getOperation();
     switch (requestedOperation) {
@@ -130,7 +128,7 @@ public class CourseBatchManagementActor extends BaseActor {
     Map<String, String> rollUp = new HashMap<>();
     rollUp.put("l1", (String) request.get(JsonKey.COURSE_ID));
     TelemetryUtil.addTargetObjectRollUp(rollUp, targetObject);
-    TelemetryUtil.telemetryProcessingCall(request, targetObject, correlatedObject);
+    TelemetryUtil.telemetryProcessingCall(request, targetObject, correlatedObject, actorMessage.getContext());
 
   //  updateBatchCount(courseBatch);
       //Generate Instruction event. Send courseId for batch
@@ -220,7 +218,7 @@ public class CourseBatchManagementActor extends BaseActor {
     Map<String, String> rollUp = new HashMap<>();
     rollUp.put("l1", courseBatch.getCourseId());
     TelemetryUtil.addTargetObjectRollUp(rollUp, targetObject);
-    TelemetryUtil.telemetryProcessingCall(courseBatchMap, targetObject, correlatedObject);
+    TelemetryUtil.telemetryProcessingCall(courseBatchMap, targetObject, correlatedObject, actorMessage.getContext());
     pushInstructionEvent((String) request.get(JsonKey.COURSE_ID),batchId);
     if (courseNotificationActive()) {
       batchOperationNotifier(courseBatch, participantsMap);
@@ -346,7 +344,7 @@ public class CourseBatchManagementActor extends BaseActor {
       correlatedObject = new ArrayList<>();
       TelemetryUtil.generateCorrelatedObject(
           batchId, TelemetryEnvKey.BATCH, null, correlatedObject);
-      TelemetryUtil.telemetryProcessingCall(req, targetObject, correlatedObject);
+      TelemetryUtil.telemetryProcessingCall(req, targetObject, correlatedObject, actorMessage.getContext());
     }
     sender().tell(response, self());
     if (courseNotificationActive()) {
@@ -399,7 +397,7 @@ public class CourseBatchManagementActor extends BaseActor {
       correlatedObject = new ArrayList<>();
       TelemetryUtil.generateCorrelatedObject(
           batchId, TelemetryEnvKey.BATCH, null, correlatedObject);
-      TelemetryUtil.telemetryProcessingCall(req, targetObject, correlatedObject);
+      TelemetryUtil.telemetryProcessingCall(req, targetObject, correlatedObject, actorMessage.getContext());
     }
     sender().tell(response, self());
     if (courseNotificationActive()) {

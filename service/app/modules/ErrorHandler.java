@@ -9,6 +9,7 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
+import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.responsecode.ResponseCode;
 import play.Environment;
@@ -58,7 +59,7 @@ public class ErrorHandler extends DefaultHttpErrorHandler {
               ResponseCode.SERVER_ERROR.getResponseCode());
     }
     response =
-        BaseController.createResponseOnException(request.path(), request.method(), commonException);
+        BaseController.createResponseOnException(request.path(), request.method(), commonException, request.flash().getOptional(JsonKey.REQUEST_ID).get());
     return CompletableFuture.completedFuture(Results.internalServerError(Json.toJson(response)));
   }
 }

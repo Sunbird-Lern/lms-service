@@ -12,7 +12,6 @@ import javax.inject.Named;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -37,7 +36,7 @@ public class CourseMetricsController extends BaseController {
       request.setRequest(map);
       request.setOperation(ActorOperations.COURSE_PROGRESS_METRICS.getValue());
       request.setRequest(map);
-      request.setRequestId(ExecutionContext.getRequestId());
+      request.setRequestId(httpRequest.flash().getOptional(JsonKey.REQUEST_ID).get());
       return actorResponseHandler(courseMetricsActorRef, request, timeout, null, httpRequest);
     } catch (Exception e) {
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
@@ -87,7 +86,7 @@ public class CourseMetricsController extends BaseController {
       map.put(JsonKey.PERIOD, periodStr);
       map.put(JsonKey.REQUESTED_BY, httpRequest.flash().get(JsonKey.USER_ID));
       request.setRequest(map);
-      request.setRequestId(ExecutionContext.getRequestId());
+      request.setRequestId(httpRequest.flash().getOptional(JsonKey.REQUEST_ID).get());
       return actorResponseHandler(courseMetricsActorRef, request, timeout, null, httpRequest);
     } catch (Exception e) {
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
@@ -111,7 +110,7 @@ public class CourseMetricsController extends BaseController {
       request.setRequest(map);
       request.setOperation(ActorOperations.COURSE_PROGRESS_METRICS_REPORT.getValue());
       request.setRequest(map);
-      request.setRequestId(ExecutionContext.getRequestId());
+      request.setRequestId(httpRequest.flash().getOptional(JsonKey.REQUEST_ID).get());
       return actorResponseHandler(courseMetricsActorRef, request, timeout, null, httpRequest);
     } catch (Exception e) {
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));

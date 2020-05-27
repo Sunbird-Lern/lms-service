@@ -5,23 +5,23 @@ import akka.actor.ActorRef;
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.BaseController;
 import controllers.coursemanagement.validator.CourseBatchRequestValidator;
+import org.sunbird.common.models.util.ActorOperations;
+import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.LoggerEnum;
+import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.ProjectUtil.EsType;
+import org.sunbird.common.request.Request;
+import play.mvc.Http;
+import play.mvc.Result;
+
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import javax.inject.Inject;
-import javax.inject.Named;
-import org.sunbird.common.models.util.ActorOperations;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.models.util.ProjectUtil.EsType;
-import org.sunbird.common.request.ExecutionContext;
-import org.sunbird.common.request.Request;
-import play.mvc.Http;
-import play.mvc.Result;
 
 public class CourseBatchController extends BaseController {
 
@@ -107,7 +107,7 @@ public class CourseBatchController extends BaseController {
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
         reqObj.put("creatorDetails", httpRequest.queryString().containsKey("creatorDetails"));
       reqObj.setOperation(ActorOperations.COMPOSITE_SEARCH.getValue());
-      reqObj.setRequestId(ExecutionContext.getRequestId());
+      reqObj.setRequestId(httpRequest.flash().getOptional(JsonKey.REQUEST_ID).get());
       reqObj.setEnv(getEnvironment());
       reqObj.put(JsonKey.REQUESTED_BY, httpRequest.flash().get(JsonKey.USER_ID));
       String requestedField = httpRequest.getQueryString(JsonKey.FIELDS);

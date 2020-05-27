@@ -18,7 +18,6 @@ import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil;
-import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.HeaderParam;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.telemetry.util.TelemetryEvents;
@@ -58,7 +57,8 @@ public class BaseController extends Controller {
   private org.sunbird.common.request.Request initRequest(
       org.sunbird.common.request.Request request, String operation, Http.Request httpRequest) {
     request.setOperation(operation);
-    request.setRequestId(ExecutionContext.getRequestId());
+    request.setRequestId(httpRequest.flash().getOptional(JsonKey.REQUEST_ID).get());
+    request.getParams().setMsgid(httpRequest.flash().getOptional(JsonKey.REQUEST_ID).get());
     request.setEnv(getEnvironment());
     request.getContext().put(JsonKey.REQUESTED_BY, httpRequest.flash().get(JsonKey.USER_ID));
     request = transformUserId(request);
@@ -280,30 +280,20 @@ public class BaseController extends Controller {
     response.setId(getApiResponseId(request));
     response.setTs(ProjectUtil.getFormattedDate());
     response.setResponseCode(headerCode);
-    response.setParams(createResponseParamObj(code));
+    response.setParams(createResponseParamObj(code, null, request.flash().getOptional(JsonKey.REQUEST_ID).get()));
     return response;
   }
 
-  public static ResponseParams createResponseParamObj(ResponseCode code, String customMessage) {
+  public static ResponseParams createResponseParamObj(ResponseCode code, String customMessage, String requestId) {
     ResponseParams params = new ResponseParams();
     if (code.getResponseCode() != 200) {
       params.setErr(code.getErrorCode());
       params.setErrmsg(
           StringUtils.isNotBlank(customMessage) ? customMessage : code.getErrorMessage());
     }
-    params.setMsgid(ExecutionContext.getRequestId());
+    params.setMsgid(requestId);
     params.setStatus(ResponseCode.getHeaderResponseCode(code.getResponseCode()).name());
     return params;
-  }
-
-  /**
-   * This method will create response parameter
-   *
-   * @param code ResponseCode
-   * @return ResponseParams
-   */
-  public static ResponseParams createResponseParamObj(ResponseCode code) {
-    return createResponseParamObj(code, null);
   }
 
   /**
@@ -324,7 +314,7 @@ public class BaseController extends Controller {
     response.setTs(ProjectUtil.getFormattedDate());
     ResponseCode code = ResponseCode.getResponse(ResponseCode.success.getErrorCode());
     code.setResponseCode(ResponseCode.OK.getResponseCode());
-    response.setParams(createResponseParamObj(code));
+    response.setParams(createResponseParamObj(code, null, request.flash().getOptional(JsonKey.REQUEST_ID).get()));
 
     String value = null;
     try {
@@ -377,7 +367,7 @@ public class BaseController extends Controller {
       if (code == null) {
         code = ResponseCode.SERVER_ERROR;
       }
-      response.setParams(createResponseParamObj(code, exception.getMessage()));
+      response.setParams(createResponseParamObj(code, exception.getMessage(), request.flash().getOptional(JsonKey.REQUEST_ID).get()));
       if (response.getParams() != null) {
         response.getParams().setStatus(response.getParams().getStatus());
         if (exception.getCode() != null) {
@@ -399,14 +389,14 @@ public class BaseController extends Controller {
    * @return Response
    */
   public static Response createResponseOnException(
-      String path, String method, ProjectCommonException exception) {
+      String path, String method, ProjectCommonException exception, String requestId) {
     Response response = new Response();
     response.setVer(getApiVersion(path));
     response.setId(getApiResponseId(path, method));
     response.setTs(ProjectUtil.getFormattedDate());
     response.setResponseCode(ResponseCode.getHeaderResponseCode(exception.getResponseCode()));
     ResponseCode code = ResponseCode.getResponse(exception.getCode());
-    response.setParams(createResponseParamObj(code, exception.getMessage()));
+    response.setParams(createResponseParamObj(code, exception.getMessage(), requestId));
     return response;
   }
 
@@ -543,7 +533,7 @@ public class BaseController extends Controller {
     String operation = request.getOperation();
 
     // set header to request object , setting actor type and channel headers value
-    // ...
+    // ...HealthActor.java
     setChannelAndActorInfo(httpReq, request);
 
     Function<Object, Result> function =

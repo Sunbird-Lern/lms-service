@@ -17,7 +17,6 @@ import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.*;
 import org.sunbird.common.models.util.datasecurity.OneWayHashing;
-import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
@@ -58,7 +57,6 @@ public class LearnerStateUpdateActor extends BaseActor {
   @Override
   public void onReceive(Request request) throws Throwable {
     Util.initializeContext(request, TelemetryEnvKey.USER);
-    ExecutionContext.setRequestId(request.getRequestId());
 
     if (request.getOperation().equalsIgnoreCase(ActorOperations.ADD_CONTENT.getValue())) {
       ProjectLogger.log(

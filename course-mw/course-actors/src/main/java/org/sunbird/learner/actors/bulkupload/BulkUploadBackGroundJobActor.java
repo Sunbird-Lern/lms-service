@@ -19,7 +19,6 @@ import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.*;
 import org.sunbird.common.models.util.ProjectUtil.EsType;
-import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.helper.ServiceFactory;
@@ -55,7 +54,6 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
   @Override
   public void onReceive(Request request) throws Throwable {
     Util.initializeContext(request, TelemetryEnvKey.USER);
-    ExecutionContext.setRequestId(request.getRequestId());
     if (request.getOperation().equalsIgnoreCase(ActorOperations.PROCESS_BULK_UPLOAD.getValue())) {
       process(request);
     } else {
@@ -84,14 +82,14 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
       if (((String) dataMap.get(JsonKey.OBJECT_TYPE)).equalsIgnoreCase(JsonKey.BATCH_LEARNER_ENROL)
           || ((String) dataMap.get(JsonKey.OBJECT_TYPE))
               .equalsIgnoreCase(JsonKey.BATCH_LEARNER_UNENROL)) {
-        processBatchEnrollment(jsonList, processId, (String) dataMap.get(JsonKey.OBJECT_TYPE));
+        processBatchEnrollment(jsonList, processId, (String) dataMap.get(JsonKey.OBJECT_TYPE), actorMessage.getContext());
       }
     }
   }
 
   @SuppressWarnings("unchecked")
   private void processBatchEnrollment(
-      List<Map<String, Object>> jsonList, String processId, String objectType) {
+      List<Map<String, Object>> jsonList, String processId, String objectType, Map<String, Object> context) {
     // update status from NEW to INProgress
     updateStatusForProcessing(processId);
     List<Map<String, Object>> successResultList = new ArrayList<>();
@@ -118,7 +116,7 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
                   Arrays.asList((((String) batchMap.get(JsonKey.USER_IDs)).split(","))));
           if (JsonKey.BATCH_LEARNER_ENROL.equalsIgnoreCase(objectType)) {
             validateBatchUserListAndAdd(
-                courseBatchObject, batchId, userList, tempFailList, tempSuccessList);
+                courseBatchObject, batchId, userList, tempFailList, tempSuccessList, context);
           } else if (JsonKey.BATCH_LEARNER_UNENROL.equalsIgnoreCase(objectType)) {
             validateBatchUserListAndRemove(
                 courseBatchObject, batchId, userList, tempFailList, tempSuccessList);
@@ -164,7 +162,7 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
       String batchId,
       List<String> userIds,
       Map<String, Object> failList,
-      Map<String, Object> successList) {
+      Map<String, Object> successList, Map<String, Object> context) {
     List<Map<String, Object>> failedUserList = new ArrayList<>();
     List<Map<String, Object>> passedUserList = new ArrayList<>();
 
@@ -200,7 +198,7 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
             batchId,
             (String) courseBatchObject.get(JsonKey.COURSE_ID),
             userId,
-            (Map<String, String>) (courseBatchObject.get(JsonKey.COURSE_ADDITIONAL_INFO)));
+            (Map<String, String>) (courseBatchObject.get(JsonKey.COURSE_ADDITIONAL_INFO)), context);
       }
       map = new HashMap<>();
       map.put(userId, JsonKey.SUCCESS);
@@ -226,7 +224,7 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
   }
 
   private Boolean addUserCourses(
-      String batchId, String courseId, String userId, Map<String, String> additionalCourseInfo) {
+      String batchId, String courseId, String userId, Map<String, String> additionalCourseInfo, Map<String, Object> context) {
 
     Util.DbInfo courseEnrollmentdbInfo = Util.dbInfoMap.get(JsonKey.LEARNER_COURSE_DB);
 
@@ -254,7 +252,7 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
           TelemetryUtil.generateTargetObject(userId, JsonKey.USER, JsonKey.UPDATE, null);
       List<Map<String, Object>> correlatedObject = new ArrayList<>();
       TelemetryUtil.generateCorrelatedObject(batchId, JsonKey.BATCH, null, correlatedObject);
-      TelemetryUtil.telemetryProcessingCall(userCourses, targetObject, correlatedObject);
+      TelemetryUtil.telemetryProcessingCall(userCourses, targetObject, correlatedObject, context);
     } catch (Exception ex) {
       ProjectLogger.log("INSERT RECORD TO USER COURSES EXCEPTION ", ex);
       flag = false;

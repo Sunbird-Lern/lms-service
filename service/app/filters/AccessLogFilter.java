@@ -49,7 +49,7 @@ public class AccessLogFilter extends EssentialFilter {
                                     params.put(JsonKey.DURATION, requestTime);
                                     params.put(JsonKey.STATUS, result.status());
                                     params.put(JsonKey.LOG_LEVEL, JsonKey.INFO);
-                                    String contextDetails = request.flash().get(JsonKey.CONTEXT);
+                                    String contextDetails = request.flash().getOptional(request.flash().getOptional(JsonKey.REQUEST_ID).get()).get();
                                     Map<String, Object> context =
                                             objectMapper.readValue(
                                                     contextDetails, new TypeReference<Map<String, Object>>() {});

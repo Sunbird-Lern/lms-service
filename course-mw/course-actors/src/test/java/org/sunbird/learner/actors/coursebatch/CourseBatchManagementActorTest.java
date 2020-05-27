@@ -3,9 +3,10 @@ package org.sunbird.learner.actors.coursebatch;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 import akka.dispatch.Futures;
-
-import java.util.*;
-
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,7 +37,7 @@ import org.sunbird.userorg.UserOrgServiceImpl;
 
 @RunWith(PowerMockRunner.class)
 @SuppressStaticInitializationFor("org.sunbird.kafka.client.KafkaClient")
-@PrepareForTest({ServiceFactory.class, InstructionEventGenerator.class, KafkaClient.class, ContentSearchUtil.class})
+@PrepareForTest({ServiceFactory.class, InstructionEventGenerator.class, KafkaClient.class})
 @PowerMockIgnore("javax.management.*")
 public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest {
 
@@ -46,51 +47,40 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
     init(CourseBatchManagementActor.class);
   }
 
-  private void mockContentSearchUtil() {
-    Map<String, Object> courseMap = new HashMap<>();
-    courseMap.put(JsonKey.CONTENT, new HashMap<String, Object>(){{
-      put("contentType", "Course");
-      put("status", "Live");
-    }});
-    when(ContentSearchUtil.getContent(
-            Mockito.anyString(), Mockito.anyMap(), Mockito.anyObject()))
-            .thenReturn(Futures.successful(courseMap));
-  }
-
   @Test
   @PrepareForTest({
-    ServiceFactory.class,
-    EsClientFactory.class,
-    UserOrgServiceImpl.class,
-    ContentUtil.class,  InstructionEventGenerator.class, KafkaClient.class,
-    ContentSearchUtil.class
+          ServiceFactory.class,
+          EsClientFactory.class,
+          UserOrgServiceImpl.class,
+          ContentUtil.class,  InstructionEventGenerator.class, KafkaClient.class,
+          ContentSearchUtil.class
   })
   public void createBatchInviteSuccess() throws Exception {
     group =
-        MockerBuilder.getFreshMockerGroup()
-            .withCassandraMock(new CassandraMocker())
-            .withESMock(new ESMocker())
-            .withUserOrgMock(new UserOrgMocker())
-            .andStaticMock(ContentUtil.class);
+            MockerBuilder.getFreshMockerGroup()
+                    .withCassandraMock(new CassandraMocker())
+                    .withESMock(new ESMocker())
+                    .withUserOrgMock(new UserOrgMocker())
+                    .andStaticMock(ContentUtil.class);
     Map<String, Object> courseBatch =
-        CustomObjectBuilder.getCourseBatchBuilder()
-            .generateRandomFields()
-            .addField(JsonKey.ENROLLMENT_TYPE, JsonKey.INVITE_ONLY)
-            .build()
-            .get();
+            CustomObjectBuilder.getCourseBatchBuilder()
+                    .generateRandomFields()
+                    .addField(JsonKey.ENROLLMENT_TYPE, JsonKey.INVITE_ONLY)
+                    .build()
+                    .get();
     when(group
             .getESMockerService()
             .save(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
-        .thenReturn(Futures.successful("randomESID"));
+            .thenReturn(Futures.successful("randomESID"));
     when(ContentUtil.searchContent(Mockito.anyString(), Mockito.anyMap()))
-        .thenReturn(CustomObjectBuilder.getRandomCourse().get());
+            .thenReturn(CustomObjectBuilder.getRandomCourse().get());
     when(group
             .getCassandraMockerService()
             .insertRecord(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
-        .thenReturn(
-            new CustomObjectBuilder.CustomObjectWrapper<Boolean>(true).asCassandraResponse());
+            .thenReturn(
+                    new CustomObjectBuilder.CustomObjectWrapper<Boolean>(true).asCassandraResponse());
     when(group.getUserOrgMockerService().getOrganisationById(Mockito.anyString()))
-        .thenReturn(CustomObjectBuilder.getRandomOrg().get());
+            .thenReturn(CustomObjectBuilder.getRandomOrg().get());
     PowerMockito.mockStatic(InstructionEventGenerator.class);
     PowerMockito.mockStatic(KafkaClient.class);
     PowerMockito.doNothing()
@@ -103,29 +93,31 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
             .when(KafkaClient.class, "send", Mockito.anyString(), Mockito.anyString());
     String orgId = ((List<String>) courseBatch.get(JsonKey.COURSE_CREATED_FOR)).get(0);
     when(group.getUserOrgMockerService().getUsersByIds(Mockito.anyList()))
-        .then(
-            new Answer<List<Map<String, Object>>>() {
-              @Override
-              public List<Map<String, Object>> answer(InvocationOnMock invocation)
-                  throws Throwable {
-                List<String> userList = (List<String>) invocation.getArguments()[0];
-                return CustomObjectBuilder.getRandomUsersWithIds(userList, orgId).get();
-              }
-            });
+            .then(
+                    new Answer<List<Map<String, Object>>>() {
+                      @Override
+                      public List<Map<String, Object>> answer(InvocationOnMock invocation)
+                              throws Throwable {
+                        List<String> userList = (List<String>) invocation.getArguments()[0];
+                        return CustomObjectBuilder.getRandomUsersWithIds(userList, orgId).get();
+                      }
+                    });
     when(group.getUserOrgMockerService().getUserById(Mockito.anyString()))
-        .then(
-            new Answer<Map<String, Object>>() {
+            .then(
+                    new Answer<Map<String, Object>>() {
 
-              @Override
-              public Map<String, Object> answer(InvocationOnMock invocation) throws Throwable {
-                String userId = (String) invocation.getArguments()[0];
-                return CustomObjectBuilder.getRandomUsersWithIds(Arrays.asList(userId), orgId)
-                    .get()
-                    .get(0);
-              }
-            });
+                      @Override
+                      public Map<String, Object> answer(InvocationOnMock invocation) throws Throwable {
+                        String userId = (String) invocation.getArguments()[0];
+                        return CustomObjectBuilder.getRandomUsersWithIds(Arrays.asList(userId), orgId)
+                                .get()
+                                .get(0);
+                      }
+                    });
+
     PowerMockito.mockStatic(ContentSearchUtil.class);
     mockContentSearchUtil();
+
     Request req = new Request();
     req.setOperation("createBatch");
     req.setRequest(courseBatch);
@@ -139,11 +131,23 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
   public void getBatchSuccess() {
     group = MockerBuilder.getFreshMockerGroup().withESMock(new ESMocker());
     when(group.getESMockerService().getDataByIdentifier(Mockito.anyString(), Mockito.anyString()))
-        .thenReturn(CustomObjectBuilder.getRandomCourseBatch().asESIdentifierResult());
+            .thenReturn(CustomObjectBuilder.getRandomCourseBatch().asESIdentifierResult());
     Request req = new Request();
     req.setOperation("getBatch");
     req.getContext().put(JsonKey.BATCH_ID, "randomBatchId");
     Response response = executeInTenSeconds(req, Response.class);
     Assert.assertNotNull(response);
   }
+
+  private void mockContentSearchUtil(){
+    Map<String, Object> courseMap = new HashMap<>();
+    courseMap.put(JsonKey.CONTENT, new HashMap<String, Object>() {{
+      put("contentType", "Course");
+      put("status", "Live");
+    }});
+    when(ContentSearchUtil.getContent(
+            Mockito.anyString(), Mockito.anyMap(), Mockito.anyObject()))
+            .thenReturn(Futures.successful(courseMap));
+  }
+
 }

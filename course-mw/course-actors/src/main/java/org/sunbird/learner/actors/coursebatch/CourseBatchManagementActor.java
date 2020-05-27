@@ -1,5 +1,6 @@
 package org.sunbird.learner.actors.coursebatch;
 
+import static java.util.Arrays.asList;
 import static org.sunbird.common.models.util.JsonKey.*;
 import static org.sunbird.common.models.util.ProjectLogger.log;
 import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
@@ -837,7 +838,8 @@ public class CourseBatchManagementActor extends BaseActor {
         Map<String, Object> result = Await.result(future, timeout.duration());
         if (null != result && !result.isEmpty() && result.get(SunbirdKey.CONTENT) != null) {
           Map<String, Object> content = (Map<String, Object>) result.get(SunbirdKey.CONTENT);
-          if (getConfigValue(SunbirdKey.BATCH_CREATE_STATUS).contains((String) content.get(SunbirdKey.STATUS)) &&
+          List<String> allowedContentStatus = asList(getConfigValue(SunbirdKey.BATCH_CREATE_STATUS).split(","));
+          if (allowedContentStatus.contains(content.get(SunbirdKey.STATUS)) &&
                   StringUtils.equals((String) content.get(SunbirdKey.CONTENT_TYPE), getConfigValue(SunbirdKey.BATCH_CREATE_CONTENT_TYPE))) {
             return content;
           } else {

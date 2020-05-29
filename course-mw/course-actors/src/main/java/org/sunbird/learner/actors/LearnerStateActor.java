@@ -208,7 +208,7 @@ public class LearnerStateActor extends BaseActor {
   }
 
   private String prepareCourseSearchRequest(
-      List<Map<String, Object>> batches, List<String> fields) {
+      List<Map<String, Object>> batches, List<String> fields, Map<String, Object> filterMap) {
     Set<String> courseIds =
         batches
             .stream()
@@ -218,6 +218,7 @@ public class LearnerStateActor extends BaseActor {
     filters.put(JsonKey.CONTENT_TYPE, new String[] {JsonKey.COURSE});
     filters.put(JsonKey.IDENTIFIER, courseIds);
     filters.put(JsonKey.STATUS, "Live");
+    if(MapUtils.isNotEmpty(filterMap)) filters.putAll(filterMap);
     ProjectLogger.log(
         "LearnerStateActor:prepareCourseSearchRequest:Requested courseIds = " + courseIds,
         LoggerEnum.INFO.name());
@@ -334,7 +335,7 @@ public class LearnerStateActor extends BaseActor {
 
   private List<Map<String, Object>> getcontentsForCourses(
       Request request, List<Map<String, Object>> activeCourses) {
-    String requestBody = prepareCourseSearchRequest(activeCourses, null);
+    String requestBody = prepareCourseSearchRequest(activeCourses, null, (Map<String, Object>) request.getRequest().get(JsonKey.FILTERS));
     ProjectLogger.log(
         "LearnerStateActor:getcontentsForCourses: Request Body = " + requestBody,
         LoggerEnum.INFO.name());

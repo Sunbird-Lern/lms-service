@@ -42,4 +42,11 @@ public class CourseEnrollmentRequestValidator extends BaseRequestValidator {
         ResponseCode.mandatoryParamsMissing,
         JsonKey.USER_ID);
   }
+
+  public void validateUserEnrolledCourse(Request courseRequestDto) {
+    validateParam(
+            (String) courseRequestDto.getRequest().get(JsonKey.USER_ID),
+            ResponseCode.mandatoryParamsMissing,
+            JsonKey.USER_ID);
+  }
 }

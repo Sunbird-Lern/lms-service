@@ -146,7 +146,7 @@ public class UserCoursesService {
     filter.put(JsonKey.ACTIVE, ProjectUtil.ActiveStatus.ACTIVE.getValue());
     SearchDTO searchDto = new SearchDTO();
     searchDto.getAdditionalProperties().put(JsonKey.FILTERS, filter);
-    searchDto.getSortBy().put("enrolleddate", JsonKey.DESC);
+    //searchDto.getSortBy().put("enrolleddate", JsonKey.DESC);
     Future<Map<String, Object>> resultF =
         esService.search(searchDto, ProjectUtil.EsType.usercourses.getTypeName());
     Map<String, Object> result =

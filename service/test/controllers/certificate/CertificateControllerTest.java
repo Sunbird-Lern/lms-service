@@ -27,7 +27,7 @@ import play.test.Helpers;
 import util.ACTOR_NAMES;
 
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*"})
 public class CertificateControllerTest extends BaseApplicationTest {
   private static final String COURSE_ID = "courseId";
   private static final String BATCH_ID = "batchId";
@@ -42,12 +42,11 @@ public class CertificateControllerTest extends BaseApplicationTest {
 
   @Before
   public void before() {
-    setup(Arrays.asList(ACTOR_NAMES.COURSEBATCH_CERTIFICATE_ACTOR,ACTOR_NAMES.CERTIFICATE_ACTOR),DummyActor.class);
+    setup();
   }
 
   @Test
   public void issueCertificateTest() {
-    setup(ACTOR_NAMES.CERTIFICATE_ACTOR,DummyActor.class);
     Http.RequestBuilder req =
         new Http.RequestBuilder()
             .uri(ISSUE_CERTIFICATE_URL)

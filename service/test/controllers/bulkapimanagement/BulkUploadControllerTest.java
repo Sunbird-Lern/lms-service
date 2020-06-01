@@ -25,13 +25,13 @@ import java.util.Map;
 
 /** Created by arvind on 4/12/17. */
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*"})
 
 public class BulkUploadControllerTest extends BaseApplicationTest {
 
   @Before
   public void before() {
-    setup(ACTOR_NAMES.BULK_UPLOAD_MANAMGEMENT_ACTOR, DummyActor.class);
+    setup();
   }
 
   @Test

@@ -24,12 +24,12 @@ import java.util.Map;
 import static util.TestUtil.mapToJson;
 
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*"})
 public class QRCodeDownloadControllerTest extends BaseApplicationTest {
 
     @Before
     public void before() {
-        setup(ACTOR_NAMES.QRCODE_DOWNLOAD_MANAGEMENT_ACTOR,DummyActor.class);
+        setup();
     }
 
     @Test

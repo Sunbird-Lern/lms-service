@@ -7,6 +7,7 @@ import actors.DummyActor;
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
@@ -25,7 +26,7 @@ import java.util.*;
 
 
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*"})
 public class CourseBatchControllerTest extends BaseApplicationTest {
 
   public static String COURSE_ID = "courseId";
@@ -46,7 +47,7 @@ public class CourseBatchControllerTest extends BaseApplicationTest {
 
   @Before
   public void before() {
-    setup(Arrays.asList(ACTOR_NAMES.COURSE_BATCH_MANAGEMENT_ACTOR,ACTOR_NAMES.SEARCH_HANDLER_ACTOR), DummyActor.class);
+    setup();
   }
 
   @Test

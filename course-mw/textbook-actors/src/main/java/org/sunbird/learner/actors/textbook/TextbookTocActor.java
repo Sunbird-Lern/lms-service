@@ -55,12 +55,9 @@ import org.sunbird.common.util.KeycloakRequiredActionLinkUtil;
 import org.sunbird.content.textbook.FileExtension;
 import org.sunbird.content.textbook.TextBookTocUploader;
 import org.sunbird.content.util.TextBookTocUtil;
-import org.sunbird.services.sso.SSOManager;
-import org.sunbird.services.sso.SSOServiceFactory;
 
 public class TextbookTocActor extends BaseActor {
 
-  private SSOManager ssoManager = SSOServiceFactory.getInstance();
   private Instant startTime = null;
   private Map<String, Object> frameCategories = null;
   private ObjectMapper mapper = new ObjectMapper();

@@ -24,14 +24,14 @@ import util.RequestInterceptor;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({OnRequestHandler.class})
 @SuppressStaticInitializationFor({"util.AuthenticationHelper"})
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*"})
 public class CacheControllerTest extends BaseApplicationTest {
 
   public static String MAP_NAME = "mapName";
 
   @Before
   public void before() {
-    setup(ACTOR_NAMES.CACHE_MANAGEMENT_ACTOR, DummyActor.class);
+    setup();
   }
 
   @Test

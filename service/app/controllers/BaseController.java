@@ -476,7 +476,7 @@ public class BaseController extends Controller {
     }
 
     String requestId = request.flash().getOptional(request.flash().get(JsonKey.REQUEST_ID)).get();
-    Map<String, Object> requestInfo = objectMapper.convertValue(request.flash().get(requestId), new TypeReference<Map<String, Object>>() {});
+    Map<String, Object> requestInfo = objectMapper.convertValue(request.flash().get(requestId), Map.class);
     org.sunbird.common.request.Request reqForTelemetry = new org.sunbird.common.request.Request();
     Map<String, Object> params = (Map<String, Object>) requestInfo.get(JsonKey.ADDITIONAL_INFO);
     params.put(JsonKey.LOG_TYPE, JsonKey.API_ACCESS);

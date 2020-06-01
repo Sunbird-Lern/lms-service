@@ -49,10 +49,13 @@ public class AccessLogFilter extends EssentialFilter {
                                     params.put(JsonKey.DURATION, requestTime);
                                     params.put(JsonKey.STATUS, result.status());
                                     params.put(JsonKey.LOG_LEVEL, JsonKey.INFO);
-                                    String contextDetails = request.flash().getOptional(request.flash().getOptional(JsonKey.REQUEST_ID).get()).get();
-                                    Map<String, Object> context =
-                                            objectMapper.readValue(
-                                                    contextDetails, new TypeReference<Map<String, Object>>() {});
+                                    Map<String, Object> context = new HashMap<>();
+                                    if(request.flash().getOptional(JsonKey.REQUEST_ID).isPresent()){
+                                        String requestId = request.flash().getOptional(JsonKey.REQUEST_ID).get();
+                                        String contextDetails = request.flash().getOptional(requestId).get();
+                                        context.putAll(objectMapper.readValue(
+                                                contextDetails, new TypeReference<Map<String, Object>>() {}));
+                                    }
                                     req.setRequest(
                                             generateTelemetryRequestForController(
                                                     TelemetryEvents.LOG.getName(),

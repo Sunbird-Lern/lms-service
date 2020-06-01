@@ -24,14 +24,14 @@ import java.util.Map;
 
 /** Created by arvind on 4/12/17. */
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*"})
 public class PageControllerTest extends BaseApplicationTest {
 
   public static String PAGE_ID="pageID";
   public static String SECTION_ID="sectionId";
   @Before
   public void before() {
-    setup(ACTOR_NAMES.PAGE_MANAGEMENT_ACTOR,DummyActor.class);
+    setup();
   }
 
   @Test

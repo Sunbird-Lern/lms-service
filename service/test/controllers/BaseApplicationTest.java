@@ -4,6 +4,10 @@ import static play.inject.Bindings.bind;
 
 import java.io.File;
 import java.util.List;
+
+import actors.TestModule;
+import modules.ActorStartModule;
+import modules.ApplicationStart;
 import modules.StartModule;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -19,21 +23,15 @@ import util.ACTOR_NAMES;
 import util.RequestInterceptor;
 
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*"})
 @PrepareForTest({RequestInterceptor.class})
 public abstract class BaseApplicationTest {
   protected Application application;
 
-  public <T> void setup(ACTOR_NAMES actor, Class actorClass) {
+  public <T> void setup() {
     application =
         new GuiceApplicationBuilder()
-            .in(new File("path/to/app"))
-            .in(Mode.TEST)
-            .disable(StartModule.class)
-            //                        .disable(ActorStartModule.class)
-            //
-            // .bindings(bind(actorClass).qualifiedWith(actor.getActorName()).toInstance(subject))
-            .overrides(bind(actor.getActorClass()).to(actorClass))
+                .disable(StartModule.class, ActorStartModule.class).bindings(new TestModule())
             .build();
     Helpers.start(application);
     PowerMockito.mockStatic(RequestInterceptor.class);

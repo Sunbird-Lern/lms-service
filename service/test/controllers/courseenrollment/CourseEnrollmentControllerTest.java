@@ -23,7 +23,7 @@ import java.util.Map;
 import static util.TestUtil.mapToJson;
 
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*"})
 public class CourseEnrollmentControllerTest extends BaseApplicationTest {
 
   public static String COURSE_ID = "courseId";

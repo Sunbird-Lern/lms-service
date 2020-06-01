@@ -18,7 +18,7 @@ import play.test.Helpers;
 import util.ACTOR_NAMES;
 
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*"})
 public class CourseMetricsControllerTest extends BaseApplicationTest {
 
     public static String COURSE_ID = "courseId";
@@ -26,7 +26,7 @@ public class CourseMetricsControllerTest extends BaseApplicationTest {
 
     @Before
     public void before() {
-        setup(ACTOR_NAMES.COURSE_METRICS_ACTOR,DummyActor.class);
+        setup();
     }
 
     @Test

@@ -28,12 +28,12 @@ import util.ACTOR_NAMES;
 /** Created by arvind on 6/12/17. */
 @RunWith(PowerMockRunner.class)
 @SuppressStaticInitializationFor({"util.AuthenticationHelper"})
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*"})
 public class SearchControllerTest extends BaseApplicationTest {
 
   @Before
   public void before() {
-    setup(ACTOR_NAMES.ES_SYNC_ACTOR, DummyActor.class);
+    setup();
   }
 
   @Test

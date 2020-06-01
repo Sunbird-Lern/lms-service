@@ -14,13 +14,13 @@ import play.test.Helpers;
 import util.ACTOR_NAMES;
 
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*"})
 public class CacheControllerErrorTest extends BaseApplicationTest {
 
     public static String MAP_NAME="mapName";
     @Before
     public void before() {
-        setup(ACTOR_NAMES.CACHE_MANAGEMENT_ACTOR,DummyErrorActor.class);
+        setup();
     }
 
     @Test

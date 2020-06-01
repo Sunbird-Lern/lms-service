@@ -28,13 +28,13 @@ import static play.test.Helpers.route;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({HttpUtil.class})
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*"})
 
 public class HealthControllerTest extends BaseApplicationTest {
 
   @Before
   public void startApp() {
-    setup(ACTOR_NAMES.HEALTH_ACTOR, DummyActor.class);
+    setup();
   }
 
   @Ignore

@@ -9,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
@@ -22,7 +23,7 @@ import util.ACTOR_NAMES;
 
 /** @author arvind */
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*"})
 public class LearnerControllerTest extends BaseApplicationTest {
 
   private static final String COURSE_ID = "course-123";
@@ -32,9 +33,9 @@ public class LearnerControllerTest extends BaseApplicationTest {
   private static final String CONTENT_STATE_UPDATE_URL = "/v1/content/state/update";
   private static final String CONTENT_STATE_READ_URL = "/v1/content/state/read";
 
-  @Before
+  @BeforeClass
   public void before() {
-    setup(Arrays.asList(ACTOR_NAMES.LEARNER_STATE_UPDATE_ACTOR,ACTOR_NAMES.LEARNER_STATE_ACTOR), DummyActor.class);
+    setup();
   }
 
   @Test

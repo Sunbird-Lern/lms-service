@@ -16,7 +16,7 @@ import play.test.Helpers;
 import util.ACTOR_NAMES;
 
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*"})
 public class TextbookControllerTest extends BaseApplicationTest {
 
   private static ObjectMapper mapper = new ObjectMapper();
@@ -24,7 +24,7 @@ public class TextbookControllerTest extends BaseApplicationTest {
 
   @Before
   public void before() {
-    setup(ACTOR_NAMES.TEXTBOOK_TOC_ACTOR,DummyActor.class);
+    setup();
   }
 
   @Ignore

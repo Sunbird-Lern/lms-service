@@ -118,10 +118,8 @@ public class CourseEnrollmentController extends BaseController {
                     request
                             .getContext()
                             .put(JsonKey.BATCH_DETAILS, httpRequest.queryString().get(JsonKey.BATCH_DETAILS));
-                    request.put(JsonKey.FILTERS, httpRequest.body().asJson().get(JsonKey.REQUEST).get(JsonKey.FILTERS));
                     new CourseEnrollmentRequestValidator().validateUserEnrolledCourse(request);
-                    request.put(JsonKey.USER_ID, httpRequest.body().asJson().get(JsonKey.REQUEST).get(JsonKey.USER_ID).asText());
-                    request.getContext().put(JsonKey.USER_ID, httpRequest.body().asJson().get(JsonKey.REQUEST).get(JsonKey.USER_ID).asText());
+                    request.getContext().put(JsonKey.USER_ID, request.get(JsonKey.USER_ID));
                     return null;
                 },
                 getAllRequestHeaders((httpRequest)),

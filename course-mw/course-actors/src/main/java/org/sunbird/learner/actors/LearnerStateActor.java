@@ -335,7 +335,7 @@ public class LearnerStateActor extends BaseActor {
 
   private List<Map<String, Object>> getcontentsForCourses(
       Request request, List<Map<String, Object>> activeCourses) {
-    Map<String, Object> filtersMap = new ObjectMapper().convertValue(request.get(JsonKey.FILTERS), Map.class);
+    Map<String, Object> filtersMap = (Map<String, Object>) (request.get(JsonKey.FILTERS));
     String requestBody = prepareCourseSearchRequest(activeCourses, null, filtersMap);
     ProjectLogger.log(
         "LearnerStateActor:getcontentsForCourses: Request Body = " + requestBody,

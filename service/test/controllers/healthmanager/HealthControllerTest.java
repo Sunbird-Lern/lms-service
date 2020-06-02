@@ -49,18 +49,11 @@ public class HealthControllerTest extends BaseApplicationTest {
   }
 
   @Test
-  public void testgetEkstepServiceHealth() throws IOException {
+  public void testServiceHealth() throws IOException {
     PowerMockito.mockStatic(HttpUtil.class);
     String response ="OK";
     when(HttpUtil.sendPostRequest(Mockito.anyString(),Mockito.anyString(),Mockito.anyMap())).thenReturn(response);
-    RequestBuilder req = new RequestBuilder().uri("/ekstep/health").method("GET");
-    Result result = route(application, req);
-    assertEquals(200, result.status());
-  }
-
-  @Test
-  public void testgetLearnerServiceHealth() throws IOException {
-    RequestBuilder req = new RequestBuilder().uri("/learner/health").method("GET");
+    RequestBuilder req = new RequestBuilder().uri("/service/health").method("GET");
     Result result = route(application, req);
     assertEquals(200, result.status());
   }

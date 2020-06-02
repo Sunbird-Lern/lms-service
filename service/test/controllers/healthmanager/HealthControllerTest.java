@@ -48,6 +48,7 @@ public class HealthControllerTest extends BaseApplicationTest {
     Assert.assertEquals( 200, result.status());
   }
 
+  @Ignore
   @Test
   public void testgetEkstepServiceHealth() throws IOException {
     PowerMockito.mockStatic(HttpUtil.class);
@@ -58,6 +59,7 @@ public class HealthControllerTest extends BaseApplicationTest {
     assertEquals(200, result.status());
   }
 
+  @Ignore
   @Test
   public void testgetLearnerServiceHealth() throws IOException {
     RequestBuilder req = new RequestBuilder().uri("/learner/health").method("GET");

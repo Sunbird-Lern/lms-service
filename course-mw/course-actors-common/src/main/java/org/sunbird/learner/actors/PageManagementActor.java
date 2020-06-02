@@ -55,7 +55,6 @@ public class PageManagementActor extends BaseActor {
   private CassandraOperation cassandraOperation = ServiceFactory.getInstance();
   private ObjectMapper mapper = new ObjectMapper();
   private UserOrgService userOrgService = UserOrgServiceImpl.getInstance();
-  private boolean isCacheEnabled = false;
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private static final String DYNAMIC_FILTERS = "dynamicFilters";
   private static List<String> userProfilePropList = Arrays.asList("board");
@@ -291,28 +290,6 @@ public class PageManagementActor extends BaseActor {
           ResponseCode.CLIENT_ERROR.getResponseCode());
     }
 
-    String requestHashCode = "";
-    if (isCacheEnabled) {
-      Map<String, Object> reqMap = new HashMap<>();
-      reqMap.put(JsonKey.SECTION, arr);
-      reqMap.put(JsonKey.FILTERS, reqFilters);
-      reqMap.put(JsonKey.HEADER, headers);
-      reqMap.put(JsonKey.FILTER, filterMap);
-      reqMap.put(JsonKey.SECTIONS, sectionFilters);
-      reqMap.put(JsonKey.URL_QUERY_STRING, urlQueryString);
-      requestHashCode = HashGeneratorUtil.getHashCode(JsonUtil.toJson(reqMap));
-      Response cachedResponse =
-          PageCacheLoaderService.getDataFromCache(
-              JsonKey.PAGE_ASSEMBLE, requestHashCode, Response.class);
-      if (StringUtils.isNotBlank(requestHashCode) && cachedResponse != null) {
-        ProjectLogger.log(
-            "PageManagementActor : getPageData : response returned from cache",
-            LoggerEnum.INFO.name());
-        sender().tell(cachedResponse, self());
-        return;
-      }
-    }
-    String reqHashCode = requestHashCode;
     try {
       List<String> ignoredSections = new ArrayList<>();
       List<Future<Map<String, Object>>> sectionList = getSectionData(arr, reqFilters, urlQueryString, headers, sectionFilters, filterMap, ignoredSections);
@@ -643,8 +620,8 @@ public class PageManagementActor extends BaseActor {
     section.put(JsonKey.GROUP, group);
     section.put(JsonKey.INDEX, index);
     if (StringUtils.isEmpty(dataSource) || JsonKey.CONTENT.equalsIgnoreCase(dataSource)) {
-
       result = ContentSearchUtil.searchContent(urlQueryString, queryRequestBody, headers, ec);
+      final String finalQueryRequestBody = queryRequestBody;
       return result.map(
           new Mapper<Map<String, Object>, Map<String, Object>>() {
             @Override
@@ -656,6 +633,7 @@ public class PageManagementActor extends BaseActor {
                 section.put(JsonKey.RES_MSG_ID, tempMap.get(JsonKey.RES_MSG_ID));
                 section.put(JsonKey.API_ID, tempMap.get(JsonKey.API_ID));
                 removeUnwantedData(section, "getPageData");
+                section.put(JsonKey.SEARCH_QUERY, finalQueryRequestBody);
                 ProjectLogger.log(
                     "PageManagementActor:getContentData:apply: section = " + section,
                     LoggerEnum.DEBUG.name());
@@ -875,26 +853,6 @@ public class PageManagementActor extends BaseActor {
     
     try {
       List<Map<String,Object>> arr = mapper.readValue(sectionQuery, new TypeReference<List<Map<String, Object>>>(){});
-      if (isCacheEnabled) {
-        Map<String, Object> reqMap = new HashMap<>();
-        reqMap.put(JsonKey.SECTION, arr);
-        reqMap.put(JsonKey.FILTERS, reqFilters);
-        reqMap.put(JsonKey.HEADER, headers);
-        reqMap.put(JsonKey.FILTER, filterMap);
-        reqMap.put(JsonKey.SECTIONS, sectionFilters);
-        reqMap.put(JsonKey.URL_QUERY_STRING, urlQueryString);
-        String requestHashCode = HashGeneratorUtil.getHashCode(JsonUtil.toJson(reqMap));
-        Response cachedResponse =
-                PageCacheLoaderService.getDataFromCache(
-                        JsonKey.PAGE_ASSEMBLE, requestHashCode, Response.class);
-        if (StringUtils.isNotBlank(requestHashCode) && cachedResponse != null) {
-          ProjectLogger.log(
-                  "PageManagementActor : getPageData : response returned from cache",
-                  LoggerEnum.INFO.name());
-          sender().tell(cachedResponse, self());
-          return;
-        }
-      }
       List<String> ignoredSections = new ArrayList<>();
       List<Future<Map<String, Object>>> sectionList = getSectionData(arr, reqFilters, urlQueryString, headers, sectionFilters, filterMap, ignoredSections);
       Future<Iterable<Map<String, Object>>> sectionsFuture = Futures.sequence(sectionList, getContext().dispatcher());

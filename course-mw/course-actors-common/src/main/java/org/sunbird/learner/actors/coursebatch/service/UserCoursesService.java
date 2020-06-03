@@ -1,6 +1,9 @@
 package org.sunbird.learner.actors.coursebatch.service;
 
 import java.util.*;
+import java.util.stream.Collectors;
+
+import org.apache.commons.collections4.CollectionUtils;
 import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
@@ -151,6 +154,18 @@ public class UserCoursesService {
     Map<String, Object> result =
         (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
     return result;
+  }
+  
+  public Map<String, Object> getActiveEnrollmentsUserV2(String userId) {
+    List<Map<String, Object>> enrollments = userCourseDao.readFromTemp(userId);
+    Map<String, Object> userEnrollments = new HashMap<>();
+    List<Map<String, Object>> activeEnrollments = new ArrayList<>();
+    if(CollectionUtils.isNotEmpty(enrollments)) {
+      activeEnrollments = enrollments.stream().filter(enrolment -> (Boolean)enrolment.getOrDefault(JsonKey.ACTIVE, false)).collect(Collectors.toList());
+      userEnrollments.put(JsonKey.CONTENT, activeEnrollments);
+    }
+    userEnrollments.put(JsonKey.CONTENT, activeEnrollments);
+    return userEnrollments;
   }
 
   public static void sync(Map<String, Object> courseMap, String batchId, String userId) {

@@ -2,11 +2,8 @@ package org.sunbird.learner.actors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.*;
-import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.slf4j.helpers.MessageFormatter;
 import org.sunbird.actor.base.BaseActor;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.ElasticSearchHelper;
@@ -14,7 +11,11 @@ import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.*;
+import org.sunbird.common.models.util.ActorOperations;
+import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.LoggerEnum;
+import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
@@ -25,6 +26,14 @@ import org.sunbird.learner.util.ContentSearchUtil;
 import org.sunbird.learner.util.CourseBatchSchedulerUtil;
 import org.sunbird.learner.util.Util;
 import scala.concurrent.Future;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * This actor will handle leaner's state operation like get course , get content etc.
@@ -38,6 +47,10 @@ public class LearnerStateActor extends BaseActor {
   private UserCoursesService userCoursesService = new UserCoursesService();
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private static final String COMPLETE_PERCENT = "completionPercentage";
+  private static final String COURSE_KEYSPACE_NAME =
+          Util.dbInfoMap.get(JsonKey.COURSE_BATCH_DB).getKeySpace();
+  private static final String BATCH_TABLE_NAME =
+          Util.dbInfoMap.get(JsonKey.COURSE_BATCH_DB).getTableName();
 
   /**
    * Receives the actor message and perform the operation like get course , get content etc.
@@ -66,7 +79,8 @@ public class LearnerStateActor extends BaseActor {
 
   public void getCourse(Request request) throws Exception {
     String userId = (String) request.getRequest().get(JsonKey.USER_ID);
-    Map<String, Object> result = userCoursesService.getActiveEnrollments(userId);
+    // Map<String, Object> result = userCoursesService.getActiveEnrollments(userId);
+    Map<String, Object> result = userCoursesService.getActiveEnrollmentsUserV2(userId);
     List<Map<String, Object>> updatedCourses = new ArrayList<>();
     if (MapUtils.isNotEmpty(result)) {
       updatedCourses = getCourseDetails(request, result);
@@ -103,7 +117,7 @@ public class LearnerStateActor extends BaseActor {
           LoggerEnum.INFO.name());
       requestedFields = new ArrayList<>(Arrays.asList(queryParams[0].split(",")));
       if (CollectionUtils.isNotEmpty(requestedFields))
-        courseBatchesMap = getCourseBatch(batches, requestedFields);
+        courseBatchesMap = getCourseBatchDetailsFromDB(batches, requestedFields);
     }
     Map<String, Object> courseBatches = new HashMap<>();
     if (MapUtils.isNotEmpty(courseBatchesMap)) {
@@ -120,6 +134,30 @@ public class LearnerStateActor extends BaseActor {
     mergeDetailsAndSendCourses(batches, courseBatches);
   }
 
+  private Map<String, Object> getCourseBatchDetailsFromDB(List<Map<String, Object>> enrollments, List<String> requestedFields) {
+    List<String> courseBatchIds = (List<String>)enrollments.stream().map(batch -> (String) batch.get(JsonKey.BATCH_ID)).collect(Collectors.toList());
+    List<String> courseIds = (List<String>)enrollments.stream().map(batch -> (String) batch.get(JsonKey.COURSE_ID)).collect(Collectors.toList());
+    Map<String, Object> filters = new HashMap<String, Object>() {{
+      put("courseid", courseIds);
+    }};
+    if(CollectionUtils.isNotEmpty(requestedFields)) {
+      requestedFields.add(JsonKey.COURSE_ID);
+      requestedFields.add(JsonKey.BATCH_ID);
+      requestedFields.stream().distinct().collect(Collectors.toList());
+    }
+      
+    Response response = cassandraOperation.getRecords(COURSE_KEYSPACE_NAME, BATCH_TABLE_NAME, filters, requestedFields);
+    List<Map<String, Object>> batches = (List<Map<String, Object>>) response.get(JsonKey.RESPONSE);
+    List<Map<String, Object>> batchList = batches.stream().filter(batch -> courseBatchIds.contains(batch.get(JsonKey.BATCH_ID))).collect(Collectors.toList());
+    batchList.forEach(batch -> {
+      batch.put(JsonKey.IDENTIFIER, batch.get(JsonKey.BATCH_ID));
+    });
+    return new HashMap<String, Object>() {{
+      put(JsonKey.CONTENT, batchList);
+    }};
+  }
+  
+  
   private Map<String, Object> getCourseBatch(
       List<Map<String, Object>> batches, List<String> requestedFields) {
     List<String> courseBatchIds =

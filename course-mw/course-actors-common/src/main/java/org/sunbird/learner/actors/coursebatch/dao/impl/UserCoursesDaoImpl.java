@@ -94,4 +94,15 @@ public class UserCoursesDaoImpl implements UserCoursesDao {
         .map(userCourse -> (String) userCourse.get(JsonKey.USER_ID))
         .collect(Collectors.toList());
   }
+
+
+  @Override
+  public List<Map<String, Object>> readFromTemp(String userId) {
+    Map<String, Object> primaryKey = new HashMap<>();
+    primaryKey.put(JsonKey.USER_ID, userId);
+    Response response = cassandraOperation.getRecordById(KEYSPACE_NAME, "user_courses_temp", primaryKey);
+    List<Map<String, Object>> userCoursesList =
+            (List<Map<String, Object>>) response.get(JsonKey.RESPONSE);
+    return userCoursesList;
+  }
 }

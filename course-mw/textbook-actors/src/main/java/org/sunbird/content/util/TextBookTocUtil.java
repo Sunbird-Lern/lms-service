@@ -43,7 +43,7 @@ public class TextBookTocUtil {
     log("TextBookTocUtil::getRelatedFrameworkById: frameworkId = " + frameworkId, INFO.name());
     Map<String, String> requestParams = new HashMap<>();
     requestParams.put("categories", "topic");
-    return handleReadRequest(frameworkId, JsonKey.FRAMEWORK_READ_API_URL, requestParams);
+    return handleReadRequest(frameworkId, JsonKey.LEARNING_SERVICE_BASE_URL, JsonKey.FRAMEWORK_READ_API_URL, requestParams);
   }
 
   private static String requestParams(Map<String, String> params) {
@@ -71,76 +71,49 @@ public class TextBookTocUtil {
   }
 
   private static Response handleReadRequest(
-      String id, String urlPath, Map<String, String> requestParams) {
+          String id, String basePath, String urlPath, Map<String, String> requestParams) {
     Map<String, String> headers = getHeaders();
     ObjectMapper mapper = new ObjectMapper();
+     if (StringUtils.isBlank(basePath))
+      basePath = getConfigValue(EKSTEP_BASE_URL);
+     else
+       basePath = getConfigValue(basePath);
 
-    log("TextBookTocUtil:handleReadRequest: id = " + id, INFO.name());
     Response response = null;
     try {
-      String requestUrl =
-          getConfigValue(EKSTEP_BASE_URL)
-              + getConfigValue(urlPath)
-              + "/"
-              + id
-              + requestParams(requestParams);
-
-      log(
-          "TextBookTocUtil:handleReadRequest: Sending GET Request | TextBook Id: "
-              + id
-              + ", Request URL: "
-              + requestUrl,
-          INFO.name());
-
+      String requestUrl = basePath + getConfigValue(urlPath) + "/" + id + requestParams(requestParams);
+      log("TextBookTocUtil:handleReadRequest: Sending GET Request | TextBook Id: " + id + ", Request URL: " + requestUrl, INFO.name());
       HttpResponse<String> httpResponse = Unirest.get(requestUrl).headers(headers).asString();
 
       if (StringUtils.isBlank(httpResponse.getBody())) {
-        log(
-            "TextBookTocUtil:handleReadRequest: Received Empty Response | TextBook Id: "
-                + id
-                + ", Request URL: "
-                + requestUrl,
-            ERROR.name());
+        log("TextBookTocUtil:handleReadRequest: Received Empty Response | TextBook Id: " + id + ", Request URL: " + requestUrl, ERROR.name());
         throwServerErrorException(
-            ResponseCode.SERVER_ERROR, errorProcessingRequest.getErrorMessage());
+                ResponseCode.SERVER_ERROR, errorProcessingRequest.getErrorMessage());
       }
-      ProjectLogger.log(
-          "Sized :TextBookTocUtil:handleReadRequest: "
-              + " TextBook Id: "
-              + id
-              + " | Request URL: "
-              + requestUrl
-              + "  | size of response "
-              + httpResponse.getBody().getBytes().length,
-          INFO);
+      ProjectLogger.log("Sized :TextBookTocUtil:handleReadRequest: " + " TextBook Id: " + id + " | Request URL: " + requestUrl + "  | size of response " + httpResponse.getBody().getBytes().length,
+              INFO);
 
       response = mapper.readValue(httpResponse.getBody(), Response.class);
       if (!ResponseCode.OK.equals(response.getResponseCode())) {
-        log(
-            "TextBookTocUtil:handleReadRequest: Response code is not ok | TextBook Id: "
-                + id
-                + "| Request URL: "
-                + requestUrl,
-            ERROR.name());
+        log("TextBookTocUtil:handleReadRequest: Response code is not ok | TextBook Id: " + id + "| Request URL: " + requestUrl, ERROR.name());
         throw new ProjectCommonException(
-            response.getResponseCode().name(),
-            response.getParams().getErrmsg(),
-            response.getResponseCode().getResponseCode());
+                response.getResponseCode().name(),
+                response.getParams().getErrmsg(),
+                response.getResponseCode().getResponseCode());
       }
     } catch (IOException e) {
-      log(
-          "TextBookTocUtil:handleReadRequest: Exception occurred with error message = "
-              + e.getMessage(),
-          e);
+      log("TextBookTocUtil:handleReadRequest: Exception occurred with error message = " + e.getMessage(), e);
       throwServerErrorException(ResponseCode.SERVER_ERROR);
     } catch (UnirestException e) {
-      log(
-          "TextBookTocUtil:handleReadRequest: Exception occurred with error message = "
-              + e.getMessage(),
-          e);
+      log("TextBookTocUtil:handleReadRequest: Exception occurred with error message = " + e.getMessage(), e);
       throwServerErrorException(ResponseCode.SERVER_ERROR);
     }
     return response;
+  }
+
+  private static Response handleReadRequest(
+      String id, String urlPath, Map<String, String> requestParams) {
+    return handleReadRequest(id, null, urlPath, requestParams);
   }
 
   public static <T> T getObjectFrom(String s, Class<T> clazz) {

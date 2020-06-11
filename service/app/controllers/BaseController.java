@@ -534,14 +534,14 @@ public class BaseController extends Controller {
     }
 
     Map<String, Object> requestInfo =
-        OnRequestHandler.requestInfo.get(request.flash().get(JsonKey.REQUEST_ID));
+        OnRequestHandler.requestInfo.getOrDefault(request.flash().get(JsonKey.REQUEST_ID), new HashMap<>());
     org.sunbird.common.request.Request reqForTelemetry = new org.sunbird.common.request.Request();
-    Map<String, Object> params = (Map<String, Object>) requestInfo.get(JsonKey.ADDITIONAL_INFO);
+    Map<String, Object> params = (Map<String, Object>) requestInfo.getOrDefault(JsonKey.ADDITIONAL_INFO, new HashMap<>());
     params.put(JsonKey.LOG_TYPE, JsonKey.API_ACCESS);
     params.put(JsonKey.MESSAGE, "");
     params.put(JsonKey.METHOD, request.method());
     // calculate  the total time consume
-    long startTime = (Long) params.get(JsonKey.START_TIME);
+    long startTime = (Long) params.getOrDefault(JsonKey.START_TIME, System.currentTimeMillis());
     params.put(JsonKey.DURATION, calculateApiTimeTaken(startTime));
     removeFields(params, JsonKey.START_TIME);
     params.put(JsonKey.STATUS, String.valueOf(exception.getResponseCode()));
@@ -551,7 +551,7 @@ public class BaseController extends Controller {
         generateTelemetryRequestForController(
             TelemetryEvents.ERROR.getName(),
             params,
-            (Map<String, Object>) requestInfo.get(JsonKey.CONTEXT)));
+            (Map<String, Object>) requestInfo.getOrDefault(JsonKey.CONTEXT, new HashMap<>())));
     lmaxWriter.submitMessage(reqForTelemetry);
 
     // cleaning request info ...

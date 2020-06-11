@@ -9,7 +9,7 @@
   <properties>
 	  <maven.compiler.source>1.8</maven.compiler.source>
 	  <maven.compiler.target>1.8</maven.compiler.target>
-	  <play2.plugin.version>1.0.0-rc5</play2.plugin.version>
+	  <play2.plugin.version>1.0.0-RC5</play2.plugin.version>
   </properties>
 
   <profiles>
@@ -40,7 +40,7 @@
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.4</version>
+                    <version>0.8.5</version>
                     <executions>
                         <execution>
                             <id>merge-results</id>
@@ -93,7 +93,7 @@
 					<dependency>
 						<groupId>com.google.code.play2-maven-plugin</groupId>
 						<artifactId>play2-provider-play24</artifactId>
-						<version>${play2.plugin.version}</version>
+						<version>1.0.0-rc5</version>
 					</dependency>
 				</dependencies>
 			</plugin>

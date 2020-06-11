@@ -27,6 +27,7 @@ public final class SunbirdKey {
     public static final String ORGANISATION = "organisation";
     public static final String CONTENT_MIME_TYPE_COLLECTION = "application/vnd.ekstep.content-collection";
     public static final String CONTENT_TYPE_HEADER = "Content-Type";
+    public static final String LAST_PUBLISHED_ON = "lastPublishedOn";
 
     private SunbirdKey() {}
 }

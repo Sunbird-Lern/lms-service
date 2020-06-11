@@ -46,6 +46,8 @@ public class QRCodeDownloadManagementActor extends BaseActor {
       };
   private static Util.DbInfo courseDialCodeInfo =
       Util.dbInfoMap.get(JsonKey.SUNBIRD_COURSE_DIALCODES_DB);
+  private static int SEARCH_CONTENTS_LIMIT = Integer.parseInt(System.getenv(JsonKey.SUNBIRD_QRCODE_COURSES_LIMIT));
+
   private static CassandraOperation cassandraOperation = ServiceFactory.getInstance();
 
   @Override
@@ -139,7 +141,11 @@ public class QRCodeDownloadManagementActor extends BaseActor {
                             key -> filtersHelperMap.get(key), key -> requestMap.get(key))));
             put(JsonKey.FIELDS, fields);
             put(JsonKey.EXISTS, JsonKey.DIAL_CODES);
-            put(JsonKey.LIMIT, 200);
+            put(JsonKey.SORT_BY, new HashMap<String, String>() {{
+              put(JsonKey.LAST_UPDATED_ON, JsonKey.DESC);
+            }});
+            //TODO: Limit should come from request, need to facilitate this change.
+            put(JsonKey.LIMIT, SEARCH_CONTENTS_LIMIT);
           }
         };
     Map<String, Object> request =

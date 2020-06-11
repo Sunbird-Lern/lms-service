@@ -143,7 +143,7 @@ public class QRCodeDownloadManagementActor extends BaseActor {
             put(JsonKey.FIELDS, fields);
             put(JsonKey.EXISTS, JsonKey.DIAL_CODES);
             put(JsonKey.SORT_BY, new HashMap<String, String>() {{
-              put(JsonKey.LAST_UPDATED_ON, JsonKey.DESC);
+              put(JsonKey.LAST_PUBLISHED_ON, JsonKey.DESC);
             }});
             //TODO: Limit should come from request, need to facilitate this change.
             put(JsonKey.LIMIT, SEARCH_CONTENTS_LIMIT);

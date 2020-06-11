@@ -21,6 +21,7 @@ import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
@@ -46,7 +47,7 @@ public class QRCodeDownloadManagementActor extends BaseActor {
       };
   private static Util.DbInfo courseDialCodeInfo =
       Util.dbInfoMap.get(JsonKey.SUNBIRD_COURSE_DIALCODES_DB);
-  private static int SEARCH_CONTENTS_LIMIT = Integer.parseInt(System.getenv(JsonKey.SUNBIRD_QRCODE_COURSES_LIMIT));
+  private static int SEARCH_CONTENTS_LIMIT = Integer.parseInt(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_QRCODE_COURSES_LIMIT));
 
   private static CassandraOperation cassandraOperation = ServiceFactory.getInstance();
 

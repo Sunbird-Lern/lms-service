@@ -28,6 +28,7 @@ import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.common.util.CloudStorageUtil;
 import org.sunbird.helper.ServiceFactory;
+import org.sunbird.keys.SunbirdKey;
 import org.sunbird.learner.util.ContentSearchUtil;
 import org.sunbird.learner.util.Util;
 
@@ -143,7 +144,7 @@ public class QRCodeDownloadManagementActor extends BaseActor {
             put(JsonKey.FIELDS, fields);
             put(JsonKey.EXISTS, JsonKey.DIAL_CODES);
             put(JsonKey.SORT_BY, new HashMap<String, String>() {{
-              put(JsonKey.LAST_PUBLISHED_ON, JsonKey.DESC);
+              put(SunbirdKey.LAST_PUBLISHED_ON, JsonKey.DESC);
             }});
             //TODO: Limit should come from request, need to facilitate this change.
             put(JsonKey.LIMIT, SEARCH_CONTENTS_LIMIT);

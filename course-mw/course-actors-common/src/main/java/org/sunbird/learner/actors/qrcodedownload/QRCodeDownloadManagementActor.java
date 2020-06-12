@@ -93,7 +93,7 @@ public class QRCodeDownloadManagementActor extends BaseActor {
                 Collectors.toMap(
                     content ->
                         ((String) content.get("identifier")) + "<<<" + (String) content.get("name"),
-                    content -> (List) content.get("dialcodes")));
+                    content -> (List<String>) content.get("dialcodes"), (a,b) -> b, LinkedHashMap::new));
     File file = generateCSVFile(dialCodesMap);
     Response response = new Response();
     if (null == file)

@@ -79,8 +79,8 @@ public class LearnerStateActor extends BaseActor {
 
   public void getCourse(Request request) throws Exception {
     String userId = (String) request.getRequest().get(JsonKey.USER_ID);
-    // Map<String, Object> result = userCoursesService.getActiveEnrollments(userId);
-    Map<String, Object> result = userCoursesService.getActiveEnrollmentsUserV2(userId);
+    Map<String, Object> result = userCoursesService.getActiveEnrollments(userId);
+    //Map<String, Object> result = userCoursesService.getActiveEnrollmentsUserV2(userId);
     List<Map<String, Object>> updatedCourses = new ArrayList<>();
     if (MapUtils.isNotEmpty(result)) {
       updatedCourses = getCourseDetails(request, result);
@@ -117,7 +117,7 @@ public class LearnerStateActor extends BaseActor {
           LoggerEnum.INFO.name());
       requestedFields = new ArrayList<>(Arrays.asList(queryParams[0].split(",")));
       if (CollectionUtils.isNotEmpty(requestedFields))
-        courseBatchesMap = getCourseBatchDetailsFromDB(batches, requestedFields);
+        courseBatchesMap = getCourseBatch(batches, requestedFields);
     }
     Map<String, Object> courseBatches = new HashMap<>();
     if (MapUtils.isNotEmpty(courseBatchesMap)) {

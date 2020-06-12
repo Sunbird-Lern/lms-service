@@ -28,7 +28,7 @@ import org.sunbird.models.user.courses.UserCourses;
 /** Created by rajatgupta on 08/04/19. */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ServiceFactory.class})
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 public class UserCoursesDaoTest {
   private CassandraOperation cassandraOperation;
   private UserCoursesDao userCoursesDao;

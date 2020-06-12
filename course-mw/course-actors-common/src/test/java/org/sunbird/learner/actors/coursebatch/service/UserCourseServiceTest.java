@@ -40,7 +40,7 @@ import scala.concurrent.Promise;
   EsClientFactory.class,
   ServiceFactory.class
 })
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 public class UserCourseServiceTest {
 
   private CassandraOperationImpl cassandraOperation;

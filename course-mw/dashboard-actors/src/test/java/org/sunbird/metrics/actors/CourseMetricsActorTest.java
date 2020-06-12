@@ -72,7 +72,7 @@ import scala.concurrent.Promise;
   ContentSearchUtil.class,
   HttpClientBuilder.class
 })
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 @Ignore
 public class CourseMetricsActorTest {
 

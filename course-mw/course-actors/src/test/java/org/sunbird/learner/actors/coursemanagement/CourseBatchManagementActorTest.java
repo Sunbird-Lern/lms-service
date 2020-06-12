@@ -39,7 +39,7 @@ import org.sunbird.learner.util.Util;
 @RunWith(PowerMockRunner.class)
 @SuppressStaticInitializationFor("org.sunbird.kafka.client.KafkaClient")
 @PrepareForTest({ServiceFactory.class, EsClientFactory.class, CourseBatchUtil.class, Util.class, InstructionEventGenerator.class, KafkaClient.class})
-@PowerMockIgnore({"javax.management.*"})
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 public class CourseBatchManagementActorTest {
 
   public ActorSystem system = ActorSystem.create("system");

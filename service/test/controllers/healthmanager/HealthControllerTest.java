@@ -28,7 +28,7 @@ import static play.test.Helpers.route;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({HttpUtil.class})
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 
 public class HealthControllerTest extends BaseApplicationTest {
 

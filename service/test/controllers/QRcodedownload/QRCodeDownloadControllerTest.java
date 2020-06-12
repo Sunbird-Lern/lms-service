@@ -24,7 +24,7 @@ import java.util.Map;
 import static util.TestUtil.mapToJson;
 
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 public class QRCodeDownloadControllerTest extends BaseApplicationTest {
 
     @Before

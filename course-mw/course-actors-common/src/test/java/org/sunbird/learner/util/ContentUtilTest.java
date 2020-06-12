@@ -23,7 +23,7 @@ import org.sunbird.common.responsecode.ResponseCode;
 /** @author rahul */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({HttpUtil.class})
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 public class ContentUtilTest {
 
   private static MockerBuilder.MockersGroup group;

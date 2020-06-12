@@ -30,7 +30,7 @@ import org.sunbird.kafka.client.KafkaClient;
 import org.sunbird.learner.actors.certificate.service.CertificateActor;
 
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 @SuppressStaticInitializationFor("org.sunbird.kafka.client.KafkaClient")
 public class CertificateActorTest extends SunbirdApplicationActorTest {
 

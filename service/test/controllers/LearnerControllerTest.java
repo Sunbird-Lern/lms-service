@@ -22,7 +22,7 @@ import util.ACTOR_NAMES;
 
 /** @author arvind */
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 public class LearnerControllerTest extends BaseApplicationTest {
 
   private static final String COURSE_ID = "course-123";

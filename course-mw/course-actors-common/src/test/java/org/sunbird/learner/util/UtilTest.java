@@ -23,7 +23,7 @@ import org.sunbird.helper.CassandraConnectionMngrFactory;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({PropertiesCache.class, CassandraConnectionMngrFactory.class, System.class})
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 public class UtilTest {
 
   private static MockerBuilder.MockersGroup group;

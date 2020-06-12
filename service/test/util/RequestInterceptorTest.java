@@ -37,7 +37,7 @@ import play.test.Helpers;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({SSOServiceFactory.class, ServiceFactory.class, PropertiesCache.class})
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 public class RequestInterceptorTest {
 
   public Application application;

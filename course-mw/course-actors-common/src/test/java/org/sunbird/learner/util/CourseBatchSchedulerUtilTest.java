@@ -33,7 +33,7 @@ import org.sunbird.helper.ServiceFactory;
   HttpUtil.class,
   ContentUtil.class
 })
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 public class CourseBatchSchedulerUtilTest {
 
   private static MockerBuilder.MockersGroup group;

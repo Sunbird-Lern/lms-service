@@ -16,7 +16,7 @@ import play.test.Helpers;
 import util.ACTOR_NAMES;
 
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 public class TextbookControllerTest extends BaseApplicationTest {
 
   private static ObjectMapper mapper = new ObjectMapper();

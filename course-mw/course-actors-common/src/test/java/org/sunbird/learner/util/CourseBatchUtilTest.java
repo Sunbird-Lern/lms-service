@@ -30,7 +30,7 @@ import org.sunbird.common.responsecode.ResponseCode;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({Unirest.class})
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 public class CourseBatchUtilTest {
 
   private static MockerBuilder.MockersGroup group;

@@ -47,7 +47,7 @@ import scala.concurrent.Promise;
   ElasticSearchHelper.class,
   EsClientFactory.class
 })
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 @Ignore
 public class CourseEnrollmentActorTest {
 

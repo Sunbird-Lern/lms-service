@@ -28,7 +28,7 @@ import util.ACTOR_NAMES;
 /** Created by arvind on 6/12/17. */
 @RunWith(PowerMockRunner.class)
 @SuppressStaticInitializationFor({"util.AuthenticationHelper"})
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 public class SearchControllerTest extends BaseApplicationTest {
 
   @Before

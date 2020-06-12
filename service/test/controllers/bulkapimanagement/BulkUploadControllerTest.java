@@ -25,7 +25,7 @@ import java.util.Map;
 
 /** Created by arvind on 4/12/17. */
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 
 public class BulkUploadControllerTest extends BaseApplicationTest {
 

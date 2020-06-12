@@ -16,7 +16,7 @@ import org.sunbird.helper.ServiceFactory;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ServiceFactory.class})
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 public class DataCacheHandlerTest {
 
   private static MockerBuilder.MockersGroup group;

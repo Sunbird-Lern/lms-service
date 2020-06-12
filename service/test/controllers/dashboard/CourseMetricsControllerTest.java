@@ -18,7 +18,7 @@ import play.test.Helpers;
 import util.ACTOR_NAMES;
 
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 public class CourseMetricsControllerTest extends BaseApplicationTest {
 
     public static String COURSE_ID = "courseId";

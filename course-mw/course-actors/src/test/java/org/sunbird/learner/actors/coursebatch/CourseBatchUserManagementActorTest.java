@@ -34,7 +34,7 @@ import org.sunbird.userorg.UserOrgServiceImpl;
 import scala.concurrent.Future;
 
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore({"javax.management.*"})
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 public class CourseBatchUserManagementActorTest extends SunbirdApplicationActorTest {
 
   private MockerBuilder.MockersGroup group;

@@ -52,7 +52,7 @@ import scala.concurrent.Promise;
   InstructionEventGenerator.class,
   KafkaClient.class
 })
-@PowerMockIgnore({"javax.management.*"})
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 public class LearnerStateUpdateActorTest {
 
   private static ActorSystem system = ActorSystem.create("system");;

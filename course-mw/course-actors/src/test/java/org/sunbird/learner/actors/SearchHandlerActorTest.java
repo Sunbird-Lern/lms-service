@@ -48,7 +48,7 @@ import scala.concurrent.Promise;
   UserCoursesDaoImpl.class,
   EsClientFactory.class
 })
-@PowerMockIgnore({"javax.management.*"})
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 public class SearchHandlerActorTest {
 
   private static ActorSystem system;

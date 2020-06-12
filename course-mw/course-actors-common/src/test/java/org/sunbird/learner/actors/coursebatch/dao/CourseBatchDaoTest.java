@@ -30,7 +30,7 @@ import org.sunbird.models.course.batch.CourseBatch;
 /** Created by rajatgupta on 08/04/19. */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ServiceFactory.class})
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 public class CourseBatchDaoTest {
   private CassandraOperation cassandraOperation;
   private CourseBatchDao courseBatchDao;

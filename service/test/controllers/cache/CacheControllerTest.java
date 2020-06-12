@@ -24,7 +24,7 @@ import util.RequestInterceptor;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({OnRequestHandler.class})
 @SuppressStaticInitializationFor({"util.AuthenticationHelper"})
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 public class CacheControllerTest extends BaseApplicationTest {
 
   public static String MAP_NAME = "mapName";

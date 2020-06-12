@@ -19,7 +19,7 @@ import util.ACTOR_NAMES;
 import util.RequestInterceptor;
 
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 @PrepareForTest({RequestInterceptor.class})
 public abstract class BaseApplicationTest {
   protected Application application;

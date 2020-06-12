@@ -52,7 +52,7 @@ import scala.concurrent.Future;
   PageCacheLoaderService.class,
   UserOrgServiceImpl.class
 })
-@PowerMockIgnore({"javax.management.*"})
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 public class PageManagementActorTest {
 
   private static ActorSystem system = ActorSystem.create("system");

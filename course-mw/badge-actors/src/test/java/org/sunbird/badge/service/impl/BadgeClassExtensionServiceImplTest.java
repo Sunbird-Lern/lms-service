@@ -26,7 +26,7 @@ import org.sunbird.common.responsecode.ResponseCode;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({CassandraOperationImpl.class})
-@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*"})
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*", "javax.net.ssl.*", "javax.security.*"})
 public class BadgeClassExtensionServiceImplTest {
   private CassandraOperation mockDBService;
   private BadgeClassExtensionService badgeClassExtensionServiceImpl;

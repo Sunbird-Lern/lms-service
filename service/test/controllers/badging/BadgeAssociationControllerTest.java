@@ -25,7 +25,7 @@ import java.util.Map;
 import static util.TestUtil.mapToJson;
 
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 public class BadgeAssociationControllerTest extends BaseApplicationTest {
     private static final String CONTENT_ID = "content-123";
     @Before

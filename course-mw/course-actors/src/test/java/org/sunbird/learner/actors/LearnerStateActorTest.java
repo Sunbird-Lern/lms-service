@@ -55,7 +55,7 @@ import scala.concurrent.Promise;
   ElasticSearchRestHighImpl.class,
   ContentUtil.class
 })
-@PowerMockIgnore({"javax.management.*", "javax.crypto.*", "javax.net.ssl.*", "javax.security.*"})
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*", "javax.crypto.*", "javax.net.ssl.*", "javax.security.*"})
 public class LearnerStateActorTest {
 
   private static ActorSystem system;

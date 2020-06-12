@@ -19,7 +19,7 @@ import play.test.Helpers;
 @RunWith(PowerMockRunner.class)
 // @SuppressStaticInitializationFor("org.sunbird.learner.util.Util")
 @PrepareForTest({Util.class, SchedulerManager.class})
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 public class ModuleTest {
   @Before
   public void setup() throws Exception {

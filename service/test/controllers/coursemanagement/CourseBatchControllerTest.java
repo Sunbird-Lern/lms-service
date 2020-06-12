@@ -25,7 +25,7 @@ import java.util.*;
 
 
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 public class CourseBatchControllerTest extends BaseApplicationTest {
 
   public static String COURSE_ID = "courseId";

@@ -37,7 +37,7 @@ import org.sunbird.userorg.UserOrgServiceImpl;
   CloudStorageUtil.class,
   ContentUtil.class
 })
-@PowerMockIgnore({"javax.management.*"})
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*"})
 public class CourseMetricsAdvActorTest extends SunbirdApplicationActorTest {
 
   private static MockerBuilder.MockersGroup group;

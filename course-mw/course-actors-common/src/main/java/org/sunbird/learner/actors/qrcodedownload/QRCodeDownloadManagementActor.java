@@ -48,8 +48,7 @@ public class QRCodeDownloadManagementActor extends BaseActor {
       };
   private static Util.DbInfo courseDialCodeInfo =
       Util.dbInfoMap.get(JsonKey.SUNBIRD_COURSE_DIALCODES_DB);
-  private static String SEARCH_CONTENTS_LIMIT_STRING = ProjectUtil.getConfigValue(JsonKey.SUNBIRD_QRCODE_COURSES_LIMIT);
-  private static int SEARCH_CONTENTS_LIMIT = Integer.parseInt(StringUtils.isNotBlank(SEARCH_CONTENTS_LIMIT_STRING) ? SEARCH_CONTENTS_LIMIT_STRING : "2000");
+  private static int SEARCH_CONTENTS_LIMIT = Integer.parseInt(StringUtils.isNotBlank(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_QRCODE_COURSES_LIMIT)) ? ProjectUtil.getConfigValue(JsonKey.SUNBIRD_QRCODE_COURSES_LIMIT) : "2000");
 
   private static CassandraOperation cassandraOperation = ServiceFactory.getInstance();
 

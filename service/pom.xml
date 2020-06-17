@@ -309,11 +309,11 @@
 											<value>COVEREDRATIO</value>
 											<minimum>0.40</minimum>
 										</limit>
-										<limit>
+										<!--<limit>
 											<counter>CLASS</counter>
 											<value>MISSEDCOUNT</value>
 											<maximum>0</maximum>
-										</limit>
+										</limit>-->
 									</limits>
 								</rule>
 								<rule>

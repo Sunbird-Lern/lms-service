@@ -21,7 +21,6 @@ import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.*;
 import org.sunbird.common.models.util.ProjectUtil.EnrolmentType;
 import org.sunbird.common.models.util.ProjectUtil.ProgressStatus;
-import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
@@ -63,7 +62,6 @@ public class CourseEnrollmentActor extends BaseActor {
     String operation = request.getOperation();
 
     Util.initializeContext(request, TelemetryEnvKey.BATCH);
-    ExecutionContext.setRequestId(request.getRequestId());
 
     switch (operation) {
       case "enrollCourse":
@@ -132,7 +130,7 @@ public class CourseEnrollmentActor extends BaseActor {
     if (courseNotificationActive()) {
       batchOperationNotifier(courseMap, courseBatch, JsonKey.ADD);
     }
-    generateAndProcessTelemetryEvent(courseMap, "user.batch.course", JsonKey.CREATE);
+    generateAndProcessTelemetryEvent(courseMap, "user.batch.course", JsonKey.CREATE, actorMessage.getContext());
   }
 
   private boolean courseNotificationActive() {
@@ -182,7 +180,7 @@ public class CourseEnrollmentActor extends BaseActor {
     UserCoursesService.validateUserUnenroll(userCourseResult);
     Response result = updateUserCourses(userCourseResult);
     sender().tell(result, self());
-    generateAndProcessTelemetryEvent(request, "user.batch.course.unenroll", JsonKey.UPDATE);
+    generateAndProcessTelemetryEvent(request, "user.batch.course.unenroll", JsonKey.UPDATE, actorMessage.getContext());
 
     if (courseNotificationActive()) {
       batchOperationNotifier(request, courseBatch, JsonKey.REMOVE);
@@ -203,7 +201,7 @@ public class CourseEnrollmentActor extends BaseActor {
   }
 
   private void generateAndProcessTelemetryEvent(
-      Map<String, Object> request, String corelation, String state) {
+      Map<String, Object> request, String corelation, String state, Map<String, Object> context) {
     Map<String, Object> targetObject = new HashMap<>();
     List<Map<String, Object>> correlatedObject = new ArrayList<>();
     targetObject =
@@ -216,7 +214,7 @@ public class CourseEnrollmentActor extends BaseActor {
         TelemetryEnvKey.BATCH,
         "user.batch",
         correlatedObject);
-    TelemetryUtil.telemetryProcessingCall(request, targetObject, correlatedObject);
+    TelemetryUtil.telemetryProcessingCall(request, targetObject, correlatedObject, context);
   }
 
   private void updateUserCoursesToES(Map<String, Object> courseMap) {

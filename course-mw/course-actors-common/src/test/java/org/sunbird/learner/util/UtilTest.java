@@ -39,7 +39,7 @@ public class UtilTest {
     propertiesCache = PowerMockito.mock(PropertiesCache.class);
     cassandraConnectionManager = PowerMockito.mock(CassandraConnectionManagerImpl.class);
     PowerMockito.when(PropertiesCache.getInstance()).thenReturn(propertiesCache);
-    PowerMockito.when(CassandraConnectionMngrFactory.getObject(Mockito.anyString()))
+    PowerMockito.when(CassandraConnectionMngrFactory.getInstance())
         .thenReturn(cassandraConnectionManager);
   }
 
@@ -47,53 +47,8 @@ public class UtilTest {
   public void checkCassandraDbConnectionsEmbeddedTest() {
     PowerMockito.when(propertiesCache.getProperty(JsonKey.SUNBIRD_CASSANDRA_MODE))
         .thenReturn(JsonKey.EMBEDDED_MODE);
-    PowerMockito.when(
-            cassandraConnectionManager.createConnection(
-                Mockito.anyString(),
-                Mockito.anyString(),
-                Mockito.anyString(),
-                Mockito.anyString(),
-                Mockito.anyString()))
-        .thenReturn(true);
-    Util.checkCassandraDbConnections("sunbird-test");
-  }
-
-  @Test
-  @PrepareForTest({PropertiesCache.class, CassandraConnectionMngrFactory.class, System.class})
-  public void checkCassandraDbConnectionsStandAloneEnvTest() {
-    group.andStaticMock(System.class);
-    PowerMockito.when(propertiesCache.getProperty(JsonKey.SUNBIRD_CASSANDRA_MODE))
-        .thenReturn(JsonKey.STANDALONE_MODE);
-    PowerMockito.when(System.getenv(JsonKey.SUNBIRD_CASSANDRA_IP)).thenReturn("127.0.1.1");
-    PowerMockito.when(System.getenv(JsonKey.SUNBIRD_CASSANDRA_PORT)).thenReturn("9041");
-    PowerMockito.when(
-            cassandraConnectionManager.createConnection(
-                Mockito.anyString(),
-                Mockito.anyString(),
-                Mockito.anyString(),
-                Mockito.anyString(),
-                Mockito.anyString()))
-        .thenReturn(true);
-    Util.checkCassandraDbConnections("sunbird-test");
-  }
-
-  @Test
-  @PrepareForTest({PropertiesCache.class, CassandraConnectionMngrFactory.class, System.class})
-  public void checkCassandraDbConnectionsStandAlonePropertyTest() {
-    group.andStaticMock(System.class);
-    PowerMockito.when(propertiesCache.getProperty(JsonKey.SUNBIRD_CASSANDRA_MODE))
-        .thenReturn(JsonKey.STANDALONE_MODE);
-    PowerMockito.when(System.getenv(JsonKey.SUNBIRD_CASSANDRA_IP)).thenReturn(null);
-    PowerMockito.when(System.getenv(JsonKey.SUNBIRD_CASSANDRA_PORT)).thenReturn(null);
-    PowerMockito.when(
-            cassandraConnectionManager.createConnection(
-                Mockito.anyString(),
-                Mockito.anyString(),
-                Mockito.anyString(),
-                Mockito.anyString(),
-                Mockito.anyString()))
-        .thenReturn(true);
-    Util.checkCassandraDbConnections("sunbird-test");
+    PowerMockito.doNothing().when(cassandraConnectionManager).createConnection(Mockito.any(String[].class));
+    Util.checkCassandraDbConnections();
   }
 
   @Test

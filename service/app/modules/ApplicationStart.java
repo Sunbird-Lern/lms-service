@@ -46,10 +46,7 @@ public class ApplicationStart {
   }
 
   private void checkCassandraConnections() {
-    Util.checkCassandraDbConnections(JsonKey.SUNBIRD);
-    Util.checkCassandraDbConnections(JsonKey.SUNBIRD_PLUGIN);
-    Util.checkCassandraDbConnections(Util.COURSE_KEY_SPACE_NAME);
-    Util.checkCassandraDbConnections(Util.DIALCODE_KEY_SPACE_NAME);
+    Util.checkCassandraDbConnections();
   }
 
   /**

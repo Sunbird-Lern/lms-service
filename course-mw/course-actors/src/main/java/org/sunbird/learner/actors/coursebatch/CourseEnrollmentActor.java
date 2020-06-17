@@ -25,6 +25,7 @@ import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
+import org.sunbird.keys.SunbirdKey;
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao;
 import org.sunbird.learner.actors.coursebatch.dao.UserCoursesDao;
 import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl;
@@ -84,6 +85,8 @@ public class CourseEnrollmentActor extends BaseActor {
     courseMap.put(JsonKey.COURSE_ID, requestMap.get(JsonKey.COURSE_ID));
     courseMap.put(JsonKey.BATCH_ID, requestMap.get(JsonKey.BATCH_ID));
     courseMap.put(JsonKey.USER_ID, requestMap.get(JsonKey.USER_ID));
+    courseMap.put(SunbirdKey.REQUESTED_FOR, actorMessage.getContext().getOrDefault(SunbirdKey.REQUESTED_FOR, ""));
+    System.out.println("CourseEnrollmentActor:enrollCourseBatch : requestedFor : " + courseMap.getOrDefault("requestedFor" , ""));
     CourseBatch courseBatch =
         courseBatchDao.readById(
             (String) courseMap.get(JsonKey.COURSE_ID), (String) courseMap.get(JsonKey.BATCH_ID));
@@ -290,7 +293,7 @@ public class CourseEnrollmentActor extends BaseActor {
           ResponseCode.invalidCourseBatchId, ResponseCode.invalidCourseBatchId.getErrorMessage());
     }
     //Removing to ignore user-token validation with userid passed in request
-    //verifyRequestedByAndThrowErrorIfNotMatch((String) request.get(JsonKey.USER_ID), requestedBy);
+    verifyRequestedByAndThrowErrorIfNotMatch((String) request.get(JsonKey.USER_ID), requestedBy, (String) request.getOrDefault(SunbirdKey.REQUESTED_FOR, ""));
     if (EnrolmentType.inviteOnly.getVal().equals(courseBatchDetails.getEnrollmentType())) {
       ProjectLogger.log(
           "CourseEnrollmentActor validateCourseBatch self enrollment or unenrollment is not applicable for invite only batch.",
@@ -339,8 +342,9 @@ public class CourseEnrollmentActor extends BaseActor {
     }
   }
 
-  private void verifyRequestedByAndThrowErrorIfNotMatch(String userId, String requestedBy) {
-    if (!(userId.equals(requestedBy))) {
+  private void verifyRequestedByAndThrowErrorIfNotMatch(String userId, String requestedBy, String requestedFor) {
+    System.out.println("verifyRequestedByAndThrowErrorIfNotMatch : " + "UserId : " + userId + "requestedBy : " + requestedBy + "requestedFor : " + requestedFor);
+    if (!(userId.equals(requestedBy)) || !(userId.equals(requestedFor))) {
       ProjectCommonException.throwUnauthorizedErrorException();
     }
   }

@@ -16,7 +16,9 @@ import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.HeaderParam;
 import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.keys.SunbirdKey;
 import org.sunbird.telemetry.util.TelemetryUtil;
+import org.sunbird.auth.verifier.ManagedTokenValidator;
 import play.http.ActionCreator;
 import play.libs.Json;
 import play.mvc.Action;
@@ -52,6 +54,14 @@ public class OnRequestHandler implements ActionCreator {
 
         // Unauthorized, Anonymous, UserID
         String message = RequestInterceptor.verifyRequestData(request);
+        Optional<String> forAuth = request.header(HeaderParam.X_Authenticated_For.getName());
+        if(StringUtils.isNotBlank(message) && forAuth.isPresent()){
+          String childId = ManagedTokenValidator.verify(forAuth.get(), message);
+          System.out.println("OnRequestHandler:createAction: childId : " + childId);
+          if(StringUtils.isNotBlank(childId)){
+            request.flash().put(SunbirdKey.REQUESTED_FOR, childId);
+          }
+        }
         // call method to set all the required params for the telemetry event(log)...
         intializeRequestInfo(request, message);
         if (!USER_UNAUTH_STATES.contains(message)) {

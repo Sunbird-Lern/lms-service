@@ -76,10 +76,14 @@ public final class Util {
    * not set then connection will be established from property file.
    */
   public static void checkCassandraDbConnections() {
-      CassandraConnectionManager cassandraConnectionManager =
-          CassandraConnectionMngrFactory.getInstance();
-      String[] ipList = prop.getProperty(JsonKey.DB_IP).split(",");
-      cassandraConnectionManager.createConnection(ipList);
+    if (readConfigFromEnv()) {
+      ProjectLogger.log("db connection is created from System env variable.");
+      return;
+    }
+    CassandraConnectionManager cassandraConnectionManager =
+            CassandraConnectionMngrFactory.getInstance();
+    String[] ipList = prop.getProperty(JsonKey.DB_IP).split(",");
+    cassandraConnectionManager.createConnection(ipList);
   }
 
   /** This method will load the db config properties file. */
@@ -102,6 +106,26 @@ public final class Util {
         }
       }
     }
+  }
+
+  /**
+   * This method will read the configuration from System variable.
+   *
+   * @return boolean
+   */
+  public static boolean readConfigFromEnv() {
+    String ips = System.getenv(JsonKey.SUNBIRD_CASSANDRA_IP);
+    String envPort = System.getenv(JsonKey.SUNBIRD_CASSANDRA_PORT);
+    CassandraConnectionManager cassandraConnectionManager =
+            CassandraConnectionMngrFactory.getInstance();
+
+    if (StringUtils.isBlank(ips) || StringUtils.isBlank(envPort)) {
+      ProjectLogger.log("Configuration value is not coming form System variable.");
+      return false;
+    }
+    String[] ipList = ips.split(",");
+    cassandraConnectionManager.createConnection(ipList);
+    return true;
   }
 
   public static String getProperty(String key) {

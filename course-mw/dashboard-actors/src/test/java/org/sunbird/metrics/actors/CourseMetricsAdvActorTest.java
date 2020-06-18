@@ -3,8 +3,6 @@ package org.sunbird.metrics.actors;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,129 +52,6 @@ public class CourseMetricsAdvActorTest extends SunbirdApplicationActorTest {
 
   public CourseMetricsAdvActorTest() {
     init(CourseMetricsActor.class);
-  }
-
-  @Test
-  public void courseProgressMetricsV2Success() {
-    when(group.getUserOrgMockerService().getUserById(Mockito.anyString()))
-        .thenReturn(CustomObjectBuilder.getRandomUser().get());
-    when(group
-            .getESMockerService()
-            .getDataByIdentifier(Mockito.eq(EsType.courseBatch.getTypeName()), Mockito.anyString()))
-        .thenReturn(CustomObjectBuilder.getRandomCourseBatch().asESIdentifierResult());
-    when(group
-            .getESMockerService()
-            .search(Mockito.any(), Mockito.eq(EsType.cbatchstats.getTypeName())))
-        .thenReturn(CustomObjectBuilder.getRandomCourseBatchStats(5).asESSearchResult());
-    when(group
-            .getESMockerService()
-            .search(Mockito.any(), Mockito.eq(EsType.usercourses.getTypeName())))
-        .thenReturn(CustomObjectBuilder.getEmptyContentList().asESSearchResult());
-    Request request = new Request();
-    request.getContext().put(JsonKey.REQUESTED_BY, "randomUserId");
-    request.getContext().put(JsonKey.BATCH_ID, "randomBatchId");
-    request.getContext().put(JsonKey.LIMIT, 200);
-    request.getContext().put(JsonKey.OFFSET, 0);
-    request.getContext().put(JsonKey.SORTBY, JsonKey.USERNAME);
-    request.getContext().put(JsonKey.SORT_ORDER, JsonKey.ASC);
-    request.getContext().put(JsonKey.USERNAME, "randomUserName");
-    request.setOperation(ActorOperations.COURSE_PROGRESS_METRICS_V2.getValue());
-    Response response = executeInTenSeconds(request, Response.class);
-    Assert.assertNotNull(response);
-    Assert.assertNotNull(response.getResult());
-    Assert.assertTrue((boolean) response.getResult().get(JsonKey.SHOW_DOWNLOAD_LINK));
-    List<Map<String, Object>> userData =
-        (List<Map<String, Object>>) response.getResult().get(JsonKey.DATA);
-    Assert.assertNotNull(userData);
-    Assert.assertEquals(5, userData.size());
-  }
-
-  @Test
-  public void courseProgressMetricsSuccess() {
-    when(group.getUserOrgMockerService().getUserById(Mockito.anyString()))
-        .thenReturn(CustomObjectBuilder.getRandomUser().get());
-    when(group
-            .getESMockerService()
-            .getDataByIdentifier(Mockito.eq(EsType.courseBatch.getTypeName()), Mockito.anyString()))
-        .thenReturn(CustomObjectBuilder.getRandomCourseBatch().asESIdentifierResult());
-    when(group
-            .getESMockerService()
-            .search(Mockito.any(), Mockito.eq(EsType.usercourses.getTypeName())))
-        .thenReturn(CustomObjectBuilder.getRandomUserCoursesList(5).asESSearchResult());
-    when(group
-            .getESMockerService()
-            .search(Mockito.any(), Mockito.eq(EsType.courseBatch.getTypeName())))
-        .thenReturn(
-            CustomObjectBuilder.getCourseBatchBuilder()
-                .generateRandomList(5)
-                .buildList()
-                .asESSearchResult());
-    when(ContentSearchUtil.searchContentSync(
-            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
-        .thenReturn(CustomObjectBuilder.getRandomCourse().get());
-    Request request = new Request();
-    request.put(JsonKey.REQUESTED_BY, "randomUserId");
-    request.put(JsonKey.BATCH_ID, "randomBatchId");
-    request.put(JsonKey.PERIOD, "14d");
-    request.setOperation(ActorOperations.COURSE_PROGRESS_METRICS.getValue());
-    Response response = executeInTenSeconds(request, Response.class);
-    Assert.assertNotNull(response);
-  }
-
-  @Test
-  public void courseProgressMetricsEmptyUserCourseSuccess() {
-    when(group.getUserOrgMockerService().getUserById(Mockito.anyString()))
-        .thenReturn(CustomObjectBuilder.getRandomUser().get());
-    when(group
-            .getESMockerService()
-            .getDataByIdentifier(Mockito.eq(EsType.courseBatch.getTypeName()), Mockito.anyString()))
-        .thenReturn(CustomObjectBuilder.getRandomCourseBatch().asESIdentifierResult());
-    when(group
-            .getESMockerService()
-            .search(Mockito.any(), Mockito.eq(EsType.usercourses.getTypeName())))
-        .thenReturn(CustomObjectBuilder.getEmptyContentList().asESSearchResult());
-    when(group
-            .getESMockerService()
-            .search(Mockito.any(), Mockito.eq(EsType.courseBatch.getTypeName())))
-        .thenReturn(
-            CustomObjectBuilder.getCourseBatchBuilder()
-                .generateRandomList(5)
-                .buildList()
-                .asESSearchResult());
-    when(ContentSearchUtil.searchContentSync(
-            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
-        .thenReturn(CustomObjectBuilder.getRandomCourse().get());
-    Request request = new Request();
-    request.put(JsonKey.REQUESTED_BY, "randomUserId");
-    request.put(JsonKey.BATCH_ID, "randomBatchId");
-    request.put(JsonKey.PERIOD, "7d");
-    request.setOperation(ActorOperations.COURSE_PROGRESS_METRICS.getValue());
-    Response response = executeInTenSeconds(request, Response.class);
-    Assert.assertNotNull(response);
-  }
-
-  @Test
-  public void courseProgressMetricsReportSuccess() {
-    when(group.getUserOrgMockerService().getUserById(Mockito.anyString()))
-        .thenReturn(CustomObjectBuilder.getRandomUser().get());
-    when(group
-            .getESMockerService()
-            .getDataByIdentifier(Mockito.eq(EsType.courseBatch.getTypeName()), Mockito.anyString()))
-        .thenReturn(CustomObjectBuilder.getRandomCourseBatch().asESIdentifierResult());
-    when(group
-            .getESMockerService()
-            .search(Mockito.any(), Mockito.eq(EsType.cbatchassessment.getTypeName())))
-        .thenReturn(CustomObjectBuilder.getRandomCourseBatchStats(5).asESSearchResult());
-    when(CloudStorageUtil.getAnalyticsSignedUrl(
-            Mockito.any(), Mockito.anyString(), Mockito.anyString()))
-        .thenReturn("https://dummy-signed-url.com");
-    Request request = new Request();
-    request.put(JsonKey.REQUESTED_BY, "randomUserId");
-    request.put(JsonKey.BATCH_ID, "randomBatchId");
-    request.setOperation(ActorOperations.COURSE_PROGRESS_METRICS_REPORT.getValue());
-    Response response = executeInTenSeconds(request, Response.class);
-    Assert.assertNotNull(response);
-    Assert.assertTrue(response.containsKey(JsonKey.SIGNED_URL));
   }
 
   @Test

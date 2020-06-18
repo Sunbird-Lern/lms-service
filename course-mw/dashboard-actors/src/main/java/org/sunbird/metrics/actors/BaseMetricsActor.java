@@ -365,25 +365,4 @@ public abstract class BaseMetricsActor extends BaseActor {
     batchMap.put(JsonKey.PROGRESS, progressPercentage);
   }
 
-  /**
-   * This method will convert incoming time period to start and end date. Possible values for period
-   * is {"7d","14d","5w"} ,This method will return a map with key as STARTDATE and ENDDATE.
-   * STARTDATE will always be currentDate-1, Date format will be YYY_MM_DD_FORMATTER
-   *
-   * @param period Date range in format of {"7d","14d","5w"} EX: 7d
-   * @return map having key as STARTDATE and ENDDATE.
-   */
-  protected Map<String, String> getDateRange(String period) {
-    if (StringUtils.isBlank(period)) {
-      throw new ProjectCommonException(
-          ResponseCode.invalidPeriod.getErrorCode(),
-          ResponseCode.invalidPeriod.getErrorMessage(),
-          ResponseCode.CLIENT_ERROR.getResponseCode());
-    }
-    period = period.toLowerCase();
-    int noOfDays = getDaysByPeriod(period);
-    ProjectLogger.log(
-        "BaseMetricsActor:getDateRange Number of days = " + noOfDays, LoggerEnum.INFO.name());
-    return ProjectUtil.getDateRange(noOfDays);
-  }
 }

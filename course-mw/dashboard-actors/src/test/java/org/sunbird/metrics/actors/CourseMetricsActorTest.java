@@ -46,7 +46,6 @@ import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.request.Request;
-import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.common.util.CloudStorageUtil;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.util.ContentSearchUtil;
@@ -137,40 +136,6 @@ public class CourseMetricsActorTest {
     when(ElasticSearchHelper.getResponseFromFuture(cbf)).thenReturn(cbMap);
   }
 
-  private void mockCourseBatchStats(boolean isEmpty) {
-    Map<String, Object> cbMap = new HashMap<>();
-    if (!isEmpty) {
-      cbMap.put(JsonKey.BATCH_ID, batchId);
-      cbMap.put(JsonKey.USER_ID, userId);
-    }
-    Promise<Map<String, Object>> promiseCourseBatchStats = Futures.promise();
-    promiseCourseBatchStats.success(cbMap);
-    Future<Map<String, Object>> cbs = promiseCourseBatchStats.future();
-    when(esService.getDataByIdentifier(Mockito.anyString(), Mockito.anyString())).thenReturn(cbs);
-    when(ElasticSearchHelper.getResponseFromFuture(cbs)).thenReturn(cbMap);
-  }
-
-  private void mockUserCoursesEsResponse(boolean isEmpty) {
-    Map<String, Object> userCourses = new HashMap<>();
-    List<Map<String, Object>> l1 = new ArrayList<>();
-    if (!isEmpty) {
-      l1.add(getMapforUserCourses(batchId, "batch1"));
-    }
-    userCourses.put(JsonKey.CONTENT, l1);
-    Promise<Map<String, Object>> promiseUserCourses = Futures.promise();
-    promiseUserCourses.success(userCourses);
-    Future<Map<String, Object>> ucf = promiseUserCourses.future();
-    when(esService.search(Mockito.any(), Mockito.any())).thenReturn(ucf);
-    when(ElasticSearchHelper.getResponseFromFuture(ucf)).thenReturn(userCourses);
-  }
-
-  private Map<String, Object> getMapforUserCourses(String batchId, String userId) {
-    Map<String, Object> result = new HashMap<>();
-    result.put(JsonKey.BATCH_ID, batchId);
-    result.put(JsonKey.USER_ID, userId);
-    return result;
-  }
-
   private Map<String, Object> getContentMap() {
     Map<String, Object> contentMap = new HashMap<>();
     List<Map<String, Object>> contentList = new ArrayList<>();
@@ -182,23 +147,6 @@ public class CourseMetricsActorTest {
     return contentMap;
   }
 
-  @Test
-  public void testCourseProgressMetricsSuccess() {
-
-    TestKit probe = new TestKit(system);
-    ActorRef subject = system.actorOf(props);
-
-    Request actorMessage = new Request();
-    actorMessage.put(JsonKey.REQUESTED_BY, userId);
-    actorMessage.put(JsonKey.BATCH_ID, batchId);
-    actorMessage.put(JsonKey.PERIOD, "fromBegining");
-    actorMessage.setOperation(ActorOperations.COURSE_PROGRESS_METRICS.getValue());
-
-    subject.tell(actorMessage, probe.getRef());
-    Response res = probe.expectMsgClass(duration("100 second"), Response.class);
-    Assert.assertTrue(null != res.get(JsonKey.PERIOD));
-  }
-
   @Ignore
   public void testWithUnsupportedMessageType() {
 
@@ -206,167 +154,6 @@ public class CourseMetricsActorTest {
     ActorRef subject = system.actorOf(props);
 
     subject.tell("Invalid Object Type", probe.getRef());
-    ProjectCommonException exc =
-        probe.expectMsgClass(duration("10 second"), ProjectCommonException.class);
-    Assert.assertTrue(null != exc);
-  }
-
-  @Test
-  public void testCourseProgressMetricsWithInvalidPeriod() {
-
-    TestKit probe = new TestKit(system);
-    ActorRef subject = system.actorOf(props);
-
-    Request actorMessage = new Request();
-    actorMessage.put(JsonKey.REQUESTED_BY, userId);
-    actorMessage.put(JsonKey.BATCH_ID, batchId);
-    actorMessage.put(JsonKey.PERIOD, "10d");
-    actorMessage.setOperation(ActorOperations.COURSE_PROGRESS_METRICS.getValue());
-
-    subject.tell(actorMessage, probe.getRef());
-    ProjectCommonException e =
-        probe.expectMsgClass(duration("10 second"), ProjectCommonException.class);
-    Assert.assertEquals("INVALID_PERIOD", e.getCode());
-  }
-
-  @Test
-  public void testCourseProgressMetricsV2WithInvalidBatchId() {
-    ProjectCommonException e =
-        (ProjectCommonException) getResponseOfCourseMetrics(true, false, true);
-    Assert.assertEquals(ResponseCode.invalidCourseBatchId.getErrorCode(), e.getCode());
-  }
-
-  @Test
-  public void testCourseProgressMetricsV2WithNoUser() {
-    ProjectCommonException e =
-        (ProjectCommonException) getResponseOfCourseMetrics(false, true, true);
-    Assert.assertEquals(ResponseCode.invalidUserId.getErrorCode(), e.getCode());
-  }
-
-  @Test
-  public void testCourseProgressMetricsV2WithUser() {
-    Response res = (Response) getResponseOfCourseMetrics(true, true, false);
-    Assert.assertEquals(ResponseCode.OK, res.getResponseCode());
-  }
-
-  @Test
-  public void testCourseProgressMetricsV2WithCompletedCount() {
-    Response res = (Response) getResponseOfCourseMetrics(true, true, false);
-    Assert.assertEquals(1, res.getResult().get(JsonKey.COMPLETED_COUNT));
-  }
-
-  @Test
-  public void testCourseProgressMetricsWithInvalidBatch() {
-
-    TestKit probe = new TestKit(system);
-    ActorRef subject = system.actorOf(props);
-    mockCourseBatch(true);
-    Request actorMessage = new Request();
-    actorMessage.put(JsonKey.REQUESTED_BY, userId);
-    actorMessage.put(JsonKey.BATCH_ID, batchId);
-    actorMessage.put(JsonKey.PERIOD, "fromBegining");
-    actorMessage.setOperation(ActorOperations.COURSE_PROGRESS_METRICS.getValue());
-
-    subject.tell(actorMessage, probe.getRef());
-    ProjectCommonException exc =
-        probe.expectMsgClass(duration("10 second"), ProjectCommonException.class);
-    Assert.assertTrue(null != exc);
-  }
-
-  @Test
-  public void testCourseProgressMetricsWithInvalidBatchIdNull() {
-
-    TestKit probe = new TestKit(system);
-    ActorRef subject = system.actorOf(props);
-
-    Request actorMessage = new Request();
-    actorMessage.put(JsonKey.REQUESTED_BY, userId);
-    actorMessage.put(JsonKey.BATCH_ID, null);
-    actorMessage.put(JsonKey.PERIOD, "fromBegining");
-    actorMessage.setOperation(ActorOperations.COURSE_PROGRESS_METRICS.getValue());
-
-    subject.tell(actorMessage, probe.getRef());
-    ProjectCommonException exc =
-        probe.expectMsgClass(duration("10 second"), ProjectCommonException.class);
-    Assert.assertTrue(null != exc);
-  }
-
-  @Test
-  public void testCourseProgressMetricsWithInvalidOperationName() {
-
-    TestKit probe = new TestKit(system);
-    ActorRef subject = system.actorOf(props);
-
-    Request actorMessage = new Request();
-    actorMessage.put(JsonKey.REQUESTED_BY, userId);
-    actorMessage.put(JsonKey.BATCH_ID, null);
-    actorMessage.put(JsonKey.PERIOD, "fromBegining");
-    actorMessage.setOperation(ActorOperations.COURSE_PROGRESS_METRICS.getValue() + "-Invalid");
-
-    subject.tell(actorMessage, probe.getRef());
-    ProjectCommonException exc =
-        probe.expectMsgClass(duration("10 second"), ProjectCommonException.class);
-    Assert.assertTrue(null != exc);
-  }
-
-  @Test
-  public void testCourseProgressMetricsReportSuccess() {
-
-    TestKit probe = new TestKit(system);
-    ActorRef subject = system.actorOf(props);
-    PowerMockito.mockStatic(CloudStorageUtil.class);
-    when(CloudStorageUtil.getAnalyticsSignedUrl(
-            Mockito.any(), Mockito.anyString(), Mockito.anyString()))
-        .thenReturn(SIGNED_URL);
-    Request actorMessage = new Request();
-    actorMessage.put(JsonKey.REQUESTED_BY, userId);
-    actorMessage.put(JsonKey.BATCH_ID, batchId);
-    actorMessage.put(JsonKey.PERIOD, "fromBegining");
-    actorMessage.put(JsonKey.FORMAT, "csv");
-    actorMessage.setOperation(ActorOperations.COURSE_PROGRESS_METRICS_REPORT.getValue());
-
-    subject.tell(actorMessage, probe.getRef());
-    Response res = probe.expectMsgClass(duration("10 second"), Response.class);
-    Assert.assertEquals(SIGNED_URL, res.get(JsonKey.SIGNED_URL));
-  }
-
-  @Test
-  public void testCourseProgressMetricsReportWithInvalidBatch() {
-
-    TestKit probe = new TestKit(system);
-    ActorRef subject = system.actorOf(props);
-
-    Request actorMessage = new Request();
-    actorMessage.put(JsonKey.REQUESTED_BY, userId);
-    actorMessage.put(JsonKey.BATCH_ID, batchId);
-    actorMessage.put(JsonKey.PERIOD, "fromBegining");
-    actorMessage.put(JsonKey.FORMAT, "csv");
-    actorMessage.setOperation(ActorOperations.COURSE_PROGRESS_METRICS_REPORT.getValue());
-
-    subject.tell(actorMessage, probe.getRef());
-    ProjectCommonException exc =
-        probe.expectMsgClass(duration("10 second"), ProjectCommonException.class);
-    Assert.assertTrue(null != exc);
-  }
-
-  @Test
-  public void testCourseProgressMetricsReportWithBatchIdAsNull() {
-
-    TestKit probe = new TestKit(system);
-    ActorRef subject = system.actorOf(props);
-
-    Promise<Map<String, Object>> promise = Futures.promise();
-    promise.success(null);
-    when(esService.getDataByIdentifier(Mockito.anyString(), Mockito.anyString()))
-        .thenReturn(promise.future());
-    Request actorMessage = new Request();
-    actorMessage.put(JsonKey.REQUESTED_BY, userId);
-    actorMessage.put(JsonKey.BATCH_ID, "");
-    actorMessage.put(JsonKey.PERIOD, "fromBegining");
-    actorMessage.put(JsonKey.FORMAT, "csv");
-    actorMessage.setOperation(ActorOperations.COURSE_PROGRESS_METRICS_REPORT.getValue());
-
-    subject.tell(actorMessage, probe.getRef());
     ProjectCommonException exc =
         probe.expectMsgClass(duration("10 second"), ProjectCommonException.class);
     Assert.assertTrue(null != exc);
@@ -497,12 +284,6 @@ public class CourseMetricsActorTest {
     return responseMap;
   }
 
-  private Response createCassandraInsertSuccessResponse() {
-    Response response = new Response();
-    response.put(JsonKey.RESPONSE, JsonKey.SUCCESS);
-    return response;
-  }
-
   private void mockESComplexSearch() {
     Map<String, Object> esComplexSearchMap = new HashMap<>();
     esComplexSearchMap.put(JsonKey.USER_ID, "user_id");
@@ -549,62 +330,10 @@ public class CourseMetricsActorTest {
     return batchData;
   }
 
-  private Map<String, Object> mockUserData() {
-    Map<String, Object> data = new HashMap<>();
-    List<Map<String, Object>> users = new ArrayList<>();
-    data.put(JsonKey.CONTENT, users);
-
-    return data;
-  }
-
-  private Map<String, Object> getCompleteUserCount() {
-    Map<String, Object> esMap = new HashMap<>();
-    List<Map<String, Object>> dataList = new ArrayList<>();
-    Map<String, Object> data = new HashMap<>();
-    List<Map<String, Object>> list = new ArrayList<>();
-    Map<String, Object> map = new HashMap<>();
-    map.put(JsonKey.BATCH_ID, batchId);
-    map.put(JsonKey.PROGRESS, progress);
-    list.add(map);
-    data.put(JsonKey.BATCHES, list);
-    dataList.add(data);
-    esMap.put(JsonKey.CONTENT, dataList);
-    return esMap;
-  }
-
   public Map<String, Object> getMockUser() {
     Map<String, Object> mockUser = new HashMap<>();
     mockUser.put(JsonKey.FIRST_NAME, "anyName");
     return mockUser;
   }
 
-  private Object getResponseOfCourseMetrics(
-      boolean isUserValid, boolean isBatchValid, boolean errorCode) {
-    Request actorMessage = new Request();
-    actorMessage.getContext().put(JsonKey.REQUESTED_BY, userId);
-    actorMessage.getContext().put(JsonKey.BATCH_ID, batchId);
-    actorMessage.getContext().put(JsonKey.LIMIT, limit);
-    actorMessage.getContext().put(JsonKey.OFFSET, offset);
-    actorMessage.setOperation(ActorOperations.COURSE_PROGRESS_METRICS_V2.getValue());
-    TestKit probe = new TestKit(system);
-    ActorRef subject = system.actorOf(props);
-
-    if (!isUserValid) {
-      when(userOrgService.getUserById(Mockito.anyString())).thenReturn(null);
-    } else if (isUserValid && !isBatchValid) {
-      mockCourseBatch(true);
-    } else {
-      mockCourseBatch(false);
-    }
-    mockCourseBatchStats(false);
-    subject.tell(actorMessage, probe.getRef());
-    if (!errorCode) {
-      Response res = probe.expectMsgClass(duration("10 second"), Response.class);
-      return res;
-    } else {
-      ProjectCommonException projectCommonException =
-          probe.expectMsgClass(duration("10 second"), ProjectCommonException.class);
-      return projectCommonException;
-    }
-  }
 }

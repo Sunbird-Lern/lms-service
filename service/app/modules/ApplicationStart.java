@@ -3,6 +3,8 @@ package modules;
 import java.util.concurrent.CompletableFuture;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import org.sunbird.auth.verifier.KeyManager;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
@@ -42,6 +44,8 @@ public class ApplicationStart {
         () -> {
           return CompletableFuture.completedFuture(null);
         });
+    System.out.println("keymanger.init()");
+    KeyManager.init();
     System.out.println("ApplicationStart:ApplicationStart: End");
   }
 

@@ -55,10 +55,11 @@ public class OnRequestHandler implements ActionCreator {
         // Unauthorized, Anonymous, UserID
         String message = RequestInterceptor.verifyRequestData(request);
         Optional<String> forAuth = request.header(HeaderParam.X_Authenticated_For.getName());
+        String childId = null;
         if(StringUtils.isNotBlank(message) && forAuth.isPresent()){
-          String childId = ManagedTokenValidator.verify(forAuth.get(), message);
+          childId = ManagedTokenValidator.verify(forAuth.get(), message);
           System.out.println("OnRequestHandler:createAction: childId : " + childId);
-          if(StringUtils.isNotBlank(childId)){
+          if(StringUtils.isNotBlank(childId) && !USER_UNAUTH_STATES.contains(childId)){
             request.flash().put(SunbirdKey.REQUESTED_FOR, childId);
           }
         }
@@ -74,7 +75,7 @@ public class OnRequestHandler implements ActionCreator {
             }
           }
           result = delegate.call(request);
-        } else if (JsonKey.UNAUTHORIZED.equals(message)) {
+        } else if (JsonKey.UNAUTHORIZED.equals(message) || (childId != null && JsonKey.UNAUTHORIZED.equals(childId))) {
           result =
               onDataValidationError(request, message, ResponseCode.UNAUTHORIZED.getResponseCode());
         } else {

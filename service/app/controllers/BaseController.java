@@ -60,9 +60,8 @@ public class BaseController extends Controller {
     request.setRequestId(ExecutionContext.getRequestId());
     request.setEnv(getEnvironment());
     request.getContext().put(JsonKey.REQUESTED_BY, httpRequest.flash().get(JsonKey.USER_ID));
-    if(StringUtils.isNotBlank(httpRequest.flash().get(SunbirdKey.REQUESTED_FOR)))
+    if (StringUtils.isNotBlank(httpRequest.flash().get(SunbirdKey.REQUESTED_FOR)))
       request.getContext().put(SunbirdKey.REQUESTED_FOR, httpRequest.flash().get(SunbirdKey.REQUESTED_FOR));
-    System.out.println("BaseController:initRequest: " + SunbirdKey.REQUESTED_FOR + " : " + httpRequest.flash().get(SunbirdKey.REQUESTED_FOR));
     request = transformUserId(request);
     return request;
   }

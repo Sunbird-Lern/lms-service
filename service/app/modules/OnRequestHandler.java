@@ -56,11 +56,12 @@ public class OnRequestHandler implements ActionCreator {
         String message = RequestInterceptor.verifyRequestData(request);
         Optional<String> forAuth = request.header(HeaderParam.X_Authenticated_For.getName());
         String childId = null;
-        if(StringUtils.isNotBlank(message) && forAuth.isPresent()){
+        if (StringUtils.isNotBlank(message) && forAuth.isPresent()) {
           childId = ManagedTokenValidator.verify(forAuth.get(), message);
-          System.out.println("OnRequestHandler:createAction: childId : " + childId);
-          if(StringUtils.isNotBlank(childId) && !USER_UNAUTH_STATES.contains(childId)){
+          if (StringUtils.isNotBlank(childId) && !USER_UNAUTH_STATES.contains(childId)) {
             request.flash().put(SunbirdKey.REQUESTED_FOR, childId);
+          } else {
+            ProjectLogger.log("OnRequestHandler:createAction : childId : " + childId);
           }
         }
         // call method to set all the required params for the telemetry event(log)...

@@ -85,7 +85,6 @@ public class CourseEnrollmentActor extends BaseActor {
     courseMap.put(JsonKey.COURSE_ID, requestMap.get(JsonKey.COURSE_ID));
     courseMap.put(JsonKey.BATCH_ID, requestMap.get(JsonKey.BATCH_ID));
     courseMap.put(JsonKey.USER_ID, requestMap.get(JsonKey.USER_ID));
-    System.out.println("CourseEnrollmentActor:enrollCourseBatch : requestedFor : " + (String) actorMessage.getContext().getOrDefault(SunbirdKey.REQUESTED_FOR, ""));
     CourseBatch courseBatch =
         courseBatchDao.readById(
             (String) courseMap.get(JsonKey.COURSE_ID), (String) courseMap.get(JsonKey.BATCH_ID));
@@ -294,7 +293,6 @@ public class CourseEnrollmentActor extends BaseActor {
       ProjectCommonException.throwClientErrorException(
           ResponseCode.invalidCourseBatchId, ResponseCode.invalidCourseBatchId.getErrorMessage());
     }
-    //Removing to ignore user-token validation with userid passed in request
     verifyRequestedByAndThrowErrorIfNotMatch((String) request.get(JsonKey.USER_ID), requestedBy, requestedFor);
     if (EnrolmentType.inviteOnly.getVal().equals(courseBatchDetails.getEnrollmentType())) {
       ProjectLogger.log(
@@ -345,8 +343,9 @@ public class CourseEnrollmentActor extends BaseActor {
   }
 
   private void verifyRequestedByAndThrowErrorIfNotMatch(String userId, String requestedBy, String requestedFor) {
-    System.out.println("verifyRequestedByAndThrowErrorIfNotMatch : " + " UserId : " + userId + " requestedBy : " + requestedBy + " requestedFor : " + requestedFor);
+    ProjectLogger.log("CourseEnrollmentActor:verifyRequestedByAndThrowErrorIfNotMatch : validation starts");
     if (!(userId.equals(requestedBy)) && !(userId.equals(requestedFor))) {
+      ProjectLogger.log("CourseEnrollmentActor:verifyRequestedByAndThrowErrorIfNotMatch : validation failed");
       ProjectCommonException.throwUnauthorizedErrorException();
     }
   }

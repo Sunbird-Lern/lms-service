@@ -343,8 +343,8 @@ public class CourseEnrollmentActor extends BaseActor {
   }
 
   private void verifyRequestedByAndThrowErrorIfNotMatch(String userId, String requestedBy, String requestedFor) {
-    System.out.println("verifyRequestedByAndThrowErrorIfNotMatch : " + "UserId : " + userId + "requestedBy : " + requestedBy + "requestedFor : " + requestedFor);
-    if (!(userId.equals(requestedBy)) || !(userId.equals(requestedFor))) {
+    System.out.println("verifyRequestedByAndThrowErrorIfNotMatch : " + " UserId : " + userId + " requestedBy : " + requestedBy + " requestedFor : " + requestedFor);
+    if (!(userId.equals(requestedBy)) && !(userId.equals(requestedFor))) {
       ProjectCommonException.throwUnauthorizedErrorException();
     }
   }

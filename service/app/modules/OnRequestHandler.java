@@ -61,12 +61,12 @@ public class OnRequestHandler implements ActionCreator {
           if (StringUtils.isNotBlank(childId) && !USER_UNAUTH_STATES.contains(childId)) {
             request.flash().put(SunbirdKey.REQUESTED_FOR, childId);
           } else {
-            ProjectLogger.log("OnRequestHandler:createAction : childId : " + childId);
+            ProjectLogger.log("OnRequestHandler:createAction : childId : " + childId, LoggerEnum.INFO);
           }
         }
         // call method to set all the required params for the telemetry event(log)...
         intializeRequestInfo(request, message);
-        if (!USER_UNAUTH_STATES.contains(message)) {
+        if ((!USER_UNAUTH_STATES.contains(message)) && (childId==null || !USER_UNAUTH_STATES.contains(childId))) {
           request.flash().put(JsonKey.USER_ID, message);
           request.flash().put(JsonKey.IS_AUTH_REQ, "false");
           for (String uri : RequestInterceptor.restrictedUriList) {

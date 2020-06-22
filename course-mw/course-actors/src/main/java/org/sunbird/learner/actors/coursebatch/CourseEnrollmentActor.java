@@ -177,7 +177,7 @@ public class CourseEnrollmentActor extends BaseActor {
         courseBatch,
         request,
         (String) actorMessage.getContext().get(JsonKey.REQUESTED_BY),
-        null,
+        (String) actorMessage.getContext().getOrDefault(SunbirdKey.REQUESTED_FOR, ""),
         ActorOperations.UNENROLL_COURSE.getValue());
     UserCourses userCourseResult =
         userCourseDao.read(

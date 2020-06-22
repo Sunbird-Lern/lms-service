@@ -164,6 +164,7 @@ public class LearnerStateUpdateActorTest {
     HashMap<String, Object> innerMap = new HashMap<>();
     innerMap.put(JsonKey.CONTENTS, contentList);
     innerMap.put(JsonKey.USER_ID, userId);
+    innerMap.put(JsonKey.REQUESTED_BY, userId);
     req.setOperation(ActorOperations.ADD_CONTENT.getValue());
     req.setRequest(innerMap);
     subject.tell(req, probe.getRef());
@@ -186,6 +187,7 @@ public class LearnerStateUpdateActorTest {
     HashMap<String, Object> innerMap = new HashMap<>();
     innerMap.put(JsonKey.CONTENTS, contentList);
     innerMap.put(JsonKey.USER_ID, userId);
+    innerMap.put(JsonKey.REQUESTED_BY, userId);
     req.setOperation(ActorOperations.ADD_CONTENT.getValue());
     req.setRequest(innerMap);
     subject.tell(req, probe.getRef());
@@ -208,6 +210,7 @@ public class LearnerStateUpdateActorTest {
     HashMap<String, Object> innerMap = new HashMap<>();
     innerMap.put(JsonKey.CONTENTS, contentList);
     innerMap.put(JsonKey.USER_ID, userId);
+    innerMap.put(JsonKey.REQUESTED_BY, userId);
     req.setOperation(ActorOperations.ADD_CONTENT.getValue());
     req.setRequest(innerMap);
 
@@ -241,6 +244,7 @@ public class LearnerStateUpdateActorTest {
     HashMap<String, Object> innerMap = new HashMap<>();
     innerMap.put(JsonKey.CONTENTS, contentList);
     innerMap.put(JsonKey.USER_ID, userId);
+    innerMap.put(JsonKey.REQUESTED_BY, userId);
     req.setOperation(ActorOperations.ADD_CONTENT.getValue());
     req.setRequest(innerMap);
 
@@ -292,6 +296,7 @@ public class LearnerStateUpdateActorTest {
     innerMap.put(JsonKey.CONTENTS, contentList);
     innerMap.put(JsonKey.ASSESSMENT_EVENTS, assData);
     innerMap.put(JsonKey.USER_ID, userId);
+    innerMap.put(JsonKey.REQUESTED_BY, userId);
     req.setOperation(ActorOperations.ADD_CONTENT.getValue());
     req.setRequest(innerMap);
     subject.tell(req, probe.getRef());

@@ -25,6 +25,7 @@ import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
+import org.sunbird.keys.SunbirdKey;
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao;
 import org.sunbird.learner.actors.coursebatch.dao.UserCoursesDao;
 import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl;
@@ -93,6 +94,7 @@ public class CourseEnrollmentActor extends BaseActor {
         courseBatch,
         courseMap,
         (String) actorMessage.getContext().get(JsonKey.REQUESTED_BY),
+        (String) actorMessage.getContext().getOrDefault(SunbirdKey.REQUESTED_FOR, ""),
         ActorOperations.ENROLL_COURSE.getValue());
 
     UserCourses userCourseResult =
@@ -175,6 +177,7 @@ public class CourseEnrollmentActor extends BaseActor {
         courseBatch,
         request,
         (String) actorMessage.getContext().get(JsonKey.REQUESTED_BY),
+        null,
         ActorOperations.UNENROLL_COURSE.getValue());
     UserCourses userCourseResult =
         userCourseDao.read(
@@ -283,14 +286,14 @@ public class CourseEnrollmentActor extends BaseActor {
       CourseBatch courseBatchDetails,
       Map<String, Object> request,
       String requestedBy,
+      String requestedFor,
       String actorOperation) {
 
     if (ProjectUtil.isNull(courseBatchDetails)) {
       ProjectCommonException.throwClientErrorException(
           ResponseCode.invalidCourseBatchId, ResponseCode.invalidCourseBatchId.getErrorMessage());
     }
-    //Removing to ignore user-token validation with userid passed in request
-    //verifyRequestedByAndThrowErrorIfNotMatch((String) request.get(JsonKey.USER_ID), requestedBy);
+    verifyRequestedByAndThrowErrorIfNotMatch((String) request.get(JsonKey.USER_ID), requestedBy, requestedFor);
     if (EnrolmentType.inviteOnly.getVal().equals(courseBatchDetails.getEnrollmentType())) {
       ProjectLogger.log(
           "CourseEnrollmentActor validateCourseBatch self enrollment or unenrollment is not applicable for invite only batch.",
@@ -339,8 +342,10 @@ public class CourseEnrollmentActor extends BaseActor {
     }
   }
 
-  private void verifyRequestedByAndThrowErrorIfNotMatch(String userId, String requestedBy) {
-    if (!(userId.equals(requestedBy))) {
+  private void verifyRequestedByAndThrowErrorIfNotMatch(String userId, String requestedBy, String requestedFor) {
+    ProjectLogger.log("CourseEnrollmentActor:verifyRequestedByAndThrowErrorIfNotMatch : validation starts", LoggerEnum.INFO.name());
+    if (!(userId.equals(requestedBy)) && !(userId.equals(requestedFor))) {
+      ProjectLogger.log("CourseEnrollmentActor:verifyRequestedByAndThrowErrorIfNotMatch : validation failed", LoggerEnum.INFO.name());
       ProjectCommonException.throwUnauthorizedErrorException();
     }
   }

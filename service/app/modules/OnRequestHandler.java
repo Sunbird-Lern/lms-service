@@ -16,7 +16,9 @@ import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.HeaderParam;
 import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.keys.SunbirdKey;
 import org.sunbird.telemetry.util.TelemetryUtil;
+import org.sunbird.auth.verifier.ManagedTokenValidator;
 import play.http.ActionCreator;
 import play.libs.Json;
 import play.mvc.Action;
@@ -52,9 +54,19 @@ public class OnRequestHandler implements ActionCreator {
 
         // Unauthorized, Anonymous, UserID
         String message = RequestInterceptor.verifyRequestData(request);
+        Optional<String> forAuth = request.header(HeaderParam.X_Authenticated_For.getName());
+        String childId = null;
+        if (StringUtils.isNotBlank(message) && forAuth.isPresent()) {
+          childId = ManagedTokenValidator.verify(forAuth.get(), message);
+          if (StringUtils.isNotBlank(childId) && !USER_UNAUTH_STATES.contains(childId)) {
+            request.flash().put(SunbirdKey.REQUESTED_FOR, childId);
+          } else {
+            ProjectLogger.log("OnRequestHandler:createAction : childId : " + childId, LoggerEnum.INFO);
+          }
+        }
         // call method to set all the required params for the telemetry event(log)...
         intializeRequestInfo(request, message);
-        if (!USER_UNAUTH_STATES.contains(message)) {
+        if ((!USER_UNAUTH_STATES.contains(message)) && (childId==null || !USER_UNAUTH_STATES.contains(childId))) {
           request.flash().put(JsonKey.USER_ID, message);
           request.flash().put(JsonKey.IS_AUTH_REQ, "false");
           for (String uri : RequestInterceptor.restrictedUriList) {
@@ -64,9 +76,9 @@ public class OnRequestHandler implements ActionCreator {
             }
           }
           result = delegate.call(request);
-        } else if (JsonKey.UNAUTHORIZED.equals(message)) {
-          result =
-              onDataValidationError(request, message, ResponseCode.UNAUTHORIZED.getResponseCode());
+        } else if (JsonKey.UNAUTHORIZED.equals(message) || (childId != null && JsonKey.UNAUTHORIZED.equals(childId))) {
+          String errorCode = JsonKey.UNAUTHORIZED.equals(message) ? message : childId;
+          result = onDataValidationError(request, errorCode, ResponseCode.UNAUTHORIZED.getResponseCode());
         } else {
           result = delegate.call(request);
         }

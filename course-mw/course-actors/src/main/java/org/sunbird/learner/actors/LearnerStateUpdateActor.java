@@ -24,6 +24,7 @@ import org.sunbird.dto.SearchDTO;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.kafka.client.InstructionEventGenerator;
 import org.sunbird.kafka.client.KafkaClient;
+import org.sunbird.keys.SunbirdKey;
 import org.sunbird.learner.constants.CourseJsonKey;
 import org.sunbird.learner.constants.InstructionEvent;
 import org.sunbird.learner.util.Util;
@@ -66,6 +67,9 @@ public class LearnerStateUpdateActor extends BaseActor {
                       + request.getOperation(),
               LoggerEnum.INFO.name());
       String userId = (String) request.getRequest().get(JsonKey.USER_ID);
+      String requestedBy = (String) request.getRequest().get(JsonKey.REQUESTED_BY);
+      String requestedFor = (String) request.getRequest().getOrDefault(SunbirdKey.REQUESTED_FOR, "");
+      verifyRequestedByAndThrowErrorIfNotMatch(userId, requestedBy, requestedFor);
       List<Map<String, Object>> assessments =
           (List<Map<String, Object>>) request.getRequest().get(JsonKey.ASSESSMENT_EVENTS);
       if (CollectionUtils.isNotEmpty(assessments)) {
@@ -458,6 +462,14 @@ public class LearnerStateUpdateActor extends BaseActor {
           "BE_JOB_REQUEST_EXCEPTION",
           "Invalid topic id.",
           ResponseCode.CLIENT_ERROR.getResponseCode());
+    }
+  }
+
+  private void verifyRequestedByAndThrowErrorIfNotMatch(String userId, String requestedBy, String requestedFor) {
+    ProjectLogger.log("LearnerStateUpdateActor:verifyRequestedByAndThrowErrorIfNotMatch : validation starts", LoggerEnum.INFO.name());
+    if (!(userId.equals(requestedBy)) && !(userId.equals(requestedFor))) {
+      ProjectLogger.log("LearnerStateUpdateActor:verifyRequestedByAndThrowErrorIfNotMatch : validation failed", LoggerEnum.INFO.name());
+      ProjectCommonException.throwUnauthorizedErrorException();
     }
   }
 }

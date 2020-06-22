@@ -77,8 +77,8 @@ public class OnRequestHandler implements ActionCreator {
           }
           result = delegate.call(request);
         } else if (JsonKey.UNAUTHORIZED.equals(message) || (childId != null && JsonKey.UNAUTHORIZED.equals(childId))) {
-          result =
-              onDataValidationError(request, message, ResponseCode.UNAUTHORIZED.getResponseCode());
+          String errorCode = JsonKey.UNAUTHORIZED.equals(message) ? message : childId;
+          result = onDataValidationError(request, errorCode, ResponseCode.UNAUTHORIZED.getResponseCode());
         } else {
           result = delegate.call(request);
         }

@@ -791,7 +791,7 @@ public class BaseController extends Controller {
   private void generateExceptionTelemetry(Request request, ProjectCommonException exception) {
     try {
       String reqContext = request.flash().get(JsonKey.CONTEXT);
-      Map<String, Object> requestInfo = objectMapper.convertValue(reqContext, Map.class);
+      Map<String, Object> requestInfo = objectMapper.readValue(reqContext, new TypeReference<Map<String, Object>>() {});
       org.sunbird.common.request.Request reqForTelemetry = new org.sunbird.common.request.Request();
       Map<String, Object> params = (Map<String, Object>) requestInfo.getOrDefault(JsonKey.ADDITIONAL_INFO, new HashMap<>());
       params.put(JsonKey.LOG_TYPE, JsonKey.API_ACCESS);

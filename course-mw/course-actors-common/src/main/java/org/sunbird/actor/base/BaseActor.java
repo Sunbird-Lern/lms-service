@@ -2,6 +2,7 @@ package org.sunbird.actor.base;
 
 import akka.actor.UntypedAbstractActor;
 import org.sunbird.common.exception.ProjectCommonException;
+import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.request.Request;
@@ -49,5 +50,11 @@ public abstract class BaseActor extends UntypedAbstractActor {
   public void onReceiveUnsupportedOperation(String callerName) throws Exception {
     ProjectLogger.log(callerName + ": unsupported message");
     unSupportedMessage();
+  }
+
+  public Response successResponse() {
+    Response response = new Response();
+    response.put("response", "SUCCESS");
+    return response;
   }
 }

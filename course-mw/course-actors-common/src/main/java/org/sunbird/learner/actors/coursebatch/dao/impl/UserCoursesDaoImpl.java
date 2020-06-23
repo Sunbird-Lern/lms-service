@@ -49,6 +49,7 @@ public class UserCoursesDaoImpl implements UserCoursesDao {
     return null;
   }
 
+
   @Override
   public Response update(String batchId, String userId, Map<String, Object> updateAttributes) {
     Map<String, Object> primaryKey = new HashMap<>();
@@ -74,6 +75,45 @@ public class UserCoursesDaoImpl implements UserCoursesDao {
   @Override
   public Response insert(Map<String, Object> userCoursesDetails) {
     return cassandraOperation.insertRecord(KEYSPACE_NAME, TABLE_NAME, userCoursesDetails);
+  }
+
+  @Override
+  public Response insertV2(Map<String, Object> userCoursesDetails) {
+    return cassandraOperation.insertRecord(KEYSPACE_NAME, "user_enrolments", userCoursesDetails);
+  }
+
+  @Override
+  public Response updateV2(String userId, String courseId, String batchId,  Map<String, Object> updateAttributes) {
+    Map<String, Object> primaryKey = new HashMap<>();
+    primaryKey.put(JsonKey.USER_ID, userId);
+    primaryKey.put(JsonKey.COURSE_ID, courseId);
+    primaryKey.put(JsonKey.BATCH_ID, batchId);
+    Map<String, Object> updateList = new HashMap<>();
+    updateList.putAll(updateAttributes);
+    updateList.remove(JsonKey.BATCH_ID);
+    updateList.remove(JsonKey.COURSE_ID);
+    updateList.remove(JsonKey.USER_ID);
+    return cassandraOperation.updateRecord(KEYSPACE_NAME, "user_enrolments", updateList, primaryKey);
+  }
+
+  @Override
+  public UserCourses read(String userId, String courseId, String batchId) {
+    Map<String, Object> primaryKey = new HashMap<>();
+    primaryKey.put(JsonKey.USER_ID, userId);
+    primaryKey.put(JsonKey.COURSE_ID, courseId);
+    primaryKey.put(JsonKey.BATCH_ID, batchId);
+    Response response = cassandraOperation.getRecordById(KEYSPACE_NAME, "user_enrolments", primaryKey);
+    List<Map<String, Object>> userCoursesList =
+            (List<Map<String, Object>>) response.get(JsonKey.RESPONSE);
+    if (CollectionUtils.isEmpty(userCoursesList)) {
+      return null;
+    }
+    try {
+      return mapper.convertValue((Map<String, Object>) userCoursesList.get(0), UserCourses.class);
+    } catch (Exception e) {
+      ProjectLogger.log(e.getMessage(), e);
+    }
+    return null;
   }
 
   @Override

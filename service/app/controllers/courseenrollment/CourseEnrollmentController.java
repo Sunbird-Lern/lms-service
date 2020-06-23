@@ -26,6 +26,10 @@ public class CourseEnrollmentController extends BaseController {
   @Inject
   @Named("course-enrollment-actor")
   private ActorRef courseEnrollmentActorRef;
+  
+  @Inject
+  @Named("enrolment-actor")
+  private ActorRef enrolmentActor;
 
   @Inject
   @Named("learner-state-actor")
@@ -74,9 +78,7 @@ public class CourseEnrollmentController extends BaseController {
   }
 
   public CompletionStage<Result> enrollCourse(Http.Request httpRequest) {
-    return handleRequest(
-        courseEnrollmentActorRef,
-        ActorOperations.ENROLL_COURSE.getValue(),
+    return handleRequest(enrolmentActor, "enroll",
         httpRequest.body().asJson(),
         (request) -> {
           new CourseEnrollmentRequestValidator().validateEnrollCourse((Request) request);

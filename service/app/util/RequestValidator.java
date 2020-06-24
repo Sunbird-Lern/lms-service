@@ -14,6 +14,7 @@ import org.sunbird.common.models.util.StringFormatter;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.common.responsecode.ResponseMessage;
+import org.sunbird.keys.SunbirdKey;
 
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
@@ -184,9 +185,9 @@ public final class RequestValidator {
                 ResponseCode.userIdRequired.getErrorMessage(),
                 ERROR_CODE);
       } else {
-        contentRequestDto.put("ACTUAL_USER_ID", contentRequestDto.get(JsonKey.USER_ID));
+        contentRequestDto.put(SunbirdKey.ACTUAL_USER_ID, contentRequestDto.get(JsonKey.USER_ID));
         contentRequestDto.put(JsonKey.USER_ID, userList.get(0));
-        contentRequestDto.put("ALL_USER_IDS", userList.stream().collect(Collectors.joining(", ")));
+        contentRequestDto.put(SunbirdKey.ALL_USER_IDS, userList.stream().collect(Collectors.joining(", ")));
       }
     }
   }

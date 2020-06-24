@@ -168,23 +168,25 @@ public final class RequestValidator {
               (List<Map<String, Object>>) (contentRequestDto.getRequest().get(JsonKey.CONTENTS));
       List<Map<String, Object>> assessmentList =
               (List<Map<String, Object>>) (contentRequestDto.getRequest().get(JsonKey.ASSESSMENT_EVENTS));
-      List userList = null;
+      List<String> userList = null;
       if(CollectionUtils.isNotEmpty(contentList)) {
-        userList = contentList.stream().map(content -> content.getOrDefault(JsonKey.USER_ID, ""))
-                .filter(value ->  StringUtils.isNotBlank((String) value)).distinct().collect(Collectors.toList());
+        userList = contentList.stream().map(content -> (String) content.getOrDefault(JsonKey.USER_ID, ""))
+                .filter(value ->  StringUtils.isNotBlank(value)).distinct().collect(Collectors.toList());
         
       } else if(CollectionUtils.isNotEmpty(assessmentList)) {
-        userList = assessmentList.stream().map(content -> content.getOrDefault(JsonKey.USER_ID, ""))
-                .filter(value ->  StringUtils.isNotBlank((String) value)).distinct().collect(Collectors.toList());
+        userList = assessmentList.stream().map(content -> (String) content.getOrDefault(JsonKey.USER_ID, ""))
+                .filter(value ->  StringUtils.isNotBlank(value)).distinct().collect(Collectors.toList());
       }
       
-      if(CollectionUtils.isEmpty(userList) || StringUtils.isBlank((String)userList.get(0))) {
+      if(CollectionUtils.isEmpty(userList) || StringUtils.isBlank(userList.get(0))) {
         throw new ProjectCommonException(
                 ResponseCode.userIdRequired.getErrorCode(),
                 ResponseCode.userIdRequired.getErrorMessage(),
                 ERROR_CODE);
       } else {
-        contentRequestDto.put(JsonKey.USER_ID, (String)userList.get(0));
+        contentRequestDto.put("ACTUAL_USER_ID", contentRequestDto.get(JsonKey.USER_ID));
+        contentRequestDto.put(JsonKey.USER_ID, userList.get(0));
+        contentRequestDto.put("ALL_USER_IDS", userList.stream().collect(Collectors.joining(", ")));
       }
     }
   }

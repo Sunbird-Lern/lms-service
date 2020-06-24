@@ -69,7 +69,9 @@ public class LearnerStateUpdateActor extends BaseActor {
       String userId = (String) request.getRequest().get(JsonKey.USER_ID);
       String requestedBy = (String) request.getRequest().get(JsonKey.REQUESTED_BY);
       String requestedFor = (String) request.getRequest().getOrDefault(SunbirdKey.REQUESTED_FOR, "");
-      verifyRequestedByAndThrowErrorIfNotMatch(userId, requestedBy, requestedFor);
+      String originalRequestUserId = (String) request.getRequest().get("ACTUAL_USER_ID");
+      String allUserIds = (String) request.getRequest().get("ALL_USER_IDS");
+      verifyRequestedByAndThrowErrorIfNotMatch(userId, requestedBy, requestedFor, originalRequestUserId, allUserIds);
       List<Map<String, Object>> assessments =
           (List<Map<String, Object>>) request.getRequest().get(JsonKey.ASSESSMENT_EVENTS);
       if (CollectionUtils.isNotEmpty(assessments)) {
@@ -465,9 +467,13 @@ public class LearnerStateUpdateActor extends BaseActor {
     }
   }
 
-  private void verifyRequestedByAndThrowErrorIfNotMatch(String userId, String requestedBy, String requestedFor) {
+  private void verifyRequestedByAndThrowErrorIfNotMatch(String userId, String requestedBy, String requestedFor, String userIdInRequestGlobal, String allUserIds) {
     if (!(userId.equals(requestedBy)) && !(userId.equals(requestedFor))) {
-      ProjectLogger.log("LearnerStateUpdateActor:verifyRequestedByAndThrowErrorIfNotMatch : validation failed: userId: " + userId + " :: requestedBy: " + requestedBy + " :: requestedFor: "+ requestedFor + " :: END", LoggerEnum.INFO.name());
+      ProjectLogger.log("LearnerStateUpdateActor:verifyRequestedByAndThrowErrorIfNotMatch : validation failed: " +
+              "userId: " + userId + " :: requestedBy: " + requestedBy + " :: requestedFor: "+ requestedFor
+              + " :: userIdInRequestGlobal: " + userIdInRequestGlobal
+              + " :: allUserIds: " + allUserIds
+              + " :: END", LoggerEnum.INFO.name());
 //      ProjectCommonException.throwUnauthorizedErrorException();
     }
   }

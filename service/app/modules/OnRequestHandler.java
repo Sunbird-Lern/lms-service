@@ -51,7 +51,9 @@ public class OnRequestHandler implements ActionCreator {
         request.getHeaders();
         CompletionStage<Result> result = checkForServiceHealth(request);
         if (result != null) return result;
-
+        // Setting Actual userId (requestedBy) and managed userId (requestedFor) placeholders in flash memory to null before processing.
+        request.flash().put(JsonKey.USER_ID, null);
+        request.flash().put(SunbirdKey.REQUESTED_FOR, null);
         // Unauthorized, Anonymous, UserID
         String message = RequestInterceptor.verifyRequestData(request);
         Optional<String> forAuth = request.header(HeaderParam.X_Authenticated_For.getName());
@@ -60,8 +62,6 @@ public class OnRequestHandler implements ActionCreator {
           childId = ManagedTokenValidator.verify(forAuth.get(), message);
           if (StringUtils.isNotBlank(childId) && !USER_UNAUTH_STATES.contains(childId)) {
             request.flash().put(SunbirdKey.REQUESTED_FOR, childId);
-          } else {
-            ProjectLogger.log("OnRequestHandler:createAction : childId : " + childId, LoggerEnum.INFO);
           }
         }
         // call method to set all the required params for the telemetry event(log)...

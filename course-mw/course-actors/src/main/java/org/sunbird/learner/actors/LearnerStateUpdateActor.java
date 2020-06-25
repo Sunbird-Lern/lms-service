@@ -152,25 +152,27 @@ public class LearnerStateUpdateActor extends BaseActor {
                 String contentUserId = (String) content.getOrDefault(JsonKey.USER_ID, "");
                 return StringUtils.isBlank(contentUserId) || StringUtils.equalsIgnoreCase(contentUserId, userId);
               }).collect(Collectors.toList());
-              List<String> contentIds = filteredContents.stream().map(c -> (String) c.get("contentId")).collect(Collectors.toList());
-              Map<String, Map<String, Object>> existingContents =
-                      getContents(userId, contentIds, batchId).stream()
-                              .collect(Collectors.groupingBy(x -> (String) x.get("contentId")))
-                              .entrySet().stream().collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue().get(0)));
+              if (CollectionUtils.isNotEmpty(filteredContents)) {
+                List<String> contentIds = filteredContents.stream().map(c -> (String) c.get("contentId")).collect(Collectors.toList());
+                Map<String, Map<String, Object>> existingContents =
+                        getContents(userId, contentIds, batchId).stream()
+                                .collect(Collectors.groupingBy(x -> (String) x.get("contentId")))
+                                .entrySet().stream().collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue().get(0)));
 
-              List<Map<String, Object>> contents = filteredContents.stream()
-                      .map(inputContent -> {
-                        Map<String, Object> existingContent =
-                                existingContents.get(inputContent.get("contentId"));
-                        return processContent(inputContent, existingContent, userId);
-                      })
-                      .collect(Collectors.toList());
-              cassandraOperation.batchInsert(consumptionDBInfo.getKeySpace(), consumptionDBInfo.getTableName(), contents);
-              Map<String, Object> updatedBatch = getBatchCurrentStatus(batchId, userId, contents);
-              cassandraOperation.upsertRecord(userCourseDBInfo.getKeySpace(), userCourseDBInfo.getTableName(), updatedBatch);
-              // Generate Instruction event. Send userId, batchId, courseId, contents.
-              pushInstructionEvent(userId, batchId, courseId, contents);
-              contentIds.forEach(contentId -> updateMessages(respMessages, contentId, JsonKey.SUCCESS));
+                List<Map<String, Object>> contents = filteredContents.stream()
+                        .map(inputContent -> {
+                          Map<String, Object> existingContent =
+                                  existingContents.get(inputContent.get("contentId"));
+                          return processContent(inputContent, existingContent, userId);
+                        })
+                        .collect(Collectors.toList());
+                cassandraOperation.batchInsert(consumptionDBInfo.getKeySpace(), consumptionDBInfo.getTableName(), contents);
+                Map<String, Object> updatedBatch = getBatchCurrentStatus(batchId, userId, contents);
+                cassandraOperation.upsertRecord(userCourseDBInfo.getKeySpace(), userCourseDBInfo.getTableName(), updatedBatch);
+                // Generate Instruction event. Send userId, batchId, courseId, contents.
+                pushInstructionEvent(userId, batchId, courseId, contents);
+                contentIds.forEach(contentId -> updateMessages(respMessages, contentId, JsonKey.SUCCESS));
+              }
             }
             List<Map<String, Object>> invalidList = input.getValue().stream().filter(content -> {
               String contentUserId = (String) content.getOrDefault(JsonKey.USER_ID, "");

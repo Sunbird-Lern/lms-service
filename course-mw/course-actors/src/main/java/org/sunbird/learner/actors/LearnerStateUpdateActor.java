@@ -30,7 +30,6 @@ import org.sunbird.learner.constants.InstructionEvent;
 import org.sunbird.learner.util.JsonUtil;
 import org.sunbird.learner.util.Util;
 import scala.concurrent.Future;
-import sun.util.logging.PlatformLogger;
 
 /**
  * This actor to handle learner's state update operation .

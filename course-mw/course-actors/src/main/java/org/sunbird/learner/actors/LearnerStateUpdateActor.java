@@ -120,8 +120,9 @@ public class LearnerStateUpdateActor extends BaseActor {
         Map<String, Object> map = new HashMap<String, Object>() {{
           put("validUserIds", validUserIds);
           put("invalidAssessments", invalidAssessments);
+          put("ets", System.currentTimeMillis());
         }};
-        ProjectLogger.log("LearnerStateUpdater - Invalid Assessments", map, LoggerEnum.INFO.name());
+        pushInvalidDataToKafka(map, "Assessments");
       }
 
       Response response = new Response();
@@ -183,13 +184,14 @@ public class LearnerStateUpdateActor extends BaseActor {
           updateMessages(respMessages, ContentUpdateResponseKeys.BATCH_NOT_EXISTS.name(), batchId);
         }
       }
-      // TODO: push invalidContents to telemetry.
+
       if (CollectionUtils.isNotEmpty(invalidContents)) {
         Map<String, Object> map = new HashMap<String, Object>() {{
           put("validUserIds", validUserIds);
           put("invalidContents", invalidContents);
+          put("ets", System.currentTimeMillis());
         }};
-        ProjectLogger.log("LearnerStateUpdater - Invalid Contents", map, LoggerEnum.INFO.name());
+        pushInvalidDataToKafka(map, "Contents");
       }
       Response response = new Response();
       response.getResult().putAll(respMessages);
@@ -197,9 +199,19 @@ public class LearnerStateUpdateActor extends BaseActor {
     }
   }
 
-
   private List<String> getUserIds(String requestedBy, String requestedFor) {
     return Arrays.asList(requestedBy, requestedFor).stream().filter(uId -> StringUtils.isNotBlank(uId)).collect(Collectors.toList());
+  }
+
+  private void pushInvalidDataToKafka(Map<String, Object> data, String dataType) {
+    ProjectLogger.log("LearnerStateUpdater - Invalid " + dataType, data, LoggerEnum.INFO.name());
+    String topic = ProjectUtil.getConfigValue("kafka_topics_contentstate_invalid");
+    try {
+      String event = mapper.writeValueAsString(data);
+      KafkaClient.send(event,topic);
+    } catch (Throwable t) {
+      t.printStackTrace();
+    }
   }
 
   private String getAllUserIds(List<Map<String, Object>> contents, List<Map<String, Object>> assessments) throws Exception {

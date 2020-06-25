@@ -14,6 +14,7 @@ import org.sunbird.common.models.util.StringFormatter;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.common.responsecode.ResponseMessage;
+import org.sunbird.keys.SunbirdKey;
 
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
@@ -43,7 +44,6 @@ public final class RequestValidator {
    */
   @SuppressWarnings("unchecked")
   public static void validateUpdateContent(Request contentRequestDto) {
-    setUserIdToRequest(contentRequestDto);
     List<Map<String, Object>> list =
             (List<Map<String, Object>>) (contentRequestDto.getRequest().get(JsonKey.CONTENTS));
     if(CollectionUtils.isNotEmpty(list)) {
@@ -159,36 +159,6 @@ public final class RequestValidator {
           }
         }
       }
-  }
-
-  private static void setUserIdToRequest(Request contentRequestDto) {
-    if (!contentRequestDto.getRequest().containsKey(JsonKey.USER_ID)
-            || StringUtils.isBlank((String) contentRequestDto.get(JsonKey.USER_ID))) {
-      List<Map<String, Object>> contentList =
-              (List<Map<String, Object>>) (contentRequestDto.getRequest().get(JsonKey.CONTENTS));
-      List<Map<String, Object>> assessmentList =
-              (List<Map<String, Object>>) (contentRequestDto.getRequest().get(JsonKey.ASSESSMENT_EVENTS));
-      List<String> userList = null;
-      if(CollectionUtils.isNotEmpty(contentList)) {
-        userList = contentList.stream().map(content -> (String) content.getOrDefault(JsonKey.USER_ID, ""))
-                .filter(value ->  StringUtils.isNotBlank(value)).distinct().collect(Collectors.toList());
-        
-      } else if(CollectionUtils.isNotEmpty(assessmentList)) {
-        userList = assessmentList.stream().map(content -> (String) content.getOrDefault(JsonKey.USER_ID, ""))
-                .filter(value ->  StringUtils.isNotBlank(value)).distinct().collect(Collectors.toList());
-      }
-      
-      if(CollectionUtils.isEmpty(userList) || StringUtils.isBlank(userList.get(0))) {
-        throw new ProjectCommonException(
-                ResponseCode.userIdRequired.getErrorCode(),
-                ResponseCode.userIdRequired.getErrorMessage(),
-                ERROR_CODE);
-      } else {
-        contentRequestDto.put("ACTUAL_USER_ID", contentRequestDto.get(JsonKey.USER_ID));
-        contentRequestDto.put(JsonKey.USER_ID, userList.get(0));
-        contentRequestDto.put("ALL_USER_IDS", userList.stream().collect(Collectors.joining(", ")));
-      }
-    }
   }
 
   /**

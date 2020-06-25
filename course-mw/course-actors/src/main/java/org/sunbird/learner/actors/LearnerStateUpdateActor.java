@@ -147,13 +147,15 @@ public class LearnerStateUpdateActor extends BaseActor {
           if (status == 1) {
             // Actual processing of the Assessment data.
             // Filter the records which are not of the authorized user of this request. Then, process it.
+            List<String> processedContentIds = new ArrayList<>();
             for (String userId : validUserIds) {
               List<Map<String, Object>> filteredContents = input.getValue().stream().filter(content -> {
                 String contentUserId = (String) content.getOrDefault(JsonKey.USER_ID, "");
-                return StringUtils.isBlank(contentUserId) || StringUtils.equalsIgnoreCase(contentUserId, userId);
+                return !processedContentIds.contains(contentUserId) && (StringUtils.isBlank(contentUserId) || StringUtils.equalsIgnoreCase(contentUserId, userId));
               }).collect(Collectors.toList());
               if (CollectionUtils.isNotEmpty(filteredContents)) {
                 List<String> contentIds = filteredContents.stream().map(c -> (String) c.get("contentId")).collect(Collectors.toList());
+                processedContentIds.addAll(processedContentIds);
                 Map<String, Map<String, Object>> existingContents =
                         getContents(userId, contentIds, batchId).stream()
                                 .collect(Collectors.groupingBy(x -> (String) x.get("contentId")))
@@ -202,7 +204,7 @@ public class LearnerStateUpdateActor extends BaseActor {
   }
 
   private List<String> getUserIds(String requestedBy, String requestedFor) {
-    return Arrays.asList(requestedBy, requestedFor).stream().filter(uId -> StringUtils.isNotBlank(uId)).collect(Collectors.toList());
+    return Arrays.asList(requestedFor, requestedBy).stream().filter(uId -> StringUtils.isNotBlank(uId)).collect(Collectors.toList());
   }
 
   private void pushInvalidDataToKafka(Map<String, Object> data, String dataType) {

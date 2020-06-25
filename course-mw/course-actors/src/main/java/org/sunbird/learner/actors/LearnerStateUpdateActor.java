@@ -74,6 +74,7 @@ public class LearnerStateUpdateActor extends BaseActor {
     String requestedFor = (String) request.getRequest().getOrDefault(SunbirdKey.REQUESTED_FOR, "");
     // Here we are identifying the requestedBy and requestedFor as valid users for processing contents and assessments.
     List<String> validUserIds = getUserIds(requestedBy, requestedFor);
+
     List<Map<String, Object>> assessments = (List<Map<String, Object>>) request.getRequest().get(JsonKey.ASSESSMENT_EVENTS);
     if (CollectionUtils.isNotEmpty(assessments)) {
       Map<String, List<Map<String, Object>>> batchAssessmentList = assessments.stream()
@@ -90,23 +91,24 @@ public class LearnerStateUpdateActor extends BaseActor {
           if (status == 1) {
             // Actual processing of the Assessment data.
             // Filter the records which are not of the authorized user of this request. Then, process it.
-            for (String userId: validUserIds) {
-              input.getValue().stream().filter(assessment -> {
-                String assessmentUserId = (String) assessment.getOrDefault(JsonKey.USER_ID, "");
-                return StringUtils.isBlank(assessmentUserId) || StringUtils.equalsIgnoreCase(assessmentUserId, userId);
-              }).forEach(data -> {
-                try {
-                  syncAssessmentData(data);
-                  updateMessages(respMessages, batchId, JsonKey.SUCCESS);
-                } catch (Exception e) {
-                  ProjectLogger.log("Error syncing assessment data: " + e.getMessage(), e);
-                }
-              });
-              List<Map<String, Object>> invalidList = input.getValue().stream().filter(assessment -> {
-                String assessmentUserId = (String) assessment.getOrDefault(JsonKey.USER_ID, "");
-                return StringUtils.isNotBlank(assessmentUserId) || !validUserIds.contains(assessmentUserId);
-              }).collect(Collectors.toList());
-              invalidAssessments.addAll(invalidList);
+            Map<String, List<Map<String, Object>>> userAssessments = getDataGroupByUserId(input.getValue(), requestedBy, requestedFor);
+            for (Map.Entry<String, List<Map<String, Object>>> entry: userAssessments.entrySet()) {
+              String userId = entry.getKey();
+              if (validUserIds.contains(userId)) {
+                entry.getValue().stream().filter(assessment -> {
+                  String assessmentUserId = (String) assessment.getOrDefault(JsonKey.USER_ID, "");
+                  return StringUtils.isBlank(assessmentUserId) || StringUtils.equalsIgnoreCase(assessmentUserId, userId);
+                }).forEach(data -> {
+                  try {
+                    syncAssessmentData(data);
+                    updateMessages(respMessages, batchId, JsonKey.SUCCESS);
+                  } catch (Exception e) {
+                    ProjectLogger.log("Error syncing assessment data: " + e.getMessage(), e);
+                  }
+                });
+              } else {
+                invalidAssessments.addAll(entry.getValue());
+              }
             }
           } else {
             updateMessages(respMessages, ContentUpdateResponseKeys.NOT_A_ON_GOING_BATCH.name(), batchId);
@@ -147,40 +149,32 @@ public class LearnerStateUpdateActor extends BaseActor {
           if (status == 1) {
             // Actual processing of the Assessment data.
             // Filter the records which are not of the authorized user of this request. Then, process it.
-            List<String> processedContentIds = new ArrayList<>();
-            for (String userId : validUserIds) {
-              List<Map<String, Object>> filteredContents = input.getValue().stream().filter(content -> {
-                String contentUserId = (String) content.getOrDefault(JsonKey.USER_ID, "");
-                return !processedContentIds.contains(contentUserId) && (StringUtils.isBlank(contentUserId) || StringUtils.equalsIgnoreCase(contentUserId, userId));
-              }).collect(Collectors.toList());
-              if (CollectionUtils.isNotEmpty(filteredContents)) {
-                List<String> contentIds = filteredContents.stream().map(c -> (String) c.get("contentId")).collect(Collectors.toList());
-                processedContentIds.addAll(processedContentIds);
+            Map<String, List<Map<String, Object>>> userContents = getDataGroupByUserId(input.getValue(), requestedBy, requestedFor);
+            for (Map.Entry<String, List<Map<String, Object>>> entry: userContents.entrySet()) {
+              String userId = entry.getKey();
+              if (validUserIds.contains(userId)) {
+                List<String> contentIds = entry.getValue().stream().map(c -> (String) c.get("contentId")).collect(Collectors.toList());
                 Map<String, Map<String, Object>> existingContents =
                         getContents(userId, contentIds, batchId).stream()
                                 .collect(Collectors.groupingBy(x -> (String) x.get("contentId")))
                                 .entrySet().stream().collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue().get(0)));
 
-                List<Map<String, Object>> contents = filteredContents.stream()
+                List<Map<String, Object>> contents = entry.getValue().stream()
                         .map(inputContent -> {
                           Map<String, Object> existingContent =
                                   existingContents.get(inputContent.get("contentId"));
                           return processContent(inputContent, existingContent, userId);
-                        })
-                        .collect(Collectors.toList());
+                        }).collect(Collectors.toList());
                 cassandraOperation.batchInsert(consumptionDBInfo.getKeySpace(), consumptionDBInfo.getTableName(), contents);
                 Map<String, Object> updatedBatch = getBatchCurrentStatus(batchId, userId, contents);
                 cassandraOperation.upsertRecord(userCourseDBInfo.getKeySpace(), userCourseDBInfo.getTableName(), updatedBatch);
                 // Generate Instruction event. Send userId, batchId, courseId, contents.
                 pushInstructionEvent(userId, batchId, courseId, contents);
                 contentIds.forEach(contentId -> updateMessages(respMessages, contentId, JsonKey.SUCCESS));
+              } else {
+                invalidContents.addAll(entry.getValue());
               }
             }
-            List<Map<String, Object>> invalidList = input.getValue().stream().filter(content -> {
-              String contentUserId = (String) content.getOrDefault(JsonKey.USER_ID, "");
-              return StringUtils.isNotBlank(contentUserId) && !validUserIds.contains(contentUserId);
-            }).collect(Collectors.toList());
-            invalidContents.addAll(invalidList);
           } else {
             updateMessages(respMessages, ContentUpdateResponseKeys.NOT_A_ON_GOING_BATCH.name(), batchId);
           }
@@ -201,6 +195,17 @@ public class LearnerStateUpdateActor extends BaseActor {
       response.getResult().putAll(respMessages);
       sender().tell(response, self());
     }
+  }
+
+  private Map<String, List<Map<String, Object>>> getDataGroupByUserId(List<Map<String, Object>> data, String requestedBy, String requestedFor) {
+    String primaryUserId = StringUtils.isNotBlank(requestedFor) ? requestedFor : requestedBy;
+    data.stream().map(f -> {
+      String userId = (String) f.getOrDefault(JsonKey.USER_ID, "");
+      if (StringUtils.isBlank(userId))
+        f.put(JsonKey.USER_ID, primaryUserId);
+      return f;
+    }).collect(Collectors.toList());
+    return data.stream().collect(Collectors.groupingBy(x -> (String) x.get(JsonKey.USER_ID)));
   }
 
   private List<String> getUserIds(String requestedBy, String requestedFor) {
@@ -485,21 +490,6 @@ public class LearnerStateUpdateActor extends BaseActor {
           "BE_JOB_REQUEST_EXCEPTION",
           "Invalid topic id.",
           ResponseCode.CLIENT_ERROR.getResponseCode());
-    }
-  }
-
-  private void verifyRequestedByAndThrowErrorIfNotMatch(String userId, String requestedBy, String requestedFor, Request request) throws Exception {
-    if (!(userId.equals(requestedBy)) && !(userId.equals(requestedFor))) {
-      String userIdInRequestGlobal = (String) request.getRequest().get(JsonKey.USER_ID);
-      List<Map<String, Object>> contentList = (List<Map<String, Object>>) request.getRequest().get(JsonKey.CONTENTS);
-      List<Map<String, Object>> assessments = (List<Map<String, Object>>) request.getRequest().get(JsonKey.ASSESSMENT_EVENTS);
-      String allUserIds = getAllUserIds(contentList, assessments);
-      ProjectLogger.log("LearnerStateUpdateActor:verifyRequestedByAndThrowErrorIfNotMatch : validation failed: " +
-              "userId: " + userId + " :: requestedBy: " + requestedBy + " :: requestedFor: "+ requestedFor
-              + " :: userIdInRequestGlobal: " + userIdInRequestGlobal
-              + " :: allUserIds: " + allUserIds
-              + " :: END", LoggerEnum.INFO.name());
-      ProjectCommonException.throwUnauthorizedErrorException();
     }
   }
 }

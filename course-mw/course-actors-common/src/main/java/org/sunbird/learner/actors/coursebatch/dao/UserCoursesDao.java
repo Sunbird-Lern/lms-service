@@ -56,4 +56,7 @@ public interface UserCoursesDao {
    * @param active
    */
   List<String> getBatchParticipants(String batchId, boolean active);
+  
+  
+  List<Map<String, Object>> listEnrolments(String userId);
 }

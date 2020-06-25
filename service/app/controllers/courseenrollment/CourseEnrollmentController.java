@@ -36,9 +36,7 @@ public class CourseEnrollmentController extends BaseController {
   private ActorRef learnerStateActorRef;
 
   public CompletionStage<Result> getEnrolledCourses(String uid, Http.Request httpRequest) {
-    return handleRequest(
-        learnerStateActorRef,
-        ActorOperations.GET_COURSE.getValue(),
+    return handleRequest(enrolmentActor, "listEnrol", 
         httpRequest.body().asJson(),
         (req) -> {
           Request request = (Request) req;
@@ -78,7 +76,7 @@ public class CourseEnrollmentController extends BaseController {
   }
 
   public CompletionStage<Result> enrollCourse(Http.Request httpRequest) {
-    return handleRequest(enrolmentActor, "enroll",
+    return handleRequest(enrolmentActor, "enrol",
         httpRequest.body().asJson(),
         (request) -> {
           new CourseEnrollmentRequestValidator().validateEnrollCourse((Request) request);
@@ -90,8 +88,7 @@ public class CourseEnrollmentController extends BaseController {
 
   public CompletionStage<Result> unenrollCourse(Http.Request httpRequest) {
     return handleRequest(
-        courseEnrollmentActorRef,
-        ActorOperations.UNENROLL_COURSE.getValue(),
+        enrolmentActor, "unenrol",
         httpRequest.body().asJson(),
         (request) -> {
           new CourseEnrollmentRequestValidator().validateUnenrollCourse((Request) request);

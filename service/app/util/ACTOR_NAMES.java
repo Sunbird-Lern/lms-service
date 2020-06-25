@@ -1,6 +1,6 @@
 package util;
 
-import org.sunbird.EnrolmentActor;
+import org.sunbird.enrolments.EnrolmentActor;
 import org.sunbird.badge.actors.BadgeAssociationActor;
 import org.sunbird.learner.actors.BackgroundJobManager;
 import org.sunbird.learner.actors.LearnerStateActor;

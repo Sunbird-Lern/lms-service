@@ -54,7 +54,7 @@ class EnrolmentActor @Inject()(@Named("course-batch-notification-actor") courseB
         val batchId: String = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
         val batchData: CourseBatch = courseBatchDao.readById(courseId, batchId)
         val enrolmentData: UserCourses = userCoursesDao.read(userId, courseId, batchId)
-        verifyRequestedBy(request)
+       // verifyRequestedBy(request)
         validateEnrolment(batchData, enrolmentData, true)
         val data: java.util.Map[String, AnyRef] = createUserEnrolmentMap(userId, courseId, batchId, enrolmentData, request.getContext.getOrDefault(JsonKey.REQUEST_ID, "").asInstanceOf[String])
         upsertEnrollment(userId, courseId, batchId, enrolmentData, data)

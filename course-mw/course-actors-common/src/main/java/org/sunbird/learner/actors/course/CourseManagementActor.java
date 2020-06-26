@@ -159,7 +159,7 @@ public class CourseManagementActor extends BaseActor {
         }
     }
 
-    private Map<String, Object> generateUpdateHierarchyRequest(Request request, Response createResponse) {
+    private Map<String, Object> generateUpdateHierarchyRequest(Request request, Response createResponse) throws Exception {
         Map<String, Object> nodesModified = new HashMap<String, Object>();
         Map<String, Object> hierarchy = new HashMap<String, Object>();
         getRecursiveHierarchyRequest((String) createResponse.getResult().get(SunbirdKey.IDENTIFIER),
@@ -172,6 +172,10 @@ public class CourseManagementActor extends BaseActor {
                 }});
             }});
         }};
+        ProjectLogger.log(
+                "CourseManagementActor:generateUpdateHierarchyRequest : Request for course update Hierarchy : "
+                        + mapper.writeValueAsString(updateRequest),
+                LoggerEnum.INFO.name());
         return updateRequest;
     }
 

@@ -40,6 +40,12 @@ public final class SunbirdKey {
     public static final String CHILDREN = "children";
     public static final String ROOT = "root";
     public static final List<String> HIERARCHY_PROPS_TO_REMOVE = Arrays.asList("identifier", "parent", "index", "depth");
+    public static final String LAST_PUBLISHED_ON = "lastPublishedOn";
+    public static final String REQUESTED_FOR = "requestedFor";
+    // Content Status Update API Specific - START
+    public static final String ACTUAL_USER_ID = "actualUserId";
+    public static final String ALL_USER_IDS = "allUserIds";
+    // Content Status Update API Specific - END
 
     private SunbirdKey() {}
 }

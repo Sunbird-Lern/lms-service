@@ -200,6 +200,7 @@ public class CourseManagementActor extends BaseActor {
         return new HashMap<String, Object>() {{
             put(SunbirdKey.METADATA, cleanUpData(new HashMap<String, Object>() {{
                 putAll(metadata);
+                put(SunbirdKey.CHILDREN, new ArrayList<String>());
             }}));
             put(SunbirdKey.ROOT, false);
             put("isNew", true);

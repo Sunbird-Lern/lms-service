@@ -1,5 +1,8 @@
 package org.sunbird.keys;
 
+import java.util.Arrays;
+import java.util.List;
+
 public final class SunbirdKey {
 
     public static final String REQUEST = "request";
@@ -27,6 +30,16 @@ public final class SunbirdKey {
     public static final String ORGANISATION = "organisation";
     public static final String CONTENT_MIME_TYPE_COLLECTION = "application/vnd.ekstep.content-collection";
     public static final String CONTENT_TYPE_HEADER = "Content-Type";
+    public static final String HIERARCHY = "hierarchy";
+    public static final String NODE_MODIFIED = "nodesModified";
+    public static final String DATA = "data";
+    public static final String VISIBILITY = "visibility";
+    public static final String VISIBILITY_PARENT = "Parent";
+    public static final String VISIBILITY_DEFAULT = "Default";
+    public static final String METADATA = "metadata";
+    public static final String CHILDREN = "children";
+    public static final String ROOT = "root";
+    public static final List<String> HIERARCHY_PROPS_TO_REMOVE = Arrays.asList("identifier", "parent", "index", "depth");
 
     private SunbirdKey() {}
 }

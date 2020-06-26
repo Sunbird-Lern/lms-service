@@ -29,6 +29,7 @@ public class CourseCreateRequestValidator {
                     setErrorMessage(message);
                 }
             }
+            //TODO: If request contains both hierarchy and source throw exception?
         } catch (Exception ex) {
             if (ex instanceof ProjectCommonException) {
                 throw ex;

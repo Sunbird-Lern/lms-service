@@ -23,11 +23,12 @@ import java.util.stream.Collectors;
 
 import static org.sunbird.common.models.util.JsonKey.EKSTEP_BASE_URL;
 import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
-import static org.sunbird.common.responsecode.ResponseCode.SERVER_ERROR;
+import static org.sunbird.common.responsecode.ResponseCode.CLIENT_ERROR;
+import static org.sunbird.common.models.util.JsonKey.CONTENT_PROPS_TO_ADD;
 
 public class CourseManagementActor extends BaseActor {
     private static ObjectMapper mapper = new ObjectMapper();
-    private static List<String> metadataNotTobeCopied = new ArrayList<>();
+    private static List<String> metadataToBeAdded = Arrays.stream(getConfigValue(CONTENT_PROPS_TO_ADD).split(",")).map(String::trim).collect(Collectors.toList());
 
     @Override
     public void onReceive(Request request) throws Throwable {
@@ -128,7 +129,7 @@ public class CourseManagementActor extends BaseActor {
                 throw new ProjectCommonException(
                         ResponseCode.CLIENT_ERROR.getErrorCode(),
                         ResponseCode.CLIENT_ERROR.getErrorMessage(),
-                        SERVER_ERROR.getResponseCode());
+                        CLIENT_ERROR.getResponseCode());
             }
         }
     }
@@ -182,11 +183,14 @@ public class CourseManagementActor extends BaseActor {
     private void getRecursiveHierarchyRequest(String parentId, List<Map<String, Object>> children, Map<String, Object> nodesModified,
                                               Map<String, Object> hierarchy, Boolean root) {
         children.forEach(child -> {
-            if (StringUtils.equalsIgnoreCase((String) child.get(SunbirdKey.VISIBILITY), SunbirdKey.VISIBILITY_PARENT))
-                nodesModified.put((String) child.get(SunbirdKey.IDENTIFIER), getNodeModifiedMap(child));
+            String identifier = (String) child.get(SunbirdKey.IDENTIFIER);
+            if (StringUtils.equalsIgnoreCase((String) child.get(SunbirdKey.VISIBILITY), SunbirdKey.VISIBILITY_PARENT)) {
+                identifier = System.currentTimeMillis() + "";
+                nodesModified.put(identifier, getNodeModifiedMap(child));
+            }
             if (MapUtils.isEmpty(((Map<String, Object>) hierarchy.getOrDefault(parentId, new HashMap<String, Object>()))))
                 hierarchy.put(parentId, getNodeHierarchyMap(root));
-            ((List<String>) ((Map<String, Object>) hierarchy.get(parentId)).get(SunbirdKey.CHILDREN)).add((String) child.get(SunbirdKey.IDENTIFIER));
+            ((List<String>) ((Map<String, Object>) hierarchy.get(parentId)).get(SunbirdKey.CHILDREN)).add(identifier);
             if (StringUtils.equalsIgnoreCase((String) child.get(SunbirdKey.MIME_TYPE), SunbirdKey.CONTENT_MIME_TYPE_COLLECTION)
                     && !StringUtils.equalsIgnoreCase((String) child.get(SunbirdKey.VISIBILITY), SunbirdKey.VISIBILITY_DEFAULT))
                 getRecursiveHierarchyRequest((String) child.get(SunbirdKey.IDENTIFIER),
@@ -200,7 +204,6 @@ public class CourseManagementActor extends BaseActor {
         return new HashMap<String, Object>() {{
             put(SunbirdKey.METADATA, cleanUpData(new HashMap<String, Object>() {{
                 putAll(metadata);
-                put(SunbirdKey.CHILDREN, new ArrayList<String>());
             }}));
             put(SunbirdKey.ROOT, false);
             put("isNew", true);
@@ -216,8 +219,6 @@ public class CourseManagementActor extends BaseActor {
     }
 
     private Map<String, Object> cleanUpData(Map<String, Object> metadata) {
-        metadataNotTobeCopied.addAll(SunbirdKey.HIERARCHY_PROPS_TO_REMOVE);
-        metadata.keySet().removeAll(metadataNotTobeCopied);
-        return metadata;
+        return metadata.entrySet().stream().filter(entry -> metadataToBeAdded.contains(entry.getKey())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 }

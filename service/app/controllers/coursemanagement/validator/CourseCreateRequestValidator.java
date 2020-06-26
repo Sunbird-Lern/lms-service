@@ -9,6 +9,7 @@ import org.sunbird.keys.SunbirdKey;
 import java.text.MessageFormat;
 import java.util.Map;
 
+import static org.sunbird.common.responsecode.ResponseCode.CLIENT_ERROR;
 import static org.sunbird.common.responsecode.ResponseCode.SERVER_ERROR;
 
 public class CourseCreateRequestValidator {
@@ -17,35 +18,34 @@ public class CourseCreateRequestValidator {
             String message = "";
             if (null == request.get(SunbirdKey.COURSE)) {
                 message += "Error due to missing request body or course";
-                setErrorMessage(message);
-            }
+                ProjectCommonException.throwClientErrorException(
+                        ResponseCode.missingData,
+                        MessageFormat.format(
+                                ResponseCode.missingData.getErrorMessage(), message));            }
             if (!request.getRequest().containsKey(SunbirdKey.SOURCE)) {
                 if (!StringUtils.equals("Course", (String) ((Map<String, Object>) request.get(SunbirdKey.COURSE)).get(SunbirdKey.CONTENT_TYPE))) {
                     message += "contentType should be Course";
-                    setErrorMessage(message);
-                }
+                    ProjectCommonException.throwClientErrorException(
+                            ResponseCode.contentTypeMismatch,
+                            MessageFormat.format(
+                                    ResponseCode.contentTypeMismatch.getErrorMessage(), message));                }
                 if (!StringUtils.equals(SunbirdKey.CONTENT_MIME_TYPE_COLLECTION, (String) ((Map<String, Object>) request.get(SunbirdKey.COURSE)).get(SunbirdKey.MIME_TYPE))) {
                     message += "mimeType should be collection";
-                    setErrorMessage(message);
-                }
+                    ProjectCommonException.throwClientErrorException(
+                            ResponseCode.mimeTypeMismatch,
+                            MessageFormat.format(
+                                    ResponseCode.mimeTypeMismatch.getErrorMessage(), message));                }
             }
-            //TODO: If request contains both hierarchy and source throw exception?
+            if (request.getRequest().containsKey(SunbirdKey.SOURCE) && request.getRequest().containsKey(SunbirdKey.HIERARCHY)) {
+                message += "Error Source and Hierarchy both can't be sent in the same request.";
+                ProjectCommonException.throwClientErrorException(
+                        CLIENT_ERROR,
+                        MessageFormat.format(
+                                ResponseCode.CLIENT_ERROR.getErrorMessage(), message));
+            }
         } catch (Exception ex) {
-            if (ex instanceof ProjectCommonException) {
-                throw ex;
-            } else {
-                throw new ProjectCommonException(
-                        ResponseCode.CLIENT_ERROR.getErrorCode(),
-                        ResponseCode.CLIENT_ERROR.getErrorMessage(),
-                        SERVER_ERROR.getResponseCode());
-            }
+            throw ex;
         }
     }
 
-    private static void setErrorMessage(String message) {
-        ProjectCommonException.throwClientErrorException(
-                ResponseCode.missingData,
-                MessageFormat.format(
-                        ResponseCode.missingData.getErrorMessage(), message));
-    }
 }

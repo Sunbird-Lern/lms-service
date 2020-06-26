@@ -1,6 +1,7 @@
 package org.sunbird.learner.actors;
 
 import static akka.testkit.JavaTestKit.duration;
+import static org.junit.Assert.assertEquals;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 
@@ -10,14 +11,13 @@ import akka.actor.Props;
 import akka.dispatch.Futures;
 import akka.testkit.javadsl.TestKit;
 import java.math.BigInteger;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
@@ -28,6 +28,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.cassandraimpl.CassandraOperationImpl;
 import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.ElasticSearchRestHighImpl;
+import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
@@ -35,9 +36,11 @@ import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.kafka.client.InstructionEventGenerator;
 import org.sunbird.kafka.client.KafkaClient;
+import org.sunbird.keys.SunbirdKey;
 import org.sunbird.learner.util.ContentSearchUtil;
 import scala.concurrent.Promise;
 
@@ -164,6 +167,7 @@ public class LearnerStateUpdateActorTest {
     HashMap<String, Object> innerMap = new HashMap<>();
     innerMap.put(JsonKey.CONTENTS, contentList);
     innerMap.put(JsonKey.USER_ID, userId);
+    innerMap.put(JsonKey.REQUESTED_BY, userId);
     req.setOperation(ActorOperations.ADD_CONTENT.getValue());
     req.setRequest(innerMap);
     subject.tell(req, probe.getRef());
@@ -186,6 +190,7 @@ public class LearnerStateUpdateActorTest {
     HashMap<String, Object> innerMap = new HashMap<>();
     innerMap.put(JsonKey.CONTENTS, contentList);
     innerMap.put(JsonKey.USER_ID, userId);
+    innerMap.put(JsonKey.REQUESTED_BY, userId);
     req.setOperation(ActorOperations.ADD_CONTENT.getValue());
     req.setRequest(innerMap);
     subject.tell(req, probe.getRef());
@@ -208,6 +213,7 @@ public class LearnerStateUpdateActorTest {
     HashMap<String, Object> innerMap = new HashMap<>();
     innerMap.put(JsonKey.CONTENTS, contentList);
     innerMap.put(JsonKey.USER_ID, userId);
+    innerMap.put(JsonKey.REQUESTED_BY, userId);
     req.setOperation(ActorOperations.ADD_CONTENT.getValue());
     req.setRequest(innerMap);
 
@@ -241,6 +247,7 @@ public class LearnerStateUpdateActorTest {
     HashMap<String, Object> innerMap = new HashMap<>();
     innerMap.put(JsonKey.CONTENTS, contentList);
     innerMap.put(JsonKey.USER_ID, userId);
+    innerMap.put(JsonKey.REQUESTED_BY, userId);
     req.setOperation(ActorOperations.ADD_CONTENT.getValue());
     req.setRequest(innerMap);
 
@@ -292,10 +299,35 @@ public class LearnerStateUpdateActorTest {
     innerMap.put(JsonKey.CONTENTS, contentList);
     innerMap.put(JsonKey.ASSESSMENT_EVENTS, assData);
     innerMap.put(JsonKey.USER_ID, userId);
+    innerMap.put(JsonKey.REQUESTED_BY, userId);
     req.setOperation(ActorOperations.ADD_CONTENT.getValue());
     req.setRequest(innerMap);
     subject.tell(req, probe.getRef());
     Response response = probe.expectMsgClass(duration("10 second"), Response.class);
     Assert.assertNotNull(response);
   }
+
+  @Test
+  public void addContentTestWithForToken() {
+
+    TestKit probe = new TestKit(system);
+    ActorRef subject = system.actorOf(props);
+    Request req = new Request();
+    List<Map<String, Object>> contentList = new ArrayList<Map<String, Object>>();
+    Map<String, Object> content1 = createContent();
+    content1.put(JsonKey.STATUS, new BigInteger("2"));
+    contentList.add(content1);
+
+    HashMap<String, Object> innerMap = new HashMap<>();
+    innerMap.put(JsonKey.CONTENTS, contentList);
+    innerMap.put(JsonKey.USER_ID, userId);
+    innerMap.put(JsonKey.REQUESTED_BY, "XYZ");
+    innerMap.put(SunbirdKey.REQUESTED_FOR, userId);
+    req.setOperation(ActorOperations.ADD_CONTENT.getValue());
+    req.setRequest(innerMap);
+    subject.tell(req, probe.getRef());
+    Response response = probe.expectMsgClass(duration("10 second"), Response.class);
+    Assert.assertNotNull(response);
+  }
+
 }

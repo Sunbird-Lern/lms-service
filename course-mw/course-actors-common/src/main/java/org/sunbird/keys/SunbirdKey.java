@@ -39,7 +39,7 @@ public final class SunbirdKey {
     public static final String METADATA = "metadata";
     public static final String CHILDREN = "children";
     public static final String ROOT = "root";
-    public static final List<String> HIERARCHY_PROPS_TO_REMOVE = Arrays.asList("identifier", "parent", "index", "depth");
+    public static final List<String> HIERARCHY_PROPS_TO_REMOVE = Arrays.asList("identifier", "parent", "index", "depth", "children");
     public static final String LAST_PUBLISHED_ON = "lastPublishedOn";
     public static final String REQUESTED_FOR = "requestedFor";
     // Content Status Update API Specific - START

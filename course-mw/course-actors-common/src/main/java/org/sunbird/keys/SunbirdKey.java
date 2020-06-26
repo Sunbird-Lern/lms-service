@@ -28,6 +28,11 @@ public final class SunbirdKey {
     public static final String CONTENT_MIME_TYPE_COLLECTION = "application/vnd.ekstep.content-collection";
     public static final String CONTENT_TYPE_HEADER = "Content-Type";
     public static final String LAST_PUBLISHED_ON = "lastPublishedOn";
+    public static final String REQUESTED_FOR = "requestedFor";
+    // Content Status Update API Specific - START
+    public static final String ACTUAL_USER_ID = "actualUserId";
+    public static final String ALL_USER_IDS = "allUserIds";
+    // Content Status Update API Specific - END
 
     private SunbirdKey() {}
 }

@@ -102,6 +102,7 @@ class EnrolmentActor @Inject()(@Named("course-batch-notification-actor") courseB
         val requestBody: String =  prepareSearchRequest(courseIds, request)
         val searchResult:java.util.Map[String, AnyRef] = ContentSearchUtil.searchContentSync(request.getContext.getOrDefault(JsonKey.URL_QUERY_STRING,"").asInstanceOf[String], requestBody, request.get(JsonKey.HEADER).asInstanceOf[java.util.Map[String, String]])
         val coursesList: java.util.List[java.util.Map[String, AnyRef]] = searchResult.getOrDefault(JsonKey.CONTENT, new java.util.ArrayList[java.util.Map[String, AnyRef]]()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
+        val coursesList: java.util.List[java.util.Map[String, AnyRef]] = searchResult.getOrDefault(JsonKey.CONTENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
         val coursesMap = {
             if(CollectionUtils.isNotEmpty(coursesList)) {
                 coursesList.map(ev => ev.get(JsonKey.IDENTIFIER).asInstanceOf[String] -> ev).toMap
@@ -123,7 +124,7 @@ class EnrolmentActor @Inject()(@Named("course-batch-notification-actor") courseB
     def prepareSearchRequest(courseIds: java.util.List[String], request: Request): String = {
         val filters: java.util.Map[String, AnyRef] = new java.util.HashMap[String, AnyRef]() {{
             put(JsonKey.IDENTIFIER, courseIds)
-            put(JsonKey.CONTENT_TYPE, JsonKey.COURSE)
+            put(JsonKey.CONTENT_TYPE, Array(JsonKey.COURSE))
             put(JsonKey.STATUS, "Live")
             putAll(request.getRequest.getOrDefault(JsonKey.FILTERS, new java.util.HashMap[String, AnyRef]).asInstanceOf[java.util.Map[String, AnyRef]])
         }}

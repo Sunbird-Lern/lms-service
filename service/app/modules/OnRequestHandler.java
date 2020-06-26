@@ -63,7 +63,7 @@ public class OnRequestHandler implements ActionCreator {
           childId = ManagedTokenValidator.verify(forAuth.get(), message);
           if (StringUtils.isNotBlank(childId) && !USER_UNAUTH_STATES.contains(childId)) {
             request.flash().put(SunbirdKey.REQUESTED_FOR, childId);
-          }X_Authenticated_For("x-authenticated-for");
+          }
           
         }
         // call method to set all the required params for the telemetry event(log)...

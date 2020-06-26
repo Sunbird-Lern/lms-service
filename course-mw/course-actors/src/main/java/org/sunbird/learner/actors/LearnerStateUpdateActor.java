@@ -24,8 +24,10 @@ import org.sunbird.dto.SearchDTO;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.kafka.client.InstructionEventGenerator;
 import org.sunbird.kafka.client.KafkaClient;
+import org.sunbird.keys.SunbirdKey;
 import org.sunbird.learner.constants.CourseJsonKey;
 import org.sunbird.learner.constants.InstructionEvent;
+import org.sunbird.learner.util.JsonUtil;
 import org.sunbird.learner.util.Util;
 import scala.concurrent.Future;
 
@@ -61,149 +63,179 @@ public class LearnerStateUpdateActor extends BaseActor {
     ExecutionContext.setRequestId(request.getRequestId());
 
     if (request.getOperation().equalsIgnoreCase(ActorOperations.ADD_CONTENT.getValue())) {
-      ProjectLogger.log(
-              "LearnerStateUpdateActor: onReceive called for operation: "
-                      + request.getOperation(),
-              LoggerEnum.INFO.name());
-      String userId = (String) request.getRequest().get(JsonKey.USER_ID);
-      List<Map<String, Object>> assessments =
-          (List<Map<String, Object>>) request.getRequest().get(JsonKey.ASSESSMENT_EVENTS);
-      if (CollectionUtils.isNotEmpty(assessments)) {
-        Map<String, List<Map<String, Object>>> batchAssessmentList =
-            assessments
-                .stream()
-                .filter(x -> StringUtils.isNotBlank((String) x.get("batchId")))
-                .collect(
-                    Collectors.groupingBy(
-                        x -> {
-                          return (String) x.get("batchId");
-                        }));
-        List<String> batchIds = batchAssessmentList.keySet().stream().collect(Collectors.toList());
-        Map<String, List<Map<String, Object>>> batches =
-            getBatches(batchIds)
-                .stream()
-                .collect(
-                    Collectors.groupingBy(
-                        x -> {
-                          return (String) x.get("batchId");
-                        }));
-        Map<String, Object> respMessages = new HashMap<>();
-        for (Map.Entry<String, List<Map<String, Object>>> input : batchAssessmentList.entrySet()) {
-          String batchId = input.getKey();
-          if (batches.containsKey(batchId)) {
-            Map<String, Object> batchDetails = batches.get(batchId).get(0);
-            int status = getInteger(batchDetails.get("status"), 0);
-            if (status == 1) {
-              input
-                  .getValue()
-                  .stream()
-                  .forEach(
-                      data -> {
-                        try {
-                          syncAssessmentData(data);
-                          updateMessages(respMessages, batchId, JsonKey.SUCCESS);
-                        } catch (Exception e) {
-                          ProjectLogger.log("Error syncing assessment data: " + e.getMessage(), e);
-                        }
-                      });
-            } else {
-              updateMessages(
-                  respMessages, ContentUpdateResponseKeys.NOT_A_ON_GOING_BATCH.name(), batchId);
-            }
-          } else {
-            updateMessages(
-                respMessages, ContentUpdateResponseKeys.BATCH_NOT_EXISTS.name(), batchId);
-          }
-        }
-        Response response = new Response();
-        response.getResult().putAll(respMessages);
-        sender().tell(response, self());
-      }
-      List<Map<String, Object>> contentList =
-          (List<Map<String, Object>>) request.getRequest().get(JsonKey.CONTENTS);
-      if (CollectionUtils.isNotEmpty(contentList)) {
-        Map<String, List<Map<String, Object>>> batchContentList =
-            contentList
-                .stream()
-                .filter(x -> StringUtils.isNotBlank((String) x.get("batchId")))
-                .collect(
-                    Collectors.groupingBy(
-                        x -> {
-                          return (String) x.get("batchId");
-                        }));
-        List<String> batchIds = batchContentList.keySet().stream().collect(Collectors.toList());
-        Map<String, List<Map<String, Object>>> batches =
-            getBatches(batchIds)
-                .stream()
-                .collect(
-                    Collectors.groupingBy(
-                        x -> {
-                          return (String) x.get("batchId");
-                        }));
-        Map<String, Object> respMessages = new HashMap<>();
-        for (Map.Entry<String, List<Map<String, Object>>> input : batchContentList.entrySet()) {
-          String batchId = input.getKey();
-          if (batches.containsKey(batchId)) {
-            Map<String, Object> batchDetails = batches.get(batchId).get(0);
-            String courseId = (String) batchDetails.get("courseId");
-            int status = getInteger(batchDetails.get("status"), 0);
-            if (status == 1) {
-              List<String> contentIds =
-                  input
-                      .getValue()
-                      .stream()
-                      .map(c -> (String) c.get("contentId"))
-                      .collect(Collectors.toList());
-              Map<String, Map<String, Object>> existingContents =
-                  getContents(userId, contentIds, batchId)
-                      .stream()
-                      .collect(
-                          Collectors.groupingBy(
-                              x -> {
-                                return (String) x.get("contentId");
-                              }))
-                      .entrySet()
-                      .stream()
-                      .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue().get(0)));
-              List<Map<String, Object>> contents =
-                  input
-                      .getValue()
-                      .stream()
-                      .map(
-                          inputContent -> {
-                            Map<String, Object> existingContent =
-                                existingContents.get(inputContent.get("contentId"));
-                            return processContent(inputContent, existingContent, userId);
-                          })
-                      .collect(Collectors.toList());
-
-              cassandraOperation.batchInsert(
-                  consumptionDBInfo.getKeySpace(), consumptionDBInfo.getTableName(), contents);
-              Map<String, Object> updatedBatch = getBatchCurrentStatus(batchId, userId, contents);
-              cassandraOperation.upsertRecord(
-                  userCourseDBInfo.getKeySpace(), userCourseDBInfo.getTableName(), updatedBatch);
-              // Generate Instruction event. Send userId, batchId, courseId, contents.
-              pushInstructionEvent(userId, batchId, courseId, contents);
-              contentIds.forEach(
-                  contentId -> {
-                    updateMessages(respMessages, contentId, JsonKey.SUCCESS);
-                  });
-            } else {
-              updateMessages(
-                  respMessages, ContentUpdateResponseKeys.NOT_A_ON_GOING_BATCH.name(), batchId);
-            }
-          } else {
-            updateMessages(
-                respMessages, ContentUpdateResponseKeys.BATCH_NOT_EXISTS.name(), batchId);
-          }
-        }
-        Response response = new Response();
-        response.getResult().putAll(respMessages);
-        sender().tell(response, self());
-      }
+      addContent(request);
     } else {
       onReceiveUnsupportedOperation(request.getOperation());
     }
+  }
+
+  private void addContent(Request request) throws Exception {
+    String requestedBy = (String) request.getRequest().get(JsonKey.REQUESTED_BY);
+    String requestedFor = (String) request.getRequest().getOrDefault(SunbirdKey.REQUESTED_FOR, "");
+    // Here we are identifying the requestedBy and requestedFor as valid users for processing contents and assessments.
+    List<String> validUserIds = getUserIds(requestedBy, requestedFor);
+
+    List<Map<String, Object>> assessments = (List<Map<String, Object>>) request.getRequest().get(JsonKey.ASSESSMENT_EVENTS);
+    if (CollectionUtils.isNotEmpty(assessments)) {
+      Map<String, List<Map<String, Object>>> batchAssessmentList = assessments.stream()
+              .filter(x -> StringUtils.isNotBlank((String) x.get("batchId"))).collect(Collectors.groupingBy(x -> (String) x.get("batchId")));
+      List<String> batchIds = batchAssessmentList.keySet().stream().collect(Collectors.toList());
+      Map<String, List<Map<String, Object>>> batches = getBatches(batchIds).stream().collect(Collectors.groupingBy(x -> (String) x.get("batchId")));
+      Map<String, Object> respMessages = new HashMap<>();
+      List<Map<String, Object>> invalidAssessments = new ArrayList<>();
+      for (Map.Entry<String, List<Map<String, Object>>> input : batchAssessmentList.entrySet()) {
+        String batchId = input.getKey();
+        if (batches.containsKey(batchId)) {
+          Map<String, Object> batchDetails = batches.get(batchId).get(0);
+          int status = getInteger(batchDetails.get("status"), 0);
+          if (status == 1) {
+            // Actual processing of the Assessment data.
+            // Filter the records which are not of the authorized user of this request. Then, process it.
+            Map<String, List<Map<String, Object>>> userAssessments = getDataGroupByUserId(input.getValue(), requestedBy, requestedFor);
+            for (Map.Entry<String, List<Map<String, Object>>> entry: userAssessments.entrySet()) {
+              String userId = entry.getKey();
+              if (validUserIds.contains(userId)) {
+                entry.getValue().stream().filter(assessment -> {
+                  String assessmentUserId = (String) assessment.getOrDefault(JsonKey.USER_ID, "");
+                  return StringUtils.isBlank(assessmentUserId) || StringUtils.equalsIgnoreCase(assessmentUserId, userId);
+                }).forEach(data -> {
+                  try {
+                    syncAssessmentData(data);
+                    updateMessages(respMessages, batchId, JsonKey.SUCCESS);
+                  } catch (Exception e) {
+                    ProjectLogger.log("Error syncing assessment data: " + e.getMessage(), e);
+                  }
+                });
+              } else {
+                invalidAssessments.addAll(entry.getValue());
+              }
+            }
+          } else {
+            updateMessages(respMessages, ContentUpdateResponseKeys.NOT_A_ON_GOING_BATCH.name(), batchId);
+          }
+        } else {
+          updateMessages(respMessages, ContentUpdateResponseKeys.BATCH_NOT_EXISTS.name(), batchId);
+        }
+      }
+
+      if (CollectionUtils.isNotEmpty(invalidAssessments)) {
+        Map<String, Object> map = new HashMap<String, Object>() {{
+          put("validUserIds", validUserIds);
+          put("invalidAssessments", invalidAssessments);
+          put("ets", System.currentTimeMillis());
+        }};
+        pushInvalidDataToKafka(map, "Assessments");
+      }
+
+      Response response = new Response();
+      response.getResult().putAll(respMessages);
+      sender().tell(response, self());
+    }
+
+    List<Map<String, Object>> contentList = (List<Map<String, Object>>) request.getRequest().get(JsonKey.CONTENTS);
+    if (CollectionUtils.isNotEmpty(contentList)) {
+      Map<String, List<Map<String, Object>>> batchContentList = contentList.stream()
+              .filter(x -> StringUtils.isNotBlank((String) x.get("batchId"))).collect(Collectors.groupingBy(x -> (String) x.get("batchId")));
+      List<String> batchIds = batchContentList.keySet().stream().collect(Collectors.toList());
+      Map<String, List<Map<String, Object>>> batches = getBatches(batchIds).stream().collect(Collectors.groupingBy(x -> (String) x.get("batchId")));
+      Map<String, Object> respMessages = new HashMap<>();
+      List<Map<String, Object>> invalidContents = new ArrayList<>();
+      for (Map.Entry<String, List<Map<String, Object>>> input : batchContentList.entrySet()) {
+        String batchId = input.getKey();
+        if (batches.containsKey(batchId)) {
+          Map<String, Object> batchDetails = batches.get(batchId).get(0);
+          String courseId = (String) batchDetails.get("courseId");
+          int status = getInteger(batchDetails.get("status"), 0);
+          if (status == 1) {
+            // Actual processing of the Assessment data.
+            // Filter the records which are not of the authorized user of this request. Then, process it.
+            Map<String, List<Map<String, Object>>> userContents = getDataGroupByUserId(input.getValue(), requestedBy, requestedFor);
+            for (Map.Entry<String, List<Map<String, Object>>> entry: userContents.entrySet()) {
+              String userId = entry.getKey();
+              if (validUserIds.contains(userId)) {
+                List<String> contentIds = entry.getValue().stream().map(c -> (String) c.get("contentId")).collect(Collectors.toList());
+                Map<String, Map<String, Object>> existingContents =
+                        getContents(userId, contentIds, batchId).stream()
+                                .collect(Collectors.groupingBy(x -> (String) x.get("contentId")))
+                                .entrySet().stream().collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue().get(0)));
+
+                List<Map<String, Object>> contents = entry.getValue().stream()
+                        .map(inputContent -> {
+                          Map<String, Object> existingContent =
+                                  existingContents.get(inputContent.get("contentId"));
+                          return processContent(inputContent, existingContent, userId);
+                        }).collect(Collectors.toList());
+                cassandraOperation.batchInsert(consumptionDBInfo.getKeySpace(), consumptionDBInfo.getTableName(), contents);
+                Map<String, Object> updatedBatch = getBatchCurrentStatus(batchId, userId, contents);
+                cassandraOperation.upsertRecord(userCourseDBInfo.getKeySpace(), userCourseDBInfo.getTableName(), updatedBatch);
+                // Generate Instruction event. Send userId, batchId, courseId, contents.
+                pushInstructionEvent(userId, batchId, courseId, contents);
+                contentIds.forEach(contentId -> updateMessages(respMessages, contentId, JsonKey.SUCCESS));
+              } else {
+                invalidContents.addAll(entry.getValue());
+              }
+            }
+          } else {
+            updateMessages(respMessages, ContentUpdateResponseKeys.NOT_A_ON_GOING_BATCH.name(), batchId);
+          }
+        } else {
+          updateMessages(respMessages, ContentUpdateResponseKeys.BATCH_NOT_EXISTS.name(), batchId);
+        }
+      }
+
+      if (CollectionUtils.isNotEmpty(invalidContents)) {
+        Map<String, Object> map = new HashMap<String, Object>() {{
+          put("validUserIds", validUserIds);
+          put("invalidContents", invalidContents);
+          put("ets", System.currentTimeMillis());
+        }};
+        pushInvalidDataToKafka(map, "Contents");
+      }
+      Response response = new Response();
+      response.getResult().putAll(respMessages);
+      sender().tell(response, self());
+    }
+  }
+
+  private Map<String, List<Map<String, Object>>> getDataGroupByUserId(List<Map<String, Object>> data, String requestedBy, String requestedFor) {
+    String primaryUserId = StringUtils.isNotBlank(requestedFor) ? requestedFor : requestedBy;
+    data.stream().map(f -> {
+      String userId = (String) f.getOrDefault(JsonKey.USER_ID, "");
+      if (StringUtils.isBlank(userId))
+        f.put(JsonKey.USER_ID, primaryUserId);
+      return f;
+    }).collect(Collectors.toList());
+    return data.stream().collect(Collectors.groupingBy(x -> (String) x.get(JsonKey.USER_ID)));
+  }
+
+  private List<String> getUserIds(String requestedBy, String requestedFor) {
+    return Arrays.asList(requestedFor, requestedBy).stream().filter(uId -> StringUtils.isNotBlank(uId)).collect(Collectors.toList());
+  }
+
+  private void pushInvalidDataToKafka(Map<String, Object> data, String dataType) {
+    ProjectLogger.log("LearnerStateUpdater - Invalid " + dataType, data, LoggerEnum.INFO.name());
+    String topic = ProjectUtil.getConfigValue("kafka_topics_contentstate_invalid");
+    try {
+      String event = mapper.writeValueAsString(data);
+      KafkaClient.send(event,topic);
+    } catch (Throwable t) {
+      t.printStackTrace();
+    }
+  }
+
+  private String getAllUserIds(List<Map<String, Object>> contents, List<Map<String, Object>> assessments) throws Exception {
+    Map<String, Object> map = new HashMap<>();
+    if (CollectionUtils.isNotEmpty(contents)) {
+      List<String> contentUserIds = contents.stream().map(content -> (String) content.getOrDefault(JsonKey.USER_ID, ""))
+              .filter(uId -> StringUtils.isNotBlank(uId)).collect(Collectors.toList());
+      map.put("assessmentUserIds", contentUserIds);
+    }
+    if (CollectionUtils.isNotEmpty(assessments)) {
+      List<String> assessmentUserIds = assessments.stream().map(assessment -> (String) assessment.getOrDefault(JsonKey.USER_ID, ""))
+              .filter(uId -> StringUtils.isNotBlank(uId)).collect(Collectors.toList());
+      map.put("assessmentUserIds", assessmentUserIds);
+    }
+    return JsonUtil.serialize(map);
   }
 
   private List<Map<String, Object>> getBatches(List<String> batchIds) {

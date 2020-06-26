@@ -109,7 +109,7 @@ class EnrolmentActor @Inject()(@Named("course-batch-notification-actor") courseB
         }
         
         activeEnrolments.filter(enrolment => coursesMap.containsKey(enrolment.get(JsonKey.COURSE_ID))).map(enrolment => {
-            val courseContent = coursesMap.get(JsonKey.COURSE_ID)
+            val courseContent = coursesMap.get(enrolment.get(JsonKey.COURSE_ID))
             enrolment.put(JsonKey.COURSE_NAME, courseContent.get(JsonKey.NAME))
             enrolment.put(JsonKey.DESCRIPTION, courseContent.get(JsonKey.DESCRIPTION))
             enrolment.put(JsonKey.LEAF_NODE_COUNT, courseContent.get(JsonKey.LEAF_NODE_COUNT))
@@ -149,10 +149,10 @@ class EnrolmentActor @Inject()(@Named("course-batch-notification-actor") courseB
             enrolmentList
     }
 
-    def searchBatchDetails(batchIds: util.List[String], request: Request): util.List[util.Map[String, AnyRef]] = {
+    def searchBatchDetails(batchIds: java.util.List[String], request: Request): java.util.List[java.util.Map[String, AnyRef]] = {
         val requestedFields: java.util.List[String] = request.getContext.getOrDefault(JsonKey.BATCH_DETAILS, "").asInstanceOf[String].split(",").toList.asJava
         if(CollectionUtils.isNotEmpty(requestedFields)) {
-            getBatches(batchIds, requestedFields)
+            getBatches(new java.util.ArrayList[String](batchIds), requestedFields)
         } else {
             new java.util.ArrayList[util.Map[String, AnyRef]]()
         }

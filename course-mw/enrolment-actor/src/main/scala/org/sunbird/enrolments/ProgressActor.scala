@@ -37,7 +37,7 @@ class ProgressActor @Inject() extends BaseEnrolmentActor {
             val batches:Map[String, List[java.util.Map[String, AnyRef]]] = getBatches(batchIds, null).toList.groupBy(batch => batch.get(JsonKey.IDENTIFIER).asInstanceOf[String])
             val invalidBatchIds = batchAssessmentList.keySet.diff(batches.keySet).toList.asJava
             val validBatches:Map[String, List[java.util.Map[String, AnyRef]]]  = batches.filterKeys(key => batchIds.contains(key))
-            val completedBatchIds = validBatches.filter(batch => 1 != batch._2.head.getOrDefault(JsonKey.STATUS, 0).asInstanceOf[Integer]).keys.toList.asJava
+            val completedBatchIds = validBatches.filter(batch => 1 != batch._2.head.get(JsonKey.STATUS).asInstanceOf[Integer]).keys.toList.asJava
             batchAssessmentList.foreach(input => {
                 val batchId = input._1
                 if(!invalidBatchIds.contains(batchId) && !completedBatchIds.contains(batchId)) {

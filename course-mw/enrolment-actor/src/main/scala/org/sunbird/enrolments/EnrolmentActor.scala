@@ -23,7 +23,7 @@ import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.dto.SearchDTO
 import org.sunbird.learner.actors.coursebatch.dao.impl.{CourseBatchDaoImpl, UserCoursesDaoImpl}
 import org.sunbird.learner.actors.coursebatch.dao.{CourseBatchDao, UserCoursesDao}
-import org.sunbird.learner.util.ContentSearchUtil
+import org.sunbird.learner.util.{ContentSearchUtil, Util}
 import org.sunbird.models.course.batch.CourseBatch
 import org.sunbird.models.user.courses.UserCourses
 import org.sunbird.telemetry.util.TelemetryUtil
@@ -32,13 +32,13 @@ import scala.collection.JavaConverters._
 import scala.collection.JavaConversions._
 import scala.concurrent.Future
 
-class EnrolmentActor @Inject()(@Named("course-batch-notification-actor") courseBatchNotificationActorRef: ActorRef) extends BaseActor {
+class EnrolmentActor @Inject()(@Named("course-batch-notification-actor") courseBatchNotificationActorRef: ActorRef) extends BaseEnrolmentActor {
     
     val courseBatchDao: CourseBatchDao = new CourseBatchDaoImpl()
     val userCoursesDao: UserCoursesDao = new UserCoursesDaoImpl()
-    val esService = EsClientFactory.getInstance(JsonKey.REST)
 
     override def onReceive(request: Request): Unit = {
+        Util.initializeContext(request, TelemetryEnvKey.BATCH)
         request.getOperation match {
             case "enrol" => enroll(request)
             case "unenrol" => unEnroll(request)
@@ -152,12 +152,7 @@ class EnrolmentActor @Inject()(@Named("course-batch-notification-actor") courseB
     def searchBatchDetails(batchIds: util.List[String], request: Request): util.List[util.Map[String, AnyRef]] = {
         val requestedFields: java.util.List[String] = request.getContext.getOrDefault(JsonKey.BATCH_DETAILS, "").asInstanceOf[String].split(",").toList.asJava
         if(CollectionUtils.isNotEmpty(requestedFields)) {
-            val dto = new SearchDTO
-            dto.getAdditionalProperties().put(JsonKey.FILTERS, new java.util.HashMap[String, AnyRef](){{ put(JsonKey.IDENTIFIER, batchIds)}})
-            dto.setFields(requestedFields)
-            val future = esService.search(dto, ProjectUtil.EsType.courseBatch.getTypeName)
-            val response = ElasticSearchHelper.getResponseFromFuture(future).asInstanceOf[java.util.Map[String, AnyRef]]
-            response.getOrDefault(JsonKey.CONTENT, new java.util.ArrayList[util.Map[String, AnyRef]]).asInstanceOf[util.List[util.Map[String, AnyRef]]]
+            getBatches(batchIds, requestedFields)
         } else {
             new java.util.ArrayList[util.Map[String, AnyRef]]()
         }

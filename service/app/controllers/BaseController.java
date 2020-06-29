@@ -41,6 +41,9 @@ import play.mvc.Http.Request;
 import play.mvc.Result;
 import play.mvc.Results;
 import util.AuthenticationHelper;
+import util.SignalHandler;
+import javax.inject.Inject;
+import org.apache.log4j.Logger;
 
 /**
  * This controller we can use for writing some common method.
@@ -49,11 +52,13 @@ import util.AuthenticationHelper;
  */
 public class BaseController extends Controller {
 
+  Logger logger = Logger.getLogger(SignalHandler.class);
   private static final String version = "v1";
   public static final int AKKA_WAIT_TIME = 30;
   private TelemetryLmaxWriter lmaxWriter = TelemetryLmaxWriter.getInstance();
   protected Timeout timeout = new Timeout(AKKA_WAIT_TIME, TimeUnit.SECONDS);
-
+  @Inject
+  SignalHandler signalHandler;
   private org.sunbird.common.request.Request initRequest(
       org.sunbird.common.request.Request request, String operation, Http.Request httpRequest) {
     request.setOperation(operation);
@@ -65,7 +70,12 @@ public class BaseController extends Controller {
     request = transformUserId(request);
     return request;
   }
-
+  private void handleSigTerm() throws RuntimeException {
+    if (signalHandler.isShuttingDown()) {
+      logger.info( "Application is shutting down, cant accept new request.");
+      throw new RuntimeException("Application_shutting_down");
+    }
+  }
   /**
    * Helper method for creating and initialising a request for given operation and request body.
    *
@@ -202,6 +212,7 @@ public class BaseController extends Controller {
       boolean isJsonBodyRequired,
       Http.Request httpRequest) {
     try {
+      handleSigTerm();
       org.sunbird.common.request.Request request = null;
       if (!isJsonBodyRequired) {
         request = createAndInitRequest(operation, httpRequest);
@@ -235,6 +246,7 @@ public class BaseController extends Controller {
       String esObjectType,
       Http.Request httpRequest) {
     try {
+      handleSigTerm();
       org.sunbird.common.request.Request request = null;
       if (null != requestBodyJson) {
         request = createAndInitRequest(operation, requestBodyJson, httpRequest);

@@ -18,14 +18,18 @@ import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import play.mvc.Http;
 import play.mvc.Result;
+import util.SignalHandler;
+import org.apache.log4j.Logger;
 
 /** @author Manzarul */
 public class HealthController extends BaseController {
   private static List<String> list = new ArrayList<>();
-
+  Logger logger = Logger.getLogger(SignalHandler.class);
   @Inject
   @Named("health-actor")
   private ActorRef healthActorRef;
+
+  @Inject SignalHandler signalHandler;
 
   static {
     list.add("service");
@@ -42,6 +46,7 @@ public class HealthController extends BaseController {
    */
   public CompletionStage<Result> getHealth(Http.Request httpRequest) {
     try {
+      handleSigTerm();
       Request reqObj = new Request();
       reqObj.setOperation(ActorOperations.HEALTH_CHECK.getValue());
       reqObj.setRequestId(ExecutionContext.getRequestId());
@@ -53,7 +58,12 @@ public class HealthController extends BaseController {
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
   }
-
+  private void handleSigTerm() throws RuntimeException {
+    if (signalHandler.isShuttingDown()) {
+      logger.info( "Application is shutting down, cant accept new request.");
+      throw new RuntimeException("Application_Shutting_Down");
+    }
+  }
   /**
    * This method will do the health check for play service.
    *
@@ -72,7 +82,13 @@ public class HealthController extends BaseController {
     response.setId("learner.service.health.api");
     response.setVer(getApiVersion(httpRequest.path()));
     response.setTs(ExecutionContext.getRequestId());
-    return CompletableFuture.completedFuture(ok(play.libs.Json.toJson(response)));
+    try {
+      handleSigTerm();
+      return CompletableFuture.completedFuture(ok(play.libs.Json.toJson(response)));
+    } catch (Exception e) {
+      e.printStackTrace();
+      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
+    }
   }
 
 }

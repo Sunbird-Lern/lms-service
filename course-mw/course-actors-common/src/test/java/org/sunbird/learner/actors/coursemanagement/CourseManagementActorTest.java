@@ -51,6 +51,8 @@ public class CourseManagementActorTest {
         system = ActorSystem.create("system");
         when(ProjectUtil.getConfigValue(JsonKey.EKSTEP_BASE_URL))
                 .thenReturn("ekstep_api_base_url");
+        when(ProjectUtil.getConfigValue(JsonKey.CONTENT_PROPS_TO_ADD))
+                .thenReturn("learning.content.props.to.add");
     }
 
     @Test

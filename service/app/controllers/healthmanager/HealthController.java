@@ -26,7 +26,6 @@ import org.sunbird.common.responsecode.ResponseCode;
 /** @author Manzarul */
 public class HealthController extends BaseController {
   private static List<String> list = new ArrayList<>();
-  Logger logger = Logger.getLogger(SignalHandler.class);
   @Inject
   @Named("health-actor")
   private ActorRef healthActorRef;
@@ -62,7 +61,7 @@ public class HealthController extends BaseController {
   }
   private void handleSigTerm() throws RuntimeException {
     if (signalHandler.isShuttingDown()) {
-      logger.info( "Application is shutting down, cant accept new request.");
+      ProjectLogger.log( "Application is shutting down, cant accept new request.");
       throw new ProjectCommonException(
               ResponseCode.serviceUnAvailable.getErrorCode(),
               ResponseCode.serviceUnAvailable.getErrorMessage(),

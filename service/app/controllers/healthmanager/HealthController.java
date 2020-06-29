@@ -20,6 +20,8 @@ import play.mvc.Http;
 import play.mvc.Result;
 import util.SignalHandler;
 import org.apache.log4j.Logger;
+import org.sunbird.common.exception.ProjectCommonException;
+import org.sunbird.common.responsecode.ResponseCode;
 
 /** @author Manzarul */
 public class HealthController extends BaseController {
@@ -61,7 +63,10 @@ public class HealthController extends BaseController {
   private void handleSigTerm() throws RuntimeException {
     if (signalHandler.isShuttingDown()) {
       logger.info( "Application is shutting down, cant accept new request.");
-      throw new RuntimeException("Application_Shutting_Down");
+      throw new ProjectCommonException(
+              ResponseCode.serviceUnAvailable.getErrorCode(),
+              ResponseCode.serviceUnAvailable.getErrorMessage(),
+              ResponseCode.SERVICE_UNAVAILABLE.getResponseCode());
     }
   }
   /**

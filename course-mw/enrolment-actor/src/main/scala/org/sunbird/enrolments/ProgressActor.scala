@@ -1,8 +1,5 @@
 package org.sunbird.enrolments
 
-import java.time.format.DateTimeFormatter
-import java.time.{LocalDate, LocalDateTime}
-
 import com.fasterxml.jackson.databind.ObjectMapper
 import javax.inject.Inject
 import org.apache.commons.collections4.{CollectionUtils, MapUtils}
@@ -222,7 +219,7 @@ class ProgressActor @Inject() extends BaseEnrolmentActor {
             updatedContent.put(JsonKey.VIEW_COUNT, 1.asInstanceOf[AnyRef])
             updatedContent.put(JsonKey.LAST_ACCESS_TIME, compareTime(null, inputAccessTime))
         }
-        updatedContent.put(JsonKey.LAST_UPDATED_TIME, dateFormatter.format(LocalDate.now()))
+        updatedContent.put(JsonKey.LAST_UPDATED_TIME, ProjectUtil.getFormattedDate)
         updatedContent.put(JsonKey.USER_ID, userId)
         updatedContent
     }

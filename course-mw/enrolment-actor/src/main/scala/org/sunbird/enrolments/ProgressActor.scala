@@ -1,16 +1,30 @@
 package org.sunbird.enrolments
 
+import java.time.format.DateTimeFormatter
+import java.time.{LocalDate, LocalDateTime}
+
+import com.fasterxml.jackson.databind.ObjectMapper
 import javax.inject.Inject
-import org.apache.commons.collections4.CollectionUtils
+import org.apache.commons.collections4.{CollectionUtils, MapUtils}
 import org.apache.commons.lang3.StringUtils
-import org.sunbird.common.models.util.{JsonKey, TelemetryEnvKey}
+import org.sunbird.common.exception.ProjectCommonException
+import org.sunbird.common.models.response.Response
+import org.sunbird.common.models.util._
 import org.sunbird.common.request.Request
+import org.sunbird.common.responsecode.ResponseCode
+import org.sunbird.helper.ServiceFactory
+import org.sunbird.kafka.client.{InstructionEventGenerator, KafkaClient}
+import org.sunbird.learner.constants.{CourseJsonKey, InstructionEvent}
 import org.sunbird.learner.util.Util
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 
 class ProgressActor @Inject() extends BaseEnrolmentActor {
+    private val mapper = new ObjectMapper
+    private val cassandraOperation = ServiceFactory.getInstance
+    private val consumptionDBInfo = Util.dbInfoMap.get(JsonKey.LEARNER_CONTENT_DB)
+    val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss:SSSZ")
 
     override def onReceive(request: Request): Unit = {
         Util.initializeContext(request, TelemetryEnvKey.BATCH)
@@ -25,31 +39,250 @@ class ProgressActor @Inject() extends BaseEnrolmentActor {
         val requestedFor = request.get(JsonKey.REQUESTED_FOR).asInstanceOf[String]
         val validUserIds = List(requestBy, requestedFor).filter(p => StringUtils.isNotBlank(p))
         
-        processAssessments(request, validUserIds)
-        processContents(request, validUserIds)
+        processAssessments(request, requestBy, requestedFor)
+        processContents(request, requestBy, requestedFor)
     }
 
-    def processAssessments(request: Request, validUserIds: List[String]) = {
-        val assementEvents = request.getRequest.getOrDefault(JsonKey.ASSESSMENT_EVENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
-        if(CollectionUtils.isNotEmpty(assementEvents)) {
-            val batchAssessmentList: Map[String, List[java.util.Map[String, AnyRef]]] = assementEvents.filter(event => StringUtils.isNotBlank(event.getOrDefault(JsonKey.BATCH_ID, "").asInstanceOf[String])).toList.groupBy(event => event.get(JsonKey.BATCH_ID).asInstanceOf[String])
+    def processAssessments(request: Request, requestedBy: String, requestedFor: String) = {
+        val assessmentEvents = request.getRequest.getOrDefault(JsonKey.ASSESSMENT_EVENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
+        if(CollectionUtils.isNotEmpty(assessmentEvents)) {
+            val batchAssessmentList: Map[String, List[java.util.Map[String, AnyRef]]] = assessmentEvents.filter(event => StringUtils.isNotBlank(event.getOrDefault(JsonKey.BATCH_ID, "").asInstanceOf[String])).toList.groupBy(event => event.get(JsonKey.BATCH_ID).asInstanceOf[String])
             val batchIds = batchAssessmentList.keySet.toList.asJava
-            val batches:Map[String, List[java.util.Map[String, AnyRef]]] = getBatches(batchIds, null).toList.groupBy(batch => batch.get(JsonKey.IDENTIFIER).asInstanceOf[String])
+            val batches:Map[String, List[java.util.Map[String, AnyRef]]] = getBatches(new java.util.ArrayList[String](batchIds), null).toList.groupBy(batch => batch.get(JsonKey.BATCH_ID).asInstanceOf[String])
             val invalidBatchIds = batchAssessmentList.keySet.diff(batches.keySet).toList.asJava
             val validBatches:Map[String, List[java.util.Map[String, AnyRef]]]  = batches.filterKeys(key => batchIds.contains(key))
             val completedBatchIds = validBatches.filter(batch => 1 != batch._2.head.get(JsonKey.STATUS).asInstanceOf[Integer]).keys.toList.asJava
+            val invalidAssessments = new java.util.ArrayList[java.util.Map[String, AnyRef]]()
+            val validUserIds = List(requestedBy, requestedFor).filter(p => StringUtils.isNotBlank(p))
+            val responseMessage = new java.util.HashMap[String, AnyRef]()
             batchAssessmentList.foreach(input => {
                 val batchId = input._1
                 if(!invalidBatchIds.contains(batchId) && !completedBatchIds.contains(batchId)) {
-                    
+                    val userAssessments = getDataGroupedByUserId(input._2, requestedBy, requestedFor)
+                    userAssessments.foreach(assessments => {
+                        val userId = assessments._1
+                        if(validUserIds.contains(userId)){
+                            assessments._2.foreach(assessment => {
+                                syncAssessmentData(assessment)
+                                responseMessage.put(batchId, JsonKey.SUCCESS)
+                            })
+                        } else {
+                            invalidAssessments.addAll(assessments._2.asJava)
+                        }
+                    })
                 }
                 
             })
+            if(CollectionUtils.isNotEmpty(completedBatchIds)) responseMessage.put("NOT_A_ON_GOING_BATCH", completedBatchIds)
+            if(CollectionUtils.isNotEmpty(invalidBatchIds)) responseMessage.put("BATCH_NOT_EXISTS", invalidBatchIds)
+            if(CollectionUtils.isNotEmpty(invalidAssessments)) {
+                val map = new java.util.HashMap[String, AnyRef]() {{
+                    put("validUserIds", validUserIds)
+                    put("invalidAssessments", invalidAssessments)
+                    put("ets", System.currentTimeMillis.asInstanceOf[AnyRef])
+                }}
+                pushInvalidDataToKafka(map, "Assessments")
+            }
+            val response = new Response()
+            response.putAll(responseMessage)
+            sender().tell(response, self)
         }
     }
 
-    def processContents(request: Request, validUserIds: List[String]): Unit = {
-        
+    def processContents(request: Request, requestedBy: String, requestedFor: String): Unit = {
+        val contentList = request.getRequest.getOrDefault(JsonKey.CONTENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
+        if(CollectionUtils.isNotEmpty(contentList)) {
+            val batchContentList: Map[String, List[java.util.Map[String, AnyRef]]] = contentList.filter(event => StringUtils.isNotBlank(event.getOrDefault(JsonKey.BATCH_ID, "").asInstanceOf[String])).toList.groupBy(event => event.get(JsonKey.BATCH_ID).asInstanceOf[String])
+            val batchIds = batchContentList.keySet.toList.asJava
+            val batches:Map[String, List[java.util.Map[String, AnyRef]]] = getBatches(new java.util.ArrayList[String](batchIds), null).toList.groupBy(batch => batch.get(JsonKey.BATCH_ID).asInstanceOf[String])
+            val invalidBatchIds = batchContentList.keySet.diff(batches.keySet).toList.asJava
+            val validBatches:Map[String, List[java.util.Map[String, AnyRef]]]  = batches.filterKeys(key => batchIds.contains(key))
+            val completedBatchIds = validBatches.filter(batch => 1 != batch._2.head.get(JsonKey.STATUS).asInstanceOf[Integer]).keys.toList.asJava
+            val responseMessage = new java.util.HashMap[String, AnyRef]()
+            val invalidContents = new java.util.ArrayList[java.util.Map[String, AnyRef]]()
+            val validUserIds = List(requestedBy, requestedFor).filter(p => StringUtils.isNotBlank(p))
+            batchContentList.foreach(input => {
+                val batchId = input._1
+                if(!invalidBatchIds.contains(batchId) && !completedBatchIds.contains(batchId)) {
+                    val userContents = getDataGroupedByUserId(input._2, requestedBy, requestedFor)
+                    userContents.foreach(entry => {
+                        val userId = entry._1
+                        if(validUserIds.contains(userId)) {
+                            val contentIds = entry._2.map(e => e.getOrDefault(JsonKey.CONTENT_ID, "").asInstanceOf[String]).asJava
+                            val existingContents = getContentsConsumption(userId, contentIds, batchId).groupBy(x => x.get("contentId").asInstanceOf[String]).map(e => e._1 -> e._2.toList.head).toMap
+                            val contents:List[java.util.Map[String, AnyRef]] = entry._2.toList.map(inputContent => {
+                                val existingContent = existingContents.getOrElse(inputContent.get("contentId").asInstanceOf[String], new java.util.HashMap[String, AnyRef])
+                                processContentConsumption(inputContent, existingContent, userId)
+                            })
+                            cassandraOperation.batchInsert(consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, contents)
+                            val updatedEnrolment = getLatestReadDetails(userId, batchId, contents)
+                            cassandraOperation.upsertRecord("sunbird_courses", "user_enrolments", updatedEnrolment)
+                            val courseId = updatedEnrolment.get("courseId").asInstanceOf[String]
+                            pushInstructionEvent(userId, batchId, courseId, contents.asJava)
+                            contentIds.map(id => responseMessage.put(JsonKey.SUCCESS, id))
+                        } else {
+                            invalidContents.addAll(entry._2.asJava)
+                        }
+                    })
+                   
+                }
+            })
+            if(CollectionUtils.isNotEmpty(completedBatchIds)) responseMessage.put("NOT_A_ON_GOING_BATCH", completedBatchIds)
+            if(CollectionUtils.isNotEmpty(invalidBatchIds)) responseMessage.put("BATCH_NOT_EXISTS", invalidBatchIds)
+            if(CollectionUtils.isNotEmpty(invalidContents)) {
+                val map = new java.util.HashMap[String, AnyRef]() {{
+                    put("validUserIds", validUserIds)
+                    put("invalidContents", invalidContents)
+                    put("ets", System.currentTimeMillis.asInstanceOf[AnyRef])
+                }}
+                pushInvalidDataToKafka(map, "Contents")
+            }
+            val response = new Response()
+            response.putAll(responseMessage)
+            sender().tell(response, self)
+        }
     }
 
+    def getDataGroupedByUserId(data: List[java.util.Map[String, AnyRef]], requstedBy: String, requestedFor: String) = {
+        val primaryUserId = if(StringUtils.isNotBlank(requestedFor)) requestedFor else requstedBy
+        val updatedData: List[java.util.Map[String, AnyRef]] = data.map(f => {
+            val userId = f.getOrDefault(JsonKey.USER_ID, "").asInstanceOf[String]
+            if(StringUtils.isBlank(userId))
+                f.put(JsonKey.USER_ID, primaryUserId)
+            f
+        })
+        updatedData.groupBy(d => d.get(JsonKey.USER_ID).asInstanceOf[String])
+    }
+
+    def syncAssessmentData(assessment: java.util.Map[String, AnyRef]) = {
+        val topic = ProjectUtil.getConfigValue("kafka_assessment_topic")
+        if (StringUtils.isNotBlank(topic)) KafkaClient.send(mapper.writeValueAsString(assessment), topic)
+        else throw new ProjectCommonException("BE_JOB_REQUEST_EXCEPTION", "Invalid topic id.", ResponseCode.CLIENT_ERROR.getResponseCode)
+    }
+
+    private def pushInvalidDataToKafka(data: java.util.Map[String, AnyRef], dataType: String): Unit = {
+        ProjectLogger.log("LearnerStateUpdater - Invalid " + dataType, data, LoggerEnum.INFO.name)
+        val topic = ProjectUtil.getConfigValue("kafka_topics_contentstate_invalid")
+        try {
+            val event = mapper.writeValueAsString(data)
+            KafkaClient.send(event, topic)
+        } catch {
+            case t: Throwable =>
+                t.printStackTrace()
+        }
+    }
+
+    def getContentsConsumption(userId: String, contentIds: java.util.List[String], batchId: String):java.util.List[java.util.Map[String, AnyRef]] = {
+        val filters = new java.util.HashMap[String, AnyRef]() {{
+            put("userid", userId)
+            put("contentid", contentIds)
+            put("batchid", batchId)
+        }}
+        val response = cassandraOperation.getRecords(consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, filters, null)
+        response.getResult.getOrDefault(JsonKey.RESPONSE, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
+    }
+
+    def processContentConsumption(inputContent: java.util.Map[String, AnyRef], existingContent: java.util.Map[String, AnyRef], userId: String) = {
+        val inputStatus = inputContent.getOrDefault(JsonKey.STATUS, 0.asInstanceOf[AnyRef]).asInstanceOf[Number].intValue()
+        val updatedContent = new java.util.HashMap[String, AnyRef]()
+        updatedContent.putAll(inputContent)
+        val inputCompletedTime = parseDate(inputContent.getOrDefault(JsonKey.LAST_COMPLETED_TIME, "").asInstanceOf[String])
+        val inputAccessTime = parseDate(inputContent.getOrDefault(JsonKey.LAST_ACCESS_TIME, "").asInstanceOf[String])
+        if(MapUtils.isNotEmpty(existingContent)) {
+            val viewCount: Integer = inputContent.getOrDefault(JsonKey.VIEW_COUNT, 0.asInstanceOf[AnyRef]).asInstanceOf[Number].intValue()
+            updatedContent.put(JsonKey.VIEW_COUNT, (viewCount + 1).asInstanceOf[AnyRef])
+            val existingAccessTime = parseDate(existingContent.getOrDefault(JsonKey.LAST_ACCESS_TIME, "").asInstanceOf[String])
+            updatedContent.put(JsonKey.LAST_ACCESS_TIME, compareTime(existingAccessTime, inputAccessTime))
+            val inputProgress = inputContent.getOrDefault(JsonKey.PROGRESS, 0.asInstanceOf[AnyRef]).asInstanceOf[Number].intValue()
+            val existingProgress = existingContent.getOrDefault(JsonKey.PROGRESS, 0.asInstanceOf[AnyRef]).asInstanceOf[Number].intValue()
+            updatedContent.put(JsonKey.PROGRESS, List(inputProgress, existingProgress).max.asInstanceOf[AnyRef])
+            val existingStatus = existingContent.getOrDefault(JsonKey.STATUS, 0.asInstanceOf[AnyRef]).asInstanceOf[Number].intValue()
+            val existingCompletedCount: Integer = existingContent.getOrDefault(JsonKey.COMPLETED_COUNT, 0.asInstanceOf[AnyRef]).asInstanceOf[Number].intValue()
+            val existingCompletedTime = parseDate(existingContent.getOrDefault(JsonKey.LAST_COMPLETED_TIME, "").asInstanceOf[String])
+            if(inputStatus >= existingStatus) {
+                if(inputStatus >= 2) {
+                    updatedContent.put(JsonKey.STATUS, 2.asInstanceOf[AnyRef])
+                    updatedContent.put(JsonKey.PROGRESS, 100.asInstanceOf[AnyRef])
+                    updatedContent.put(JsonKey.COMPLETED_COUNT, (existingCompletedCount + 1).asInstanceOf[AnyRef] )
+                    updatedContent.put(JsonKey.LAST_COMPLETED_TIME, compareTime(existingCompletedTime, inputCompletedTime))
+                } else {
+                    updatedContent.put(JsonKey.COMPLETED_COUNT, existingCompletedCount.asInstanceOf[AnyRef])
+                }
+            } else {
+                updatedContent.put(JsonKey.STATUS, existingStatus.asInstanceOf[AnyRef])
+            }
+        } else {
+            if(inputStatus >= 2) {
+                updatedContent.put(JsonKey.PROGRESS, 100.asInstanceOf[AnyRef])
+                updatedContent.put(JsonKey.COMPLETED_COUNT, 1.asInstanceOf[AnyRef])
+                updatedContent.put(JsonKey.LAST_COMPLETED_TIME, compareTime(null, inputCompletedTime))
+            } else {
+                updatedContent.put(JsonKey.PROGRESS, 0.asInstanceOf[AnyRef])
+            }
+            updatedContent.put(JsonKey.VIEW_COUNT, 1.asInstanceOf[AnyRef])
+            updatedContent.put(JsonKey.LAST_ACCESS_TIME, compareTime(null, inputAccessTime))
+        }
+        updatedContent.put(JsonKey.LAST_UPDATED_TIME, dateFormatter.format(LocalDate.now()))
+        updatedContent.put(JsonKey.USER_ID, userId)
+        updatedContent
+    }
+
+    def parseDate(dateString: String) = {
+        if(StringUtils.isNotBlank(dateString) && !StringUtils.equalsIgnoreCase(JsonKey.NULL, dateString)) {
+            LocalDateTime.parse(dateString, dateFormatter)
+        } else null
+    }
+
+    def compareTime(existingTime: LocalDateTime, inputTime: LocalDateTime): String = {
+        if(null == existingTime && null == inputTime) {
+            dateFormatter.format(LocalDateTime.now())
+        } else if(null == existingTime) dateFormatter.format(inputTime)
+        else if(null == inputTime) dateFormatter.format(existingTime)
+        else {
+            if(inputTime.isAfter(existingTime)) dateFormatter.format(inputTime)
+            else dateFormatter.format(existingTime)
+        }
+    }
+
+    def getLatestReadDetails(userId: String, batchId: String, contents: List[java.util.Map[String, AnyRef]]) = {
+       // contents.groupBy(x => parseDate(x.getOrDefault(JsonKey.LAST_ACCESS_TIME, "").asInstanceOf[String])).max._2.get(0)
+       val lastAccessContent: java.util.Map[String, AnyRef] = contents.groupBy(x => x.getOrDefault(JsonKey.LAST_ACCESS_TIME, "").asInstanceOf[String]).maxBy(_._1)._2.get(0)
+       // val lastAccessContent: java.util.Map[String, AnyRef] = contents.groupBy(x => java.util.Date.from(parseDate(x.getOrDefault(JsonKey.LAST_ACCESS_TIME, "").asInstanceOf[String]).toInstant(ZoneOffset.UTC))).max._2.get(0)
+        new java.util.HashMap[String, AnyRef] () {{
+            put("batchId", batchId)
+            put("userId", userId)
+            put("courseId", lastAccessContent.get("courseId"))
+            put("lastreadcontentid", lastAccessContent.get("contentId"))
+            put("lastreadcontentstatus", lastAccessContent.get("status"))
+        }}
+    }
+
+    @throws[Exception]
+    private def pushInstructionEvent(userId: String, batchId: String, courseId: String, contents: java.util.List[java.util.Map[String, AnyRef]]): Unit = {
+        val data = new java.util.HashMap[String, AnyRef]
+        data.put(CourseJsonKey.ACTOR, new java.util.HashMap[String, AnyRef]() {{
+            put(JsonKey.ID, InstructionEvent.BATCH_USER_STATE_UPDATE.getActorId)
+            put(JsonKey.TYPE, InstructionEvent.BATCH_USER_STATE_UPDATE.getActorType)
+        }})
+        data.put(CourseJsonKey.OBJECT, new java.util.HashMap[String, AnyRef]() {{
+            put(JsonKey.ID, batchId + CourseJsonKey.UNDERSCORE + userId)
+            put(JsonKey.TYPE, InstructionEvent.BATCH_USER_STATE_UPDATE.getType)
+        }})
+        data.put(CourseJsonKey.ACTION, InstructionEvent.BATCH_USER_STATE_UPDATE.getAction)
+        val contentsMap = contents.map(c => new java.util.HashMap[String, AnyRef]() {{
+            put(JsonKey.CONTENT_ID, c.get(JsonKey.CONTENT_ID))
+            put(JsonKey.STATUS, c.get(JsonKey.STATUS))
+        }}).asJava
+        data.put(CourseJsonKey.E_DATA, new java.util.HashMap[String, AnyRef]() {{
+            put(JsonKey.USER_ID, userId)
+            put(JsonKey.BATCH_ID, batchId)
+            put(JsonKey.COURSE_ID, courseId)
+            put(JsonKey.CONTENTS, contentsMap)
+            put(CourseJsonKey.ACTION, InstructionEvent.BATCH_USER_STATE_UPDATE.getAction)
+            put(CourseJsonKey.ITERATION, 1.asInstanceOf[AnyRef])
+        }})
+        val topic = ProjectUtil.getConfigValue("kafka_topics_instruction")
+        ProjectLogger.log("LearnerStateUpdateActor: pushInstructionEvent :Event Data " + data + " and Topic " + topic, LoggerEnum.INFO.name)
+        InstructionEventGenerator.pushInstructionEvent(userId, topic, data)
+    }
 }

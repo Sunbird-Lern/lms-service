@@ -36,6 +36,10 @@ public class LearnerController extends BaseController {
   private ActorRef learnerStateUpdateActorRef;
 
   @Inject
+  @Named("progress-actor")
+  private ActorRef progressActor;
+
+  @Inject
   @Named("learner-state-actor")
   private ActorRef learnerStateActorRef;
   /**
@@ -81,7 +85,7 @@ public class LearnerController extends BaseController {
       innerMap.put(JsonKey.ASSESSMENT_EVENTS, reqObj.getRequest().get(JsonKey.ASSESSMENT_EVENTS));
       innerMap.put(JsonKey.USER_ID, reqObj.getRequest().get(JsonKey.USER_ID));
       reqObj.setRequest(innerMap);
-      return actorResponseHandler(learnerStateUpdateActorRef, reqObj, timeout, null, httpRequest);
+      return actorResponseHandler(progressActor, reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }

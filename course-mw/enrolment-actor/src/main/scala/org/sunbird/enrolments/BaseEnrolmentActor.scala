@@ -15,7 +15,7 @@ abstract class BaseEnrolmentActor extends BaseActor {
     
     def getBatches(batchIds: java.util.List[String], requestedFields: java.util.List[String]): java.util.List[java.util.Map[String, AnyRef]] = {
         val dto = new SearchDTO
-        dto.getAdditionalProperties().put(JsonKey.FILTERS, new java.util.HashMap[String, AnyRef](){{ put(JsonKey.IDENTIFIER, batchIds)}})
+        dto.getAdditionalProperties().put(JsonKey.FILTERS, new java.util.HashMap[String, AnyRef](){{ put(JsonKey.BATCH_ID, batchIds)}})
         if(CollectionUtils.isNotEmpty(requestedFields))
             dto.setFields(requestedFields)
         val future = esService.search(dto, ProjectUtil.EsType.courseBatch.getTypeName)

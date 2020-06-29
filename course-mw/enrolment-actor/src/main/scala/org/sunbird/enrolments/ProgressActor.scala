@@ -24,7 +24,7 @@ class ProgressActor @Inject() extends BaseEnrolmentActor {
     private val mapper = new ObjectMapper
     private val cassandraOperation = ServiceFactory.getInstance
     private val consumptionDBInfo = Util.dbInfoMap.get(JsonKey.LEARNER_CONTENT_DB)
-    val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss:SSSZ")
+    val dateFormatter = ProjectUtil.getDateFormatter
 
     override def onReceive(request: Request): Unit = {
         Util.initializeContext(request, TelemetryEnvKey.BATCH)
@@ -229,17 +229,17 @@ class ProgressActor @Inject() extends BaseEnrolmentActor {
 
     def parseDate(dateString: String) = {
         if(StringUtils.isNotBlank(dateString) && !StringUtils.equalsIgnoreCase(JsonKey.NULL, dateString)) {
-            LocalDateTime.parse(dateString, dateFormatter)
+            dateFormatter.parse(dateString)
         } else null
     }
 
-    def compareTime(existingTime: LocalDateTime, inputTime: LocalDateTime): String = {
+    def compareTime(existingTime: java.util.Date, inputTime: java.util.Date): String = {
         if(null == existingTime && null == inputTime) {
-            dateFormatter.format(LocalDateTime.now())
+            ProjectUtil.getFormattedDate
         } else if(null == existingTime) dateFormatter.format(inputTime)
         else if(null == inputTime) dateFormatter.format(existingTime)
         else {
-            if(inputTime.isAfter(existingTime)) dateFormatter.format(inputTime)
+            if(inputTime.after(existingTime)) dateFormatter.format(inputTime)
             else dateFormatter.format(existingTime)
         }
     }

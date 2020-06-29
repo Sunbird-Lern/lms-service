@@ -184,6 +184,11 @@ public class CourseManagementActor extends BaseActor {
                                               Map<String, Object> hierarchy, Boolean root) {
         children.forEach(child -> {
             String identifier = (String) child.get(SunbirdKey.IDENTIFIER);
+            if(!child.containsKey(SunbirdKey.VISIBILITY))
+                throw new ProjectCommonException(
+                        ResponseCode.CLIENT_ERROR.getErrorCode(),
+                        "visibility is a mandatory parameter for content with id: " + identifier,
+                        CLIENT_ERROR.getResponseCode());
             if (StringUtils.equalsIgnoreCase((String) child.get(SunbirdKey.VISIBILITY), SunbirdKey.VISIBILITY_PARENT)) {
                 identifier = System.currentTimeMillis() + "";
                 nodesModified.put(identifier, getNodeModifiedMap(child));

@@ -140,7 +140,7 @@ class EnrolmentActor @Inject()(@Named("course-batch-notification-actor") courseB
         val batchIds:java.util.List[String] = enrolmentList.map(e => e.getOrDefault(JsonKey.BATCH_ID, "").asInstanceOf[String]).distinct.filter(id => StringUtils.isNotBlank(id)).toList.asJava
         val batchDetails = searchBatchDetails(batchIds, request)
         if(CollectionUtils.isNotEmpty(batchDetails)){
-            val batchMap = batchDetails.map(b => b.get(JsonKey.IDENTIFIER).asInstanceOf[String] -> b).toMap
+            val batchMap = batchDetails.map(b => b.get(JsonKey.BATCH_ID).asInstanceOf[String] -> b).toMap
             enrolmentList.map(enrolment => {
                 enrolment.put(JsonKey.BATCH, batchMap.getOrElse(enrolment.get(JsonKey.BATCH_ID).asInstanceOf[String], new java.util.HashMap[String, AnyRef]()))
                 enrolment
@@ -150,7 +150,8 @@ class EnrolmentActor @Inject()(@Named("course-batch-notification-actor") courseB
     }
 
     def searchBatchDetails(batchIds: java.util.List[String], request: Request): java.util.List[java.util.Map[String, AnyRef]] = {
-        val requestedFields: java.util.List[String] = request.getContext.getOrDefault(JsonKey.BATCH_DETAILS, "").asInstanceOf[String].split(",").toList.asJava
+        val batchDetails = if(StringUtils.isNotBlank(request.getContext.get(JsonKey.BATCH_DETAILS).asInstanceOf[String])) request.getContext.get(JsonKey.BATCH_DETAILS).asInstanceOf[String] else ""
+        val requestedFields: java.util.List[String] = batchDetails.split(",").toList.asJava
         if(CollectionUtils.isNotEmpty(requestedFields)) {
             getBatches(new java.util.ArrayList[String](batchIds), requestedFields)
         } else {

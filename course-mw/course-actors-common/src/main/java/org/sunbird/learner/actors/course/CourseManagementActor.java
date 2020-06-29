@@ -198,7 +198,7 @@ public class CourseManagementActor extends BaseActor {
             ((List<String>) ((Map<String, Object>) hierarchy.get(parentId)).get(SunbirdKey.CHILDREN)).add(identifier);
             if (StringUtils.equalsIgnoreCase((String) child.get(SunbirdKey.MIME_TYPE), SunbirdKey.CONTENT_MIME_TYPE_COLLECTION)
                     && !StringUtils.equalsIgnoreCase((String) child.get(SunbirdKey.VISIBILITY), SunbirdKey.VISIBILITY_DEFAULT))
-                getRecursiveHierarchyRequest((String) child.get(SunbirdKey.IDENTIFIER),
+                getRecursiveHierarchyRequest(identifier,
                         (List<Map<String, Object>>) child.getOrDefault(SunbirdKey.CHILDREN, new ArrayList<Map<String, Object>>()),
                         nodesModified, hierarchy, false);
         });

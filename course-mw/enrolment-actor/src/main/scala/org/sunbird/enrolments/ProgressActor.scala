@@ -116,7 +116,7 @@ class ProgressActor @Inject() extends BaseEnrolmentActor {
                             cassandraOperation.upsertRecord("sunbird_courses", "user_enrolments", updatedEnrolment)
                             val courseId = updatedEnrolment.get("courseId").asInstanceOf[String]
                             pushInstructionEvent(userId, batchId, courseId, contents.asJava)
-                            contentIds.map(id => responseMessage.put(JsonKey.SUCCESS, id))
+                            contentIds.map(id => responseMessage.put(id,JsonKey.SUCCESS))
                         } else {
                             invalidContents.addAll(entry._2.asJava)
                         }

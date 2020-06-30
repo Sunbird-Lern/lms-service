@@ -28,7 +28,7 @@ import static org.sunbird.common.models.util.JsonKey.CONTENT_PROPS_TO_ADD;
 
 public class CourseManagementActor extends BaseActor {
     private static ObjectMapper mapper = new ObjectMapper();
-    private static List<String> metadataToBeAdded = Arrays.stream(getConfigValue(CONTENT_PROPS_TO_ADD).split(",")).map(String::trim).collect(Collectors.toList());
+    private static List<String> metadataToBeAdded = Arrays.stream((StringUtils.isNotBlank(getConfigValue(CONTENT_PROPS_TO_ADD)) ? getConfigValue(CONTENT_PROPS_TO_ADD) : "mimeType,contentType,name,code,description,keywords,framework,copyright,topic").split(",")).map(String::trim).collect(Collectors.toList());
 
     @Override
     public void onReceive(Request request) throws Throwable {
@@ -89,7 +89,7 @@ public class CourseManagementActor extends BaseActor {
                                 + updateResponse.getBody().getBytes().length,
                         LoggerEnum.INFO);
                 if (response.getResponseCode().getResponseCode() == ResponseCode.OK.getResponseCode()) {
-                    handleHierarchyData(request, response, headers);
+                    handleHierarchyData(request, (String) response.getResult().get(SunbirdKey.IDENTIFIER), headers);
                     if (request.getRequest().containsKey(SunbirdKey.SOURCE)) {
                         Map<String, Object> node_id = (Map<String, Object>) response.get(SunbirdKey.NODE_ID);
                         response.put(SunbirdKey.IDENTIFIER, node_id.get(request.get(SunbirdKey.SOURCE)));
@@ -127,44 +127,47 @@ public class CourseManagementActor extends BaseActor {
                 throw ex;
             } else {
                 throw new ProjectCommonException(
-                        ResponseCode.CLIENT_ERROR.getErrorCode(),
-                        ResponseCode.CLIENT_ERROR.getErrorMessage(),
-                        CLIENT_ERROR.getResponseCode());
+                        ResponseCode.SERVER_ERROR.getErrorCode(),
+                        ResponseCode.SERVER_ERROR.getErrorMessage(),
+                        ResponseCode.SERVER_ERROR.getResponseCode());
             }
         }
     }
 
-    private void handleHierarchyData(Request request, Response createResponse, Map<String, String> headers) throws Exception {
+    private void handleHierarchyData(Request request, String identifier, Map<String, String> headers) throws Exception {
         if (request.getRequest().containsKey(SunbirdKey.HIERARCHY)) {
-            String url = getConfigValue(EKSTEP_BASE_URL) + "/content/v3/hierarchy/update";
+            String url = "http://11.2.6.6/content" + "/content/v3/hierarchy/update";
             HttpResponse<String> updateResponse =
                     Unirest.patch(url)
                             .headers(headers)
-                            .body(mapper.writeValueAsString(generateUpdateHierarchyRequest(request, createResponse)))
+                            .body(mapper.writeValueAsString(generateUpdateHierarchyRequest(request, identifier)))
                             .asString();
             if (null != updateResponse) {
                 Response response = mapper.readValue(updateResponse.getBody(), Response.class);
-                ProjectLogger.log(
-                        "Sized: CourseManagementActor:handleHierarchyData : size of response : "
-                                + updateResponse.getBody().getBytes().length,
-                        LoggerEnum.INFO);
-                if (!StringUtils.equalsIgnoreCase(response.getResponseCode().name(), ResponseCode.OK.name()))
+                if (!StringUtils.equalsIgnoreCase(response.getResponseCode().name(), ResponseCode.OK.name())) {
+                    ProjectLogger.log(
+                            "Error occurred in : CourseManagementActor:handleHierarchyData : response code: "
+                                    + response.getResponseCode() + " and response message " + response.getParams().getErrmsg(),
+                            LoggerEnum.INFO);
                     ProjectCommonException.throwClientErrorException(
                             ResponseCode.customServerError,
                             MessageFormat.format(
                                     ResponseCode.customServerError.getErrorMessage(), response.getParams().getErrmsg()));
+                }
             } else {
-                ProjectCommonException.throwClientErrorException(ResponseCode.CLIENT_ERROR);
+                ProjectLogger.log(
+                        "Error because update hierarchy response was null : CourseManagementActor:handleHierarchyData",
+                        LoggerEnum.INFO);
+                ProjectCommonException.throwServerErrorException(ResponseCode.SERVER_ERROR);
             }
 
         }
     }
 
-    private Map<String, Object> generateUpdateHierarchyRequest(Request request, Response createResponse) throws Exception {
+    private Map<String, Object> generateUpdateHierarchyRequest(Request request, String identifier) throws Exception {
         Map<String, Object> nodesModified = new HashMap<String, Object>();
         Map<String, Object> hierarchy = new HashMap<String, Object>();
-        getRecursiveHierarchyRequest((String) createResponse.getResult().get(SunbirdKey.IDENTIFIER),
-                (List<Map<String, Object>>) request.get(SunbirdKey.HIERARCHY), nodesModified, hierarchy, true);
+        getRecursiveHierarchyRequest(identifier, (List<Map<String, Object>>) request.get(SunbirdKey.HIERARCHY), nodesModified, hierarchy, true);
         Map<String, Object> updateRequest = new HashMap<String, Object>() {{
             put(SunbirdKey.REQUEST, new HashMap<String, Object>() {{
                 put(SunbirdKey.DATA, new HashMap<String, Object>() {{
@@ -183,22 +186,28 @@ public class CourseManagementActor extends BaseActor {
     private void getRecursiveHierarchyRequest(String parentId, List<Map<String, Object>> children, Map<String, Object> nodesModified,
                                               Map<String, Object> hierarchy, Boolean root) {
         children.forEach(child -> {
-            String identifier = (String) child.get(SunbirdKey.IDENTIFIER);
-            if(!child.containsKey(SunbirdKey.VISIBILITY))
-                throw new ProjectCommonException(
-                        ResponseCode.CLIENT_ERROR.getErrorCode(),
-                        "visibility is a mandatory parameter for content with id: " + identifier,
-                        CLIENT_ERROR.getResponseCode());
+            //Checking if mandatory params are present.
+            SunbirdKey.MANDATORY_PARAMS_FOR_COURSE_UNITS.forEach(key -> {
+                if(!child.containsKey(key))
+                    throw new ProjectCommonException(
+                            ResponseCode.CLIENT_ERROR.getErrorCode(),
+                            key + "is a mandatory parameter for child of parent with id: " + parentId,
+                            CLIENT_ERROR.getResponseCode());
+            });
+            //Creation of new code for new Units and population of nodes modified.
+            String code = (String) child.get(SunbirdKey.IDENTIFIER);
             if (StringUtils.equalsIgnoreCase((String) child.get(SunbirdKey.VISIBILITY), SunbirdKey.VISIBILITY_PARENT)) {
-                identifier = System.currentTimeMillis() + "";
-                nodesModified.put(identifier, getNodeModifiedMap(child));
+                code = System.currentTimeMillis() + "";
+                nodesModified.put(code, getNodeModifiedMap(child));
             }
-            if (MapUtils.isEmpty(((Map<String, Object>) hierarchy.getOrDefault(parentId, new HashMap<String, Object>()))))
+            //Population of hierarchy.
+            if (MapUtils.isEmpty(((Map<String, Object>) hierarchy.get(parentId))))
                 hierarchy.put(parentId, getNodeHierarchyMap(root));
-            ((List<String>) ((Map<String, Object>) hierarchy.get(parentId)).get(SunbirdKey.CHILDREN)).add(identifier);
+            ((List<String>) ((Map<String, Object>) hierarchy.get(parentId)).get(SunbirdKey.CHILDREN)).add(code);
+            //Recursive call to get the rest of the hierarchy
             if (StringUtils.equalsIgnoreCase((String) child.get(SunbirdKey.MIME_TYPE), SunbirdKey.CONTENT_MIME_TYPE_COLLECTION)
                     && !StringUtils.equalsIgnoreCase((String) child.get(SunbirdKey.VISIBILITY), SunbirdKey.VISIBILITY_DEFAULT))
-                getRecursiveHierarchyRequest(identifier,
+                getRecursiveHierarchyRequest(code,
                         (List<Map<String, Object>>) child.getOrDefault(SunbirdKey.CHILDREN, new ArrayList<Map<String, Object>>()),
                         nodesModified, hierarchy, false);
         });
@@ -207,9 +216,13 @@ public class CourseManagementActor extends BaseActor {
     private Map<String, Object> getNodeModifiedMap(Map<String, Object> metadata) {
         metadata.put(SunbirdKey.CONTENT_TYPE, "CourseUnit");
         return new HashMap<String, Object>() {{
-            put(SunbirdKey.METADATA, cleanUpData(new HashMap<String, Object>() {{
-                putAll(metadata);
-            }}));
+            put(SunbirdKey.METADATA, new HashMap<String, Object>() {{
+                cleanUpData(metadata);
+                put("origin", metadata.get(SunbirdKey.IDENTIFIER));
+                put("originData", new HashMap<String, Object>() {{
+                    put("name", metadata.get(SunbirdKey.NAME));
+                }});
+            }});
             put(SunbirdKey.ROOT, false);
             put("isNew", true);
             put("setDefaultValue", false);

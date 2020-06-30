@@ -61,7 +61,7 @@ public class HealthController extends BaseController {
   }
   private void handleSigTerm() throws RuntimeException {
     if (signalHandler.isShuttingDown()) {
-      ProjectLogger.log( "Application is shutting down, cant accept new request.");
+      ProjectLogger.log( "Application is shutting down, cant accept new request.", LoggerEnum.INFO);
       throw new ProjectCommonException(
               ResponseCode.serviceUnAvailable.getErrorCode(),
               ResponseCode.serviceUnAvailable.getErrorMessage(),

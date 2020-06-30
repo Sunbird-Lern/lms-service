@@ -191,7 +191,7 @@ public class CourseManagementActor extends BaseActor {
                 if(!child.containsKey(key))
                     throw new ProjectCommonException(
                             ResponseCode.CLIENT_ERROR.getErrorCode(),
-                            key + "is a mandatory parameter for child of parent with id: " + parentId,
+                            key + " is a mandatory parameter for child of parent with id: " + parentId,
                             CLIENT_ERROR.getResponseCode());
             });
             //Creation of new code for new Units and population of nodes modified.

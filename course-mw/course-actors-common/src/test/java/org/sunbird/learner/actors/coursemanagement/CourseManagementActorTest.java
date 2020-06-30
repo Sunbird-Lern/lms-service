@@ -86,7 +86,7 @@ public class CourseManagementActorTest {
         mockCreateResponse();
         mockUpdateHierarchyResponseSuccess();
         ProjectCommonException res = (ProjectCommonException) doRequest(createCourseHierarchyRequestClientException(), true);
-        Assert.assertEquals("visibility is a mandatory parameter for content with id: do_11304065956451123217", res.getMessage());
+        Assert.assertEquals("visibility is a mandatory parameter for child of parent with id: do_1130532922458931201385", res.getMessage());
     }
 
 

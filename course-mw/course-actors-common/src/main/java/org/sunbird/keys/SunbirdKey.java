@@ -45,7 +45,7 @@ public final class SunbirdKey {
     public static final String ACTUAL_USER_ID = "actualUserId";
     public static final String ALL_USER_IDS = "allUserIds";
     // Content Status Update API Specific - END
-    public static final List<String> MANDATORY_PARAMS_FOR_COURSE_UNITS = Arrays.asList("identifier", "mimetype", "visibility", "contentType", "name");
+    public static final List<String> MANDATORY_PARAMS_FOR_COURSE_UNITS = Arrays.asList("identifier", "mimeType", "visibility", "contentType", "name");
 
 
     private SunbirdKey() {}

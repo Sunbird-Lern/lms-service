@@ -367,7 +367,7 @@ public final class Util {
       requestContext.put(JsonKey.REQUEST_ID, actorMessage.getRequestId());
       requestContext.put(JsonKey.DEVICE_ID, deviceId);
 
-        actorMessage.setContext(requestContext);
+        actorMessage.getContext().putAll(requestContext);
       // and global context will be set at the time of creation of thread local
       // automatically ...
     }

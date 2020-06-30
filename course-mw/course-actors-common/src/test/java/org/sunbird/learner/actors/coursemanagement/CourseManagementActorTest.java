@@ -246,15 +246,15 @@ public class CourseManagementActorTest {
                "                        \"contentType\": \"MarkingSchemeRubric\",\n" +
                "                        \"identifier\": \"do_11303997216713113613821\",\n" +
                "                        \"visibility\": \"Default\",\n" +
-               "                        \"resourceType\": \"Read\"\n" +
-               "                    },\n" +
+               "                        \"resourceType\": \"Read\",\n" +
+               "                        \"name\": \"Resource 1\"\n" +               "                    },\n" +
                "                    {\n" +
                "                        \"mimeType\": \"application/pdf\",\n" +
                "                        \"contentType\": \"LearningOutcomeDefinition\",\n" +
                "                        \"identifier\": \"do_11304337189392384011143\",\n" +
                "                        \"visibility\": \"Default\",\n" +
-               "                        \"resourceType\": \"Read\"\n" +
-               "                    }\n" +
+               "                        \"resourceType\": \"Read\",\n" +
+               "                        \"name\": \"Resource 2\"\n" +               "                    }\n" +
                "                ]\n" +
                "            }\n" +
                "        ]\n" +

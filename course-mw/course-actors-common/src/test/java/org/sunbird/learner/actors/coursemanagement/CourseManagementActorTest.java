@@ -239,7 +239,7 @@ public class CourseManagementActorTest {
                "                \"contentType\": \"TextBookUnit\",\n" +
                "                \"identifier\": \"do_11304065956451123217\",\n" +
                "                \"name\": \"UNIT-2\",\n" +
-               "                \"visibility\": \"Default\",\n" +
+               "                \"visibility\": \"Parent\",\n" +
                "                \"children\": [\n" +
                "                    {\n" +
                "                        \"mimeType\": \"application/pdf\",\n" +

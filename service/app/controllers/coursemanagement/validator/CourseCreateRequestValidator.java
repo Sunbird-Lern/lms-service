@@ -9,9 +9,6 @@ import org.sunbird.keys.SunbirdKey;
 import java.text.MessageFormat;
 import java.util.Map;
 
-import static org.sunbird.common.responsecode.ResponseCode.CLIENT_ERROR;
-import static org.sunbird.common.responsecode.ResponseCode.SERVER_ERROR;
-
 public class CourseCreateRequestValidator {
     public static void validateRequest(Request request) {
         try {
@@ -39,7 +36,7 @@ public class CourseCreateRequestValidator {
             if (request.getRequest().containsKey(SunbirdKey.SOURCE) && request.getRequest().containsKey(SunbirdKey.HIERARCHY)) {
                 message += "Error Source and Hierarchy both can't be sent in the same request.";
                 ProjectCommonException.throwClientErrorException(
-                        CLIENT_ERROR,
+                        ResponseCode.CLIENT_ERROR,
                         MessageFormat.format(
                                 ResponseCode.CLIENT_ERROR.getErrorMessage(), message));
             }

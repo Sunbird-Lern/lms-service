@@ -284,7 +284,7 @@ public class CourseManagementActorTest {
                 "                        \"contentType\": \"MarkingSchemeRubric\",\n" +
                 "                        \"identifier\": \"do_11303997216713113613821\",\n" +
                 "                        \"visibility\": \"Default\",\n" +
-                "                        \"resourceType\": \"Read\"\n" +
+                "                        \"resourceType\": \"Read\",\n" +
                 "                        \"name\": \"Resource 1\"\n" +
                 "                    },\n" +
                 "                    {\n" +
@@ -292,7 +292,7 @@ public class CourseManagementActorTest {
                 "                        \"contentType\": \"LearningOutcomeDefinition\",\n" +
                 "                        \"identifier\": \"do_11304337189392384011143\",\n" +
                 "                        \"visibility\": \"Default\",\n" +
-                "                        \"resourceType\": \"Read\"\n" +
+                "                        \"resourceType\": \"Read\",\n" +
                 "                        \"name\": \"Resource 2\"\n" +
                 "                    }\n" +
                 "                ]\n" +

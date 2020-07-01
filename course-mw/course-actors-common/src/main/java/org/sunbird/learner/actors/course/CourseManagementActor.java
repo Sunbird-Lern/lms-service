@@ -217,7 +217,7 @@ public class CourseManagementActor extends BaseActor {
         metadata.put(SunbirdKey.CONTENT_TYPE, "CourseUnit");
         return new HashMap<String, Object>() {{
             put(SunbirdKey.METADATA, new HashMap<String, Object>() {{
-                cleanUpData(metadata);
+                putAll(cleanUpData(metadata));
                 put("origin", metadata.get(SunbirdKey.IDENTIFIER));
                 put("originData", new HashMap<String, Object>() {{
                     put("name", metadata.get(SunbirdKey.NAME));

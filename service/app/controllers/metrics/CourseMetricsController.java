@@ -40,4 +40,27 @@ public class CourseMetricsController extends BaseController {
     }
   }
 
+  public CompletionStage<Result> courseProgressReport(String batchId, Http.Request httpRequest) {
+    try {
+      String periodStr = httpRequest.getQueryString(JsonKey.PERIOD);
+      String reportType = httpRequest.getQueryString(JsonKey.FORMAT);
+      if (StringUtils.isEmpty(periodStr)) {
+          periodStr = JsonKey.FROM_BEGINING;
+      }
+      Map<String, Object> map = new HashMap<>();
+      Request request = new Request();
+      request.setEnv(getEnvironment());
+      map.put(JsonKey.BATCH_ID, batchId);
+      map.put(JsonKey.PERIOD, periodStr);
+      map.put(JsonKey.FORMAT, reportType);
+      map.put(JsonKey.REQUESTED_BY, httpRequest.flash().get(JsonKey.USER_ID));
+      request.setRequest(map);
+      request.setOperation(ActorOperations.COURSE_PROGRESS_METRICS_REPORT.getValue());
+      request.setRequest(map);
+      request.setRequestId(ExecutionContext.getRequestId());
+      return actorResponseHandler(courseMetricsActorRef, request, timeout, null, httpRequest);
+    } catch (Exception e) {
+      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
+    }
+  }
 }

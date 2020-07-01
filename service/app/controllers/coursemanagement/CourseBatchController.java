@@ -18,7 +18,6 @@ import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil.EsType;
-import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -111,7 +110,7 @@ public class CourseBatchController extends BaseController {
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
         reqObj.put("creatorDetails", httpRequest.queryString().containsKey("creatorDetails"));
       reqObj.setOperation(ActorOperations.COMPOSITE_SEARCH.getValue());
-      reqObj.setRequestId(ExecutionContext.getRequestId());
+      reqObj.setRequestId(httpRequest.flash().get(JsonKey.REQUEST_ID));
       reqObj.setEnv(getEnvironment());
       reqObj.put(JsonKey.REQUESTED_BY, httpRequest.flash().get(JsonKey.USER_ID));
       String requestedField = httpRequest.getQueryString(JsonKey.FIELDS);

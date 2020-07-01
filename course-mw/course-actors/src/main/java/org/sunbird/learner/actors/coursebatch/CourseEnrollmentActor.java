@@ -21,10 +21,10 @@ import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.*;
 import org.sunbird.common.models.util.ProjectUtil.EnrolmentType;
 import org.sunbird.common.models.util.ProjectUtil.ProgressStatus;
-import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
+import org.sunbird.keys.SunbirdKey;
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao;
 import org.sunbird.learner.actors.coursebatch.dao.UserCoursesDao;
 import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl;
@@ -63,7 +63,6 @@ public class CourseEnrollmentActor extends BaseActor {
     String operation = request.getOperation();
 
     Util.initializeContext(request, TelemetryEnvKey.BATCH);
-    ExecutionContext.setRequestId(request.getRequestId());
 
     switch (operation) {
       case "enrollCourse":
@@ -93,6 +92,7 @@ public class CourseEnrollmentActor extends BaseActor {
         courseBatch,
         courseMap,
         (String) actorMessage.getContext().get(JsonKey.REQUESTED_BY),
+        (String) actorMessage.getContext().getOrDefault(SunbirdKey.REQUESTED_FOR, ""),
         ActorOperations.ENROLL_COURSE.getValue());
 
     UserCourses userCourseResult =
@@ -132,7 +132,7 @@ public class CourseEnrollmentActor extends BaseActor {
     if (courseNotificationActive()) {
       batchOperationNotifier(courseMap, courseBatch, JsonKey.ADD);
     }
-    generateAndProcessTelemetryEvent(courseMap, "user.batch.course", JsonKey.CREATE);
+    generateAndProcessTelemetryEvent(courseMap, "user.batch.course", JsonKey.CREATE, actorMessage.getContext());
   }
 
   private boolean courseNotificationActive() {
@@ -175,6 +175,7 @@ public class CourseEnrollmentActor extends BaseActor {
         courseBatch,
         request,
         (String) actorMessage.getContext().get(JsonKey.REQUESTED_BY),
+        (String) actorMessage.getContext().getOrDefault(SunbirdKey.REQUESTED_FOR, ""),
         ActorOperations.UNENROLL_COURSE.getValue());
     UserCourses userCourseResult =
         userCourseDao.read(
@@ -182,7 +183,7 @@ public class CourseEnrollmentActor extends BaseActor {
     UserCoursesService.validateUserUnenroll(userCourseResult);
     Response result = updateUserCourses(userCourseResult);
     sender().tell(result, self());
-    generateAndProcessTelemetryEvent(request, "user.batch.course.unenroll", JsonKey.UPDATE);
+    generateAndProcessTelemetryEvent(request, "user.batch.course.unenroll", JsonKey.UPDATE, actorMessage.getContext());
 
     if (courseNotificationActive()) {
       batchOperationNotifier(request, courseBatch, JsonKey.REMOVE);
@@ -203,7 +204,7 @@ public class CourseEnrollmentActor extends BaseActor {
   }
 
   private void generateAndProcessTelemetryEvent(
-      Map<String, Object> request, String corelation, String state) {
+      Map<String, Object> request, String corelation, String state, Map<String, Object> context) {
     Map<String, Object> targetObject = new HashMap<>();
     List<Map<String, Object>> correlatedObject = new ArrayList<>();
     targetObject =
@@ -216,7 +217,7 @@ public class CourseEnrollmentActor extends BaseActor {
         TelemetryEnvKey.BATCH,
         "user.batch",
         correlatedObject);
-    TelemetryUtil.telemetryProcessingCall(request, targetObject, correlatedObject);
+    TelemetryUtil.telemetryProcessingCall(request, targetObject, correlatedObject, context);
   }
 
   private void updateUserCoursesToES(Map<String, Object> courseMap) {
@@ -283,14 +284,14 @@ public class CourseEnrollmentActor extends BaseActor {
       CourseBatch courseBatchDetails,
       Map<String, Object> request,
       String requestedBy,
+      String requestedFor,
       String actorOperation) {
 
     if (ProjectUtil.isNull(courseBatchDetails)) {
       ProjectCommonException.throwClientErrorException(
           ResponseCode.invalidCourseBatchId, ResponseCode.invalidCourseBatchId.getErrorMessage());
     }
-    //Removing to ignore user-token validation with userid passed in request
-    //verifyRequestedByAndThrowErrorIfNotMatch((String) request.get(JsonKey.USER_ID), requestedBy);
+    verifyRequestedByAndThrowErrorIfNotMatch((String) request.get(JsonKey.USER_ID), requestedBy, requestedFor);
     if (EnrolmentType.inviteOnly.getVal().equals(courseBatchDetails.getEnrollmentType())) {
       ProjectLogger.log(
           "CourseEnrollmentActor validateCourseBatch self enrollment or unenrollment is not applicable for invite only batch.",
@@ -339,9 +340,11 @@ public class CourseEnrollmentActor extends BaseActor {
     }
   }
 
-  private void verifyRequestedByAndThrowErrorIfNotMatch(String userId, String requestedBy) {
-    if (!(userId.equals(requestedBy))) {
-      ProjectCommonException.throwUnauthorizedErrorException();
+  private void verifyRequestedByAndThrowErrorIfNotMatch(String userId, String requestedBy, String requestedFor) {
+    ProjectLogger.log("CourseEnrollmentActor:verifyRequestedByAndThrowErrorIfNotMatch : validation starts", LoggerEnum.INFO.name());
+    if (!(userId.equals(requestedBy)) && !(userId.equals(requestedFor))) {
+      ProjectLogger.log("CourseEnrollmentActor:verifyRequestedByAndThrowErrorIfNotMatch : validation failed: userId: " + userId + " :: requestedBy: " + requestedBy + " :: requestedFor: "+ requestedFor + " :: END", LoggerEnum.INFO.name());
+//      ProjectCommonException.throwUnauthorizedErrorException();
     }
   }
 

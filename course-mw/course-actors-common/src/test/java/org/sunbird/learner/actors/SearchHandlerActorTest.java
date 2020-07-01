@@ -20,8 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import org.junit.Before;
@@ -179,7 +179,7 @@ public class SearchHandlerActorTest {
     List<String> creatorIds = Arrays.asList("test_id1", "test_id2");
     List<String> fields = Arrays.asList("firstName", "lastName", "id");
     String result = (String) method.invoke(actorRef.underlyingActor(), creatorIds, fields);
-    assertTrue(StringUtils.isNoneBlank(result));
+    assertTrue(StringUtils.isNotBlank(result));
     assertTrue(result.contains("test_id1"));
     assertTrue(result.contains("firstName"));
     assertTrue(result.contains("filters"));

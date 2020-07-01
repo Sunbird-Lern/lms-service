@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.base.BaseActor;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
+import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.keys.*;
 import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
@@ -23,11 +24,10 @@ import java.util.stream.Collectors;
 import static org.sunbird.common.models.util.JsonKey.EKSTEP_BASE_URL;
 import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
 import static org.sunbird.common.responsecode.ResponseCode.CLIENT_ERROR;
-import static org.sunbird.common.models.util.JsonKey.CONTENT_PROPS_TO_ADD;
 
 public class CourseManagementActor extends BaseActor {
     private static ObjectMapper mapper = new ObjectMapper();
-    private static List<String> metadataToBeAdded = Arrays.stream((StringUtils.isNotBlank(getConfigValue(CONTENT_PROPS_TO_ADD)) ? getConfigValue(CONTENT_PROPS_TO_ADD) : "mimeType,contentType,name,code,description,keywords,framework,copyright,topic").split(",")).map(String::trim).collect(Collectors.toList());
+    private static List<String> metadataToBeAdded = Arrays.stream((StringUtils.isNotBlank(getConfigValue(JsonKey.CONTENT_PROPS_TO_ADD)) ? getConfigValue(JsonKey.CONTENT_PROPS_TO_ADD) : "mimeType,contentType,name,code,description,keywords,framework,copyright,topic").split(",")).map(String::trim).collect(Collectors.toList());
 
     @Override
     public void onReceive(Request request) throws Throwable {

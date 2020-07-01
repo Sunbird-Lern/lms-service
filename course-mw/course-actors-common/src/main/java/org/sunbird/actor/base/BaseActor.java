@@ -21,6 +21,7 @@ public abstract class BaseActor extends UntypedAbstractActor {
       try {
         onReceive(request);
       } catch (Exception e) {
+        e.printStackTrace();
         onReceiveException(operation, e);
       }
     } else {

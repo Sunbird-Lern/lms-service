@@ -27,6 +27,7 @@ class ProgressActor @Inject() extends BaseEnrolmentActor {
         Util.initializeContext(request, TelemetryEnvKey.BATCH)
         request.getOperation match {
             case "addContent" => addContent(request)
+            case "getContent" => getContentStatus(request)
             case _ => onReceiveUnsupportedOperation(request.getOperation)
         }
     }
@@ -281,5 +282,17 @@ class ProgressActor @Inject() extends BaseEnrolmentActor {
         val topic = ProjectUtil.getConfigValue("kafka_topics_instruction")
         ProjectLogger.log("LearnerStateUpdateActor: pushInstructionEvent :Event Data " + data + " and Topic " + topic, LoggerEnum.INFO.name)
         InstructionEventGenerator.pushInstructionEvent(userId, topic, data)
+    }
+
+    def getContentStatus(request: Request): Unit = {
+        //read user ID
+        val userId = request.get(JsonKey.USER_ID).asInstanceOf[String]
+        val batchId = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
+        val courseId = request.get(JsonKey.COURSE_ID).asInstanceOf[String]
+        val contentIds = request.getRequest.getOrDefault(JsonKey.CONTENT_IDS, new java.util.ArrayList[String]()).asInstanceOf[java.util.List[String]]
+        
+        // read content consumption
+        // remove unwanted properties
+        // send response
     }
 }

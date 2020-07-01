@@ -82,7 +82,6 @@ POST  /v1/file/upload 						@controllers.storage.FileStorageController.uploadFil
 #Metrics APIs for dashboard
 GET  /v1/dashboard/creation/org/:orgId            @controllers.metrics.OrganisationMetricsController.orgCreation(orgId:String)
 GET  /v1/dashboard/consumption/org/:orgId         @controllers.metrics.OrganisationMetricsController.orgConsumption(orgId:String)
-GET  /v1/dashboard/consumption/course/:courseId   @controllers.metrics.CourseMetricsController.courseCreation(courseId:String)
 GET  /v1/dashboard/creation/user/:userId          @controllers.metrics.UserMetricsController.userCreation(userId:String)
 GET  /v1/dashboard/consumption/user/:userId       @controllers.metrics.UserMetricsController.userConsumption(userId:String)
 GET  /v1/dashboard/creation/org/:orgId/export            @controllers.metrics.OrganisationMetricsController.orgCreationReport(orgId:String)

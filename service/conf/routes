@@ -57,9 +57,6 @@ POST	 /v1/course/batch/users/add/:batchId			@controllers.coursemanagement.Course
 POST	 /v1/course/batch/users/remove/:batchId			@controllers.coursemanagement.CourseBatchController.removeUserFromCourseBatch(batchId:String, request: play.mvc.Http.Request)
 POST		 /v1/batch/participants/list			@controllers.coursemanagement.CourseBatchController.getParticipants(request: play.mvc.Http.Request)
 
-#metrics APIs for dashboard
-GET  /v1/dashboard/consumption/course/:courseId   @controllers.metrics.CourseMetricsController.courseCreation(courseId:String, request: play.mvc.Http.Request)
-
 # Textbook APIs
 POST    /v1/textbook/toc/upload/:textbookId           @controllers.textbook.TextbookController.uploadTOC(textbookId:String, request: play.mvc.Http.Request)
 GET    /v1/textbook/toc/download/:textbookId           @controllers.textbook.TextbookController.getTocUrl(textbookId:String, request: play.mvc.Http.Request)

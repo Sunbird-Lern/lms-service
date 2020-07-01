@@ -1,4 +1,0 @@
-[submodule "course-mw/sunbird-utils"]
-	path = course-mw/sunbird-utils
-	url = https://github.com/rheafernandes/sunbird-utils.git
-    branch = unitToCourse

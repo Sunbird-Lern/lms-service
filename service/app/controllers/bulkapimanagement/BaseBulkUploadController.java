@@ -17,7 +17,6 @@ import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil;
-import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import play.libs.Files;
 import play.mvc.Http;
@@ -93,7 +92,7 @@ public class BaseBulkUploadController extends BaseController {
       checkFileSize(byteArray, objectType);
     }
     reqObj.setOperation(operation);
-    reqObj.setRequestId(ExecutionContext.getRequestId());
+    reqObj.setRequestId(httpRequest.flash().get(JsonKey.REQUEST_ID));
     reqObj.setEnv(getEnvironment());
     map.put(JsonKey.OBJECT_TYPE, objectType);
     map.put(JsonKey.CREATED_BY, httpRequest.flash().getOptional(JsonKey.USER_ID).orElse(null));

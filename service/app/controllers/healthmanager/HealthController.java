@@ -85,7 +85,7 @@ public class HealthController extends BaseController {
     response.getResult().put(JsonKey.RESPONSE, finalResponseMap);
     response.setId("learner.service.health.api");
     response.setVer(getApiVersion(httpRequest.path()));
-    response.setTs(ExecutionContext.getRequestId());
+    response.setTs(httpRequest.flash().get(JsonKey.REQUEST_ID));
     try {
       handleSigTerm();
       return CompletableFuture.completedFuture(ok(play.libs.Json.toJson(response)));

@@ -1,6 +1,13 @@
 package org.sunbird.learner.util;
 
-import static org.sunbird.common.models.util.ProjectLogger.log;
+import org.apache.commons.lang3.StringUtils;
+import org.sunbird.common.models.util.BadgingJsonKey;
+import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.request.Request;
+import org.sunbird.dto.SearchDTO;
+import org.sunbird.helper.CassandraConnectionManager;
+import org.sunbird.helper.CassandraConnectionMngrFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,21 +20,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import org.apache.commons.lang3.StringUtils;
-import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.util.BadgingJsonKey;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.models.util.PropertiesCache;
-import org.sunbird.common.request.ExecutionContext;
-import org.sunbird.common.request.Request;
-import org.sunbird.common.responsecode.ResponseCode;
-import org.sunbird.dto.SearchDTO;
-import org.sunbird.helper.CassandraConnectionManager;
-import org.sunbird.helper.CassandraConnectionMngrFactory;
-import org.sunbird.userorg.UserOrgService;
-import org.sunbird.userorg.UserOrgServiceImpl;
 
 /**
  * Utility class for actors
@@ -83,115 +75,15 @@ public final class Util {
    * data base connection from provided environment variable , if environment variable values are
    * not set then connection will be established from property file.
    */
-  public static void checkCassandraDbConnections(String keySpace) {
-
-    PropertiesCache propertiesCache = PropertiesCache.getInstance();
-
-    String cassandraMode = propertiesCache.getProperty(JsonKey.SUNBIRD_CASSANDRA_MODE);
-    if (StringUtils.isBlank(cassandraMode)
-        || cassandraMode.equalsIgnoreCase(JsonKey.EMBEDDED_MODE)) {
-
-      // configure the Embedded mode and return true here ....
-      CassandraConnectionManager cassandraConnectionManager =
-          CassandraConnectionMngrFactory.getObject(cassandraMode);
-      boolean result =
-          cassandraConnectionManager.createConnection(null, null, null, null, keySpace);
-      if (result) {
-        ProjectLogger.log(
-            "CONNECTION CREATED SUCCESSFULLY FOR IP:" + " : KEYSPACE :" + keySpace,
-            LoggerEnum.INFO.name());
-      } else {
-        ProjectLogger.log("CONNECTION CREATION FAILED FOR IP: " + " : KEYSPACE :" + keySpace);
-      }
-
-    } else if (cassandraMode.equalsIgnoreCase(JsonKey.STANDALONE_MODE)) {
-      if (readConfigFromEnv(keySpace)) {
-        ProjectLogger.log("db connection is created from System env variable.");
-        return;
-      }
-      CassandraConnectionManager cassandraConnectionManager =
-          CassandraConnectionMngrFactory.getObject(JsonKey.STANDALONE_MODE);
-      String[] ipList = prop.getProperty(JsonKey.DB_IP).split(",");
-      String[] portList = prop.getProperty(JsonKey.DB_PORT).split(",");
-      // String[] keyspaceList = prop.getProperty(JsonKey.DB_KEYSPACE).split(",");
-
-      String userName = prop.getProperty(JsonKey.DB_USERNAME);
-      String password = prop.getProperty(JsonKey.DB_PASSWORD);
-      for (int i = 0; i < ipList.length; i++) {
-        String ip = ipList[i];
-        String port = portList[i];
-        // Reading the same keyspace which is passed in the method
-        // String keyspace = keyspaceList[i];
-
-        try {
-
-          boolean result =
-              cassandraConnectionManager.createConnection(ip, port, userName, password, keySpace);
-          if (result) {
-            ProjectLogger.log(
-                "CONNECTION CREATED SUCCESSFULLY FOR IP: " + ip + " : KEYSPACE :" + keySpace,
-                LoggerEnum.INFO.name());
-          } else {
-            ProjectLogger.log(
-                "CONNECTION CREATION FAILED FOR IP: " + ip + " : KEYSPACE :" + keySpace);
-          }
-
-        } catch (ProjectCommonException ex) {
-          ProjectLogger.log(ex.getMessage(), ex);
-        }
-      }
+  public static void checkCassandraDbConnections() {
+    if (readConfigFromEnv()) {
+      ProjectLogger.log("db connection is created from System env variable.");
+      return;
     }
-  }
-
-  /**
-   * This method will read the configuration from System variable.
-   *
-   * @return boolean
-   */
-  public static boolean readConfigFromEnv(String keyspace) {
-    boolean response = false;
-    String ips = System.getenv(JsonKey.SUNBIRD_CASSANDRA_IP);
-    String envPort = System.getenv(JsonKey.SUNBIRD_CASSANDRA_PORT);
     CassandraConnectionManager cassandraConnectionManager =
-        CassandraConnectionMngrFactory.getObject(JsonKey.STANDALONE_MODE);
-
-    if (StringUtils.isBlank(ips) || StringUtils.isBlank(envPort)) {
-      ProjectLogger.log("Configuration value is not coming form System variable.");
-      return response;
-    }
-    String[] ipList = ips.split(",");
-    String[] portList = envPort.split(",");
-    String userName = System.getenv(JsonKey.SUNBIRD_CASSANDRA_USER_NAME);
-    String password = System.getenv(JsonKey.SUNBIRD_CASSANDRA_PASSWORD);
-    for (int i = 0; i < ipList.length; i++) {
-      String ip = ipList[i];
-      String port = portList[i];
-      try {
-        boolean result =
-            cassandraConnectionManager.createConnection(ip, port, userName, password, keyspace);
-        if (result) {
-          response = true;
-          ProjectLogger.log(
-              "CONNECTION CREATED SUCCESSFULLY FOR IP: " + ip + " : KEYSPACE :" + keyspace,
-              LoggerEnum.INFO.name());
-        } else {
-          ProjectLogger.log(
-              "CONNECTION CREATION FAILED FOR IP: " + ip + " : KEYSPACE :" + keyspace,
-              LoggerEnum.INFO.name());
-        }
-      } catch (ProjectCommonException ex) {
-        ProjectLogger.log(
-            "Util:readConfigFromEnv: Exception occurred with message = " + ex.getMessage(),
-            LoggerEnum.ERROR);
-      }
-    }
-    if (!response) {
-      throw new ProjectCommonException(
-          ResponseCode.invaidConfiguration.getErrorCode(),
-          ResponseCode.invaidConfiguration.getErrorCode(),
-          ResponseCode.SERVER_ERROR.hashCode());
-    }
-    return response;
+            CassandraConnectionMngrFactory.getInstance();
+    String[] ipList = prop.getProperty(JsonKey.DB_IP).split(",");
+    cassandraConnectionManager.createConnection(ipList);
   }
 
   /** This method will load the db config properties file. */
@@ -214,6 +106,26 @@ public final class Util {
         }
       }
     }
+  }
+
+  /**
+   * This method will read the configuration from System variable.
+   *
+   * @return boolean
+   */
+  public static boolean readConfigFromEnv() {
+    String ips = System.getenv(JsonKey.SUNBIRD_CASSANDRA_IP);
+    String envPort = System.getenv(JsonKey.SUNBIRD_CASSANDRA_PORT);
+    CassandraConnectionManager cassandraConnectionManager =
+            CassandraConnectionMngrFactory.getInstance();
+
+    if (StringUtils.isBlank(ips) || StringUtils.isBlank(envPort)) {
+      ProjectLogger.log("Configuration value is not coming form System variable.");
+      return false;
+    }
+    String[] ipList = ips.split(",");
+    cassandraConnectionManager.createConnection(ipList);
+    return true;
   }
 
   public static String getProperty(String key) {
@@ -430,8 +342,6 @@ public final class Util {
   }
 
   public static void initializeContext(Request actorMessage, String env) {
-
-    ExecutionContext context = ExecutionContext.getCurrent();
     Map<String, Object> requestContext = null;
     if ((actorMessage.getContext().get(JsonKey.TELEMETRY_CONTEXT) != null)) {
       // means request context is already set by some other actor ...
@@ -457,7 +367,7 @@ public final class Util {
       requestContext.put(JsonKey.REQUEST_ID, actorMessage.getRequestId());
       requestContext.put(JsonKey.DEVICE_ID, deviceId);
 
-      context.setRequestContext(requestContext);
+        actorMessage.getContext().putAll(requestContext);
       // and global context will be set at the time of creation of thread local
       // automatically ...
     }

@@ -23,7 +23,6 @@ import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.TelemetryEnvKey;
-import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.common.util.CloudStorageUtil;
@@ -55,7 +54,6 @@ public class QRCodeDownloadManagementActor extends BaseActor {
   @Override
   public void onReceive(Request request) throws Throwable {
     Util.initializeContext(request, TelemetryEnvKey.QR_CODE_DOWNLOAD);
-    ExecutionContext.setRequestId(request.getRequestId());
     String requestedOperation = request.getOperation();
     switch (requestedOperation) {
       case "downloadQRCodes":

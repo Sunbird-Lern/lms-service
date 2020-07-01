@@ -526,7 +526,7 @@ public class RequestValidatorTest {
       response = true;
     } catch (ProjectCommonException e) {
       assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
-      assertEquals(ResponseCode.userIdRequired.getErrorCode(), e.getCode());
+      assertEquals(ResponseCode.assessmentAttemptDateRequired.getErrorCode(), e.getCode());
     }
     assertEquals(false, response);
   }

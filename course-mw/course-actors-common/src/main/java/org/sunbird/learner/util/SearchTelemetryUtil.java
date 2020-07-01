@@ -9,16 +9,15 @@ import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.PropertiesCache;
 import org.sunbird.common.request.Request;
 import org.sunbird.dto.SearchDTO;
-import org.sunbird.telemetry.util.TelemetryLmaxWriter;
 import org.sunbird.telemetry.util.TelemetryUtil;
+import org.sunbird.telemetry.util.TelemetryWriter;
 
 public class SearchTelemetryUtil {
   private SearchTelemetryUtil() {}
 
   public static void generateSearchTelemetryEvent(
-      SearchDTO searchDto, String[] types, Map<String, Object> result) {
+      SearchDTO searchDto, String[] types, Map<String, Object> result, Map<String, Object> context) {
     try {
-      Map<String, Object> telemetryContext = TelemetryUtil.getTelemetryContext();
       Map<String, Object> params = new HashMap<>();
       params.put(JsonKey.QUERY, searchDto.getQuery());
       params.put(JsonKey.FILTERS, searchDto.getAdditionalProperties().get(JsonKey.FILTERS));
@@ -28,8 +27,8 @@ public class SearchTelemetryUtil {
       params.put(JsonKey.TYPE, String.join(",", types));
 
       Request request = new Request();
-      request.setRequest(telemetryRequestForSearch(telemetryContext, params));
-      TelemetryLmaxWriter.getInstance().submitMessage(request);
+      request.setRequest(telemetryRequestForSearch(context, params));
+      TelemetryWriter.write(request);
     } catch (Exception e) {
       ProjectLogger.log(e.getMessage(), e);
     }

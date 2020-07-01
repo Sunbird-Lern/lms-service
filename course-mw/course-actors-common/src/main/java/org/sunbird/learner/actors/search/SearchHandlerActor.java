@@ -19,15 +19,13 @@ import org.sunbird.common.models.response.HttpUtilResponse;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.*;
 import org.sunbird.common.models.util.ProjectUtil.EsType;
-import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.learner.actors.coursebatch.service.UserCoursesService;
 import org.sunbird.learner.util.JsonUtil;
 import org.sunbird.learner.util.Util;
-import org.sunbird.telemetry.util.TelemetryLmaxWriter;
-import org.sunbird.telemetry.util.TelemetryUtil;
+import org.sunbird.telemetry.util.TelemetryWriter;
 import scala.concurrent.Future;
 
 /**
@@ -47,7 +45,6 @@ public class SearchHandlerActor extends BaseActor {
     request.toLower();
     Util.initializeContext(request, TelemetryEnvKey.USER);
     // set request id fto thread loacl...
-    ExecutionContext.setRequestId(request.getRequestId());
 
     if (request.getOperation().equalsIgnoreCase(ActorOperations.COMPOSITE_SEARCH.getValue())) {
       Instant instant = Instant.now();
@@ -106,7 +103,7 @@ public class SearchHandlerActor extends BaseActor {
         }
         sender().tell(response, self());
         // create search telemetry event here ...
-        generateSearchTelemetryEvent(searchDto, types, result);
+        generateSearchTelemetryEvent(searchDto, types, result, request.getContext());
       }
     } else {
       onReceiveUnsupportedOperation(request.getOperation());
@@ -169,9 +166,7 @@ public class SearchHandlerActor extends BaseActor {
   }
 
   private void generateSearchTelemetryEvent(
-      SearchDTO searchDto, String[] types, Map<String, Object> result) {
-
-    Map<String, Object> telemetryContext = TelemetryUtil.getTelemetryContext();
+      SearchDTO searchDto, String[] types, Map<String, Object> result, Map<String, Object> context) {
 
     Map<String, Object> params = new HashMap<>();
     params.put(JsonKey.TYPE, String.join(",", types));
@@ -182,8 +177,8 @@ public class SearchHandlerActor extends BaseActor {
     params.put(JsonKey.TOPN, generateTopnResult(result)); // need to get topn value from
     // response
     Request req = new Request();
-    req.setRequest(telemetryRequestForSearch(telemetryContext, params));
-    TelemetryLmaxWriter.getInstance().submitMessage(req);
+    req.setRequest(telemetryRequestForSearch(context, params));
+    TelemetryWriter.write(req);
   }
 
   private List<Map<String, Object>> generateTopnResult(Map<String, Object> result) {

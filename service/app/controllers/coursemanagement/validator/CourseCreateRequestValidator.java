@@ -37,8 +37,7 @@ public class CourseCreateRequestValidator {
                 message += "Error Source and Hierarchy both can't be sent in the same request.";
                 ProjectCommonException.throwClientErrorException(
                         ResponseCode.CLIENT_ERROR,
-                        MessageFormat.format(
-                                ResponseCode.CLIENT_ERROR.getErrorMessage(), message));
+                        MessageFormat.format(ResponseCode.missingData.getErrorMessage(), message));
             }
         } catch (Exception ex) {
             throw ex;

@@ -106,19 +106,20 @@ class ProgressActor @Inject() extends BaseEnrolmentActor {
                     userContents.foreach(entry => {
                         val userId = entry._1
                         if(validUserIds.contains(userId)) {
+                            val courseId = entry._2.head.getOrDefault(JsonKey.COURSE_ID, "").asInstanceOf[String]
                             val contentIds = entry._2.map(e => e.getOrDefault(JsonKey.CONTENT_ID, "").asInstanceOf[String]).asJava
-                            val existingContents = getContentsConsumption(userId, contentIds, batchId).groupBy(x => x.get("contentId").asInstanceOf[String]).map(e => e._1 -> e._2.toList.head).toMap
+                            val existingContents = getContentsConsumption(userId, courseId, contentIds, batchId).groupBy(x => x.get("contentId").asInstanceOf[String]).map(e => e._1 -> e._2.toList.head).toMap
                             val contents:List[java.util.Map[String, AnyRef]] = entry._2.toList.map(inputContent => {
                                 val existingContent = existingContents.getOrElse(inputContent.get("contentId").asInstanceOf[String], new java.util.HashMap[String, AnyRef])
                                 processContentConsumption(inputContent, existingContent, userId)
                             })
-                            cassandraOperation.batchInsert(consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, contents)
+                            cassandraOperation.batchInsert(consumptionDBInfo.getKeySpace, "content_consumption", contents)
                             val updatedEnrolment = getLatestReadDetails(userId, batchId, contents)
                             cassandraOperation.upsertRecord("sunbird_courses", "user_enrolments", updatedEnrolment)
-                            val courseId = updatedEnrolment.get("courseId").asInstanceOf[String]
                             pushInstructionEvent(userId, batchId, courseId, contents.asJava)
                             contentIds.map(id => responseMessage.put(id,JsonKey.SUCCESS))
                         } else {
+                            ProjectLogger.log("ProgressActor: addContent : User Id is invalid : " + userId, LoggerEnum.INFO)
                             invalidContents.addAll(entry._2.asJava)
                         }
                     })
@@ -170,13 +171,15 @@ class ProgressActor @Inject() extends BaseEnrolmentActor {
         }
     }
 
-    def getContentsConsumption(userId: String, contentIds: java.util.List[String], batchId: String):java.util.List[java.util.Map[String, AnyRef]] = {
+    def getContentsConsumption(userId: String, courseId : String, contentIds: java.util.List[String], batchId: String):java.util.List[java.util.Map[String, AnyRef]] = {
         val filters = new java.util.HashMap[String, AnyRef]() {{
             put("userid", userId)
-            put("contentid", contentIds)
+            put("courseid", courseId)
             put("batchid", batchId)
+            if(CollectionUtils.isNotEmpty(contentIds))
+                put("contentid", contentIds)
         }}
-        val response = cassandraOperation.getRecords(consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, filters, null)
+        val response = cassandraOperation.getRecords(consumptionDBInfo.getKeySpace, "content_consumption", filters, null)
         response.getResult.getOrDefault(JsonKey.RESPONSE, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
     }
 
@@ -187,15 +190,15 @@ class ProgressActor @Inject() extends BaseEnrolmentActor {
         val inputCompletedTime = parseDate(inputContent.getOrDefault(JsonKey.LAST_COMPLETED_TIME, "").asInstanceOf[String])
         val inputAccessTime = parseDate(inputContent.getOrDefault(JsonKey.LAST_ACCESS_TIME, "").asInstanceOf[String])
         if(MapUtils.isNotEmpty(existingContent)) {
-            val viewCount: Integer = inputContent.getOrDefault(JsonKey.VIEW_COUNT, 0.asInstanceOf[AnyRef]).asInstanceOf[Number].intValue()
+            val viewCount: Integer = Option(inputContent.getOrDefault(JsonKey.VIEW_COUNT, 0.asInstanceOf[AnyRef]).asInstanceOf[Number]).getOrElse(0.asInstanceOf[Number]).intValue()
             updatedContent.put(JsonKey.VIEW_COUNT, (viewCount + 1).asInstanceOf[AnyRef])
             val existingAccessTime = parseDate(existingContent.getOrDefault(JsonKey.LAST_ACCESS_TIME, "").asInstanceOf[String])
             updatedContent.put(JsonKey.LAST_ACCESS_TIME, compareTime(existingAccessTime, inputAccessTime))
             val inputProgress = inputContent.getOrDefault(JsonKey.PROGRESS, 0.asInstanceOf[AnyRef]).asInstanceOf[Number].intValue()
-            val existingProgress = existingContent.getOrDefault(JsonKey.PROGRESS, 0.asInstanceOf[AnyRef]).asInstanceOf[Number].intValue()
+            val existingProgress = Option(existingContent.getOrDefault(JsonKey.PROGRESS, 0.asInstanceOf[AnyRef]).asInstanceOf[Number]).getOrElse(0.asInstanceOf[Number]).intValue()
             updatedContent.put(JsonKey.PROGRESS, List(inputProgress, existingProgress).max.asInstanceOf[AnyRef])
-            val existingStatus = existingContent.getOrDefault(JsonKey.STATUS, 0.asInstanceOf[AnyRef]).asInstanceOf[Number].intValue()
-            val existingCompletedCount: Integer = existingContent.getOrDefault(JsonKey.COMPLETED_COUNT, 0.asInstanceOf[AnyRef]).asInstanceOf[Number].intValue()
+            val existingStatus = Option(existingContent.getOrDefault(JsonKey.STATUS, 0.asInstanceOf[AnyRef]).asInstanceOf[Number]).getOrElse(0.asInstanceOf[Number]).intValue()
+            val existingCompletedCount: Integer = Option(existingContent.getOrDefault(JsonKey.COMPLETED_COUNT, 0.asInstanceOf[AnyRef]).asInstanceOf[Number]).getOrElse(0.asInstanceOf[Number]).intValue()
             val existingCompletedTime = parseDate(existingContent.getOrDefault(JsonKey.LAST_COMPLETED_TIME, "").asInstanceOf[String])
             if(inputStatus >= existingStatus) {
                 if(inputStatus >= 2) {
@@ -285,14 +288,18 @@ class ProgressActor @Inject() extends BaseEnrolmentActor {
     }
 
     def getContentStatus(request: Request): Unit = {
-        //read user ID
         val userId = request.get(JsonKey.USER_ID).asInstanceOf[String]
         val batchId = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
         val courseId = request.get(JsonKey.COURSE_ID).asInstanceOf[String]
         val contentIds = request.getRequest.getOrDefault(JsonKey.CONTENT_IDS, new java.util.ArrayList[String]()).asInstanceOf[java.util.List[String]]
-        
-        // read content consumption
-        // remove unwanted properties
-        // send response
+        val contentsConsumed = getContentsConsumption(userId, courseId, contentIds, batchId)
+        if(CollectionUtils.isNotEmpty(contentsConsumed)) {
+            val filteredContents = contentsConsumed.map(m => {
+                ProjectUtil.removeUnwantedFields(m, JsonKey.DATE_TIME, JsonKey.USER_ID, JsonKey.ADDED_BY, JsonKey.LAST_UPDATED_TIME)
+                m
+            }).asJava
+            val response = new Response
+            response.put(JsonKey.RESPONSE, filteredContents)
+        } else throw new ProjectCommonException(ResponseCode.invalidCourseId.getErrorCode, ResponseCode.invalidCourseId.getErrorMessage, ResponseCode.CLIENT_ERROR.getResponseCode)
     }
 }

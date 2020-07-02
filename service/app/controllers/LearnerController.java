@@ -56,7 +56,7 @@ public class LearnerController extends BaseController {
       validator.validateGetContentState(request);
       request = transformUserId(request);
       return actorResponseHandler(
-          learnerStateActorRef, request, timeout, JsonKey.CONTENT_LIST, httpRequest);
+          progressActor, request, timeout, JsonKey.CONTENT_LIST, httpRequest);
     } catch (Exception e) {
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }

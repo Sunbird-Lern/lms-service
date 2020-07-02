@@ -217,9 +217,7 @@ public class CourseManagementActor extends BaseActor {
             put(SunbirdKey.METADATA, new HashMap<String, Object>() {{
                 putAll(cleanUpData(metadata));
                 put("origin", metadata.get(SunbirdKey.IDENTIFIER));
-                put("originData", new HashMap<String, Object>() {{
-                    put("name", metadata.get(SunbirdKey.NAME));
-                }});
+                put("originData", getOriginData(metadata));
             }});
             put(SunbirdKey.ROOT, false);
             put("isNew", true);
@@ -236,5 +234,11 @@ public class CourseManagementActor extends BaseActor {
 
     private Map<String, Object> cleanUpData(Map<String, Object> metadata) {
         return metadata.entrySet().stream().filter(entry -> metadataToBeAdded.contains(entry.getKey())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    private Map<String, Object> getOriginData(Map<String, Object> metadata) {
+        return new HashMap<String, Object>() {{
+            putAll(SunbirdKey.ORIGIN_METADATA_KEYS.stream().filter(key -> metadata.containsKey(key)).collect(Collectors.toMap(key-> key, key -> metadata.get(key))));
+        }};
     }
 }

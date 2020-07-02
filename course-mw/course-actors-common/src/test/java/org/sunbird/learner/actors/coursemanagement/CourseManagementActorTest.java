@@ -47,7 +47,6 @@ public class CourseManagementActorTest {
             Props.create(org.sunbird.learner.actors.course.CourseManagementActor.class);
     private static final ObjectMapper mapper = new ObjectMapper();
 
-
     @Before
     public void setUp() {
         PowerMockito.mockStatic(ProjectUtil.class);

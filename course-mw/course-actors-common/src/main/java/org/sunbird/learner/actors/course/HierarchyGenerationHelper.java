@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
@@ -58,7 +59,7 @@ public class HierarchyGenerationHelper {
             //Creation of new code for new Units and population of nodes modified.
             String code = (String) child.get(SunbirdKey.IDENTIFIER);
             if (StringUtils.equalsIgnoreCase((String) child.get(SunbirdKey.VISIBILITY), SunbirdKey.VISIBILITY_PARENT)) {
-                code = System.currentTimeMillis() + "";
+                code = UUID.randomUUID().toString();
                 nodesModified.put(code, getNodeModifiedMap(child));
             }
             //Population of hierarchy.

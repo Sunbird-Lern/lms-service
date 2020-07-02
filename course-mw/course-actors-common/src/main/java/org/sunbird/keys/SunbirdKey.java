@@ -1,5 +1,8 @@
 package org.sunbird.keys;
 
+import java.util.Arrays;
+import java.util.List;
+
 public final class SunbirdKey {
 
     public static final String REQUEST = "request";
@@ -27,12 +30,24 @@ public final class SunbirdKey {
     public static final String ORGANISATION = "organisation";
     public static final String CONTENT_MIME_TYPE_COLLECTION = "application/vnd.ekstep.content-collection";
     public static final String CONTENT_TYPE_HEADER = "Content-Type";
+    public static final String HIERARCHY = "hierarchy";
+    public static final String NODE_MODIFIED = "nodesModified";
+    public static final String DATA = "data";
+    public static final String VISIBILITY = "visibility";
+    public static final String VISIBILITY_PARENT = "Parent";
+    public static final String VISIBILITY_DEFAULT = "Default";
+    public static final String METADATA = "metadata";
+    public static final String CHILDREN = "children";
+    public static final String ROOT = "root";
     public static final String LAST_PUBLISHED_ON = "lastPublishedOn";
     public static final String REQUESTED_FOR = "requestedFor";
     // Content Status Update API Specific - START
     public static final String ACTUAL_USER_ID = "actualUserId";
     public static final String ALL_USER_IDS = "allUserIds";
     // Content Status Update API Specific - END
+    public static final List<String> MANDATORY_PARAMS_FOR_COURSE_UNITS = Arrays.asList("identifier", "mimeType", "visibility", "contentType", "name");
+    public static final List<String> ORIGIN_METADATA_KEYS = Arrays.asList("name", "author", "license", "organisation");
+
 
     private SunbirdKey() {}
 }

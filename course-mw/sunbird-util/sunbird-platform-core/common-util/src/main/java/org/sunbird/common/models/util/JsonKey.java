@@ -1027,5 +1027,7 @@ public final class JsonKey {
   public static final String SHA_256_WITH_RSA = "SHA256withRSA";
   public static final String SUB = "sub";
   public static final String DOT_SEPARATOR = ".";
+  public static final String CONTENT_PROPS_TO_ADD ="learning.content.props.to.add";
+
   private JsonKey() {}
 }

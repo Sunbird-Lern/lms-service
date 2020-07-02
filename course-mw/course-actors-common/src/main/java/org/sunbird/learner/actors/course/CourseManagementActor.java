@@ -25,6 +25,7 @@ import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
 
 public class CourseManagementActor extends BaseActor {
     private static ObjectMapper mapper = new ObjectMapper();
+    private static HierarchyGenerationHelper helper = new HierarchyGenerationHelper();
 
     @Override
     public void onReceive(Request request) throws Throwable {
@@ -135,7 +136,7 @@ public class CourseManagementActor extends BaseActor {
             HttpResponse<String> updateResponse =
                     Unirest.patch(url)
                             .headers(headers)
-                            .body(mapper.writeValueAsString(new HierarchyGenerationHelper().generateUpdateHierarchyRequest(request, identifier)))
+                            .body(mapper.writeValueAsString(helper.generateUpdateHierarchyRequest(request, identifier)))
                             .asString();
             if (null != updateResponse) {
                 Response response = mapper.readValue(updateResponse.getBody(), Response.class);

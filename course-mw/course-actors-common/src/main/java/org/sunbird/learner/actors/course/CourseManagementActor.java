@@ -134,7 +134,7 @@ public class CourseManagementActor extends BaseActor {
 
     private void handleHierarchyData(Request request, String identifier, Map<String, String> headers) throws Exception {
         if (request.getRequest().containsKey(SunbirdKey.HIERARCHY)) {
-            String url = "http://11.2.6.6/content" + "/content/v3/hierarchy/update";
+            String url = getConfigValue(EKSTEP_BASE_URL) + "/content/v3/hierarchy/update";
             HttpResponse<String> updateResponse =
                     Unirest.patch(url)
                             .headers(headers)

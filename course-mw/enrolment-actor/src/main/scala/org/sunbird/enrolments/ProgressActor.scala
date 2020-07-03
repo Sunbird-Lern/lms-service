@@ -300,6 +300,7 @@ class ProgressActor @Inject() extends BaseEnrolmentActor {
             }).asJava
             val response = new Response
             response.put(JsonKey.RESPONSE, filteredContents)
+            sender().tell(response, self)
         } else throw new ProjectCommonException(ResponseCode.invalidCourseId.getErrorCode, ResponseCode.invalidCourseId.getErrorMessage, ResponseCode.CLIENT_ERROR.getResponseCode)
     }
 }

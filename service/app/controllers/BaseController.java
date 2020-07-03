@@ -644,7 +644,7 @@ public class BaseController extends Controller {
    */
   public String getUserIdByAuthToken(String token) {
 
-    return AuthenticationHelper.verifyUserAccesToken(token);
+    return AuthenticationHelper.verifyUserAccessToken(token);
   }
 
   /**

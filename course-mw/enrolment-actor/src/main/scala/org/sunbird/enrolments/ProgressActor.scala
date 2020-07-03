@@ -113,7 +113,7 @@ class ProgressActor @Inject() extends BaseEnrolmentActor {
                                 val existingContent = existingContents.getOrElse(inputContent.get("contentId").asInstanceOf[String], new java.util.HashMap[String, AnyRef])
                                 processContentConsumption(inputContent, existingContent, userId)
                             })
-                            cassandraOperation.batchInsert(consumptionDBInfo.getKeySpace, "content_consumption", contents)
+                            cassandraOperation.batchInsert(consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, contents)
                             val updatedEnrolment = getLatestReadDetails(userId, batchId, contents)
                             cassandraOperation.upsertRecord("sunbird_courses", "user_enrolments", updatedEnrolment)
                             pushInstructionEvent(userId, batchId, courseId, contents.asJava)
@@ -179,7 +179,7 @@ class ProgressActor @Inject() extends BaseEnrolmentActor {
             if(CollectionUtils.isNotEmpty(contentIds))
                 put("contentid", contentIds)
         }}
-        val response = cassandraOperation.getRecords(consumptionDBInfo.getKeySpace, "content_consumption", filters, null)
+        val response = cassandraOperation.getRecords(consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, filters, null)
         response.getResult.getOrDefault(JsonKey.RESPONSE, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
     }
 

@@ -19,12 +19,10 @@ import org.sunbird.learner.actors.qrcodedownload.QRCodeDownloadManagementActor;
 import org.sunbird.learner.actors.search.SearchHandlerActor;
 import org.sunbird.learner.actors.syncjobmanager.EsSyncActor;
 import org.sunbird.learner.actors.textbook.TextbookTocActor;
-import org.sunbird.metrics.actors.CourseMetricsActor;
 
 public enum ACTOR_NAMES {
   COURSE_BATCH_MANAGEMENT_ACTOR(CourseBatchManagementActor.class, "course-batch-management-actor"),
   COURSE_ENROLLEMENT_ACTOR(CourseEnrollmentActor.class, "course-enrollment-actor"),
-  COURSE_METRICS_ACTOR(CourseMetricsActor.class, "course-metrics-actor"),
   CACHE_MANAGEMENT_ACTOR(CacheManagementActor.class, "cache-management-actor"),
   PAGE_MANAGEMENT_ACTOR(PageManagementActor.class, "page-management-actor"),
   SEARCH_HANDLER_ACTOR(SearchHandlerActor.class, "search-handler-actor"),

@@ -14,7 +14,6 @@
 		<module>sunbird-util</module>
 		<module>course-actors-common</module>
 		<module>course-actors</module>
-		<module>dashboard-actors</module>
 		<module>textbook-actors</module>
 		<module>badge-actors</module>
 	</modules>

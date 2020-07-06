@@ -21,7 +21,7 @@ public abstract class BaseActor extends UntypedAbstractActor {
       try {
         onReceive(request);
       } catch (Exception e) {
-        e.printStackTrace();
+        ProjectLogger.log("Error while processing the message :" + operation, e);
         onReceiveException(operation, e);
       }
     } else {

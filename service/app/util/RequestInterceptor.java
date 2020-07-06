@@ -57,7 +57,12 @@ public class RequestInterceptor {
     Optional<String> authClientId = request.header(HeaderParam.X_Authenticated_Client_Id.getName());
     if (!isRequestInExcludeList(request.path()) && !isRequestPrivate(request.path())) {
       if (accessToken.isPresent()) {
-        clientId = AuthenticationHelper.verifyUserAccesToken(accessToken.get());
+        // This is to handle Mobile App expired token for content state update API.
+        if (StringUtils.contains(request.path(), "v1/content/state/update")) {
+          clientId = AuthenticationHelper.verifyUserAccessToken(accessToken.get(), false);
+        } else {
+          clientId = AuthenticationHelper.verifyUserAccessToken(accessToken.get());
+        }
       } else if (authClientToken.isPresent() && authClientId.isPresent()) {
         clientId =
             AuthenticationHelper.verifyClientAccessToken(authClientId.get(), authClientToken.get());
@@ -70,7 +75,12 @@ public class RequestInterceptor {
       if (accessToken.isPresent()) {
         String clientAccessTokenId = null;
         try {
-          clientAccessTokenId = AuthenticationHelper.verifyUserAccesToken(accessToken.get());
+          // This is to handle Mobile App expired token for content state update API.
+          if (StringUtils.contains(request.path(), "v1/content/state/update")) {
+            clientAccessTokenId = AuthenticationHelper.verifyUserAccessToken(accessToken.get(), false);
+          } else {
+            clientAccessTokenId = AuthenticationHelper.verifyUserAccessToken(accessToken.get());
+          }
           if (JsonKey.UNAUTHORIZED.equalsIgnoreCase(clientAccessTokenId)) {
             clientAccessTokenId = null;
           }

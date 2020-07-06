@@ -466,6 +466,8 @@ public interface ResponseMessage {
     String OTP_VERIFICATION_FAILED = "OTP verification failed. Remaining attempt count is {0}.";
     String SERVICE_UNAVAILABLE = "SERVICE UNAVAILABLE";
     String MISSING_MESSAGE = "Required fields for create course are missing. {0}";
+    String CONTENT_TYPE_MISMATCH = "Content Type should be Course.";
+    String MIME_TYPE_MISMATCH = "MimeType should be application/vnd.ekstep.content-collection";
   }
 
   interface Key {
@@ -860,5 +862,7 @@ public interface ResponseMessage {
     String OTP_VERIFICATION_FAILED = "OTP_VERIFICATION_FAILED";
     String SERVICE_UNAVAILABLE = "SERVICE_UNAVAILABLE";
     String MISSING_CODE = "ERR_COURSE_CREATE_FIELDS_MISSING";
+    String CONTENT_TYPE_MISMATCH = "CONTENT_TYPE_MISMATCH";
+    String MIME_TYPE_MISMATCH = "MIME_TYPE_MISMATCH";
   }
 }

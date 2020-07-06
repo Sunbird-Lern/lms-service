@@ -36,6 +36,10 @@ public class AuthenticationHelper {
       org.sunbird.common.models.util.datasecurity.impl.ServiceFactory.getEncryptionServiceInstance(
           null);
 
+  public static String verifyUserAccessToken(String token) {
+    return verifyUserAccessToken(token, true);
+  }
+
   /**
    * This method will verify the incoming user access token against store data base /cache. If token
    * is valid then it would be associated with some user id. In case of token matched it will
@@ -45,12 +49,12 @@ public class AuthenticationHelper {
    * @return String
    */
   @SuppressWarnings("unchecked")
-  public static String verifyUserAccesToken(String token) {
+  public static String verifyUserAccessToken(String token, boolean checkActive) {
     SSOManager ssoManager = SSOServiceFactory.getInstance();
     String userId = JsonKey.UNAUTHORIZED;
     try {
       if (ssoEnabled) {
-        userId = ssoManager.verifyToken(token);
+        userId = ssoManager.verifyToken(token, checkActive);
       } else {
         Response authResponse =
             cassandraOperation.getRecordById(

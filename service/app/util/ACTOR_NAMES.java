@@ -1,8 +1,8 @@
 package util;
 
-import org.sunbird.enrolments.EnrolmentActor;
+import org.sunbird.enrolments.CourseEnrolmentActor;
 import org.sunbird.badge.actors.BadgeAssociationActor;
-import org.sunbird.enrolments.ProgressActor;
+import org.sunbird.enrolments.ContentConsumptionActor;
 import org.sunbird.learner.actors.BackgroundJobManager;
 import org.sunbird.learner.actors.LearnerStateActor;
 import org.sunbird.learner.actors.LearnerStateUpdateActor;
@@ -46,8 +46,9 @@ public enum ACTOR_NAMES {
     BACKGROUND_JOB_MANAGER_ACTOR(BackgroundJobManager.class, "background-job-manager-actor"),
   COURSE_MANAGEMENT_ACTOR(
           CourseManagementActor.class, "course-management-actor"),
-  ENROLMENT_ACTOR(EnrolmentActor.class, "enrolment-actor"),
-  PROGRESS_ACTOR(ProgressActor.class, "progress-actor");
+  //Scala Actors
+  COURSE_ENROLMENT_ACTOR(CourseEnrolmentActor.class, "course-enrolment-actor"),
+  CONTENT_CONSUMPTION_ACTOR(ContentConsumptionActor.class, "content-consumption-actor");
 
   private ACTOR_NAMES(Class clazz, String name) {
     actorClass = clazz;

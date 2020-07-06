@@ -1,5 +1,6 @@
 package org.sunbird.enrolments
 
+
 import com.fasterxml.jackson.databind.ObjectMapper
 import javax.inject.Inject
 import org.apache.commons.collections4.{CollectionUtils, MapUtils}
@@ -17,7 +18,7 @@ import org.sunbird.learner.util.Util
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 
-class ProgressActor @Inject() extends BaseEnrolmentActor {
+class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     private val mapper = new ObjectMapper
     private val cassandraOperation = ServiceFactory.getInstance
     private val consumptionDBInfo = Util.dbInfoMap.get(JsonKey.LEARNER_CONTENT_DB)
@@ -26,13 +27,13 @@ class ProgressActor @Inject() extends BaseEnrolmentActor {
     override def onReceive(request: Request): Unit = {
         Util.initializeContext(request, TelemetryEnvKey.BATCH)
         request.getOperation match {
-            case "addContent" => addContent(request)
-            case "getContent" => getContentStatus(request)
+            case "updateConsumption" => updateConsumption(request)
+            case "getConsumption" => getConsumption(request)
             case _ => onReceiveUnsupportedOperation(request.getOperation)
         }
     }
     
-    def addContent(request: Request): Unit = {
+    def updateConsumption(request: Request): Unit = {
         val requestBy = request.get(JsonKey.REQUESTED_BY).asInstanceOf[String]
         val requestedFor = request.get(JsonKey.REQUESTED_FOR).asInstanceOf[String]
         val validUserIds = List(requestBy, requestedFor).filter(p => StringUtils.isNotBlank(p))
@@ -119,7 +120,7 @@ class ProgressActor @Inject() extends BaseEnrolmentActor {
                             pushInstructionEvent(userId, batchId, courseId, contents.asJava)
                             contentIds.map(id => responseMessage.put(id,JsonKey.SUCCESS))
                         } else {
-                            ProjectLogger.log("ProgressActor: addContent : User Id is invalid : " + userId, LoggerEnum.INFO)
+                            ProjectLogger.log("ContentConsumptionActor: addContent : User Id is invalid : " + userId, LoggerEnum.INFO)
                             invalidContents.addAll(entry._2.asJava)
                         }
                     })
@@ -279,20 +280,22 @@ class ProgressActor @Inject() extends BaseEnrolmentActor {
         InstructionEventGenerator.pushInstructionEvent(userId, topic, data)
     }
 
-    def getContentStatus(request: Request): Unit = {
+    def getConsumption(request: Request): Unit = {
         val userId = request.get(JsonKey.USER_ID).asInstanceOf[String]
         val batchId = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
         val courseId = request.get(JsonKey.COURSE_ID).asInstanceOf[String]
         val contentIds = request.getRequest.getOrDefault(JsonKey.CONTENT_IDS, new java.util.ArrayList[String]()).asInstanceOf[java.util.List[String]]
         val contentsConsumed = getContentsConsumption(userId, courseId, contentIds, batchId)
+        val response = new Response
         if(CollectionUtils.isNotEmpty(contentsConsumed)) {
             val filteredContents = contentsConsumed.map(m => {
                 ProjectUtil.removeUnwantedFields(m, JsonKey.DATE_TIME, JsonKey.USER_ID, JsonKey.ADDED_BY, JsonKey.LAST_UPDATED_TIME)
                 m
             }).asJava
-            val response = new Response
             response.put(JsonKey.RESPONSE, filteredContents)
-            sender().tell(response, self)
-        } else throw new ProjectCommonException(ResponseCode.invalidCourseId.getErrorCode, ResponseCode.invalidCourseId.getErrorMessage, ResponseCode.CLIENT_ERROR.getResponseCode)
+        } else {
+            response.put(JsonKey.RESPONSE, new java.util.ArrayList[AnyRef]())
+        }
+        sender().tell(response, self)
     }
 }

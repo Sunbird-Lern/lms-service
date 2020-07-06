@@ -24,19 +24,15 @@ import java.util.concurrent.CompletionStage;
 public class CourseEnrollmentController extends BaseController {
 
   @Inject
-  @Named("course-enrollment-actor")
-  private ActorRef courseEnrollmentActorRef;
-  
-  @Inject
-  @Named("enrolment-actor")
-  private ActorRef enrolmentActor;
+  @Named("course-enrolment-actor")
+  private ActorRef courseEnrolmentActor;
 
   @Inject
   @Named("learner-state-actor")
   private ActorRef learnerStateActorRef;
 
   public CompletionStage<Result> getEnrolledCourses(String uid, Http.Request httpRequest) {
-    return handleRequest(enrolmentActor, "listEnrol", 
+    return handleRequest(courseEnrolmentActor, "listEnrol", 
         httpRequest.body().asJson(),
         (req) -> {
           Request request = (Request) req;
@@ -76,7 +72,7 @@ public class CourseEnrollmentController extends BaseController {
   }
 
   public CompletionStage<Result> enrollCourse(Http.Request httpRequest) {
-    return handleRequest(enrolmentActor, "enrol",
+    return handleRequest(courseEnrolmentActor, "enrol",
         httpRequest.body().asJson(),
         (request) -> {
           new CourseEnrollmentRequestValidator().validateEnrollCourse((Request) request);
@@ -88,7 +84,7 @@ public class CourseEnrollmentController extends BaseController {
 
   public CompletionStage<Result> unenrollCourse(Http.Request httpRequest) {
     return handleRequest(
-        enrolmentActor, "unenrol",
+            courseEnrolmentActor, "unenrol",
         httpRequest.body().asJson(),
         (request) -> {
           new CourseEnrollmentRequestValidator().validateUnenrollCourse((Request) request);
@@ -100,7 +96,7 @@ public class CourseEnrollmentController extends BaseController {
 
     public CompletionStage<Result> getUserEnrolledCourses(Http.Request httpRequest) {
         return handleRequest(
-                enrolmentActor, "listEnrol",
+                courseEnrolmentActor, "listEnrol",
                 httpRequest.body().asJson(),
                 (req) -> {
                     Request request = (Request) req;

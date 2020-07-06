@@ -32,7 +32,7 @@ import scala.collection.JavaConverters._
 import scala.collection.JavaConversions._
 import scala.concurrent.Future
 
-class EnrolmentActor @Inject()(@Named("course-batch-notification-actor") courseBatchNotificationActorRef: ActorRef) extends BaseEnrolmentActor {
+class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") courseBatchNotificationActorRef: ActorRef) extends BaseEnrolmentActor {
     
     val courseBatchDao: CourseBatchDao = new CourseBatchDaoImpl()
     val userCoursesDao: UserCoursesDao = new UserCoursesDaoImpl()
@@ -54,10 +54,9 @@ class EnrolmentActor @Inject()(@Named("course-batch-notification-actor") courseB
         val batchId: String = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
         val batchData: CourseBatch = courseBatchDao.readById(courseId, batchId)
         val enrolmentData: UserCourses = userCoursesDao.read(userId, courseId, batchId)
-        verifyRequestedBy(request)
         validateEnrolment(batchData, enrolmentData, true)
         val data: java.util.Map[String, AnyRef] = createUserEnrolmentMap(userId, courseId, batchId, enrolmentData, request.getContext.getOrDefault(JsonKey.REQUEST_ID, "").asInstanceOf[String])
-        upsertEnrollment(userId, courseId, batchId, enrolmentData, data)
+        upsertEnrollment(userId, courseId, batchId, data, (null == enrolmentData))
         sender().tell(successResponse(), self)
         generateTelemetryAudit(userId, courseId, batchId, batchData, "user.enrol", JsonKey.CREATE, request.getContext)
         notifyUser(userId, batchData, JsonKey.ADD)
@@ -72,7 +71,7 @@ class EnrolmentActor @Inject()(@Named("course-batch-notification-actor") courseB
         val enrolmentData: UserCourses = userCoursesDao.read(userId, courseId, batchId)
         validateEnrolment(batchData, enrolmentData, false)
         val data: java.util.Map[String, AnyRef] = new java.util.HashMap[String, AnyRef]() {{ put(JsonKey.ACTIVE, ProjectUtil.ActiveStatus.INACTIVE.getValue.asInstanceOf[AnyRef]) }}
-        upsertEnrollment(userId,courseId, batchId, enrolmentData, data)
+        upsertEnrollment(userId,courseId, batchId, data, false)
         sender().tell(successResponse(), self)
         generateTelemetryAudit(userId, courseId, batchId, batchData, "user.unenrol", JsonKey.UPDATE, request.getContext)
         notifyUser(userId, batchData, JsonKey.REMOVE)
@@ -176,16 +175,11 @@ class EnrolmentActor @Inject()(@Named("course-batch-notification-actor") courseB
         if(!isEnrol && ProjectUtil.ProgressStatus.COMPLETED.getValue == enrolmentData.getStatus) ProjectCommonException.throwClientErrorException(ResponseCode.courseBatchAlreadyCompleted, ResponseCode.courseBatchAlreadyCompleted.getErrorMessage)
     }
 
-    def verifyRequestedBy(request: Request) = {
-        if(!request.get(JsonKey.USER_ID).asInstanceOf[String].equalsIgnoreCase(request.getContext.getOrDefault(JsonKey.REQUESTED_BY, "").asInstanceOf[String]))
-            ProjectCommonException.throwUnauthorizedErrorException()
-    }
-
-    def upsertEnrollment(userId: String, courseId: String, batchId: String, enrolmentData: UserCourses, data: java.util.Map[String, AnyRef]): Unit = {
-        if(null != enrolmentData) {
-            userCoursesDao.updateV2(userId, courseId, batchId, data)
-        } else {
+    def upsertEnrollment(userId: String, courseId: String, batchId: String, data: java.util.Map[String, AnyRef], isNew: Boolean): Unit = {
+        if(isNew) {
             userCoursesDao.insertV2(data)
+        } else {
+            userCoursesDao.updateV2(userId, courseId, batchId, data)
         }
     }
 

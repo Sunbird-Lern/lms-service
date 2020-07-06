@@ -34,7 +34,7 @@ public class LearnerControllerTest extends BaseApplicationTest {
 
   @Before
   public void before() {
-    setup(Arrays.asList(ACTOR_NAMES.LEARNER_STATE_UPDATE_ACTOR,ACTOR_NAMES.LEARNER_STATE_ACTOR), DummyActor.class);
+    setup(Arrays.asList(ACTOR_NAMES.ENROLMENT_ACTOR,ACTOR_NAMES.PROGRESS_ACTOR), DummyActor.class);
   }
 
   @Test

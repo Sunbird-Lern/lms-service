@@ -190,24 +190,18 @@ class ProgressActor @Inject() extends BaseEnrolmentActor {
         val inputCompletedTime = parseDate(inputContent.getOrDefault(JsonKey.LAST_COMPLETED_TIME, "").asInstanceOf[String])
         val inputAccessTime = parseDate(inputContent.getOrDefault(JsonKey.LAST_ACCESS_TIME, "").asInstanceOf[String])
         if(MapUtils.isNotEmpty(existingContent)) {
-            val viewCount: Integer = Option(inputContent.getOrDefault(JsonKey.VIEW_COUNT, 0.asInstanceOf[AnyRef]).asInstanceOf[Number]).getOrElse(0.asInstanceOf[Number]).intValue()
-            updatedContent.put(JsonKey.VIEW_COUNT, (viewCount + 1).asInstanceOf[AnyRef])
             val existingAccessTime = parseDate(existingContent.getOrDefault(JsonKey.LAST_ACCESS_TIME, "").asInstanceOf[String])
             updatedContent.put(JsonKey.LAST_ACCESS_TIME, compareTime(existingAccessTime, inputAccessTime))
             val inputProgress = inputContent.getOrDefault(JsonKey.PROGRESS, 0.asInstanceOf[AnyRef]).asInstanceOf[Number].intValue()
             val existingProgress = Option(existingContent.getOrDefault(JsonKey.PROGRESS, 0.asInstanceOf[AnyRef]).asInstanceOf[Number]).getOrElse(0.asInstanceOf[Number]).intValue()
             updatedContent.put(JsonKey.PROGRESS, List(inputProgress, existingProgress).max.asInstanceOf[AnyRef])
             val existingStatus = Option(existingContent.getOrDefault(JsonKey.STATUS, 0.asInstanceOf[AnyRef]).asInstanceOf[Number]).getOrElse(0.asInstanceOf[Number]).intValue()
-            val existingCompletedCount: Integer = Option(existingContent.getOrDefault(JsonKey.COMPLETED_COUNT, 0.asInstanceOf[AnyRef]).asInstanceOf[Number]).getOrElse(0.asInstanceOf[Number]).intValue()
             val existingCompletedTime = parseDate(existingContent.getOrDefault(JsonKey.LAST_COMPLETED_TIME, "").asInstanceOf[String])
             if(inputStatus >= existingStatus) {
                 if(inputStatus >= 2) {
                     updatedContent.put(JsonKey.STATUS, 2.asInstanceOf[AnyRef])
                     updatedContent.put(JsonKey.PROGRESS, 100.asInstanceOf[AnyRef])
-                    updatedContent.put(JsonKey.COMPLETED_COUNT, (existingCompletedCount + 1).asInstanceOf[AnyRef] )
                     updatedContent.put(JsonKey.LAST_COMPLETED_TIME, compareTime(existingCompletedTime, inputCompletedTime))
-                } else {
-                    updatedContent.put(JsonKey.COMPLETED_COUNT, existingCompletedCount.asInstanceOf[AnyRef])
                 }
             } else {
                 updatedContent.put(JsonKey.STATUS, existingStatus.asInstanceOf[AnyRef])
@@ -215,12 +209,10 @@ class ProgressActor @Inject() extends BaseEnrolmentActor {
         } else {
             if(inputStatus >= 2) {
                 updatedContent.put(JsonKey.PROGRESS, 100.asInstanceOf[AnyRef])
-                updatedContent.put(JsonKey.COMPLETED_COUNT, 1.asInstanceOf[AnyRef])
                 updatedContent.put(JsonKey.LAST_COMPLETED_TIME, compareTime(null, inputCompletedTime))
             } else {
                 updatedContent.put(JsonKey.PROGRESS, 0.asInstanceOf[AnyRef])
             }
-            updatedContent.put(JsonKey.VIEW_COUNT, 1.asInstanceOf[AnyRef])
             updatedContent.put(JsonKey.LAST_ACCESS_TIME, compareTime(null, inputAccessTime))
         }
         updatedContent.put(JsonKey.LAST_UPDATED_TIME, ProjectUtil.getFormattedDate)

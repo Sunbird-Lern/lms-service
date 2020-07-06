@@ -100,8 +100,7 @@ public class CourseEnrollmentController extends BaseController {
 
     public CompletionStage<Result> getUserEnrolledCourses(Http.Request httpRequest) {
         return handleRequest(
-                learnerStateActorRef,
-                ActorOperations.GET_COURSE.getValue(),
+                enrolmentActor, "listEnrol",
                 httpRequest.body().asJson(),
                 (req) -> {
                     Request request = (Request) req;

@@ -21,12 +21,13 @@ import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.TelemetryEnvKey;
-import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.common.util.CloudStorageUtil;
 import org.sunbird.helper.ServiceFactory;
+import org.sunbird.keys.SunbirdKey;
 import org.sunbird.learner.util.ContentSearchUtil;
 import org.sunbird.learner.util.Util;
 
@@ -46,12 +47,13 @@ public class QRCodeDownloadManagementActor extends BaseActor {
       };
   private static Util.DbInfo courseDialCodeInfo =
       Util.dbInfoMap.get(JsonKey.SUNBIRD_COURSE_DIALCODES_DB);
+  private static int SEARCH_CONTENTS_LIMIT = Integer.parseInt(StringUtils.isNotBlank(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_QRCODE_COURSES_LIMIT)) ? ProjectUtil.getConfigValue(JsonKey.SUNBIRD_QRCODE_COURSES_LIMIT) : "2000");
+
   private static CassandraOperation cassandraOperation = ServiceFactory.getInstance();
 
   @Override
   public void onReceive(Request request) throws Throwable {
     Util.initializeContext(request, TelemetryEnvKey.QR_CODE_DOWNLOAD);
-    ExecutionContext.setRequestId(request.getRequestId());
     String requestedOperation = request.getOperation();
     switch (requestedOperation) {
       case "downloadQRCodes":
@@ -89,7 +91,7 @@ public class QRCodeDownloadManagementActor extends BaseActor {
                 Collectors.toMap(
                     content ->
                         ((String) content.get("identifier")) + "<<<" + (String) content.get("name"),
-                    content -> (List) content.get("dialcodes")));
+                    content -> (List<String>) content.get("dialcodes"), (a,b) -> b, LinkedHashMap::new));
     File file = generateCSVFile(dialCodesMap);
     Response response = new Response();
     if (null == file)
@@ -139,7 +141,11 @@ public class QRCodeDownloadManagementActor extends BaseActor {
                             key -> filtersHelperMap.get(key), key -> requestMap.get(key))));
             put(JsonKey.FIELDS, fields);
             put(JsonKey.EXISTS, JsonKey.DIAL_CODES);
-            put(JsonKey.LIMIT, 200);
+            put(JsonKey.SORT_BY, new HashMap<String, String>() {{
+              put(SunbirdKey.LAST_PUBLISHED_ON, JsonKey.DESC);
+            }});
+            //TODO: Limit should come from request, need to facilitate this change.
+            put(JsonKey.LIMIT, SEARCH_CONTENTS_LIMIT);
           }
         };
     Map<String, Object> request =

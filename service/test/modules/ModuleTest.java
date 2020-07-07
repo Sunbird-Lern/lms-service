@@ -25,7 +25,7 @@ public class ModuleTest {
   public void setup() throws Exception {
     PowerMockito.mockStatic(Util.class);
     PowerMockito.mockStatic(SchedulerManager.class);
-    PowerMockito.doNothing().when(Util.class, "checkCassandraDbConnections", Mockito.anyString());
+    PowerMockito.doNothing().when(Util.class, "checkCassandraDbConnections");
     PowerMockito.doNothing().when(SchedulerManager.class);
     SchedulerManager.schedule();
   }

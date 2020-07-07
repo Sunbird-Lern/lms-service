@@ -14,7 +14,6 @@ import javax.inject.Named;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.*;
-import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -44,7 +43,7 @@ public class HealthController extends BaseController {
     try {
       Request reqObj = new Request();
       reqObj.setOperation(ActorOperations.HEALTH_CHECK.getValue());
-      reqObj.setRequestId(ExecutionContext.getRequestId());
+      reqObj.setRequestId(httpRequest.flash().get(JsonKey.REQUEST_ID));
       reqObj.getRequest().put(JsonKey.CREATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
       reqObj.setEnv(getEnvironment());
       return actorResponseHandler(healthActorRef, reqObj, timeout, null, httpRequest);
@@ -71,7 +70,7 @@ public class HealthController extends BaseController {
     response.getResult().put(JsonKey.RESPONSE, finalResponseMap);
     response.setId("learner.service.health.api");
     response.setVer(getApiVersion(httpRequest.path()));
-    response.setTs(ExecutionContext.getRequestId());
+    response.setTs(httpRequest.flash().get(JsonKey.REQUEST_ID));
     return CompletableFuture.completedFuture(ok(play.libs.Json.toJson(response)));
   }
 

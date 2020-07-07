@@ -90,11 +90,6 @@
 		</dependency>
         <dependency>
             <groupId>org.sunbird</groupId>
-            <artifactId>dashboard-actors</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.sunbird</groupId>
             <artifactId>course-actors</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
@@ -211,6 +206,11 @@
 			<version>4.12</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.github.danielwegener</groupId>
+			<artifactId>logback-kafka-appender</artifactId>
+			<version>0.2.0-RC2</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<sourceDirectory>${basedir}/app</sourceDirectory>
@@ -304,11 +304,11 @@
 											<value>COVEREDRATIO</value>
 											<minimum>0.40</minimum>
 										</limit>
-										<limit>
+										<!--<limit>
 											<counter>CLASS</counter>
 											<value>MISSEDCOUNT</value>
 											<maximum>0</maximum>
-										</limit>
+										</limit>-->
 									</limits>
 								</rule>
 								<rule>

@@ -26,7 +26,6 @@ import org.sunbird.common.hash.HashGeneratorUtil;
 import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.*;
-import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
@@ -63,7 +62,6 @@ public class PageManagementActor extends BaseActor {
   public void onReceive(Request request) throws Throwable {
     Util.initializeContext(request, TelemetryEnvKey.PAGE);
 
-    ExecutionContext.setRequestId(request.getRequestId());
     if(request.getOperation().equalsIgnoreCase(ActorOperations.GET_DIAL_PAGE_DATA.getValue())) {
       getDIALPageData(request);
     } else if(request.getOperation().equalsIgnoreCase(ActorOperations.GET_PAGE_DATA.getValue())) {
@@ -178,7 +176,7 @@ public class PageManagementActor extends BaseActor {
             JsonKey.CREATE,
             null);
     TelemetryUtil.telemetryProcessingCall(
-        actorMessage.getRequest(), targetObject, correlatedObject);
+        actorMessage.getRequest(), targetObject, correlatedObject, actorMessage.getContext());
     // update DataCacheHandler section map with updated page section data
     ProjectLogger.log("Calling  updateSectionDataCache method", LoggerEnum.INFO);
     updateSectionDataCache(response, sectionMap);
@@ -222,7 +220,7 @@ public class PageManagementActor extends BaseActor {
         TelemetryUtil.generateTargetObject(
             uniqueId, TelemetryEnvKey.PAGE_SECTION, JsonKey.CREATE, null);
     TelemetryUtil.telemetryProcessingCall(
-        actorMessage.getRequest(), targetObject, correlatedObject);
+        actorMessage.getRequest(), targetObject, correlatedObject, actorMessage.getContext());
     // update DataCacheHandler section map with new page section data
     ProjectLogger.log("Calling  updateSectionDataCache method", LoggerEnum.INFO);
     updateSectionDataCache(response, sectionMap);
@@ -488,7 +486,7 @@ public class PageManagementActor extends BaseActor {
         TelemetryUtil.generateTargetObject(
             (String) pageMap.get(JsonKey.ID), JsonKey.PAGE, JsonKey.CREATE, null);
     TelemetryUtil.telemetryProcessingCall(
-        actorMessage.getRequest(), targetObject, correlatedObject);
+        actorMessage.getRequest(), targetObject, correlatedObject, actorMessage.getContext());
     // update DataCacheHandler page map with updated page data
     ProjectLogger.log(
         "Calling updatePageDataCacheHandler while updating page data ", LoggerEnum.INFO);
@@ -551,7 +549,7 @@ public class PageManagementActor extends BaseActor {
     sender().tell(response, self());
     targetObject = TelemetryUtil.generateTargetObject(uniqueId, JsonKey.PAGE, JsonKey.CREATE, null);
     TelemetryUtil.telemetryProcessingCall(
-        actorMessage.getRequest(), targetObject, correlatedObject);
+        actorMessage.getRequest(), targetObject, correlatedObject, actorMessage.getContext());
 
     updatePageDataCacheHandler(response, pageMap);
   }

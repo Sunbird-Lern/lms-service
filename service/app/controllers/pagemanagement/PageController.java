@@ -16,7 +16,6 @@ import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.request.RequestValidator;
 import play.mvc.Http;
@@ -46,7 +45,7 @@ public class PageController extends BaseController {
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
       RequestValidator.validateCreatePage(reqObj);
       reqObj.setOperation(ActorOperations.CREATE_PAGE.getValue());
-      reqObj.setRequestId(ExecutionContext.getRequestId());
+      reqObj.setRequestId(httpRequest.flash().get(JsonKey.REQUEST_ID));
       reqObj.getRequest().put(JsonKey.CREATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
       reqObj.setEnv(getEnvironment());
       HashMap<String, Object> map = new HashMap<>();
@@ -70,7 +69,7 @@ public class PageController extends BaseController {
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
       RequestValidator.validateUpdatepage(reqObj);
       reqObj.setOperation(ActorOperations.UPDATE_PAGE.getValue());
-      reqObj.setRequestId(ExecutionContext.getRequestId());
+      reqObj.setRequestId(httpRequest.flash().get(JsonKey.REQUEST_ID));
       reqObj.getRequest().put(JsonKey.UPDATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
       reqObj.setEnv(getEnvironment());
       HashMap<String, Object> map = new HashMap<>();
@@ -96,7 +95,7 @@ public class PageController extends BaseController {
           "getting data for particular page settings = " + pageId, LoggerEnum.INFO.name());
       Request reqObj = new Request();
       reqObj.setOperation(ActorOperations.GET_PAGE_SETTING.getValue());
-      reqObj.setRequestId(ExecutionContext.getRequestId());
+      reqObj.setRequestId(httpRequest.flash().get(JsonKey.REQUEST_ID));
       reqObj.setEnv(getEnvironment());
       reqObj.getRequest().put(JsonKey.ID, pageId);
       reqObj.getRequest().put(JsonKey.ORGANISATION_ID, organisationId);
@@ -117,7 +116,7 @@ public class PageController extends BaseController {
       ProjectLogger.log("getting page settings api called = ", LoggerEnum.INFO.name());
       Request reqObj = new Request();
       reqObj.setOperation(ActorOperations.GET_PAGE_SETTINGS.getValue());
-      reqObj.setRequestId(ExecutionContext.getRequestId());
+      reqObj.setRequestId(httpRequest.flash().get(JsonKey.REQUEST_ID));
       reqObj.setEnv(getEnvironment());
       return actorResponseHandler(pageManagementActorRef, reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
@@ -137,7 +136,7 @@ public class PageController extends BaseController {
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
       RequestValidator.validateGetPageData(reqObj);
       reqObj.setOperation(ActorOperations.GET_PAGE_DATA.getValue());
-      reqObj.setRequestId(ExecutionContext.getRequestId());
+      reqObj.setRequestId(httpRequest.flash().get(JsonKey.REQUEST_ID));
       reqObj.setEnv(getEnvironment());
       reqObj.getContext().put(JsonKey.URL_QUERY_STRING, getQueryString(httpRequest.queryString()));
       reqObj.getRequest().put(JsonKey.CREATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
@@ -166,7 +165,7 @@ public class PageController extends BaseController {
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
       RequestValidator.validateGetPageData(reqObj);
       reqObj.setOperation(ActorOperations.GET_DIAL_PAGE_DATA.getValue());
-      reqObj.setRequestId(ExecutionContext.getRequestId());
+      reqObj.setRequestId(httpRequest.flash().get(JsonKey.REQUEST_ID));
       reqObj.setEnv(getEnvironment());
       reqObj.getContext().put(JsonKey.URL_QUERY_STRING, getQueryString(httpRequest.queryString()));
       reqObj.getRequest().put(JsonKey.CREATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
@@ -214,7 +213,7 @@ public class PageController extends BaseController {
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
       RequestValidator.validateCreateSection(reqObj);
       reqObj.setOperation(ActorOperations.CREATE_SECTION.getValue());
-      reqObj.setRequestId(ExecutionContext.getRequestId());
+      reqObj.setRequestId(httpRequest.flash().get(JsonKey.REQUEST_ID));
       reqObj.getRequest().put(JsonKey.CREATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
       reqObj.setEnv(getEnvironment());
       HashMap<String, Object> map = new HashMap<>();
@@ -240,7 +239,7 @@ public class PageController extends BaseController {
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
       RequestValidator.validateUpdateSection(reqObj);
       reqObj.setOperation(ActorOperations.UPDATE_SECTION.getValue());
-      reqObj.setRequestId(ExecutionContext.getRequestId());
+      reqObj.setRequestId(httpRequest.flash().get(JsonKey.REQUEST_ID));
       reqObj.setEnv(getEnvironment());
       HashMap<String, Object> innerMap = new HashMap<>();
       reqObj.getRequest().put(JsonKey.UPDATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
@@ -265,7 +264,7 @@ public class PageController extends BaseController {
           "getting data for particular page section =" + sectionId, LoggerEnum.INFO.name());
       Request reqObj = new Request();
       reqObj.setOperation(ActorOperations.GET_SECTION.getValue());
-      reqObj.setRequestId(ExecutionContext.getRequestId());
+      reqObj.setRequestId(httpRequest.flash().get(JsonKey.REQUEST_ID));
       reqObj.setEnv(getEnvironment());
       reqObj.getRequest().put(JsonKey.ID, sectionId);
       return actorResponseHandler(pageManagementActorRef, reqObj, timeout, null, httpRequest);
@@ -285,7 +284,7 @@ public class PageController extends BaseController {
       ProjectLogger.log("get page all section method called = ", LoggerEnum.INFO.name());
       Request reqObj = new Request();
       reqObj.setOperation(ActorOperations.GET_ALL_SECTION.getValue());
-      reqObj.setRequestId(ExecutionContext.getRequestId());
+      reqObj.setRequestId(httpRequest.flash().get(JsonKey.REQUEST_ID));
       reqObj.setEnv(getEnvironment());
       return actorResponseHandler(pageManagementActorRef, reqObj, timeout, null, httpRequest);
     } catch (Exception e) {

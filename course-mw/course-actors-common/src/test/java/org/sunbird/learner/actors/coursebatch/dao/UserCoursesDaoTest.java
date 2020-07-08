@@ -78,6 +78,17 @@ public class UserCoursesDaoTest {
   }
 
   @Test
+  public void readUserCoursesV2NullResponse() {
+    Response readResponse = new Response();
+    readResponse.put(JsonKey.RESPONSE, new ArrayList<>());
+    when(cassandraOperation.getRecordById(
+            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
+            .thenReturn(readResponse);
+    UserCourses response = userCoursesDao.read(JsonKey.USER_ID, JsonKey.COURSE_ID, JsonKey.BATCH_ID);
+    Assert.assertEquals(null, response);
+  }
+
+  @Test
   public void listUserCoursesNullResponse() {
     Response readResponse = new Response();
     readResponse.put(JsonKey.RESPONSE, new ArrayList<>());

@@ -60,6 +60,18 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
     }
 
+    "On previous enrollment end  batch" should "return client error" in  {
+        val courseDao = mock[CourseBatchDaoImpl]
+        val userDao = mock[UserCoursesDaoImpl]
+        val courseBatch = validCourseBatch()
+        courseBatch.setStatus(1)
+        courseBatch.setEnrollmentEndDate("2019-01-01")
+        (courseDao.readById(_: String, _: String)).expects(*,*).returns(courseBatch)
+        (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(null)
+        val response = callActorForFailure(getEnrolRequest(), Props(new CourseEnrolmentActor(null).setDao(courseDao, userDao)))
+        assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
+    }
+
     "On active enrolment" should "return client error" in  {
         val courseDao = mock[CourseBatchDaoImpl]
         val userDao = mock[UserCoursesDaoImpl]

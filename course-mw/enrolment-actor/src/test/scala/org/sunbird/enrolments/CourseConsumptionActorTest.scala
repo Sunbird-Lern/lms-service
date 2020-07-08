@@ -44,6 +44,16 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
         assert(null!= result)
     }
 
+    "get Consumption" should "return empty response" in {
+        val cassandraOperation = mock[CassandraOperation]
+        val response = new Response()
+        response.put("response", new java.util.ArrayList[java.util.Map[String, AnyRef]])
+        (cassandraOperation.getRecords(_: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.List[String])).expects(*,*,*,*).returns(response)
+        val result = callActor(getStateReadRequest(), Props(new ContentConsumptionActor().setCassandraOperation(cassandraOperation, false)))
+        assert(null!= result)
+    }
+    
+    
     "update Consumption" should "return success on updating the progress" in {
         val cassandraOperation = mock[CassandraOperation]
         val esService = mock[ElasticSearchService]

@@ -19,6 +19,7 @@ import org.sunbird.learner.actors.qrcodedownload.QRCodeDownloadManagementActor;
 import org.sunbird.learner.actors.search.SearchHandlerActor;
 import org.sunbird.learner.actors.syncjobmanager.EsSyncActor;
 import org.sunbird.learner.actors.textbook.TextbookTocActor;
+import org.sunbird.learner.actors.GroupManagementActor;
 
 public enum ACTOR_NAMES {
   COURSE_BATCH_MANAGEMENT_ACTOR(CourseBatchManagementActor.class, "course-batch-management-actor"),
@@ -42,8 +43,8 @@ public enum ACTOR_NAMES {
   ES_SYNC_ACTOR(EsSyncActor.class, "es-sync-actor"),
   COURSE_BATCH_NOTIFICATION_ACTOR(CourseBatchNotificationActor.class, "course-batch-notification-actor"),
     BACKGROUND_JOB_MANAGER_ACTOR(BackgroundJobManager.class, "background-job-manager-actor"),
-  COURSE_MANAGEMENT_ACTOR(
-          CourseManagementActor.class, "course-management-actor");
+  COURSE_MANAGEMENT_ACTOR(CourseManagementActor.class, "course-management-actor"),
+  GROUP_MANAGEMENT_ACTOR(GroupManagementActor.class, "group-management-actor");
 
   private ACTOR_NAMES(Class clazz, String name) {
     actorClass = clazz;

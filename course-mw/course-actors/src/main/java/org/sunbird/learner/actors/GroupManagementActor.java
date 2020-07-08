@@ -2,12 +2,9 @@ package org.sunbird.learner.actors;
 
 import org.sunbird.actor.base.BaseActor;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
 
-import java.sql.Timestamp;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 
 public class GroupManagementActor extends BaseActor {
@@ -27,14 +24,14 @@ public class GroupManagementActor extends BaseActor {
 
     private void getAggregateGroupActivity(Request request) throws Exception {
         Response response = new Response();
-        response.getResult().put("groupId", "get value from request");
+        response.getResult().put("groupId", request.get("groupId"));
         response.getResult().put("activity", new HashMap<String, Object>(){{
-            put("id", "get activity id from request");
-            put("type", "get activity type from request");
+            put("id", "do_12312312");
+            put("type", "Course");
             put("agg", Arrays.asList(new HashMap<String, Object>(){{
                 put("metric", "completedCount");
                 put("value", 12);
-                put("lastUpdatedOn", ProjectUtil.formatDate(new Timestamp(new Date().getTime())));
+                put("lastUpdatedOn", System.currentTimeMillis());
             }}));
         }});
         response.getResult().put("members", Arrays.asList(new HashMap<String, Object>(){{
@@ -42,7 +39,7 @@ public class GroupManagementActor extends BaseActor {
             put("agg", Arrays.asList(new HashMap<String, Object>(){{
                 put("metric", "completedCount");
                 put("value", 4);
-                put("lastUpdatedOn", ProjectUtil.formatDate(new Timestamp(new Date().getTime())));
+                put("lastUpdatedOn", System.currentTimeMillis());
             }}));
         }}));
         sender().tell(response, self());

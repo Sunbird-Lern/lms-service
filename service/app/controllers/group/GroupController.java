@@ -2,7 +2,6 @@ package controllers.group;
 
 import akka.actor.ActorRef;
 import controllers.BaseController;
-import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
 import play.mvc.Http;

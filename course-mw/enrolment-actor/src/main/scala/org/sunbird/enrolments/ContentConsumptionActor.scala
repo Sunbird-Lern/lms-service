@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import javax.inject.Inject
 import org.apache.commons.collections4.{CollectionUtils, MapUtils}
 import org.apache.commons.lang3.StringUtils
+import org.sunbird.cassandra.CassandraOperation
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
 import org.sunbird.common.models.util._
@@ -20,7 +21,8 @@ import scala.collection.JavaConverters._
 
 class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     private val mapper = new ObjectMapper
-    private val cassandraOperation = ServiceFactory.getInstance
+    private var cassandraOperation = ServiceFactory.getInstance
+    private var pushTokafkaEnabled: Boolean = true //TODO: to be removed once all are in scala
     private val consumptionDBInfo = Util.dbInfoMap.get(JsonKey.LEARNER_CONTENT_DB)
     val dateFormatter = ProjectUtil.getDateFormatter
 
@@ -36,7 +38,6 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     def updateConsumption(request: Request): Unit = {
         val requestBy = request.get(JsonKey.REQUESTED_BY).asInstanceOf[String]
         val requestedFor = request.get(JsonKey.REQUESTED_FOR).asInstanceOf[String]
-        val validUserIds = List(requestBy, requestedFor).filter(p => StringUtils.isNotBlank(p))
         
         processAssessments(request, requestBy, requestedFor)
         processContents(request, requestBy, requestedFor)
@@ -277,7 +278,8 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         }})
         val topic = ProjectUtil.getConfigValue("kafka_topics_instruction")
         ProjectLogger.log("LearnerStateUpdateActor: pushInstructionEvent :Event Data " + data + " and Topic " + topic, LoggerEnum.INFO.name)
-        InstructionEventGenerator.pushInstructionEvent(userId, topic, data)
+        if(pushTokafkaEnabled)
+            InstructionEventGenerator.pushInstructionEvent(userId, topic, data)
     }
 
     def getConsumption(request: Request): Unit = {
@@ -297,5 +299,12 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             response.put(JsonKey.RESPONSE, new java.util.ArrayList[AnyRef]())
         }
         sender().tell(response, self)
+    }
+    
+    //TODO: to be removed once all in scala
+    def setCassandraOperation(cassandraOps: CassandraOperation, kafkaEnabled: Boolean): ContentConsumptionActor = {
+        pushTokafkaEnabled = kafkaEnabled
+        cassandraOperation = cassandraOps
+        this
     }
 }

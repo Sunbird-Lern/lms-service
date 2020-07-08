@@ -7,9 +7,12 @@ import akka.testkit.TestKit
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FlatSpec, Matchers}
 import org.sunbird.cassandra.CassandraOperation
+import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.inf.ElasticSearchService
 import org.sunbird.common.models.response.Response
+import org.sunbird.common.models.util.ProjectUtil
 import org.sunbird.common.request.Request
+import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.dto.SearchDTO
 
 import scala.concurrent.ExecutionContext
@@ -67,11 +70,26 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
         assert(null!= result)
     }
 
+    "update AssementScore " should "return success on updating the progress" in {
+        val cassandraOperation = mock[CassandraOperation]
+        val esService = mock[ElasticSearchService]
+        (esService.search(_: SearchDTO, _: String)).expects(*,*).returns(concurrent.Future{validBatchData()})
+        val result = callActorForFailure(getAssementUpdateRequest(), Props(new ContentConsumptionActor().setCassandraOperation(cassandraOperation, false).setEsService(esService)))
+        assert(result.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
+    }
+
     def callActor(request: Request, props: Props): Response = {
         val probe = new TestKit(system)
         val actorRef = system.actorOf(props)
         actorRef.tell(request, probe.testActor)
         probe.expectMsgType[Response](FiniteDuration.apply(10, TimeUnit.SECONDS))
+    }
+
+    def callActorForFailure(request: Request, props: Props): ProjectCommonException = {
+        val probe = new TestKit(system)
+        val actorRef = system.actorOf(props)
+        actorRef.tell(request, probe.testActor)
+        probe.expectMsgType[ProjectCommonException](FiniteDuration.apply(10, TimeUnit.SECONDS))
     }
 
 
@@ -116,6 +134,29 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
                 }})
             }})
         }}
+    }
+
+    def getAssementUpdateRequest(): Request = {
+        val request = new Request
+        request.setOperation("updateConsumption")
+        request.put("userId", "user1")
+        request.put("requestedBy", "user1")
+        request.put("assessments", new java.util.ArrayList[java.util.Map[String, AnyRef]]{{
+            add(new java.util.HashMap[String, AnyRef] {{
+                put("userId", "user1")
+                put("batchId", "0123")
+                put("courseId", "do_123")
+                put("attemptId", "abcd")
+                put("contentId", "do_789")
+                put("events", new java.util.ArrayList[java.util.Map[String, AnyRef]] {{
+                    add(new java.util.HashMap[String, AnyRef] {{
+                        put("eid", "ASSESS")
+                        put("ets", 123241.asInstanceOf[AnyRef])
+                    }})
+                }})
+            }})
+        }})
+        request
     }
 
 }

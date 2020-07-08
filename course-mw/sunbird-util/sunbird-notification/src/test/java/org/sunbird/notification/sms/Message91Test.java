@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.sunbird.notification.sms.provider.ISmsProvider;
 import org.sunbird.notification.sms.providerimpl.Msg91SmsProvider;
@@ -36,7 +37,7 @@ public class Message91Test extends BaseMessageTest {
 		Assert.assertTrue(response);
 	}
 
-	@Test
+	//@Test
 	public void testSendFailureWithFormattedPhone() {
 		ISmsProvider object = SMSFactory.getInstance("91SMS");
 		boolean response = object.send("(966) 3890-445", "test sms 122");

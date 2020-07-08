@@ -17,6 +17,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.PropertiesCache;
 import org.sunbird.common.models.util.RestUtil;
@@ -127,10 +128,12 @@ public class ContentSearchUtil {
         resultMap.put(JsonKey.PARAMS, param);
         return resultMap;
       } else {
-        return null;
+        ProjectLogger.log("Composite search resturned failed response :: " + response.getStatus(), LoggerEnum.INFO);
+        return new HashMap<>();
       }
     } catch (Exception e) {
-      return null;
+      ProjectLogger.log("Exception occurred while calling composite search service :: ", e);
+      return new HashMap<>();
     }
   }
 

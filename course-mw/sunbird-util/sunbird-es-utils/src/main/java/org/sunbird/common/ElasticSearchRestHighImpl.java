@@ -12,6 +12,8 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.DocWriteResponse;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequestBuilder;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -499,9 +501,8 @@ public class ElasticSearchRestHighImpl implements ElasticSearchService {
    */
   @Override
   public Future<Boolean> healthCheck() {
-
     GetIndexRequest indexRequest =
-        new GetIndexRequest().indices(ProjectUtil.EsType.user.getTypeName());
+        new GetIndexRequest().indices(ProjectUtil.EsType.courseBatch.getTypeName());
     Promise<Boolean> promise = Futures.promise();
     ActionListener<Boolean> listener =
         new ActionListener<Boolean>() {

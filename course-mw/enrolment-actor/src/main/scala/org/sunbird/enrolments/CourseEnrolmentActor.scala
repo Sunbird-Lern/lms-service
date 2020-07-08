@@ -1,26 +1,22 @@
 package org.sunbird.enrolments
 
 import java.sql.Timestamp
-import java.time.{LocalDate, LocalDateTime}
 import java.time.format.DateTimeFormatter
+import java.time.{LocalDate, LocalDateTime}
 import java.util
 import java.util.Date
 
 import akka.actor.ActorRef
 import com.fasterxml.jackson.databind.ObjectMapper
 import javax.inject.{Inject, Named}
-import org.apache.commons.collections4.{CollectionUtils, MapUtils}
+import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang3.StringUtils
-import org.sunbird.actor.base.BaseActor
-import org.sunbird.common.ElasticSearchHelper
 import org.sunbird.common.exception.ProjectCommonException
-import org.sunbird.common.factory.EsClientFactory
 import org.sunbird.common.models.response.Response
 import org.sunbird.common.models.util.ProjectUtil.EnrolmentType
 import org.sunbird.common.models.util._
 import org.sunbird.common.request.Request
 import org.sunbird.common.responsecode.ResponseCode
-import org.sunbird.dto.SearchDTO
 import org.sunbird.learner.actors.coursebatch.dao.impl.{CourseBatchDaoImpl, UserCoursesDaoImpl}
 import org.sunbird.learner.actors.coursebatch.dao.{CourseBatchDao, UserCoursesDao}
 import org.sunbird.learner.util.{ContentSearchUtil, Util}
@@ -28,15 +24,18 @@ import org.sunbird.models.course.batch.CourseBatch
 import org.sunbird.models.user.courses.UserCourses
 import org.sunbird.telemetry.util.TelemetryUtil
 
-import scala.collection.JavaConverters._
 import scala.collection.JavaConversions._
-import scala.concurrent.Future
+import scala.collection.JavaConverters._
 
 class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") courseBatchNotificationActorRef: ActorRef) extends BaseEnrolmentActor {
-    
-    val courseBatchDao: CourseBatchDao = new CourseBatchDaoImpl()
-    val userCoursesDao: UserCoursesDao = new UserCoursesDaoImpl()
 
+    /*
+    The below variables are kept as var on testcase purpose.
+    TODO: once all are moved to scala, this can be made as parameterised constructor
+     */
+    var courseBatchDao: CourseBatchDao = new CourseBatchDaoImpl()
+    var userCoursesDao: UserCoursesDao = new UserCoursesDaoImpl()
+    
     override def onReceive(request: Request): Unit = {
         Util.initializeContext(request, TelemetryEnvKey.BATCH)
         request.getOperation match {
@@ -221,5 +220,12 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             put(JsonKey.BATCH_ID, batchId)
         }}
         TelemetryUtil.telemetryProcessingCall(request, targetedObject, correlationObject, context)
+    }
+    
+    // TODO: to be removed once all are in scala.
+    def setDao(courseDao: CourseBatchDao, userDao: UserCoursesDao) = {
+        courseBatchDao = courseDao
+        userCoursesDao = userDao
+        this
     }
 }

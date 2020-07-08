@@ -118,7 +118,7 @@ public class UserCoursesService {
           LoggerEnum.ERROR);
       for (Map<String, Object> task : records) {
         try {
-          userCourseDao.insert(task);
+          userCourseDao.insertV2(task);
         } catch (Exception exception) {
           ProjectLogger.log(
               "UserCoursesService:performBatchInsert: Exception occurred with error message = "

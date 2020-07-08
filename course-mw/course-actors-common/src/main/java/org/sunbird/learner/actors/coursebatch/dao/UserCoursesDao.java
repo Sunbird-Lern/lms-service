@@ -15,6 +15,8 @@ public interface UserCoursesDao {
    */
   UserCourses read(String batchId, String userId);
 
+  UserCourses read(String userId, String courseId, String batchId);
+
   /**
    * Create an entry for user courses information
    *
@@ -22,12 +24,16 @@ public interface UserCoursesDao {
    */
   Response insert(Map<String, Object> userCoursesDetails);
 
+  Response insertV2(Map<String, Object> userCoursesDetails);
+
   /**
    * Update user courses information
    *
    * @param updateAttributes Map containing user courses attributes which needs to be updated
    */
   Response update(String batchId, String userId, Map<String, Object> updateAttributes);
+
+  Response updateV2(String userId,String courseId, String batchId, Map<String, Object> updateAttributes);
 
   /**
    * Get all active participant IDs in given batch
@@ -50,4 +56,7 @@ public interface UserCoursesDao {
    * @param active
    */
   List<String> getBatchParticipants(String batchId, boolean active);
+  
+  
+  List<Map<String, Object>> listEnrolments(String userId);
 }

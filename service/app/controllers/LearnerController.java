@@ -3,14 +3,7 @@ package controllers;
 
 import akka.actor.ActorRef;
 import com.fasterxml.jackson.databind.JsonNode;
-import java.util.HashMap;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.apache.commons.lang3.StringUtils;
-import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
@@ -21,6 +14,12 @@ import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Results;
 import util.RequestValidator;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.util.HashMap;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 /**
  * This controller will handler all the request related to learner state.
@@ -36,6 +35,10 @@ public class LearnerController extends BaseController {
   private ActorRef learnerStateUpdateActorRef;
 
   @Inject
+  @Named("content-consumption-actor")
+  private ActorRef contentConsumptionActor;
+
+  @Inject
   @Named("learner-state-actor")
   private ActorRef learnerStateActorRef;
   /**
@@ -48,11 +51,11 @@ public class LearnerController extends BaseController {
     try {
       JsonNode requestJson = httpRequest.body().asJson();
       Request request =
-          createAndInitRequest(ActorOperations.GET_CONTENT.getValue(), requestJson, httpRequest);
+          createAndInitRequest("getConsumption", requestJson, httpRequest);
       validator.validateGetContentState(request);
       request = transformUserId(request);
       return actorResponseHandler(
-          learnerStateActorRef, request, timeout, JsonKey.CONTENT_LIST, httpRequest);
+              contentConsumptionActor, request, timeout, JsonKey.CONTENT_LIST, httpRequest);
     } catch (Exception e) {
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
@@ -70,7 +73,7 @@ public class LearnerController extends BaseController {
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
       RequestValidator.validateUpdateContent(reqObj);
       reqObj = transformUserId(reqObj);
-      reqObj.setOperation(ActorOperations.ADD_CONTENT.getValue());
+      reqObj.setOperation("updateConsumption");
       reqObj.setRequestId(httpRequest.flash().get(JsonKey.REQUEST_ID));
       reqObj.setEnv(getEnvironment());
       HashMap<String, Object> innerMap = new HashMap<>();
@@ -81,7 +84,7 @@ public class LearnerController extends BaseController {
       innerMap.put(JsonKey.ASSESSMENT_EVENTS, reqObj.getRequest().get(JsonKey.ASSESSMENT_EVENTS));
       innerMap.put(JsonKey.USER_ID, reqObj.getRequest().get(JsonKey.USER_ID));
       reqObj.setRequest(innerMap);
-      return actorResponseHandler(learnerStateUpdateActorRef, reqObj, timeout, null, httpRequest);
+      return actorResponseHandler(contentConsumptionActor, reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }

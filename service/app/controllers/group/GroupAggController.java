@@ -11,19 +11,19 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.concurrent.CompletionStage;
 
-public class GroupController extends BaseController {
+public class GroupAggController extends BaseController {
 
     @Inject
-    @Named("group-management-actor")
-    private ActorRef groupManagementActorRef;
+    @Named("group-aggregates-actor")
+    private ActorRef groupAggregatesActorRef;
 
-    public CompletionStage<Result> getAggregateGroupActivity(Http.Request httpRequest) {
+    public CompletionStage<Result> getGroupActivityAggregates(Http.Request httpRequest) {
         ProjectLogger.log(
                 "Aggregate Group Activity method is called = " + httpRequest.body().asJson(),
                 LoggerEnum.DEBUG.name());
         return handleRequest(
-                groupManagementActorRef,
-                "aggregateGroupActivity",
+                groupAggregatesActorRef,
+                "groupActivityAggregates",
                 httpRequest.body().asJson(),
                 (request) -> {
                     return null;

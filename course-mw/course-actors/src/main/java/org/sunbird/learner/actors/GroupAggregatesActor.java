@@ -7,14 +7,14 @@ import org.sunbird.common.request.Request;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class GroupManagementActor extends BaseActor {
+public class GroupAggregatesActor extends BaseActor {
 
     @Override
     public void onReceive(Request request) throws Throwable {
         String requestedOperation = request.getOperation();
         switch (requestedOperation) {
-            case "aggregateGroupActivity":
-                getAggregateGroupActivity(request);
+            case "groupActivityAggregates":
+                getGroupActivityAggregates(request);
                 break;
             default:
                 onReceiveUnsupportedOperation(requestedOperation);
@@ -22,14 +22,14 @@ public class GroupManagementActor extends BaseActor {
         }
     }
 
-    private void getAggregateGroupActivity(Request request) throws Exception {
+    private void getGroupActivityAggregates(Request request) throws Exception {
         Response response = new Response();
         response.getResult().put("groupId", request.get("groupId"));
         response.getResult().put("activity", new HashMap<String, Object>(){{
-            put("id", "do_12312312");
-            put("type", "Course");
+            put("id", request.get("activityId"));
+            put("type", request.get("activityType"));
             put("agg", Arrays.asList(new HashMap<String, Object>(){{
-                put("metric", "completedCount");
+                put("metric", "enrolmentCount");
                 put("value", 12);
                 put("lastUpdatedOn", System.currentTimeMillis());
             }}));

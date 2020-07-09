@@ -2,8 +2,11 @@ package controllers.group;
 
 import akka.actor.ActorRef;
 import controllers.BaseController;
+import controllers.group.validator.GroupActivityValidator;
+import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.request.Request;
 import play.mvc.Http;
 import play.mvc.Result;
 
@@ -23,9 +26,10 @@ public class GroupAggController extends BaseController {
                 LoggerEnum.DEBUG.name());
         return handleRequest(
                 groupAggregatesActorRef,
-                "groupActivityAggregates",
+                ActorOperations.GROUP_ACTIVITY_AGGREGATES.getValue(),
                 httpRequest.body().asJson(),
                 (request) -> {
+                    GroupActivityValidator.validateRequest((Request) request);
                     return null;
                 },
                 httpRequest);

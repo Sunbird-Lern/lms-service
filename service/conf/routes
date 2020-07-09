@@ -72,3 +72,6 @@ POST  /v1/course/qrcode/download                @controllers.qrcodedownload.QRCo
 
 #Course create APIs
 POST /v1/course/create              @controllers.coursemanagement.CourseController.createCourse(request: play.mvc.Http.Request)
+
+#Group APIs
+POST /v1/group/activity/agg                     @controllers.group.GroupController.getAggregateGroupActivity(request: play.mvc.Http.Request)

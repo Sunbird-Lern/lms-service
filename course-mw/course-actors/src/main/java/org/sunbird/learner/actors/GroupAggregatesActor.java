@@ -29,7 +29,7 @@ public class GroupAggregatesActor extends BaseActor {
             put("id", request.get("activityId"));
             put("type", request.get("activityType"));
             put("agg", Arrays.asList(new HashMap<String, Object>(){{
-                put("metric", "completedCount");
+                put("metric", "enrolmentCount");
                 put("value", 12);
                 put("lastUpdatedOn", System.currentTimeMillis());
             }}));

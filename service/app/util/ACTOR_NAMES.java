@@ -48,7 +48,7 @@ public enum ACTOR_NAMES {
   COURSE_MANAGEMENT_ACTOR(CourseManagementActor.class, "course-management-actor"),
   //Scala Actors
   COURSE_ENROLMENT_ACTOR(CourseEnrolmentActor.class, "course-enrolment-actor"),
-  CONTENT_CONSUMPTION_ACTOR(ContentConsumptionActor.class, "content-consumption-actor");
+  CONTENT_CONSUMPTION_ACTOR(ContentConsumptionActor.class, "content-consumption-actor"),
   GROUP_MANAGEMENT_ACTOR(GroupManagementActor.class, "group-management-actor");
 
   private ACTOR_NAMES(Class clazz, String name) {

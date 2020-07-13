@@ -3,6 +3,7 @@ package org.sunbird.learner.actors.group.dao.impl;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -58,12 +59,12 @@ public class GroupDaoImplTest {
     public void readFailure() {
 
         Response response = new Response();
-        response.put(JsonKey.RESPONSE, Arrays.asList());
+        response.put(JsonKey.RESPONSE, new ArrayList<>());
         when(cassandraOperation.getRecordById(
                 Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
                 .thenReturn(response);
         Response readResponse = GroupDaoImpl.read("do_1234", "course");
-        Assert.assertTrue(CollectionUtils.isEmpty((List)readResponse.get(JsonKey.RESPONSE)));
+        Assert.assertTrue(CollectionUtils.isEmpty((ArrayList)readResponse.get(JsonKey.RESPONSE)));
 
     }
 }

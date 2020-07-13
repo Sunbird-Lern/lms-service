@@ -81,7 +81,7 @@ class GroupAggregatesActor extends BaseActor {
             activityMap.put("type", activityType)
             activityMap.put("agg", util.Arrays.asList(new util.HashMap[String, AnyRef]() {{
               put("metric", "enrolmentCount")
-              put("lastUpdatedOn", "Need to check") // Get clarification from where we can fetch this record.
+              put("lastUpdatedOn", System.currentTimeMillis())
               put("value", enrolledGroupMember.size.asInstanceOf[AnyRef])
             }}))
             response.put("activity", activityMap)

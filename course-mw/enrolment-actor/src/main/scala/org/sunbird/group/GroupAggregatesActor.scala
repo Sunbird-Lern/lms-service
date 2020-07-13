@@ -93,7 +93,7 @@ class GroupAggregatesActor extends BaseActor {
                   put("metric", "completedCount")
                   val aggLastUpdated = member.get("agg_last_updated").asInstanceOf[util.Map[String, AnyRef]]
                   if(MapUtils.isNotEmpty(aggLastUpdated))
-                    put("lastUpdatedOn", aggLastUpdated.get("lastUpdatedOn"))
+                    put("lastUpdatedOn", aggLastUpdated.get("completedCount"))
                   val agg = member.get("agg").asInstanceOf[util.Map[String, AnyRef]]
                   if(MapUtils.isNotEmpty(agg))
                     put("value", agg.get("completedCount"))

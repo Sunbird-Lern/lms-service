@@ -50,19 +50,4 @@ public class GroupDaoImplTest {
         Response readResponse = GroupDaoImpl.read("do_1234", "course");
         Assert.assertNotNull(readResponse);
     }
-    @Test
-    public void readFailure() {
-
-        Response response = new Response();
-        List<Object> mockResult = new ArrayList<Object>();
-        response.put(JsonKey.RESPONSE, mockResult);
-        when(cassandraOperation.getRecordById(
-                Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
-                .thenReturn(response);
-        Response readResponse = GroupDaoImpl.read("do_1234", "course");
-        List<Object> result = (List<Object>) readResponse.get(JsonKey.RESPONSE);
-        System.out.println("********** result ************ : " + result.toString());
-        Assert.assertEquals(0, result.size());
-
-    }
 }

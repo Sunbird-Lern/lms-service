@@ -1031,6 +1031,11 @@ public final class JsonKey {
   public static final String REQUESTED_FOR = "requestedFor";
   public static final String CONTENT_PROPS_TO_ADD ="learning.content.props.to.add";
   public static final String GROUP_ACTIVITY_DB = "groupActivityDB";
-  
+  public static final String ACTIVITYID = "activityId";
+  public static final String ACTIVITYTYPE = "activityType";
+  public static final String ACTIVITY_ID = "activity_id";
+  public static final String ACTIVITY_TYPE = "activity_type";
+
+
   private JsonKey() {}
 }

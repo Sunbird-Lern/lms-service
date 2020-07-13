@@ -21,6 +21,7 @@ import org.sunbird.common.models.util.PropertiesCache;
 import org.sunbird.common.models.util.StringFormatter;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.common.responsecode.ResponseMessage;
+import org.sunbird.common.request.Request;
 
 /**
  * This call will do validation for all incoming request data.
@@ -981,5 +982,37 @@ public final class RequestValidator {
         ResponseCode.getResponse(errorCode).getErrorCode(),
         ResponseCode.getResponse(errorCode).getErrorMessage(),
         ERROR_CODE);
+  }
+
+  public static void validateGroupActivityAggregatesRequest(Request request) {
+    try {
+      String message = "";
+      if(null == request || MapUtils.isEmpty(request.getRequest())){
+        message += "Error due to missing request body";
+        ProjectCommonException.throwClientErrorException(
+                ResponseCode.missingData,
+                MessageFormat.format(ResponseCode.missingData.getErrorMessage(), message));
+      }
+      if (StringUtils.isBlank((String)request.get(JsonKey.GROUPID))) {
+        message += "Error due to missing groupId";
+        ProjectCommonException.throwClientErrorException(
+                ResponseCode.groupIdMismatch,
+                MessageFormat.format(ResponseCode.groupIdMismatch.getErrorMessage(), message));
+      }
+      if (StringUtils.isBlank((String)request.get(JsonKey.ACTIVITYID))) {
+        message += "Error due to missing activityId";
+        ProjectCommonException.throwClientErrorException(
+                ResponseCode.activityIdMismatch,
+                MessageFormat.format(ResponseCode.activityIdMismatch.getErrorMessage(), message));
+      }
+      if (StringUtils.isBlank((String)request.get(JsonKey.ACTIVITYTYPE))) {
+        message += "Error due to missing activity type";
+        ProjectCommonException.throwClientErrorException(
+                ResponseCode.activityTypeMismatch,
+                MessageFormat.format(ResponseCode.activityTypeMismatch.getErrorMessage(), message));
+      }
+    } catch (Exception ex) {
+      throw ex;
+    }
   }
 }

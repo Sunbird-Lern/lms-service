@@ -8,6 +8,7 @@ import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.request.HeaderParam;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.request.RequestValidator;
 import play.mvc.Http;
 import play.mvc.Result;
 
@@ -31,7 +32,7 @@ public class GroupAggController extends BaseController {
                 ActorOperations.GROUP_ACTIVITY_AGGREGATES.getValue(),
                 httpRequest.body().asJson(),
                 (request) -> {
-                    GroupActivityValidator.validateRequest((Request) request);
+                    RequestValidator.validateGroupActivityAggregatesRequest((Request) request);
                     return null;
                 },
                 getAllRequestHeaders(httpRequest),

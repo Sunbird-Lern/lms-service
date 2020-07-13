@@ -31,8 +31,8 @@ import scala.collection.JavaConverters._
 
 class GroupAggregatesActor extends BaseActor {
 
-  private val GROUP_SERVICE_BASE_URL = if (StringUtils.isNotBlank(getConfigValue("sunbird_group_service_api_base_url"))) getConfigValue("sunbird_group_service_api_base_url") + "/v1/group/read/"
-  else "https://dev.sunbirded.org/api/group/v1/read/"
+  private val GROUP_SERVICE_API_BASE_URL = if (StringUtils.isNotBlank(getConfigValue("sunbird_group_service_api_base_url"))) getConfigValue("sunbird_group_service_api_base_url")
+  else "https://dev.sunbirded.org/api"
 
   private val mapper = new ObjectMapper
 
@@ -52,7 +52,7 @@ class GroupAggregatesActor extends BaseActor {
     val activityType: String = request.get(SunbirdKey.ACTIVITYTYPE).asInstanceOf[String]
 
     // Generating requestUrl and Header for calling group read api.
-    val requestUrl = GROUP_SERVICE_BASE_URL + groupId + "?fields=members"
+    val requestUrl = GROUP_SERVICE_API_BASE_URL + "/v1/group/read/" + groupId + "?fields=members"
     val headers = new util.HashMap[String, String]() {{
       put(SunbirdKey.CONTENT_TYPE_HEADER, SunbirdKey.APPLICATION_JSON)
       put("x-authenticated-user-token", request.getContext.get(JsonKey.HEADER).asInstanceOf[Map[String, String]].get(HeaderParam.X_Authenticated_User_Token.getName))

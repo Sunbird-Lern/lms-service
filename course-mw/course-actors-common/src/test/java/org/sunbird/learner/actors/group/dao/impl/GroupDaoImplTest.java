@@ -61,7 +61,8 @@ public class GroupDaoImplTest {
                 .thenReturn(response);
         Response readResponse = GroupDaoImpl.read("do_1234", "course");
         List<Object> result = (List<Object>) readResponse.get(JsonKey.RESPONSE);
-        Assert.assertEquals(result.size(), 0);
+        System.out.println("********** result ************ : " + result.toString());
+        Assert.assertEquals(0, result.size());
 
     }
 }

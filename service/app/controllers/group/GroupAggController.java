@@ -6,6 +6,7 @@ import controllers.group.validator.GroupActivityValidator;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.request.HeaderParam;
 import org.sunbird.common.request.Request;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -21,6 +22,7 @@ public class GroupAggController extends BaseController {
     private ActorRef groupAggregatesActorRef;
 
     public CompletionStage<Result> getGroupActivityAggregates(Http.Request httpRequest) {
+
         ProjectLogger.log(
                 "Aggregate Group Activity method is called = " + httpRequest.body().asJson(),
                 LoggerEnum.DEBUG.name());
@@ -32,6 +34,7 @@ public class GroupAggController extends BaseController {
                     GroupActivityValidator.validateRequest((Request) request);
                     return null;
                 },
+                getAllRequestHeaders(httpRequest),
                 httpRequest);
     }
 }

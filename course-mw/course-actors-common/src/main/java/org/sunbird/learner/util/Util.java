@@ -68,6 +68,8 @@ public final class Util {
     dbInfoMap.put(
         JsonKey.SUNBIRD_COURSE_DIALCODES_DB,
         getDbInfoObject(DIALCODE_KEY_SPACE_NAME, "dialcode_images"));
+    dbInfoMap.put(
+            JsonKey.GROUP_ACTIVITY_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "user_activity_agg"));
   }
 
   /**

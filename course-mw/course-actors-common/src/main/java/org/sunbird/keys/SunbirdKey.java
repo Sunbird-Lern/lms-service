@@ -50,6 +50,9 @@ public final class SunbirdKey {
     public static final String GROUPID = "groupId";
     public static final String ACTIVITYID = "activityId";
     public static final String ACTIVITYTYPE = "activityType";
+    public static final String ACTIVITY_ID = "activity_id";
+    public static final String ACTIVITY_TYPE = "activity_type";
+    public static final String RESPONSE = "response";
 
 
     private SunbirdKey() {}

@@ -34,6 +34,6 @@ public class GroupAggControllerTest extends BaseApplicationTest {
                         .uri(GROUP_ACTIVITY_AGGREGATE_URL)
                         .method("POST");
         Result result = Helpers.route(application, req);
-        Assert.assertEquals( 200, result.status());
+        Assert.assertEquals( 400, result.status());
     }
 }

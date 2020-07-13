@@ -990,8 +990,8 @@ public final class RequestValidator {
       if(null == request || MapUtils.isEmpty(request.getRequest())){
         message += "Error due to missing request body";
         ProjectCommonException.throwClientErrorException(
-                ResponseCode.missingData,
-                MessageFormat.format(ResponseCode.missingData.getErrorMessage(), message));
+                ResponseCode.invalidRequestData,
+                MessageFormat.format(ResponseCode.invalidRequestData.getErrorMessage(), message));
       }
       if (StringUtils.isBlank((String)request.get(JsonKey.GROUPID))) {
         message += "Error due to missing groupId";

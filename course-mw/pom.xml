@@ -17,7 +17,6 @@
 		<module>textbook-actors</module>
 		<module>badge-actors</module>
 		<module>enrolment-actor</module>
-		<module>group-actor</module>
 	</modules>
 	
 	<build>

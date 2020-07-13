@@ -7,7 +7,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.collections.MapUtils;
+import com.sun.tools.javac.util.List;
+import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -40,7 +41,6 @@ public class GroupDaoImplTest {
         PowerMockito.mockStatic(ServiceFactory.class);
         cassandraOperation = mock(CassandraOperationImpl.class);
         when(ServiceFactory.getInstance()).thenReturn(cassandraOperation);
-        groupDao = new GroupDaoImpl();
     }
 
     @Test
@@ -63,7 +63,7 @@ public class GroupDaoImplTest {
                 Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
                 .thenReturn(response);
         Response readResponse = GroupDaoImpl.read("do_1234", "course");
-        Assert.assertTrue(MapUtils.isEmpty(readResponse.getResult()));
+        Assert.assertTrue(CollectionUtils.isEmpty((List)readResponse.get(JsonKey.RESPONSE)));
 
     }
 }

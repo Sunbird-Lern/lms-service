@@ -17,7 +17,7 @@ public class GroupDaoImpl {
     private static final String KEYSPACE_NAME = Util.dbInfoMap.get(JsonKey.GROUP_ACTIVITY_DB).getKeySpace();
     private static final String TABLE_NAME = Util.dbInfoMap.get(JsonKey.GROUP_ACTIVITY_DB).getTableName();
 
-    public static Response read(String activityId, String activityType, List<String> userId) {
+    public Response read(String activityId, String activityType, List<String> userId) {
         Map<String, Object> primaryKey = new HashMap<>();
         primaryKey.put(SunbirdKey.ACTIVITY_TYPE, activityType);
         primaryKey.put(SunbirdKey.ACTIVITY_ID, activityId);

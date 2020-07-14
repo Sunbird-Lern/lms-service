@@ -2,37 +2,29 @@ package org.sunbird.group
 
 
 import java.util
-import java.util.{List, Map}
+import java.util.{List}
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.mashape.unirest.http.Unirest
 import org.apache.commons.collections.CollectionUtils
 import org.apache.commons.collections.MapUtils
 import org.apache.commons.lang3.StringUtils
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
-import org.sunbird.common.models.util.JsonKey
-import org.sunbird.common.models.util.LoggerEnum
 import org.sunbird.common.models.util.ProjectLogger
-import org.sunbird.common.request.HeaderParam
 import org.sunbird.common.request.Request
 import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.keys.SunbirdKey
 import org.sunbird.learner.actors.group.dao.impl.GroupDaoImpl
 import org.sunbird.actor.base.BaseActor
-import org.sunbird.common.models.util.ProjectUtil.getConfigValue
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 
 class GroupAggregatesActor extends BaseActor {
 
-  private val GROUP_SERVICE_API_BASE_URL = if (StringUtils.isNotBlank(getConfigValue(JsonKey.GROUP_SERVICE_API_BASE_URL))) getConfigValue(JsonKey.GROUP_SERVICE_API_BASE_URL)
-  else "https://dev.sunbirded.org/api"
-
   private val GROUP_MEMBERS_METADATA: List[String] = util.Arrays.asList("name", "userId", "role", "status", "createdBy")
 
-  private val mapper = new ObjectMapper
+  var groupDao: GroupDaoImpl = new GroupDaoImpl()
+  var groupAggregatesUtil: GroupAggregatesUtil = new GroupAggregatesUtil()
 
   @throws[Throwable]
   override def onReceive(request: Request): Unit = {
@@ -60,19 +52,8 @@ class GroupAggregatesActor extends BaseActor {
   }
 
   def getGroupMember(groupId: String, request: Request): util.List[util.Map[String, AnyRef]] = {
-    val requestUrl = GROUP_SERVICE_API_BASE_URL + "/v1/group/read/" + groupId + "?fields=members"
-    val headers = new util.HashMap[String, String]() {{
-      put(SunbirdKey.CONTENT_TYPE_HEADER, SunbirdKey.APPLICATION_JSON)
-      put("x-authenticated-user-token", request.getContext.get(JsonKey.HEADER).asInstanceOf[Map[String, String]].get(HeaderParam.X_Authenticated_User_Token.getName))
-    }}
     try{
-      ProjectLogger.log("GroupAggregatesActor:getGroupActivityAggregates : Read request group : " + request.get(SunbirdKey.GROUPID), LoggerEnum.INFO.name)
-      val groupResponse = Unirest.get(requestUrl).headers(headers).asString
-
-      if ( null== groupResponse && groupResponse.getStatus != ResponseCode.OK.getResponseCode)
-        ProjectCommonException.throwClientErrorException(ResponseCode.SERVER_ERROR, "Error while fetching group members record.")
-
-      val readResponse = mapper.readValue(groupResponse.getBody, classOf[Response])
+      val readResponse = groupAggregatesUtil.getGroupDetails(groupId, request)
       val members: util.List[util.Map[String, AnyRef]] = readResponse.get("members").asInstanceOf[util.List[util.Map[String, AnyRef]]]
 
       if (CollectionUtils.isEmpty(members))
@@ -89,7 +70,7 @@ class GroupAggregatesActor extends BaseActor {
   def getEnrolledGroupMembers(activityId: String, activityType: String, memberList: util.List[util.Map[String, AnyRef]]): util.List[util.Map[String, AnyRef]]= {
     try {
       val userList: util.List[String] = memberList.asScala.toList.map(obj => obj.getOrDefault("userId", "").asInstanceOf[String]).filter(x => StringUtils.isNotBlank(x)).asJava
-      val userActivityDBResponse = GroupDaoImpl.read(activityId, activityType, userList)
+      val userActivityDBResponse = groupDao.read(activityId, activityType, userList)
       if (userActivityDBResponse.getResponseCode != ResponseCode.OK)
         ProjectCommonException.throwClientErrorException(ResponseCode.SERVER_ERROR, "Error while fetching group activity record.")
 
@@ -142,6 +123,12 @@ class GroupAggregatesActor extends BaseActor {
     }
     response.put("members", membersList)
     response
+  }
+
+  def setInsranceVariable(groupAggregateUtil: GroupAggregatesUtil, groupDao: GroupDaoImpl) = {
+    this.groupAggregatesUtil = groupAggregateUtil
+    this.groupDao = groupDao
+    this
   }
 }
 

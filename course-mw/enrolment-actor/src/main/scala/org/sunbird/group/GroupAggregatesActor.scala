@@ -20,7 +20,6 @@ import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.keys.SunbirdKey
 import org.sunbird.learner.actors.group.dao.impl.GroupDaoImpl
 import org.sunbird.actor.base.BaseActor
-
 import org.sunbird.common.models.util.ProjectUtil.getConfigValue
 
 import scala.collection.JavaConversions._
@@ -28,8 +27,10 @@ import scala.collection.JavaConverters._
 
 class GroupAggregatesActor extends BaseActor {
 
-  private val GROUP_SERVICE_API_BASE_URL = if (StringUtils.isNotBlank(getConfigValue("sunbird_group_service_api_base_url"))) getConfigValue("sunbird_group_service_api_base_url")
+  private val GROUP_SERVICE_API_BASE_URL = if (StringUtils.isNotBlank(getConfigValue(JsonKey.GROUP_SERVICE_API_BASE_URL))) getConfigValue(JsonKey.GROUP_SERVICE_API_BASE_URL)
   else "https://dev.sunbirded.org/api"
+
+  private val GROUP_MEMBERS_METADATA: List[String] = util.Arrays.asList("name", "userId", "role", "status", "createdBy")
 
   private val mapper = new ObjectMapper
 
@@ -48,9 +49,9 @@ class GroupAggregatesActor extends BaseActor {
     val activityType: String = request.get(SunbirdKey.ACTIVITYTYPE).asInstanceOf[String]
 
     try {
-      val memberList: List[String] = getGroupMember(groupId, request)
-      val enrolledGroupMember: List[util.Map[String, AnyRef]] = getEnrolledGroupMembers(activityId, activityType, memberList)
-      sender().tell(populateResponse(groupId, activityId, activityType, enrolledGroupMember), self)
+      val memberList: util.List[util.Map[String, AnyRef]] = getGroupMember(groupId, request)
+      val enrolledGroupMember: util.List[util.Map[String, AnyRef]] = getEnrolledGroupMembers(activityId, activityType, memberList)
+      sender().tell(populateResponse(groupId, activityId, activityType, enrolledGroupMember, memberList), self)
     } catch {
       case e: Exception =>
         ProjectLogger.log("GroupAggregatesAction:getGroupActivityAggregates:: Exception thrown:: " + e)
@@ -58,7 +59,7 @@ class GroupAggregatesActor extends BaseActor {
     }
   }
 
-  def getGroupMember(groupId: String, request: Request): List[String] = {
+  def getGroupMember(groupId: String, request: Request): util.List[util.Map[String, AnyRef]] = {
     val requestUrl = GROUP_SERVICE_API_BASE_URL + "/v1/group/read/" + groupId + "?fields=members"
     val headers = new util.HashMap[String, String]() {{
       put(SunbirdKey.CONTENT_TYPE_HEADER, SunbirdKey.APPLICATION_JSON)
@@ -75,9 +76,9 @@ class GroupAggregatesActor extends BaseActor {
       val members: util.List[util.Map[String, AnyRef]] = readResponse.get("members").asInstanceOf[util.List[util.Map[String, AnyRef]]]
 
       if (CollectionUtils.isEmpty(members))
-        ProjectCommonException.throwClientErrorException(ResponseCode.missingData, "No member found in this group.")
+        ProjectCommonException.throwClientErrorException(ResponseCode.CLIENT_ERROR, "No member found in this group.")
 
-      members.asScala.toList.map(obj => obj.getOrDefault("userId", "").asInstanceOf[String]).filter(x => StringUtils.isNotBlank(x))
+      members
     }catch {
       case e: Exception =>
         ProjectLogger.log("GroupAggregatesAction:getGroupMember:: Exception thrown:: " + e)
@@ -85,19 +86,16 @@ class GroupAggregatesActor extends BaseActor {
     }
   }
 
-  def getEnrolledGroupMembers(activityId: String, activityType: String, memberList: List[String]): List[util.Map[String, AnyRef]]= {
+  def getEnrolledGroupMembers(activityId: String, activityType: String, memberList: util.List[util.Map[String, AnyRef]]): util.List[util.Map[String, AnyRef]]= {
     try {
-      val userActivityDBResponse = GroupDaoImpl.read(activityId, activityType)
+      val userList: util.List[String] = memberList.asScala.toList.map(obj => obj.getOrDefault("userId", "").asInstanceOf[String]).filter(x => StringUtils.isNotBlank(x)).asJava
+      val userActivityDBResponse = GroupDaoImpl.read(activityId, activityType, userList)
       if (userActivityDBResponse.getResponseCode != ResponseCode.OK)
         ProjectCommonException.throwClientErrorException(ResponseCode.SERVER_ERROR, "Error while fetching group activity record.")
 
-      val userActivityList: util.List[util.Map[String, AnyRef]] = userActivityDBResponse.get(SunbirdKey.RESPONSE).asInstanceOf[util.List[util.Map[String, AnyRef]]]
-      if (CollectionUtils.isEmpty(userActivityList))
+      val enrolledGroupMemberList: util.List[util.Map[String, AnyRef]] = userActivityDBResponse.get(SunbirdKey.RESPONSE).asInstanceOf[util.List[util.Map[String, AnyRef]]]
+      if (CollectionUtils.isEmpty(enrolledGroupMemberList))
         ProjectCommonException.throwClientErrorException(ResponseCode.CLIENT_ERROR, "No user enrolled to this activity.")
-
-      val enrolledGroupMemberList: List[util.Map[String, AnyRef]] = userActivityList.asScala.toList.filter(obj => memberList.contains(obj.getOrDefault("user_id", "").asInstanceOf[String]))
-      if (null == enrolledGroupMemberList || enrolledGroupMemberList.isEmpty)
-        ProjectCommonException.throwClientErrorException(ResponseCode.CLIENT_ERROR, "No group members enrolled to this activity.")
 
       enrolledGroupMemberList
     } catch {
@@ -108,7 +106,9 @@ class GroupAggregatesActor extends BaseActor {
   }
 
 
-  def populateResponse(groupId: String, activityId: String, activityType: String, enrolledGroupMember: List[util.Map[String, AnyRef]]): Response= {
+  def populateResponse(groupId: String, activityId: String, activityType: String, enrolledGroupMember: util.List[util.Map[String, AnyRef]], memberList: util.List[util.Map[String, AnyRef]]): Response= {
+
+    val memberMap:util.Map[String, util.Map[String, AnyRef]] = memberList.asScala.toList.filter(x=>StringUtils.isNotBlank(x.getOrDefault("userId", "").asInstanceOf[String])).map(obj => (obj.getOrDefault("userId", "").asInstanceOf[String], obj)).toMap.asJava
     val response: Response = new Response()
 
     response.put("groupId", groupId)
@@ -125,7 +125,10 @@ class GroupAggregatesActor extends BaseActor {
     val membersList = new util.ArrayList[util.Map[String, AnyRef]]
     for(member <- enrolledGroupMember){
       membersList.add(new util.HashMap[String, AnyRef]() {{
-        put("id", member.get("user_id"))
+        for(metadata <- GROUP_MEMBERS_METADATA){
+          put(metadata, memberMap.get(member.get("user_id")).get(metadata))
+        }
+
         put("agg", util.Arrays.asList(new util.HashMap[String, AnyRef]() {{
           put("metric", "completedCount")
           val aggLastUpdated = member.get("agg_last_updated").asInstanceOf[util.Map[String, AnyRef]]

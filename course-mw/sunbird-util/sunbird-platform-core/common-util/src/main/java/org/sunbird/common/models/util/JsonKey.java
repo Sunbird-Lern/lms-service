@@ -1035,6 +1035,8 @@ public final class JsonKey {
   public static final String ACTIVITYTYPE = "activityType";
   public static final String ACTIVITY_ID = "activity_id";
   public static final String ACTIVITY_TYPE = "activity_type";
+  public static final String GROUP_SERVICE_API_BASE_URL ="sunbird_group_service_api_base_url";
+  public static final String GROUP_MEMBERS_METADATA ="group.members.metadata";
 
 
   private JsonKey() {}

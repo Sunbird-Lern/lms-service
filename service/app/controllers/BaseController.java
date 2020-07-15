@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
@@ -53,6 +54,7 @@ public class BaseController extends Controller {
   public static final int AKKA_WAIT_TIME = 30;
   private TelemetryLmaxWriter lmaxWriter = TelemetryLmaxWriter.getInstance();
   protected Timeout timeout = new Timeout(AKKA_WAIT_TIME, TimeUnit.SECONDS);
+  private static final String logLevel = "false";
 
   private org.sunbird.common.request.Request initRequest(
       org.sunbird.common.request.Request request, String operation, Http.Request httpRequest) {
@@ -60,6 +62,9 @@ public class BaseController extends Controller {
     request.setRequestId(ExecutionContext.getRequestId());
     request.setEnv(getEnvironment());
     request.getContext().put(JsonKey.REQUESTED_BY, httpRequest.flash().get(JsonKey.USER_ID));
+    String traceId = httpRequest.header("x-request-id").orElse(UUID.randomUUID().toString());
+    request.getContext().put("traceId", traceId);
+    request.getContext().put("logLevel", (httpRequest.header("x-log-level").isPresent() ? httpRequest.header("x-log-level").orElse(logLevel): logLevel));
     if (StringUtils.isNotBlank(httpRequest.flash().get(SunbirdKey.REQUESTED_FOR)))
       request.getContext().put(SunbirdKey.REQUESTED_FOR, httpRequest.flash().get(SunbirdKey.REQUESTED_FOR));
     request = transformUserId(request);

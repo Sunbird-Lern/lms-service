@@ -5,6 +5,7 @@ import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 
 public abstract class BaseActor extends UntypedAbstractActor {
@@ -49,5 +50,9 @@ public abstract class BaseActor extends UntypedAbstractActor {
   public void onReceiveUnsupportedOperation(String callerName) throws Exception {
     ProjectLogger.log(callerName + ": unsupported message");
     unSupportedMessage();
+  }
+  
+  protected RequestContext getRequestContext(Request request) {
+    return new RequestContext((String)request.getContext().get("traceId"), (String)request.getContext().get("logLevel"), request.getOperation());
   }
 }

@@ -16,6 +16,7 @@ import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.*;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.helper.ServiceFactory;
@@ -46,6 +47,8 @@ public class LearnerStateActor extends BaseActor {
    */
   @Override
   public void onReceive(Request request) throws Exception {
+    RequestContext requestContext = getRequestContext(request);
+    cassandraOperation = ServiceFactory.getInstance(requestContext);
     if (request.getOperation().equalsIgnoreCase(ActorOperations.GET_COURSE.getValue())) {
       getCourse(request);
     } else if (request

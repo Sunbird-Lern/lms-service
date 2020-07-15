@@ -27,7 +27,7 @@ class GroupAggregatesActorTest extends FlatSpec with Matchers with MockFactory {
     (redisCache.get(_: String, _:String, _: Class[_])).expects(*,*,*).returns(null)
     (groupAggregateUtil.getGroupDetails(_:String, _:Request)).expects(*,*).returns(validRestResponse())
     (groupDao.read(_: String, _: String, _: java.util.List[String])).expects(*,*,*).returns(validDBResponse())
-    (redisCache.put(_: String, _: String, _: AnyRef)).expects(*,*, new Response()).returns(true)
+    (redisCache.put(_: String, _: String, _: AnyRef)).expects(*,*,*)
     (redisCache.setMapExpiry(_: String, _: Long)).expects(*,*)
     val response = callActor(getGroupActivityAggRequest(), Props(new GroupAggregatesActor().setInstanceVariable(groupAggregateUtil, groupDao, redisCache)))
 

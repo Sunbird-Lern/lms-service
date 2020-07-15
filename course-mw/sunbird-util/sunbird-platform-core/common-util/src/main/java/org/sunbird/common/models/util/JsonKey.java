@@ -277,6 +277,7 @@ public final class JsonKey {
   public static final String GRADE = "grade";
   public static final String GRADE_LEVEL = "gradeLevel";
   public static final String GROUP = "group";
+  public static final String GROUPID = "groupId";
   public static final String GROUP_QUERY = "groupQuery";
   public static final String HASH_TAG_ID = "hashtagid";
   public static final String HASHTAGID = "hashTagId";
@@ -1029,6 +1030,14 @@ public final class JsonKey {
   public static final String DOT_SEPARATOR = ".";
   public static final String REQUESTED_FOR = "requestedFor";
   public static final String CONTENT_PROPS_TO_ADD ="learning.content.props.to.add";
-  
+  public static final String GROUP_ACTIVITY_DB = "groupActivityDB";
+  public static final String ACTIVITYID = "activityId";
+  public static final String ACTIVITYTYPE = "activityType";
+  public static final String ACTIVITY_ID = "activity_id";
+  public static final String ACTIVITY_TYPE = "activity_type";
+  public static final String GROUP_SERVICE_API_BASE_URL ="sunbird_group_service_api_base_url";
+  public static final String GROUP_MEMBERS_METADATA ="group.members.metadata";
+
+
   private JsonKey() {}
 }

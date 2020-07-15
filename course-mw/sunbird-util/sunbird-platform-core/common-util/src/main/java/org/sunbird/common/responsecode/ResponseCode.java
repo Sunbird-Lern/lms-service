@@ -855,6 +855,9 @@ public enum ResponseCode {
           ResponseMessage.Key.CONTENT_TYPE_MISMATCH, ResponseMessage.Message.CONTENT_TYPE_MISMATCH),
   mimeTypeMismatch(
           ResponseMessage.Key.MIME_TYPE_MISMATCH, ResponseMessage.Message.MIME_TYPE_MISMATCH),
+  groupIdMismatch(ResponseMessage.Key.GROUP_ID_MISSING, ResponseMessage.Message.GROUP_ID_MISSING),
+  activityIdMismatch(ResponseMessage.Key.ACTIVITY_ID_MISSING, ResponseMessage.Message.ACTIVITY_ID_MISSING),
+  activityTypeMismatch(ResponseMessage.Key.ACTIVITY_TYPE_MISSING, ResponseMessage.Message.ACTIVITY_TYPE_MISSING),
 
   OK(200),
   CLIENT_ERROR(400),

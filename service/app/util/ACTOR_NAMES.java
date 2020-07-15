@@ -21,7 +21,7 @@ import org.sunbird.learner.actors.qrcodedownload.QRCodeDownloadManagementActor;
 import org.sunbird.learner.actors.search.SearchHandlerActor;
 import org.sunbird.learner.actors.syncjobmanager.EsSyncActor;
 import org.sunbird.learner.actors.textbook.TextbookTocActor;
-import org.sunbird.learner.actors.GroupAggregatesActor;
+import org.sunbird.group.GroupAggregatesActor;
 
 public enum ACTOR_NAMES {
   COURSE_BATCH_MANAGEMENT_ACTOR(CourseBatchManagementActor.class, "course-batch-management-actor"),
@@ -49,7 +49,7 @@ public enum ACTOR_NAMES {
   //Scala Actors
   COURSE_ENROLMENT_ACTOR(CourseEnrolmentActor.class, "course-enrolment-actor"),
   CONTENT_CONSUMPTION_ACTOR(ContentConsumptionActor.class, "content-consumption-actor"),
-  GROUP_AGGREGATES_ACTOR(GroupAggregatesActor.class, "group-aggregates-actor");
+  GROUP_AGGREGATES_ACTORS(GroupAggregatesActor.class, "group-aggregates-actor");
 
   private ACTOR_NAMES(Class clazz, String name) {
     actorClass = clazz;

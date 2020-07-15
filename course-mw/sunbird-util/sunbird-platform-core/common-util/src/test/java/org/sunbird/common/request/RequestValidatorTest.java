@@ -473,4 +473,81 @@ public class RequestValidatorTest {
     }
     Assert.assertFalse(response);
   }
+
+  @Test
+  public void testValidateGroupActivityAggregatesRequestSuccess() {
+    Request request = new Request();
+    boolean response = false;
+
+    request.setRequest(new HashMap<String, Object>(){{
+      put(JsonKey.GROUPID, "mockGroupId");
+      put(JsonKey.ACTIVITYID, "mockActivityId");
+      put(JsonKey.ACTIVITYTYPE, "Course");
+    }});
+
+    try {
+      RequestValidator.validateGroupActivityAggregatesRequest(request);
+      response = true;
+    } catch (ProjectCommonException e) {
+      Assert.assertNull(e);
+    }
+    assertEquals(true, response);
+
+    request.setRequest(new HashMap<String, Object>(){{
+      put(JsonKey.ACTIVITYID, "mockActivityId");
+      put(JsonKey.ACTIVITYTYPE, "Course");
+    }});
+
+    try {
+      RequestValidator.validateGroupActivityAggregatesRequest(request);
+      response = true;
+    } catch (ProjectCommonException e) {
+      Assert.assertNotNull(e);
+      assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+      response = false;
+    }
+    assertEquals(false, response);
+
+    request.setRequest(new HashMap<String, Object>(){{
+      put(JsonKey.GROUPID, "mockGroupId");
+      put(JsonKey.ACTIVITYTYPE, "Course");
+    }});
+
+    try {
+      RequestValidator.validateGroupActivityAggregatesRequest(request);
+      response = true;
+    } catch (ProjectCommonException e) {
+      Assert.assertNotNull(e);
+      assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+      response = false;
+    }
+    assertEquals(false, response);
+
+    request.setRequest(new HashMap<String, Object>(){{
+      put(JsonKey.GROUPID, "mockGroupId");
+      put(JsonKey.ACTIVITYID, "mockActivityId");
+    }});
+
+    try {
+      RequestValidator.validateGroupActivityAggregatesRequest(request);
+      response = true;
+    } catch (ProjectCommonException e) {
+      Assert.assertNotNull(e);
+      assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+      response = false;
+    }
+    assertEquals(false, response);
+
+    request.setRequest(null);
+
+    try {
+      RequestValidator.validateGroupActivityAggregatesRequest(request);
+      response = true;
+    } catch (ProjectCommonException e) {
+      Assert.assertNotNull(e);
+      assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+      response = false;
+    }
+    assertEquals(false, response);
+  }
 }

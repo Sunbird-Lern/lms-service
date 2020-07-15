@@ -2,19 +2,23 @@ package org.sunbird.group
 
 
 import java.util
-import java.util.{List}
+import java.util.List
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.commons.collections.CollectionUtils
 import org.apache.commons.collections.MapUtils
 import org.apache.commons.lang3.StringUtils
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
-import org.sunbird.common.models.util.ProjectLogger
+import org.sunbird.common.models.util.{ProjectLogger, PropertiesCache}
 import org.sunbird.common.request.Request
 import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.keys.SunbirdKey
 import org.sunbird.learner.actors.group.dao.impl.GroupDaoImpl
 import org.sunbird.actor.base.BaseActor
+import org.sunbird.cache.CacheFactory
+import org.sunbird.cache.interfaces.Cache
+import org.sunbird.redis.RedisCache
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
@@ -25,6 +29,8 @@ class GroupAggregatesActor extends BaseActor {
 
   var groupDao: GroupDaoImpl = new GroupDaoImpl()
   var groupAggregatesUtil: GroupAggregatesUtil = new GroupAggregatesUtil()
+  var redisCache: Cache = CacheFactory.getInstance()
+  val ttl: Long = 3600
 
   @throws[Throwable]
   override def onReceive(request: Request): Unit = {
@@ -35,15 +41,28 @@ class GroupAggregatesActor extends BaseActor {
     }
   }
 
+  def getCacheKey(groupId: String, activityId: String, activityType: String) = {
+    groupId + ":" + activityId + ":" + activityType + ":activity-agg"
+  }
+
   def getGroupActivityAggregates(request: Request): Unit = {
     val groupId: String = request.get(SunbirdKey.GROUPID).asInstanceOf[String]
     val activityId: String = request.get(SunbirdKey.ACTIVITYID).asInstanceOf[String]
     val activityType: String = request.get(SunbirdKey.ACTIVITYTYPE).asInstanceOf[String]
 
     try {
-      val memberList: util.List[util.Map[String, AnyRef]] = getGroupMember(groupId, request)
-      val enrolledGroupMember: util.List[util.Map[String, AnyRef]] = getEnrolledGroupMembers(activityId, activityType, memberList)
-      sender().tell(populateResponse(groupId, activityId, activityType, enrolledGroupMember, memberList), self)
+      val key = getCacheKey(groupId, activityId, activityType)
+      val cachedResponse = redisCache.get("activity-agg", key, classOf[Response])
+      val response = {
+        if(null != cachedResponse) {
+          cachedResponse
+        } else {
+          val memberList: util.List[util.Map[String, AnyRef]] = getGroupMember(groupId, request)
+          val enrolledGroupMember: util.List[util.Map[String, AnyRef]] = getEnrolledGroupMembers(activityId, activityType, memberList)
+          populateResponse(groupId, activityId, activityType, enrolledGroupMember, memberList)
+        }
+      }
+      sender().tell(response, self)
     } catch {
       case e: Exception =>
         ProjectLogger.log("GroupAggregatesAction:getGroupActivityAggregates:: Exception thrown:: " + e)
@@ -122,12 +141,19 @@ class GroupAggregatesActor extends BaseActor {
       }})
     }
     response.put("members", membersList)
+    setResponseToRedis(getCacheKey(groupId, activityId, activityType), response)
     response
   }
 
-  def setInsranceVariable(groupAggregateUtil: GroupAggregatesUtil, groupDao: GroupDaoImpl) = {
+  def setResponseToRedis(key: String, response: Response) :Unit = {
+    redisCache.put("activity-agg", key, response)
+    redisCache.setMapExpiry("activity-agg", ttl)
+  }
+
+  def setInstanceVariable(groupAggregateUtil: GroupAggregatesUtil, groupDao: GroupDaoImpl, redisCache: Cache) = {
     this.groupAggregatesUtil = groupAggregateUtil
     this.groupDao = groupDao
+    this.redisCache = redisCache
     this
   }
 }

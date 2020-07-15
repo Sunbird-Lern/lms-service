@@ -34,28 +34,6 @@ public class RedisCache implements Cache {
   }
 
   @Override
-  public boolean put(String mapName, String key, String value) {
-    ProjectLogger.log(
-        "RedisCache:put: mapName = " + mapName + ", key = " + key + ", value = " + value,
-        LoggerEnum.INFO.name());
-    try {
-      RMap<String, String> map = client.getMap(mapName);
-      map.put(key, value);
-      return true;
-    } catch (Exception e) {
-      ProjectLogger.log(
-          "RedisCache:put: Error occurred mapName = "
-              + mapName
-              + ", key = "
-              + key
-              + ", value = "
-              + value,
-          LoggerEnum.ERROR.name());
-    }
-    return false;
-  }
-
-  @Override
   public boolean clear(String mapName) {
     ProjectLogger.log("RedisCache:clear: mapName = " + mapName, LoggerEnum.INFO.name());
     try {
@@ -95,7 +73,12 @@ public class RedisCache implements Cache {
         LoggerEnum.INFO.name());
 
     try {
-      String res = JsonUtil.toJson(value);
+      String res = "";
+      if(value instanceof String){
+        res = (String) value;
+      } else {
+        res = JsonUtil.toJson(value);
+      }
       RMap<String, String> map = client.getMap(mapName);
       map.put(key, res);
       return true;

@@ -47,6 +47,13 @@ public final class SunbirdKey {
     // Content Status Update API Specific - END
     public static final List<String> MANDATORY_PARAMS_FOR_COURSE_UNITS = Arrays.asList("identifier", "mimeType", "visibility", "contentType", "name");
     public static final List<String> ORIGIN_METADATA_KEYS = Arrays.asList("name", "author", "license", "organisation");
+    public static final String GROUPID = "groupId";
+    public static final String ACTIVITYID = "activityId";
+    public static final String ACTIVITYTYPE = "activityType";
+    public static final String ACTIVITY_ID = "activity_id";
+    public static final String ACTIVITY_TYPE = "activity_type";
+    public static final String USER_ID = "user_id";
+    public static final String RESPONSE = "response";
 
 
     private SunbirdKey() {}

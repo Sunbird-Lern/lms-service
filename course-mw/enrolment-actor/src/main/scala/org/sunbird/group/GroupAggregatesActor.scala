@@ -2,26 +2,28 @@ package org.sunbird.group
 
 
 import java.util
-import java.util.{List}
 
 import org.apache.commons.collections.CollectionUtils
 import org.apache.commons.collections.MapUtils
 import org.apache.commons.lang3.StringUtils
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
-import org.sunbird.common.models.util.ProjectLogger
+import org.sunbird.common.models.util.{JsonKey, ProjectLogger}
 import org.sunbird.common.request.Request
 import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.keys.SunbirdKey
 import org.sunbird.learner.actors.group.dao.impl.GroupDaoImpl
 import org.sunbird.actor.base.BaseActor
+import org.sunbird.common.models.util.ProjectUtil.getConfigValue
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 
 class GroupAggregatesActor extends BaseActor {
 
-  private val GROUP_MEMBERS_METADATA: List[String] = util.Arrays.asList("name", "userId", "role", "status", "createdBy")
+
+  private val GROUP_MEMBERS_METADATA = if (StringUtils.isNotBlank(getConfigValue(JsonKey.GROUP_MEMBERS_METADATA))) getConfigValue(JsonKey.GROUP_MEMBERS_METADATA).split(",")
+  else util.Arrays.asList("name", "userId", "role", "status", "createdBy")
 
   var groupDao: GroupDaoImpl = new GroupDaoImpl()
   var groupAggregatesUtil: GroupAggregatesUtil = new GroupAggregatesUtil()
@@ -52,38 +54,26 @@ class GroupAggregatesActor extends BaseActor {
   }
 
   def getGroupMember(groupId: String, request: Request): util.List[util.Map[String, AnyRef]] = {
-    try{
-      val readResponse = groupAggregatesUtil.getGroupDetails(groupId, request)
-      val members: util.List[util.Map[String, AnyRef]] = readResponse.get("members").asInstanceOf[util.List[util.Map[String, AnyRef]]]
+    val readResponse = groupAggregatesUtil.getGroupDetails(groupId, request)
+    val members: util.List[util.Map[String, AnyRef]] = readResponse.get("members").asInstanceOf[util.List[util.Map[String, AnyRef]]]
 
-      if (CollectionUtils.isEmpty(members))
-        ProjectCommonException.throwClientErrorException(ResponseCode.CLIENT_ERROR, "No member found in this group.")
+    if (CollectionUtils.isEmpty(members))
+      ProjectCommonException.throwClientErrorException(ResponseCode.CLIENT_ERROR, "No member found in this group.")
 
-      members
-    }catch {
-      case e: Exception =>
-        ProjectLogger.log("GroupAggregatesAction:getGroupMember:: Exception thrown:: " + e)
-        throw e
-    }
+    members
   }
 
   def getEnrolledGroupMembers(activityId: String, activityType: String, memberList: util.List[util.Map[String, AnyRef]]): util.List[util.Map[String, AnyRef]]= {
-    try {
-      val userList: util.List[String] = memberList.asScala.toList.map(obj => obj.getOrDefault("userId", "").asInstanceOf[String]).filter(x => StringUtils.isNotBlank(x)).asJava
-      val userActivityDBResponse = groupDao.read(activityId, activityType, userList)
-      if (userActivityDBResponse.getResponseCode != ResponseCode.OK)
-        ProjectCommonException.throwClientErrorException(ResponseCode.SERVER_ERROR, "Error while fetching group activity record.")
+    val userList: util.List[String] = memberList.asScala.toList.map(obj => obj.getOrDefault("userId", "").asInstanceOf[String]).filter(x => StringUtils.isNotBlank(x)).asJava
+    val userActivityDBResponse = groupDao.read(activityId, activityType, userList)
+    if (userActivityDBResponse.getResponseCode != ResponseCode.OK)
+      ProjectCommonException.throwClientErrorException(ResponseCode.SERVER_ERROR, "Error while fetching group activity record.")
 
-      val enrolledGroupMemberList: util.List[util.Map[String, AnyRef]] = userActivityDBResponse.get(SunbirdKey.RESPONSE).asInstanceOf[util.List[util.Map[String, AnyRef]]]
-      if (CollectionUtils.isEmpty(enrolledGroupMemberList))
-        ProjectCommonException.throwClientErrorException(ResponseCode.CLIENT_ERROR, "No user enrolled to this activity.")
+    val enrolledGroupMemberList: util.List[util.Map[String, AnyRef]] = userActivityDBResponse.get(SunbirdKey.RESPONSE).asInstanceOf[util.List[util.Map[String, AnyRef]]]
+    if (CollectionUtils.isEmpty(enrolledGroupMemberList))
+      ProjectCommonException.throwClientErrorException(ResponseCode.CLIENT_ERROR, "No user enrolled to this activity.")
 
-      enrolledGroupMemberList
-    } catch {
-      case e: Exception =>
-        ProjectLogger.log("GroupAggregatesAction:getEnrolledGroupMembers:: Exception thrown:: " + e)
-        throw e
-    }
+    enrolledGroupMemberList
   }
 
 

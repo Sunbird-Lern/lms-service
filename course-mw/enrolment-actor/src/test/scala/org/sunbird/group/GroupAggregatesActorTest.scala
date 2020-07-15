@@ -6,8 +6,10 @@ import akka.actor.{ActorSystem, Props}
 import akka.testkit.TestKit
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FlatSpec, Matchers}
+import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
 import org.sunbird.common.request.Request
+import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.learner.actors.group.dao.impl.GroupDaoImpl
 
 import scala.concurrent.duration.FiniteDuration
@@ -16,17 +18,17 @@ class GroupAggregatesActorTest extends FlatSpec with Matchers with MockFactory {
 
   val system = ActorSystem.create("system")
 
-  "GroupAggregatesActor" should "return success on enrol" in {
+  "GroupAggregatesActor" should "return member not found" in {
     val groupAggregateUtil = mock[GroupAggregatesUtil]
     val groupDao = mock[GroupDaoImpl]
 
-    (groupAggregateUtil.getGroupDetails(_:String, _:Request)).expects(*,*).returns(validRestResponse())
+    (groupAggregateUtil.getGroupDetails(_:String, _:Request)).expects(*,*).returns(blankRestResponse())
     (groupDao.read(_: String, _: String, _: java.util.List[String])).expects(*,*,*).returns(validDBResponse())
-    val response = callActor(getEnrolRequest(), Props(new GroupAggregatesActor().setInsranceVariable(groupAggregateUtil, groupDao)))
-    assert("CLIENT_ERROR".equalsIgnoreCase(response.getResponseCode().asInstanceOf[String]))
+    val response = callActorForFailure(getEnrolRequest(), Props(new GroupAggregatesActor().setInsranceVariable(groupAggregateUtil, groupDao)))
+    assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
   }
 
-  def validRestResponse(): Response = {
+  def blankRestResponse(): Response = {
     val response = new Response()
     response
   }
@@ -41,6 +43,13 @@ class GroupAggregatesActorTest extends FlatSpec with Matchers with MockFactory {
     val actorRef = system.actorOf(props)
     actorRef.tell(request, probe.testActor)
     probe.expectMsgType[Response](FiniteDuration.apply(10, TimeUnit.SECONDS))
+  }
+
+  def callActorForFailure(request: Request, props: Props): ProjectCommonException = {
+    val probe = new TestKit(system)
+    val actorRef = system.actorOf(props)
+    actorRef.tell(request, probe.testActor)
+    probe.expectMsgType[ProjectCommonException](FiniteDuration.apply(10, TimeUnit.SECONDS))
   }
 
   def getEnrolRequest(): Request = {

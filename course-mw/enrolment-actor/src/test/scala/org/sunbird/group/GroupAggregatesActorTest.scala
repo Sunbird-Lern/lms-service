@@ -23,7 +23,7 @@ class GroupAggregatesActorTest extends FlatSpec with Matchers with MockFactory {
     (groupAggregateUtil.getGroupDetails(_:String, _:Request)).expects(*,*).returns(validRestResponse())
     (groupDao.read(_: String, _: String, _: java.util.List[String])).expects(*,*,*).returns(validDBResponse())
     val response = callActor(getEnrolRequest(), Props(new GroupAggregatesActor().setInsranceVariable(groupAggregateUtil, groupDao)))
-    assert("Success".equalsIgnoreCase(response.get("response").asInstanceOf[String]))
+    assert("CLIENT_ERROR".equalsIgnoreCase(response.getResponseCode().asInstanceOf[String]))
   }
 
   def validRestResponse(): Response = {

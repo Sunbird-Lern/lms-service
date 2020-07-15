@@ -16,14 +16,14 @@ import org.sunbird.keys.SunbirdKey
 
 class GroupAggregatesUtil {
 
-  private val GROUP_SERVICE_API_BASE_URL = if (StringUtils.isNotBlank(getConfigValue(JsonKey.GROUP_SERVICE_API_BASE_URL))) getConfigValue(JsonKey.GROUP_SERVICE_API_BASE_URL)
-  else "https://dev.sunbirded.org/api"
+  private val GROUP_SERVICE_API_BASE_URL = if (StringUtils.isNotBlank(getConfigValue(JsonKey.GROUP_SERVICE_API_BASE_URL))) getConfigValue(JsonKey.GROUP_SERVICE_API_BASE_URL)+"/v1/group/read/"
+  else "https://dev.sunbirded.org/api/group/v1/read/"
 
   private val mapper = new ObjectMapper
 
   def getGroupDetails(groupId: String, request: Request): Response = {
     try{
-      val requestUrl = GROUP_SERVICE_API_BASE_URL + "/v1/group/read/" + groupId + "?fields=members"
+      val requestUrl = GROUP_SERVICE_API_BASE_URL + groupId + "?fields=members"
       val headers = new util.HashMap[String, String]() {{
         put(SunbirdKey.CONTENT_TYPE_HEADER, SunbirdKey.APPLICATION_JSON)
         put("x-authenticated-user-token", request.getContext.get(JsonKey.HEADER).asInstanceOf[Map[String, String]].get(HeaderParam.X_Authenticated_User_Token.getName))

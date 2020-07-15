@@ -1,5 +1,6 @@
 package org.sunbird.group
 
+import java.util
 import java.util.concurrent.TimeUnit
 
 import akka.actor.{ActorSystem, Props}
@@ -18,23 +19,105 @@ class GroupAggregatesActorTest extends FlatSpec with Matchers with MockFactory {
 
   val system = ActorSystem.create("system")
 
+  "GroupAggregatesActor" should "return sucess" in {
+    val groupAggregateUtil = mock[GroupAggregatesUtil]
+    val groupDao = mock[GroupDaoImpl]
+
+    (groupAggregateUtil.getGroupDetails(_:String, _:Request)).expects(*,*).returns(validRestResponse())
+    (groupDao.read(_: String, _: String, _: java.util.List[String])).expects(*,*,*).returns(validDBResponse())
+    val response = callActor(getGroupActivityAggRequest(), Props(new GroupAggregatesActor().setInsranceVariable(groupAggregateUtil, groupDao)))
+
+    assert(response.getResponseCode == ResponseCode.OK)
+  }
+
   "GroupAggregatesActor" should "return member not found" in {
     val groupAggregateUtil = mock[GroupAggregatesUtil]
     val groupDao = mock[GroupDaoImpl]
 
     (groupAggregateUtil.getGroupDetails(_:String, _:Request)).expects(*,*).returns(blankRestResponse())
-    (groupDao.read(_: String, _: String, _: java.util.List[String])).expects(*,*,*).returns(validDBResponse())
-    val response = callActorForFailure(getEnrolRequest(), Props(new GroupAggregatesActor().setInsranceVariable(groupAggregateUtil, groupDao)))
+
+    val response = callActorForFailure(getGroupActivityAggRequest(), Props(new GroupAggregatesActor().setInsranceVariable(groupAggregateUtil, groupDao)))
     assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
   }
+
+  "GroupAggregatesActor" should "return no enrolled member found" in {
+    val groupAggregateUtil = mock[GroupAggregatesUtil]
+    val groupDao = mock[GroupDaoImpl]
+
+    (groupAggregateUtil.getGroupDetails(_:String, _:Request)).expects(*,*).returns(validRestResponse())
+    (groupDao.read(_: String, _: String, _: java.util.List[String])).expects(*,*,*).returns(blankDBResponse())
+    val response = callActorForFailure(getGroupActivityAggRequest(), Props(new GroupAggregatesActor().setInsranceVariable(groupAggregateUtil, groupDao)))
+    assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
+  }
+
+  "GroupAggregatesActor" should "return error db response" in {
+    val groupAggregateUtil = mock[GroupAggregatesUtil]
+    val groupDao = mock[GroupDaoImpl]
+
+    (groupAggregateUtil.getGroupDetails(_:String, _:Request)).expects(*,*).returns(validRestResponse())
+    (groupDao.read(_: String, _: String, _: java.util.List[String])).expects(*,*,*).returns(errorDBResponse())
+    val response = callActorForFailure(getGroupActivityAggRequest(), Props(new GroupAggregatesActor().setInsranceVariable(groupAggregateUtil, groupDao)))
+    assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
+  }
+
+  "GroupAggregatesActor" should "return wrong operation" in {
+    val groupAggregateUtil = mock[GroupAggregatesUtil]
+    val groupDao = mock[GroupDaoImpl]
+
+    val response = callActorForFailure(getGroupActivityAggWrongRequest(), Props(new GroupAggregatesActor().setInsranceVariable(groupAggregateUtil, groupDao)))
+    assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
+  }
+
+
 
   def blankRestResponse(): Response = {
     val response = new Response()
     response
   }
 
+  def validRestResponse(): Response = {
+    val response = new Response()
+    val members = new java.util.ArrayList[java.util.Map[String, AnyRef]] {{
+      add(new java.util.HashMap[String, AnyRef] {{
+        put("userId", "user1")
+        put("role","admin")
+        put("status", "active")
+        put("name", "userName")
+        put("createdBy", "userBy")
+      }})
+    }}
+    response.put("members", members)
+    response
+  }
+
+  def blankDBResponse(): Response = {
+    val response = new Response()
+    response
+  }
+
+  def errorDBResponse(): Response = {
+    val response = new Response()
+    response.setResponseCode(ResponseCode.SERVER_ERROR)
+    response
+  }
+
   def validDBResponse(): Response = {
     val response = new Response()
+    val members = new java.util.ArrayList[java.util.Map[String, AnyRef]] {{
+      add(new java.util.HashMap[String, AnyRef] {{
+        put("activity_type", "course1")
+        put("activity_id","do_123")
+        put("user_id", "user1")
+        put("context_id", "context")
+        put("agg", new util.HashMap[String, AnyRef](){{
+          put("completedCount", 1.asInstanceOf[AnyRef])
+        }})
+        put("agg_last_updated", new util.HashMap[String, AnyRef](){{
+          put("completedCount", System.currentTimeMillis().asInstanceOf[AnyRef])
+        }})
+      }})
+    }}
+    response.put("response", members)
     response
   }
 
@@ -52,9 +135,18 @@ class GroupAggregatesActorTest extends FlatSpec with Matchers with MockFactory {
     probe.expectMsgType[ProjectCommonException](FiniteDuration.apply(10, TimeUnit.SECONDS))
   }
 
-  def getEnrolRequest(): Request = {
+  def getGroupActivityAggRequest(): Request = {
     val request = new Request
     request.setOperation("groupActivityAggregates")
+    request.put("groupId", "groupid")
+    request.put("activityId", "activityid")
+    request.put("activityType", "activitytype")
+    request
+  }
+
+  def getGroupActivityAggWrongRequest(): Request = {
+    val request = new Request
+    request.setOperation("groupActivity")
     request.put("groupId", "groupid")
     request.put("activityId", "activityid")
     request.put("activityType", "activitytype")

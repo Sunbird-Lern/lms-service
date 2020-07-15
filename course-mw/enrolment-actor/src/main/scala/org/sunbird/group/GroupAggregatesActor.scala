@@ -8,13 +8,12 @@ import org.apache.commons.collections.MapUtils
 import org.apache.commons.lang3.StringUtils
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
-import org.sunbird.common.models.util.{JsonKey, ProjectLogger}
+import org.sunbird.common.models.util.{ProjectLogger}
 import org.sunbird.common.request.Request
 import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.keys.SunbirdKey
 import org.sunbird.learner.actors.group.dao.impl.GroupDaoImpl
 import org.sunbird.actor.base.BaseActor
-import org.sunbird.common.models.util.ProjectUtil.getConfigValue
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
@@ -22,8 +21,8 @@ import scala.collection.JavaConverters._
 class GroupAggregatesActor extends BaseActor {
 
 
-  private val GROUP_MEMBERS_METADATA = if (StringUtils.isNotBlank(getConfigValue(JsonKey.GROUP_MEMBERS_METADATA))) getConfigValue(JsonKey.GROUP_MEMBERS_METADATA).split(",")
-  else util.Arrays.asList("name", "userId", "role", "status", "createdBy")
+  private val GROUP_MEMBERS_METADATA: util.List[String] = util.Arrays.asList("name", "userId", "role", "status", "createdBy")
+
 
   var groupDao: GroupDaoImpl = new GroupDaoImpl()
   var groupAggregatesUtil: GroupAggregatesUtil = new GroupAggregatesUtil()

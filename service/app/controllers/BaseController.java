@@ -62,9 +62,6 @@ public class BaseController extends Controller {
     request.setRequestId(ExecutionContext.getRequestId());
     request.setEnv(getEnvironment());
     request.getContext().put(JsonKey.REQUESTED_BY, httpRequest.flash().get(JsonKey.USER_ID));
-    String traceId = httpRequest.header("x-request-id").orElse(UUID.randomUUID().toString());
-    request.getContext().put("traceId", traceId);
-    request.getContext().put("logLevel", (httpRequest.header("x-log-level").isPresent() ? httpRequest.header("x-log-level").orElse(logLevel): logLevel));
     if (StringUtils.isNotBlank(httpRequest.flash().get(SunbirdKey.REQUESTED_FOR)))
       request.getContext().put(SunbirdKey.REQUESTED_FOR, httpRequest.flash().get(SunbirdKey.REQUESTED_FOR));
     request = transformUserId(request);

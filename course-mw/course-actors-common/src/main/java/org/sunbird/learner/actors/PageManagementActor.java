@@ -63,8 +63,6 @@ public class PageManagementActor extends BaseActor {
   @Override
   public void onReceive(Request request) throws Throwable {
     Util.initializeContext(request, TelemetryEnvKey.PAGE);
-    RequestContext requestContext = getRequestContext(request);
-    cassandraOperation = ServiceFactory.getInstance(requestContext);
     ExecutionContext.setRequestId(request.getRequestId());
     if(request.getOperation().equalsIgnoreCase(ActorOperations.GET_DIAL_PAGE_DATA.getValue())) {
       getDIALPageData(request);

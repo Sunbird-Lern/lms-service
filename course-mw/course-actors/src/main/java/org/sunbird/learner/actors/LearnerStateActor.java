@@ -47,8 +47,6 @@ public class LearnerStateActor extends BaseActor {
    */
   @Override
   public void onReceive(Request request) throws Exception {
-    RequestContext requestContext = getRequestContext(request);
-    cassandraOperation = ServiceFactory.getInstance(requestContext);
     if (request.getOperation().equalsIgnoreCase(ActorOperations.GET_COURSE.getValue())) {
       getCourse(request);
     } else if (request

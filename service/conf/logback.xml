@@ -17,11 +17,10 @@
 
 
     <logger name="play" level="INFO" />
-    <logger name="application" level="DEBUG" />
     <logger name="defaultLogger" level="INFO" />
     <!-- Telemetry Loggers-->
     <logger name="TelemetryEventLogger" level="INFO" />
-    <logger name="QueryLogger" level="INFO">
+    <logger name="queryLogger" level="DEBUG">
         <appender-ref ref="STDOUT" />  
     </logger>
 

@@ -31,7 +31,7 @@ public abstract class BaseApplicationTest {
         new GuiceApplicationBuilder()
             .in(new File("path/to/app"))
             .in(Mode.TEST)
-            .disable(StartModule.class).configure(ConfigFactory.load())
+            .disable(StartModule.class)
             //                        .disable(ActorStartModule.class)
             //
             // .bindings(bind(actorClass).qualifiedWith(actor.getActorName()).toInstance(subject))
@@ -46,7 +46,7 @@ public abstract class BaseApplicationTest {
     GuiceApplicationBuilder applicationBuilder =
         new GuiceApplicationBuilder()
             .in(new File("path/to/app"))
-            .in(Mode.TEST).configure(ConfigFactory.load())
+            .in(Mode.TEST)
             .disable(StartModule.class);
     for (ACTOR_NAMES actor : actors) {
       applicationBuilder = applicationBuilder.overrides(bind(actor.getActorClass()).to(actorClass));

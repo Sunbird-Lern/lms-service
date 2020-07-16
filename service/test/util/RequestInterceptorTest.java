@@ -54,7 +54,7 @@ public class RequestInterceptorTest {
         new GuiceApplicationBuilder()
             .in(new File("path/to/app"))
             .in(Mode.TEST)
-            .disable(StartModule.class).configure(ConfigFactory.load())
+            .disable(StartModule.class)
             .build();
     Helpers.start(application);
     ssoManager = mock(SSOManager.class);

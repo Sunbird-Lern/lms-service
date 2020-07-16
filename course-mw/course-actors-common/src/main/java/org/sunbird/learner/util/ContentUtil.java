@@ -57,7 +57,7 @@ public final class ContentUtil {
                   + PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_CONTENT_SEARCH_URL),
               params,
               headers);
-      ProjectLogger.log("Content serach response is ==" + response, LoggerEnum.INFO.name());
+      ProjectLogger.log("Content serach response is ==" + response, LoggerEnum.DEBUG.name());
       Map<String, Object> data = mapper.readValue(response, Map.class);
       if (MapUtils.isNotEmpty(data)) {
         String resmsgId = (String) ((Map<String, Object>) data.get("params")).get("resmsgid");

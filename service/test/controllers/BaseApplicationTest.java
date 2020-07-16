@@ -4,6 +4,8 @@ import static play.inject.Bindings.bind;
 
 import java.io.File;
 import java.util.List;
+
+import com.typesafe.config.ConfigFactory;
 import modules.StartModule;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;

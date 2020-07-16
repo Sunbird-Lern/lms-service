@@ -6,6 +6,8 @@ import static org.powermock.api.mockito.PowerMockito.when;
 import java.io.File;
 import java.security.cert.X509Certificate;
 import java.util.*;
+
+import com.typesafe.config.ConfigFactory;
 import modules.StartModule;
 import org.junit.Assert;
 import org.junit.Before;
@@ -24,6 +26,7 @@ import org.sunbird.helper.ServiceFactory;
 import org.sunbird.services.sso.SSOManager;
 import org.sunbird.services.sso.SSOServiceFactory;
 import play.Application;
+import play.LoggerConfigurator;
 import play.Mode;
 import play.api.http.MediaRange;
 import play.api.mvc.Request;

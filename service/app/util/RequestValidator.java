@@ -14,7 +14,6 @@ import org.sunbird.common.models.util.StringFormatter;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.common.responsecode.ResponseMessage;
-import org.sunbird.keys.SunbirdKey;
 
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
@@ -24,7 +23,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * This call will do validation for all incoming request data.

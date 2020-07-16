@@ -4,6 +4,8 @@ import static play.inject.Bindings.bind;
 
 import java.io.File;
 import java.util.List;
+
+import com.typesafe.config.ConfigFactory;
 import modules.StartModule;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -29,7 +31,7 @@ public abstract class BaseApplicationTest {
         new GuiceApplicationBuilder()
             .in(new File("path/to/app"))
             .in(Mode.TEST)
-            .disable(StartModule.class)
+            .disable(StartModule.class).configure(ConfigFactory.load())
             //                        .disable(ActorStartModule.class)
             //
             // .bindings(bind(actorClass).qualifiedWith(actor.getActorName()).toInstance(subject))
@@ -44,7 +46,7 @@ public abstract class BaseApplicationTest {
     GuiceApplicationBuilder applicationBuilder =
         new GuiceApplicationBuilder()
             .in(new File("path/to/app"))
-            .in(Mode.TEST)
+            .in(Mode.TEST).configure(ConfigFactory.load())
             .disable(StartModule.class);
     for (ACTOR_NAMES actor : actors) {
       applicationBuilder = applicationBuilder.overrides(bind(actor.getActorClass()).to(actorClass));

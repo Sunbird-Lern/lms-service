@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
@@ -54,7 +53,6 @@ public class BaseController extends Controller {
   public static final int AKKA_WAIT_TIME = 30;
   private TelemetryLmaxWriter lmaxWriter = TelemetryLmaxWriter.getInstance();
   protected Timeout timeout = new Timeout(AKKA_WAIT_TIME, TimeUnit.SECONDS);
-  private static final String logLevel = "false";
 
   private org.sunbird.common.request.Request initRequest(
       org.sunbird.common.request.Request request, String operation, Http.Request httpRequest) {

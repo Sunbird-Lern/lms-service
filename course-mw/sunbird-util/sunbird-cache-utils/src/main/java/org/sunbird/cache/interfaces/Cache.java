@@ -28,8 +28,6 @@ public interface Cache {
 
   public Object get(String mapName, String key, Class<?> cls);
 
-  public boolean put(String mapName, String key, String value);
-
   public boolean put(String mapName, String key, Object value);
 
   public boolean clear(String mapName);

@@ -468,6 +468,9 @@ public interface ResponseMessage {
     String MISSING_MESSAGE = "Required fields for create course are missing. {0}";
     String CONTENT_TYPE_MISMATCH = "Content Type should be Course.";
     String MIME_TYPE_MISMATCH = "MimeType should be application/vnd.ekstep.content-collection";
+    String GROUP_ID_MISSING = "GroupId is mandatory.";
+    String ACTIVITY_ID_MISSING = "ActivityId is mandatory.";
+    String ACTIVITY_TYPE_MISSING = "ActivityType is mandatory.";
   }
 
   interface Key {
@@ -864,5 +867,8 @@ public interface ResponseMessage {
     String MISSING_CODE = "ERR_COURSE_CREATE_FIELDS_MISSING";
     String CONTENT_TYPE_MISMATCH = "CONTENT_TYPE_MISMATCH";
     String MIME_TYPE_MISMATCH = "MIME_TYPE_MISMATCH";
+    String GROUP_ID_MISSING = "GROUP_ID_MISSING";
+    String ACTIVITY_ID_MISSING = "ACTIVITY_ID_MISSING";
+    String ACTIVITY_TYPE_MISSING = "ACTIVITY_TYPE_MISSING";
   }
 }

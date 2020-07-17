@@ -150,8 +150,10 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     def searchBatchDetails(batchIds: java.util.List[String], request: Request): java.util.List[java.util.Map[String, AnyRef]] = {
         val requestedFields: java.util.List[String] = if(null != request.getContext.get(JsonKey.BATCH_DETAILS).asInstanceOf[Array[String]]) request.getContext.get(JsonKey.BATCH_DETAILS).asInstanceOf[Array[String]](0).split(",").toList.asJava else new java.util.ArrayList[String]()
         if(CollectionUtils.isNotEmpty(requestedFields)) {
-          requestedFields.add(JsonKey.BATCH_ID)
-          getBatches(new java.util.ArrayList[String](batchIds), requestedFields)
+          val fields = new java.util.ArrayList[String]()
+            fields.addAll(requestedFields)
+            fields.add(JsonKey.BATCH_ID)
+          getBatches(new java.util.ArrayList[String](batchIds), fields)
         } else {
             new java.util.ArrayList[util.Map[String, AnyRef]]()
         }

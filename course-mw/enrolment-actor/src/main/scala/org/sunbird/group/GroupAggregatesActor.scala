@@ -1,12 +1,13 @@
 package org.sunbird.group
 
 import java.text.MessageFormat
+
 import org.apache.commons.collections.CollectionUtils
 import org.apache.commons.collections.MapUtils
 import org.apache.commons.lang3.StringUtils
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
-import org.sunbird.common.models.util.ProjectLogger
+import org.sunbird.common.models.util.{ProjectLogger, ProjectUtil}
 import org.sunbird.common.request.Request
 import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.keys.SunbirdKey
@@ -27,7 +28,9 @@ class GroupAggregatesActor extends BaseActor {
   var groupDao: GroupDaoImpl = new GroupDaoImpl()
   var groupAggregatesUtil: GroupAggregatesUtil = new GroupAggregatesUtil()
   var redisCache: Cache = CacheFactory.getInstance()
-  val ttl: Long = 3600
+  val ttl: Long = if(StringUtils.isNotBlank(ProjectUtil.getConfigValue("group_activity_agg_cache_ttl"))) (ProjectUtil.getConfigValue("group_activity_agg_cache_ttl")).toLong else 60
+  val isCacheEnabled = if(StringUtils.isNotBlank(ProjectUtil.getConfigValue("group_activity_agg_cache_enable"))) (ProjectUtil.getConfigValue("group_activity_agg_cache_enable")).toBoolean else false
+
 
   @throws[Throwable]
   override def onReceive(request: Request): Unit = {
@@ -49,7 +52,7 @@ class GroupAggregatesActor extends BaseActor {
 
     try {
       val key = getCacheKey(groupId, activityId, activityType)
-      val cachedResponse = redisCache.get("activity-agg", key, classOf[Response])
+      val cachedResponse = if(isCacheEnabled) redisCache.get("activity-agg", key, classOf[Response]) else null
       val response = {
         if(null != cachedResponse) {
           cachedResponse

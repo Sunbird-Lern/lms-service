@@ -26,8 +26,8 @@ class GroupAggregatesActor extends BaseActor {
   var groupDao: GroupDaoImpl = new GroupDaoImpl()
   var groupAggregatesUtil: GroupAggregatesUtil = new GroupAggregatesUtil()
   var redisCache: Cache = CacheFactory.getInstance()
-  val cacheTtl: String = ProjectUtil.getConfigValue("cache_activity-agg_ttl")
-  val cacheEnabled: String = ProjectUtil.getConfigValue("cache_activity-agg_enable")
+  val cacheTtl: String = ProjectUtil.getConfigValue("cache_activity_agg_ttl")
+  val cacheEnabled: String = ProjectUtil.getConfigValue("cache_activity_agg_enable")
   val ttl: Long = if(StringUtils.isNotBlank(cacheTtl)) cacheTtl.toLong else 3600
   val isCacheEnabled : Boolean = if(StringUtils.isNotBlank(cacheEnabled)) cacheEnabled.toBoolean else false
 

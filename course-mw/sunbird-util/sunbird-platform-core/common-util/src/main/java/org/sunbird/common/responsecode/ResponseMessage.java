@@ -471,7 +471,6 @@ public interface ResponseMessage {
     String GROUP_ID_MISSING = "GroupId is mandatory.";
     String ACTIVITY_ID_MISSING = "ActivityId is mandatory.";
     String ACTIVITY_TYPE_MISSING = "ActivityType is mandatory.";
-    String NO_ENROLLED_MEMBER = "No Members enrolled to the group.";
     String ERR_CALLING_GROUP_API = "Error while calling group api.";
   }
 
@@ -873,6 +872,5 @@ public interface ResponseMessage {
     String ACTIVITY_ID_MISSING = "ACTIVITY_ID_MISSING";
     String ACTIVITY_TYPE_MISSING = "ACTIVITY_TYPE_MISSING";
     String ERR_CALLING_GROUP_API = "ERR_CALLING_GROUOP_API";
-    String NO_ENROLLED_MEMBER = "NO_ENROLLED_MEMBER";
   }
 }

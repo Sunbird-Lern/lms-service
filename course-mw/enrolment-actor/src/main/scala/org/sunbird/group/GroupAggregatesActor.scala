@@ -75,9 +75,10 @@ class GroupAggregatesActor extends BaseActor {
     val readResponse = groupAggregatesUtil.getGroupDetails(groupId, request)
     val members: java.util.List[java.util.Map[String, AnyRef]] = readResponse.get("members").asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
 
-    if (CollectionUtils.isEmpty(members))
+    if (CollectionUtils.isEmpty(members)){
+      ProjectLogger.log("GroupAggregatesAction:getGroupMember:: No member associated with the group: " + groupId)
       new java.util.ArrayList[java.util.Map[String, AnyRef]]
-     else
+    }else
       members
   }
 
@@ -89,10 +90,11 @@ class GroupAggregatesActor extends BaseActor {
         MessageFormat.format(ResponseCode.erroCallGrooupAPI.getErrorMessage()))
 
     val enrolledGroupMemberList: java.util.List[java.util.Map[String, AnyRef]] = userActivityDBResponse.get(SunbirdKey.RESPONSE).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
-    if (CollectionUtils.isEmpty(enrolledGroupMemberList))
-      ProjectCommonException.throwClientErrorException(ResponseCode.noEnrolledMember, ResponseCode.noEnrolledMember.getErrorMessage)
-
-    enrolledGroupMemberList
+    if (CollectionUtils.isEmpty(enrolledGroupMemberList)){
+      ProjectLogger.log("GroupAggregatesAction:getGroupMember:: No member enrolled to the activity: " + activityId)
+      new java.util.ArrayList[java.util.Map[String, AnyRef]]
+    }else
+      enrolledGroupMemberList
   }
 
 
@@ -112,7 +114,7 @@ class GroupAggregatesActor extends BaseActor {
     }})
 
     val membersList = new java.util.ArrayList[java.util.Map[String, AnyRef]]
-    if(CollectionUtils.isNotEmpty(memberList)){
+    if(CollectionUtils.isNotEmpty(enrolledGroupMember) && CollectionUtils.isNotEmpty(memberList)){
       val memberMap: java.util.Map[String, java.util.Map[String, AnyRef]] = memberList.asScala.toList.filter(x=>StringUtils.isNotBlank(x.getOrDefault("userId", "").asInstanceOf[String])).map(obj => (obj.getOrDefault("userId", "").asInstanceOf[String], obj)).toMap.asJava
       for(member <- enrolledGroupMember){
         membersList.add(new java.util.HashMap[String, AnyRef]() {{

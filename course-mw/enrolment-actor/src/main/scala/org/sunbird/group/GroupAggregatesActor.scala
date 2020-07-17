@@ -1,11 +1,12 @@
 package org.sunbird.group
 
+import java.text.MessageFormat
 import org.apache.commons.collections.CollectionUtils
 import org.apache.commons.collections.MapUtils
 import org.apache.commons.lang3.StringUtils
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
-import org.sunbird.common.models.util.{ProjectLogger}
+import org.sunbird.common.models.util.ProjectLogger
 import org.sunbird.common.request.Request
 import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.keys.SunbirdKey
@@ -54,7 +55,11 @@ class GroupAggregatesActor extends BaseActor {
           cachedResponse
         } else {
           val memberList: java.util.List[java.util.Map[String, AnyRef]] = getGroupMember(groupId, request)
-          val enrolledGroupMember: java.util.List[java.util.Map[String, AnyRef]] = getEnrolledGroupMembers(activityId, activityType, memberList)
+          val enrolledGroupMember: java.util.List[java.util.Map[String, AnyRef]] = if (CollectionUtils.isEmpty(memberList)){
+            memberList
+          }else{
+            getEnrolledGroupMembers(activityId, activityType, memberList)
+          }
           populateResponse(groupId, activityId, activityType, enrolledGroupMember, memberList)
         }
       }
@@ -70,29 +75,31 @@ class GroupAggregatesActor extends BaseActor {
     val readResponse = groupAggregatesUtil.getGroupDetails(groupId, request)
     val members: java.util.List[java.util.Map[String, AnyRef]] = readResponse.get("members").asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
 
-    if (CollectionUtils.isEmpty(members))
-      ProjectCommonException.throwClientErrorException(ResponseCode.CLIENT_ERROR, "No member found in this group.")
-
-    members
+    if (CollectionUtils.isEmpty(members)){
+      ProjectLogger.log("GroupAggregatesAction:getGroupMember:: No member associated with the group: " + groupId)
+      new java.util.ArrayList[java.util.Map[String, AnyRef]]
+    }else
+      members
   }
 
   def getEnrolledGroupMembers(activityId: String, activityType: String, memberList: java.util.List[java.util.Map[String, AnyRef]]): java.util.List[java.util.Map[String, AnyRef]]= {
     val userList: java.util.List[String] = memberList.asScala.toList.map(obj => obj.getOrDefault("userId", "").asInstanceOf[String]).filter(x => StringUtils.isNotBlank(x)).asJava
     val userActivityDBResponse = groupDao.read(activityId, activityType, userList)
     if (userActivityDBResponse.getResponseCode != ResponseCode.OK)
-      ProjectCommonException.throwClientErrorException(ResponseCode.SERVER_ERROR, "Error while fetching group activity record.")
+      ProjectCommonException.throwServerErrorException(ResponseCode.erroCallGrooupAPI,
+        MessageFormat.format(ResponseCode.erroCallGrooupAPI.getErrorMessage()))
 
     val enrolledGroupMemberList: java.util.List[java.util.Map[String, AnyRef]] = userActivityDBResponse.get(SunbirdKey.RESPONSE).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
-    if (CollectionUtils.isEmpty(enrolledGroupMemberList))
-      ProjectCommonException.throwClientErrorException(ResponseCode.CLIENT_ERROR, "No user enrolled to this activity.")
-
-    enrolledGroupMemberList
+    if (CollectionUtils.isEmpty(enrolledGroupMemberList)){
+      ProjectLogger.log("GroupAggregatesAction:getGroupMember:: No member enrolled to the activity: " + activityId)
+      new java.util.ArrayList[java.util.Map[String, AnyRef]]
+    }else
+      enrolledGroupMemberList
   }
 
 
   def populateResponse(groupId: String, activityId: String, activityType: String, enrolledGroupMember: java.util.List[java.util.Map[String, AnyRef]], memberList: java.util.List[java.util.Map[String, AnyRef]]): Response= {
 
-    val memberMap: java.util.Map[String, java.util.Map[String, AnyRef]] = memberList.asScala.toList.filter(x=>StringUtils.isNotBlank(x.getOrDefault("userId", "").asInstanceOf[String])).map(obj => (obj.getOrDefault("userId", "").asInstanceOf[String], obj)).toMap.asJava
     val response: Response = new Response()
 
     response.put("groupId", groupId)
@@ -107,25 +114,31 @@ class GroupAggregatesActor extends BaseActor {
     }})
 
     val membersList = new java.util.ArrayList[java.util.Map[String, AnyRef]]
-    for(member <- enrolledGroupMember){
-      membersList.add(new java.util.HashMap[String, AnyRef]() {{
-        for(metadata <- GROUP_MEMBERS_METADATA){
-          put(metadata, memberMap.get(member.get("user_id")).get(metadata))
-        }
+    if(CollectionUtils.isNotEmpty(enrolledGroupMember) && CollectionUtils.isNotEmpty(memberList)){
+      val memberMap: java.util.Map[String, java.util.Map[String, AnyRef]] = memberList.asScala.toList.filter(x=>StringUtils.isNotBlank(x.getOrDefault("userId", "").asInstanceOf[String])).map(obj => (obj.getOrDefault("userId", "").asInstanceOf[String], obj)).toMap.asJava
+      for(member <- enrolledGroupMember){
+        membersList.add(new java.util.HashMap[String, AnyRef]() {{
+          for(metadata <- GROUP_MEMBERS_METADATA){
+            put(metadata, memberMap.get(member.get("user_id")).get(metadata))
+          }
 
-        put("agg", java.util.Arrays.asList(new java.util.HashMap[String, AnyRef]() {{
-          put("metric", "completedCount")
-          val aggLastUpdated = member.get("agg_last_updated").asInstanceOf[java.util.Map[String, AnyRef]]
-          if(MapUtils.isNotEmpty(aggLastUpdated))
-            put("lastUpdatedOn", aggLastUpdated.get("completedCount"))
-          val agg = member.get("agg").asInstanceOf[java.util.Map[String, AnyRef]]
-          if(MapUtils.isNotEmpty(agg))
-            put("value", agg.get("completedCount"))
-        }}))
-      }})
+          put("agg", java.util.Arrays.asList(new java.util.HashMap[String, AnyRef]() {{
+            put("metric", "completedCount")
+            val aggLastUpdated = member.get("agg_last_updated").asInstanceOf[java.util.Map[String, AnyRef]]
+            if(MapUtils.isNotEmpty(aggLastUpdated))
+              put("lastUpdatedOn", aggLastUpdated.get("completedCount"))
+            val agg = member.get("agg").asInstanceOf[java.util.Map[String, AnyRef]]
+            if(MapUtils.isNotEmpty(agg))
+              put("value", agg.get("completedCount"))
+          }}))
+        }})
+      }
+      response.put("members", membersList)
+      setResponseToRedis(getCacheKey(groupId, activityId, activityType), response)
+    }else{
+      response.put("members", membersList)
     }
-    response.put("members", membersList)
-    setResponseToRedis(getCacheKey(groupId, activityId, activityType), response)
+
     response
   }
 

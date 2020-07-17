@@ -40,8 +40,8 @@ class GroupAggregatesActorTest extends FlatSpec with Matchers with MockFactory {
     val redisCache = mock[Cache]
     (redisCache.get(_: String, _:String, _: Class[_])).expects(*,*,*).returns(null)
     (groupAggregateUtil.getGroupDetails(_:String, _:Request)).expects(*,*).returns(blankRestResponse())
-    val response = callActorForFailure(getGroupActivityAggRequest(), Props(new GroupAggregatesActor().setInstanceVariable(groupAggregateUtil, groupDao, redisCache)))
-    assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
+    val response = callActor(getGroupActivityAggRequest(), Props(new GroupAggregatesActor().setInstanceVariable(groupAggregateUtil, groupDao, redisCache)))
+    assert(response.getResponseCode == ResponseCode.OK)
   }
 
   "GroupAggregatesActor" should "return no enrolled member found" in {
@@ -63,7 +63,7 @@ class GroupAggregatesActorTest extends FlatSpec with Matchers with MockFactory {
     (groupAggregateUtil.getGroupDetails(_:String, _:Request)).expects(*,*).returns(validRestResponse())
     (groupDao.read(_: String, _: String, _: java.util.List[String])).expects(*,*,*).returns(errorDBResponse())
     val response = callActorForFailure(getGroupActivityAggRequest(), Props(new GroupAggregatesActor().setInstanceVariable(groupAggregateUtil, groupDao, redisCache)))
-    assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
+    assert(response.getResponseCode == ResponseCode.SERVER_ERROR.getResponseCode)
   }
 
   "GroupAggregatesActor" should "return wrong operation" in {

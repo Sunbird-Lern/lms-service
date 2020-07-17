@@ -858,6 +858,7 @@ public enum ResponseCode {
   groupIdMismatch(ResponseMessage.Key.GROUP_ID_MISSING, ResponseMessage.Message.GROUP_ID_MISSING),
   activityIdMismatch(ResponseMessage.Key.ACTIVITY_ID_MISSING, ResponseMessage.Message.ACTIVITY_ID_MISSING),
   activityTypeMismatch(ResponseMessage.Key.ACTIVITY_TYPE_MISSING, ResponseMessage.Message.ACTIVITY_TYPE_MISSING),
+  erroCallGrooupAPI(ResponseMessage.Key.ERR_CALLING_GROUP_API, ResponseMessage.Message.ERR_CALLING_GROUP_API),
 
   OK(200),
   CLIENT_ERROR(400),

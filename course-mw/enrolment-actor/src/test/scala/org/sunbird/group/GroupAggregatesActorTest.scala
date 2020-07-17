@@ -24,7 +24,7 @@ class GroupAggregatesActorTest extends FlatSpec with Matchers with MockFactory {
     val groupAggregateUtil = mock[GroupAggregatesUtil]
     val groupDao = mock[GroupDaoImpl]
     val redisCache = mock[Cache]
-    (redisCache.get(_: String, _:String, _: Class[_])).expects(*,*,*).returns(null)
+    //(redisCache.get(_: String, _:String, _: Class[_])).expects(*,*,*).returns(null)
     (groupAggregateUtil.getGroupDetails(_:String, _:Request)).expects(*,*).returns(validRestResponse())
     (groupDao.read(_: String, _: String, _: java.util.List[String])).expects(*,*,*).returns(validDBResponse())
     (redisCache.put(_: String, _: String, _: AnyRef)).expects(*,*,*)
@@ -38,32 +38,32 @@ class GroupAggregatesActorTest extends FlatSpec with Matchers with MockFactory {
     val groupAggregateUtil = mock[GroupAggregatesUtil]
     val groupDao = mock[GroupDaoImpl]
     val redisCache = mock[Cache]
-    (redisCache.get(_: String, _:String, _: Class[_])).expects(*,*,*).returns(null)
+    //(redisCache.get(_: String, _:String, _: Class[_])).expects(*,*,*).returns(null)
     (groupAggregateUtil.getGroupDetails(_:String, _:Request)).expects(*,*).returns(blankRestResponse())
-    val response = callActorForFailure(getGroupActivityAggRequest(), Props(new GroupAggregatesActor().setInstanceVariable(groupAggregateUtil, groupDao, redisCache)))
-    assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
+    val response = callActor(getGroupActivityAggRequest(), Props(new GroupAggregatesActor().setInstanceVariable(groupAggregateUtil, groupDao, redisCache)))
+    assert(response.getResponseCode == ResponseCode.OK)
   }
 
   "GroupAggregatesActor" should "return no enrolled member found" in {
     val groupAggregateUtil = mock[GroupAggregatesUtil]
     val groupDao = mock[GroupDaoImpl]
     val redisCache = mock[Cache]
-    (redisCache.get(_: String, _:String, _: Class[_])).expects(*,*,*).returns(null)
+    //(redisCache.get(_: String, _:String, _: Class[_])).expects(*,*,*).returns(null)
     (groupAggregateUtil.getGroupDetails(_:String, _:Request)).expects(*,*).returns(validRestResponse())
     (groupDao.read(_: String, _: String, _: java.util.List[String])).expects(*,*,*).returns(blankDBResponse())
-    val response = callActorForFailure(getGroupActivityAggRequest(), Props(new GroupAggregatesActor().setInstanceVariable(groupAggregateUtil, groupDao, redisCache)))
-    assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
+    val response = callActor(getGroupActivityAggRequest(), Props(new GroupAggregatesActor().setInstanceVariable(groupAggregateUtil, groupDao, redisCache)))
+    assert(response.getResponseCode == ResponseCode.OK)
   }
 
   "GroupAggregatesActor" should "return error db response" in {
     val groupAggregateUtil = mock[GroupAggregatesUtil]
     val groupDao = mock[GroupDaoImpl]
     val redisCache = mock[Cache]
-    (redisCache.get(_: String, _:String, _: Class[_])).expects(*,*,*).returns(null)
+    //(redisCache.get(_: String, _:String, _: Class[_])).expects(*,*,*).returns(null)
     (groupAggregateUtil.getGroupDetails(_:String, _:Request)).expects(*,*).returns(validRestResponse())
     (groupDao.read(_: String, _: String, _: java.util.List[String])).expects(*,*,*).returns(errorDBResponse())
     val response = callActorForFailure(getGroupActivityAggRequest(), Props(new GroupAggregatesActor().setInstanceVariable(groupAggregateUtil, groupDao, redisCache)))
-    assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
+    assert(response.getResponseCode == ResponseCode.SERVER_ERROR.getResponseCode)
   }
 
   "GroupAggregatesActor" should "return wrong operation" in {

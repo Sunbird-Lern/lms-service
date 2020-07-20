@@ -111,7 +111,7 @@ class GroupAggregatesActor extends BaseActor {
       put("type", activityType)
       put("agg", java.util.Arrays.asList(new java.util.HashMap[String, AnyRef](){{
         put("metric", "enrolmentCount")
-        put("lastUpdatedOn", System.currentTimeMillis().toString)
+        put("lastUpdatedOn", System.currentTimeMillis().asInstanceOf[AnyRef])
         put("value", enrolledGroupMember.size.asInstanceOf[AnyRef])
       }}))
     }})

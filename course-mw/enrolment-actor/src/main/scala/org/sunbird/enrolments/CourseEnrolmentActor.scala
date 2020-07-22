@@ -92,7 +92,10 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
 
     def getActiveEnrollments(userId: String): java.util.List[java.util.Map[String, AnyRef]] = {
         val enrolments: java.util.List[java.util.Map[String, AnyRef]] = userCoursesDao.listEnrolments(userId)
-        enrolments.filter(e => e.getOrDefault(JsonKey.ACTIVE, false.asInstanceOf[AnyRef]).asInstanceOf[Boolean]).toList.asJava
+        if (CollectionUtils.isNotEmpty(enrolments))
+            enrolments.filter(e => e.getOrDefault(JsonKey.ACTIVE, false.asInstanceOf[AnyRef]).asInstanceOf[Boolean]).toList.asJava
+        else
+            new util.ArrayList[java.util.Map[String, AnyRef]]()
     }
 
     def addCourseDetails(activeEnrolments: java.util.List[java.util.Map[String, AnyRef]], request:Request): java.util.List[java.util.Map[String, AnyRef]] = {

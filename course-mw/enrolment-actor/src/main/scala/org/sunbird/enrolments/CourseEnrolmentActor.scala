@@ -153,6 +153,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
           val fields = new java.util.ArrayList[String]()
             fields.addAll(requestedFields)
             fields.add(JsonKey.BATCH_ID)
+            fields.add(JsonKey.IDENTIFIER)
           getBatches(new java.util.ArrayList[String](batchIds), fields)
         } else {
             new java.util.ArrayList[util.Map[String, AnyRef]]()

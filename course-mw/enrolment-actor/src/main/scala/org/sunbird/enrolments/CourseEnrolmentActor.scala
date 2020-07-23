@@ -82,6 +82,14 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val enrolments: java.util.List[java.util.Map[String, AnyRef]] = {
             if(CollectionUtils.isNotEmpty(activeEnrolments)) {
                 val enrolmentList : java.util.List[java.util.Map[String, AnyRef]] = addCourseDetails(activeEnrolments, request)
+                //To Do : A temporary change to support updation of completed course remove in next release
+                enrolmentList.map(enrolment => {
+                    if (enrolment.get("progress").asInstanceOf[Integer] < enrolment.get("leafNodesCount").asInstanceOf[Integer]) {
+                        enrolment.put("status", 1.asInstanceOf[Integer])
+                        enrolment.put("completedOn", null)
+                    }
+                    enrolment
+                }).toList.asJava
                 addBatchDetails(enrolmentList, request)
             } else new java.util.ArrayList[java.util.Map[String, AnyRef]]()
         }

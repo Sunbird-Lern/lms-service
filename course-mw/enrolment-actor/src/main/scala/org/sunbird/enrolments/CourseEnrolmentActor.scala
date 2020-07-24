@@ -144,6 +144,11 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             val batchMap = batchDetails.map(b => b.get(JsonKey.BATCH_ID).asInstanceOf[String] -> b).toMap
             enrolmentList.map(enrolment => {
                 enrolment.put(JsonKey.BATCH, batchMap.getOrElse(enrolment.get(JsonKey.BATCH_ID).asInstanceOf[String], new java.util.HashMap[String, AnyRef]()))
+                //To Do : A temporary change to support updation of completed course remove in next release
+                if (enrolment.get("progress").asInstanceOf[Integer] < enrolment.get("leafNodesCount").asInstanceOf[Integer]) {
+                    enrolment.put("status", 1.asInstanceOf[Integer])
+                    enrolment.put("completedOn", null)
+                }
                 enrolment
             }).toList.asJava
         } else

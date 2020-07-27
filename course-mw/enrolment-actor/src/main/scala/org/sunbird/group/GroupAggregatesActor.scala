@@ -109,8 +109,8 @@ class GroupAggregatesActor extends BaseActor {
     response.put("groupId", groupId)
     val enrolmentCount = finalMemberList.map(m => m.getOrDefault("userId", "").asInstanceOf[String])
       .filter(uId => StringUtils.isNotBlank(uId)).distinct.size
-    val memberAggLastUpdated = finalMemberList.map(m => m.getOrElse("lastUpdatedOn", 0).asInstanceOf[Number].longValue()).max
-    val activityLastUpdatedOn = if (memberAggLastUpdated.longValue() == 0) System.currentTimeMillis else memberAggLastUpdated.longValue
+    val lastUpdatedOnList = finalMemberList.map(m => m.getOrElse("lastUpdatedOn", 0).asInstanceOf[Number].longValue())
+    val activityLastUpdatedOn = if (lastUpdatedOnList.size == 0) System.currentTimeMillis else lastUpdatedOnList.max
     val activityAggs = List(Map("metric" -> "enrolmentCount", "lastUpdatedOn" -> activityLastUpdatedOn, "value" -> enrolmentCount).asJava).asJava
     response.put("activity", Map("id" -> activityId, "type" -> activityType, "agg" -> activityAggs).asJava)
     response.put("members", finalMemberList.asJava)

@@ -101,7 +101,7 @@ class GroupAggregatesActor extends BaseActor {
         val dbAgg = dbAggRecord.get("agg").asInstanceOf[java.util.Map[String, AnyRef]]
         val aggLastUpdated = dbAggRecord.get("agg_last_updated").asInstanceOf[java.util.Map[String, AnyRef]]
         val agg = List(Map("metric"-> aggName, "value" -> dbAgg.get(aggName), "lastUpdatedOn" -> aggLastUpdated.get(aggName)))
-        membersMap.filterKeys(key => GROUP_MEMBERS_METADATA.contains(key)) ++ Map("agg" -> agg)
+        (membersMap.filterKeys(key => GROUP_MEMBERS_METADATA.contains(key)) ++ Map("agg" -> agg)).asJava
       }).toList
     } else List()
 

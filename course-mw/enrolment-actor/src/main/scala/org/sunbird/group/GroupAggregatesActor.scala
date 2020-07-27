@@ -123,8 +123,8 @@ class GroupAggregatesActor extends BaseActor {
   def activityLastUpdated(membersAggList: List[java.util.Map[String, AnyRef]]) = {
     if (membersAggList.nonEmpty) {
       val aggLatestUpdated = membersAggList.map(m => m.get("agg").asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]])
-        .flatten.map(agg => agg.getOrDefault("lastUpdatedOn", 0.asInstanceOf[Number]).asInstanceOf[Number].longValue()).max
-      if (aggLatestUpdated == 0) System.currentTimeMillis else aggLatestUpdated
+        .flatten.map(agg => agg.get("lastUpdatedOn").asInstanceOf[java.util.Date]).max
+      aggLatestUpdated.getTime
     } else System.currentTimeMillis
   }
 

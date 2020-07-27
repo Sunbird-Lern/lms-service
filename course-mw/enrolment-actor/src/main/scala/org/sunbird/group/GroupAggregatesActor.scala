@@ -110,8 +110,7 @@ class GroupAggregatesActor extends BaseActor {
     response.put("groupId", groupId)
     val enrolmentCount = finalMemberList.map(m => m.getOrDefault("userId", "").asInstanceOf[String])
       .filter(uId => StringUtils.isNotBlank(uId)).distinct.size
-    val lastUpdatedOnList = finalMemberList.map(m => m.getOrElse("lastUpdatedOn", 0).asInstanceOf[Number].longValue())
-    val activityLastUpdatedOn = if (lastUpdatedOnList.size == 0) System.currentTimeMillis else lastUpdatedOnList.max
+    val activityLastUpdatedOn = activityLastUpdated(finalMemberList)
     val activityAggs = List(Map("metric" -> "enrolmentCount", "lastUpdatedOn" -> activityLastUpdatedOn, "value" -> enrolmentCount).asJava).asJava
     response.put("activity", Map("id" -> activityId, "type" -> activityType, "agg" -> activityAggs).asJava)
     response.put("members", finalMemberList.asJava)
@@ -119,6 +118,13 @@ class GroupAggregatesActor extends BaseActor {
       setResponseToRedis(getCacheKey(groupId, activityId, activityType), response)
     }
     response
+  }
+
+  def activityLastUpdated(membersAggList: List[java.util.Map[String, AnyRef]]) = {
+    if (membersAggList.nonEmpty) {
+      val aggLatestUpdated = membersAggList.map(m => m.get("agg").asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]).flatten.map(agg => agg.getOrDefault("lastUpdatedOn", 0).asInstanceOf[Number].longValue()).max
+      if (aggLatestUpdated == 0) System.currentTimeMillis else aggLatestUpdated
+    } else System.currentTimeMillis
   }
 
   def setResponseToRedis(key: String, response: Response) :Unit = {

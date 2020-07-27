@@ -1,9 +1,7 @@
 package org.sunbird.group
 
 import java.text.MessageFormat
-
 import org.apache.commons.collections.CollectionUtils
-import org.apache.commons.collections.MapUtils
 import org.apache.commons.lang3.StringUtils
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
@@ -15,22 +13,16 @@ import org.sunbird.learner.actors.group.dao.impl.GroupDaoImpl
 import org.sunbird.actor.base.BaseActor
 import org.sunbird.cache.CacheFactory
 import org.sunbird.cache.interfaces.Cache
-
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
-
 class GroupAggregatesActor extends BaseActor {
 
-
   private val GROUP_MEMBERS_METADATA: java.util.List[String] = java.util.Arrays.asList("name", "userId", "role", "status", "createdBy")
-
-
   var groupDao: GroupDaoImpl = new GroupDaoImpl()
   var groupAggregatesUtil: GroupAggregatesUtil = new GroupAggregatesUtil()
   var redisCache: Cache = CacheFactory.getInstance()
   val ttl: Long = if(StringUtils.isNotBlank(ProjectUtil.getConfigValue("group_activity_agg_cache_ttl"))) (ProjectUtil.getConfigValue("group_activity_agg_cache_ttl")).toLong else 60
   val isCacheEnabled = if(StringUtils.isNotBlank(ProjectUtil.getConfigValue("group_activity_agg_cache_enable"))) (ProjectUtil.getConfigValue("group_activity_agg_cache_enable")).toBoolean else false
-
 
   @throws[Throwable]
   override def onReceive(request: Request): Unit = {
@@ -57,13 +49,13 @@ class GroupAggregatesActor extends BaseActor {
         if(null != cachedResponse) {
           cachedResponse
         } else {
-          val memberList: java.util.List[java.util.Map[String, AnyRef]] = getGroupMember(groupId, request)
-          val enrolledGroupMember: java.util.List[java.util.Map[String, AnyRef]] = if (CollectionUtils.isEmpty(memberList)){
-            memberList
-          }else{
-            getEnrolledGroupMembers(activityId, activityType, memberList)
+          val groupMembers: java.util.List[java.util.Map[String, AnyRef]] = getGroupMember(groupId, request)
+          val usersAggs: java.util.List[java.util.Map[String, AnyRef]] = if (CollectionUtils.isEmpty(groupMembers)) {
+            groupMembers
+          } else {
+            getUserActivityAggs(activityId, activityType, groupMembers)
           }
-          populateResponse(groupId, activityId, activityType, enrolledGroupMember, memberList)
+          populateResponse(groupId, activityId, activityType, usersAggs, groupMembers)
         }
       }
       sender().tell(response, self)
@@ -85,7 +77,7 @@ class GroupAggregatesActor extends BaseActor {
       members
   }
 
-  def getEnrolledGroupMembers(activityId: String, activityType: String, memberList: java.util.List[java.util.Map[String, AnyRef]]): java.util.List[java.util.Map[String, AnyRef]]= {
+  def getUserActivityAggs(activityId: String, activityType: String, memberList: java.util.List[java.util.Map[String, AnyRef]]): java.util.List[java.util.Map[String, AnyRef]]= {
     val userList: java.util.List[String] = memberList.asScala.toList.map(obj => obj.getOrDefault("userId", "").asInstanceOf[String]).filter(x => StringUtils.isNotBlank(x)).asJava
     val userActivityDBResponse = groupDao.read(activityId, activityType, userList)
     if (userActivityDBResponse.getResponseCode != ResponseCode.OK)
@@ -100,49 +92,40 @@ class GroupAggregatesActor extends BaseActor {
       enrolledGroupMemberList
   }
 
-
-  def populateResponse(groupId: String, activityId: String, activityType: String, enrolledGroupMember: java.util.List[java.util.Map[String, AnyRef]], memberList: java.util.List[java.util.Map[String, AnyRef]]): Response= {
+  def populateResponse(groupId: String, activityId: String, activityType: String, usersAggs: java.util.List[java.util.Map[String, AnyRef]], groupMembers: java.util.List[java.util.Map[String, AnyRef]]): Response= {
+    val finalMemberList = if(CollectionUtils.isNotEmpty(usersAggs) && CollectionUtils.isNotEmpty(groupMembers)) {
+      val membersMap = groupMembers.asScala.toList.filter(x => StringUtils.isNotBlank(x.getOrDefault("userId", "").asInstanceOf[String]))
+        .map(obj => (obj.getOrDefault("userId", "").asInstanceOf[String], obj)).toMap.asJava
+      val aggName = "completedCount"
+      usersAggs.map(dbAggRecord => {
+        val dbAgg = dbAggRecord.get("agg").asInstanceOf[java.util.Map[String, AnyRef]]
+        val aggLastUpdated = dbAggRecord.get("agg_last_updated").asInstanceOf[java.util.Map[String, AnyRef]]
+        val agg = List(Map("metric"-> aggName, "value" -> dbAgg.get(aggName), "lastUpdatedOn" -> aggLastUpdated.get(aggName)).asJava).asJava
+        val userId = dbAggRecord.get("user_id").asInstanceOf[String]
+        (membersMap.get(userId).filterKeys(key => GROUP_MEMBERS_METADATA.contains(key)) ++ Map("agg" -> agg)).asJava
+      }).toList
+    } else List()
 
     val response: Response = new Response()
-
     response.put("groupId", groupId)
-    response.put("activity", new java.util.HashMap[String, AnyRef](){{
-      put("id", activityId)
-      put("type", activityType)
-      put("agg", java.util.Arrays.asList(new java.util.HashMap[String, AnyRef](){{
-        put("metric", "enrolmentCount")
-        put("lastUpdatedOn", System.currentTimeMillis().asInstanceOf[AnyRef])
-        put("value", enrolledGroupMember.size.asInstanceOf[AnyRef])
-      }}))
-    }})
-
-    val membersList = new java.util.ArrayList[java.util.Map[String, AnyRef]]
-    if(CollectionUtils.isNotEmpty(enrolledGroupMember) && CollectionUtils.isNotEmpty(memberList)){
-      val memberMap: java.util.Map[String, java.util.Map[String, AnyRef]] = memberList.asScala.toList.filter(x=>StringUtils.isNotBlank(x.getOrDefault("userId", "").asInstanceOf[String])).map(obj => (obj.getOrDefault("userId", "").asInstanceOf[String], obj)).toMap.asJava
-      for(member <- enrolledGroupMember){
-        membersList.add(new java.util.HashMap[String, AnyRef]() {{
-          for(metadata <- GROUP_MEMBERS_METADATA){
-            put(metadata, memberMap.get(member.get("user_id")).get(metadata))
-          }
-
-          put("agg", java.util.Arrays.asList(new java.util.HashMap[String, AnyRef]() {{
-            put("metric", "completedCount")
-            val aggLastUpdated = member.get("agg_last_updated").asInstanceOf[java.util.Map[String, AnyRef]]
-            if(MapUtils.isNotEmpty(aggLastUpdated))
-              put("lastUpdatedOn", aggLastUpdated.get("completedCount"))
-            val agg = member.get("agg").asInstanceOf[java.util.Map[String, AnyRef]]
-            if(MapUtils.isNotEmpty(agg))
-              put("value", agg.get("completedCount"))
-          }}))
-        }})
-      }
-      response.put("members", membersList)
+    val enrolmentCount = finalMemberList.map(m => m.getOrDefault("userId", "").asInstanceOf[String])
+      .filter(uId => StringUtils.isNotBlank(uId)).distinct.size
+    val activityLastUpdatedOn = activityLastUpdated(finalMemberList)
+    val activityAggs = List(Map("metric" -> "enrolmentCount", "lastUpdatedOn" -> activityLastUpdatedOn, "value" -> enrolmentCount).asJava).asJava
+    response.put("activity", Map("id" -> activityId, "type" -> activityType, "agg" -> activityAggs).asJava)
+    response.put("members", finalMemberList.asJava)
+    if (finalMemberList.nonEmpty && finalMemberList.size > 0) {
       setResponseToRedis(getCacheKey(groupId, activityId, activityType), response)
-    }else{
-      response.put("members", membersList)
     }
-
     response
+  }
+
+  def activityLastUpdated(membersAggList: List[java.util.Map[String, AnyRef]]) = {
+    if (membersAggList.nonEmpty) {
+      val aggLatestUpdated = membersAggList.map(m => m.get("agg").asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]])
+        .flatten.map(agg => agg.get("lastUpdatedOn").asInstanceOf[java.util.Date]).max
+      aggLatestUpdated.getTime
+    } else System.currentTimeMillis
   }
 
   def setResponseToRedis(key: String, response: Response) :Unit = {
@@ -157,4 +140,3 @@ class GroupAggregatesActor extends BaseActor {
     this
   }
 }
-

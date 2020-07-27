@@ -119,7 +119,7 @@ class GroupAggregatesActorTest extends FlatSpec with Matchers with MockFactory {
           put("completedCount", 1.asInstanceOf[AnyRef])
         }})
         put("agg_last_updated", new util.HashMap[String, AnyRef](){{
-          put("completedCount", System.currentTimeMillis().asInstanceOf[AnyRef])
+          put("completedCount", new java.util.Date())
         }})
       }})
     }}

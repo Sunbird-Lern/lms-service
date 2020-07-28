@@ -47,14 +47,17 @@ class GroupAggregatesActor extends BaseActor {
       val cachedResponse = if(isCacheEnabled) redisCache.get("activity-agg", key, classOf[Response]) else null
       val response = {
         if(null != cachedResponse) {
+          ProjectLogger.log("GroupAggregatesAction:getGroupActivityAggregates:cachedResponse :: Data fetched from cache.")
           cachedResponse
         } else {
           val groupMembers: java.util.List[java.util.Map[String, AnyRef]] = getGroupMember(groupId, request)
+          ProjectLogger.log("GroupAggregatesAction:getGroupActivityAggregates:groupMembers :: Group: " + groupId + ":: Member Count : " + groupMembers.size())
           val usersAggs: java.util.List[java.util.Map[String, AnyRef]] = if (CollectionUtils.isEmpty(groupMembers)) {
             groupMembers
           } else {
             getUserActivityAggs(activityId, activityType, groupMembers)
           }
+          ProjectLogger.log("GroupAggregatesAction:getGroupActivityAggregates:usersAggs :: Group: " + groupId + " :: Activity : " + activityId + " :: Enrolled Member Count: " + usersAggs.size())
           populateResponse(groupId, activityId, activityType, usersAggs, groupMembers)
         }
       }
@@ -105,6 +108,8 @@ class GroupAggregatesActor extends BaseActor {
         (membersMap.get(userId).filterKeys(key => GROUP_MEMBERS_METADATA.contains(key)) ++ Map("agg" -> agg)).asJava
       }).toList
     } else List()
+
+    ProjectLogger.log("GroupAggregatesAction:populateResponse:finalMemberList :: Group: " + groupId + " :: Activity : " + activityId + " :: Final Member List Count: " + finalMemberList.size)
 
     val response: Response = new Response()
     response.put("groupId", groupId)

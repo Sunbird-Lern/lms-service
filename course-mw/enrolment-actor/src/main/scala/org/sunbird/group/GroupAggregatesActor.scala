@@ -1,11 +1,12 @@
 package org.sunbird.group
 
 import java.text.MessageFormat
+
 import org.apache.commons.collections.CollectionUtils
 import org.apache.commons.lang3.StringUtils
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
-import org.sunbird.common.models.util.{ProjectLogger, ProjectUtil}
+import org.sunbird.common.models.util.{LoggerEnum, ProjectLogger, ProjectUtil}
 import org.sunbird.common.request.Request
 import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.keys.SunbirdKey
@@ -13,6 +14,7 @@ import org.sunbird.learner.actors.group.dao.impl.GroupDaoImpl
 import org.sunbird.actor.base.BaseActor
 import org.sunbird.cache.CacheFactory
 import org.sunbird.cache.interfaces.Cache
+
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 class GroupAggregatesActor extends BaseActor {
@@ -47,14 +49,17 @@ class GroupAggregatesActor extends BaseActor {
       val cachedResponse = if(isCacheEnabled) redisCache.get("activity-agg", key, classOf[Response]) else null
       val response = {
         if(null != cachedResponse) {
+          ProjectLogger.log("GroupAggregatesAction:getGroupActivityAggregates:cachedResponse :: Data fetched from cache.", LoggerEnum.INFO.name)
           cachedResponse
         } else {
           val groupMembers: java.util.List[java.util.Map[String, AnyRef]] = getGroupMember(groupId, request)
+          ProjectLogger.log("GroupAggregatesAction:getGroupActivityAggregates:groupMembers :: Group: " + groupId + ":: Member Count : " + groupMembers.size(), LoggerEnum.INFO.name)
           val usersAggs: java.util.List[java.util.Map[String, AnyRef]] = if (CollectionUtils.isEmpty(groupMembers)) {
             groupMembers
           } else {
             getUserActivityAggs(activityId, activityType, groupMembers)
           }
+          ProjectLogger.log("GroupAggregatesAction:getGroupActivityAggregates:usersAggs :: Group: " + groupId + " :: Activity : " + activityId + " :: Enrolled Member Count: " + usersAggs.size(), LoggerEnum.INFO.name)
           populateResponse(groupId, activityId, activityType, usersAggs, groupMembers)
         }
       }
@@ -71,7 +76,7 @@ class GroupAggregatesActor extends BaseActor {
     val members: java.util.List[java.util.Map[String, AnyRef]] = readResponse.get("members").asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
 
     if (CollectionUtils.isEmpty(members)){
-      ProjectLogger.log("GroupAggregatesAction:getGroupMember:: No member associated with the group: " + groupId)
+      ProjectLogger.log("GroupAggregatesAction:getGroupMember:: No member associated with the group: " + groupId, LoggerEnum.INFO.name)
       new java.util.ArrayList[java.util.Map[String, AnyRef]]
     }else
       members
@@ -86,7 +91,7 @@ class GroupAggregatesActor extends BaseActor {
 
     val enrolledGroupMemberList: java.util.List[java.util.Map[String, AnyRef]] = userActivityDBResponse.get(SunbirdKey.RESPONSE).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
     if (CollectionUtils.isEmpty(enrolledGroupMemberList)){
-      ProjectLogger.log("GroupAggregatesAction:getGroupMember:: No member enrolled to the activity: " + activityId)
+      ProjectLogger.log("GroupAggregatesAction:getGroupMember:: No member enrolled to the activity: " + activityId, LoggerEnum.INFO.name)
       new java.util.ArrayList[java.util.Map[String, AnyRef]]
     }else
       enrolledGroupMemberList
@@ -105,6 +110,8 @@ class GroupAggregatesActor extends BaseActor {
         (membersMap.get(userId).filterKeys(key => GROUP_MEMBERS_METADATA.contains(key)) ++ Map("agg" -> agg)).asJava
       }).toList
     } else List()
+
+    ProjectLogger.log("GroupAggregatesAction:populateResponse:finalMemberList :: Group: " + groupId + " :: Activity : " + activityId + " :: Final Member List Count: " + finalMemberList.size, LoggerEnum.INFO.name)
 
     val response: Response = new Response()
     response.put("groupId", groupId)

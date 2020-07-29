@@ -29,14 +29,10 @@ class GroupAggregatesUtil {
         put("x-authenticated-user-token", request.getContext.get(JsonKey.HEADER).asInstanceOf[Map[String, String]].get(HeaderParam.X_Authenticated_User_Token.getName))
       }}
 
-      ProjectLogger.log("GroupAggregatesUtil:getGroupDetails:: headers: " + headers, LoggerEnum.INFO.name)
       ProjectLogger.log("GroupAggregatesActor:getGroupDetails : Read request group : " + request.get(SunbirdKey.GROUPID), LoggerEnum.INFO.name)
       val groupResponse = Unirest.get(requestUrl).headers(headers).asString
 
-      ProjectLogger.log("GroupAggregatesUtil:getGroupDetails:: groupResponse.getStatus: " + groupResponse.getStatus, LoggerEnum.INFO.name)
-      ProjectLogger.log("GroupAggregatesUtil:getGroupDetails:: groupResponse.getStatusText: " + groupResponse.getStatusText, LoggerEnum.INFO.name)
-      ProjectLogger.log("GroupAggregatesUtil:getGroupDetails:: groupResponse.getStatusText: " + groupResponse, LoggerEnum.INFO.name)
-      if ( null== groupResponse && groupResponse.getStatus != ResponseCode.OK.getResponseCode)
+      if ( null== groupResponse || groupResponse.getStatus != ResponseCode.OK.getResponseCode)
         ProjectCommonException.throwClientErrorException(ResponseCode.SERVER_ERROR, "Error while fetching group members record.")
 
       mapper.readValue(groupResponse.getBody, classOf[Response])

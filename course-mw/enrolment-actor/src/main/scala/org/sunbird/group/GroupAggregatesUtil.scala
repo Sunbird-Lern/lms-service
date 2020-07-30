@@ -31,9 +31,12 @@ class GroupAggregatesUtil {
 
       ProjectLogger.log("GroupAggregatesActor:getGroupDetails : Read request group : " + request.get(SunbirdKey.GROUPID), LoggerEnum.INFO.name)
       val groupResponse = Unirest.get(requestUrl).headers(headers).asString
+      ProjectLogger.log("GroupAggregatesActor:getGroupDetails : groupResponse : " + groupResponse, LoggerEnum.INFO.name)
 
-      if ( null== groupResponse || groupResponse.getStatus != ResponseCode.OK.getResponseCode)
-        ProjectCommonException.throwClientErrorException(ResponseCode.SERVER_ERROR, "Error while fetching group members record.")
+      if ( null== groupResponse || groupResponse.getStatus != ResponseCode.OK.getResponseCode){
+        ProjectLogger.log("GroupAggregatesActor:getGroupDetails : groupResponse.getStatus : " + groupResponse.getStatus, LoggerEnum.INFO.name)
+        ProjectCommonException.throwServerErrorException(ResponseCode.SERVER_ERROR, "Error while fetching group members record.")
+      }
 
       mapper.readValue(groupResponse.getBody, classOf[Response])
 

@@ -97,9 +97,8 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
 
     def list(request: Request): Unit = {
         val userId = request.get(JsonKey.USER_ID).asInstanceOf[String]
-        val response = if (isCacheEnabled && StringUtils.equalsIgnoreCase(request.getContext.get("queryParams")
-            .asInstanceOf[util.Map[String, AnyRef]].get("cache").asInstanceOf[String], "false"))
-            redisCache.get("user-enrolments", getCacheKey(userId))
+        val response = if (isCacheEnabled && request.getContext.get("cache").asInstanceOf[Boolean])
+            getResponseFromRedis(getCacheKey(userId))
         else {
             val activeEnrolments: java.util.List[java.util.Map[String, AnyRef]] = getActiveEnrollments(userId)
             val enrolments: java.util.List[java.util.Map[String, AnyRef]] = {

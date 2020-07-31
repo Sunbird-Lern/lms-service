@@ -42,13 +42,15 @@ public class CourseEnrollmentController extends BaseController {
               fields.addAll(Arrays.asList(JsonKey.NAME, JsonKey.DESCRIPTION, JsonKey.LEAF_NODE_COUNT, JsonKey.APP_ICON));
               queryParams.put("fields", fields.toArray(new String[0]));
           }
+          if(queryParams.containsKey("cache")) {
+              request.getContext().put("cache", Boolean.parseBoolean(queryParams.get("cache")[0]));
+          }
           request
               .getContext()
               .put(JsonKey.URL_QUERY_STRING, getQueryString(queryParams));
           request
               .getContext()
               .put(JsonKey.BATCH_DETAILS, httpRequest.queryString().get(JsonKey.BATCH_DETAILS));
-            request.getContext().putAll(queryParams);
           return null;
         },
         ProjectUtil.getLmsUserId(uid),

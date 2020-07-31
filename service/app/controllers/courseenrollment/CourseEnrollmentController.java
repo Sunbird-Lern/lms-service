@@ -32,7 +32,7 @@ public class CourseEnrollmentController extends BaseController {
   private ActorRef learnerStateActorRef;
 
   public CompletionStage<Result> getEnrolledCourses(String uid, Http.Request httpRequest) {
-    return handleRequest(courseEnrolmentActor, "listEnrol", 
+    return handleRequest(courseEnrolmentActor, "listEnrol",
         httpRequest.body().asJson(),
         (req) -> {
           Request request = (Request) req;
@@ -48,6 +48,7 @@ public class CourseEnrollmentController extends BaseController {
           request
               .getContext()
               .put(JsonKey.BATCH_DETAILS, httpRequest.queryString().get(JsonKey.BATCH_DETAILS));
+            request.getContext().putAll(queryParams);
           return null;
         },
         ProjectUtil.getLmsUserId(uid),

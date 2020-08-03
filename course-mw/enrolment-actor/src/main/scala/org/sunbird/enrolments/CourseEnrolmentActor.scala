@@ -97,23 +97,14 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
 
     def list(request: Request): Unit = {
         val userId = request.get(JsonKey.USER_ID).asInstanceOf[String]
-        val response = if (isCacheEnabled && request.getContext.get("cache").asInstanceOf[Boolean])
-            getResponseFromRedis(getCacheKey(userId))
-        else {
-            val activeEnrolments: java.util.List[java.util.Map[String, AnyRef]] = getActiveEnrollments(userId)
-            val enrolments: java.util.List[java.util.Map[String, AnyRef]] = {
-                if (CollectionUtils.isNotEmpty(activeEnrolments)) {
-                    val enrolmentList: java.util.List[java.util.Map[String, AnyRef]] = addCourseDetails(activeEnrolments, request)
-                    updateProgressData(enrolmentList, userId)
-                    addBatchDetails(enrolmentList, request)
-                } else new java.util.ArrayList[java.util.Map[String, AnyRef]]()
-            }
-            val resp: Response = new Response()
-            resp.put(JsonKey.COURSES, enrolments)
-            if (isCacheEnabled)
-                setResponseToRedis(getCacheKey(userId), resp)
-            resp
-        }
+        val response = if (isCacheEnabled && request.getContext.get("cache").asInstanceOf[Boolean]) {
+            val resp = getResponseFromRedis(getCacheKey(userId))
+            if (null != resp)
+                resp
+            else
+                getEnrolmentsData(request, userId)
+        } else
+            getEnrolmentsData(request, userId)
         sender().tell(response, self)
     }
 
@@ -316,9 +307,26 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
 
     def getResponseFromRedis(key: String): Response = {
         val responseString = redisCache.get("user-enrolments", key)
-        mapper.readValue(responseString, classOf[Response])
+        if (responseString != null) {
+            mapper.readValue(responseString, classOf[Response])
+        } else null
     }
 
+    def getEnrolmentsData(request: Request, userId: String) = {
+        val activeEnrolments: java.util.List[java.util.Map[String, AnyRef]] = getActiveEnrollments(userId)
+        val enrolments: java.util.List[java.util.Map[String, AnyRef]] = {
+            if (CollectionUtils.isNotEmpty(activeEnrolments)) {
+                val enrolmentList: java.util.List[java.util.Map[String, AnyRef]] = addCourseDetails(activeEnrolments, request)
+                updateProgressData(enrolmentList, userId)
+                addBatchDetails(enrolmentList, request)
+            } else new java.util.ArrayList[java.util.Map[String, AnyRef]]()
+        }
+        val resp: Response = new Response()
+        resp.put(JsonKey.COURSES, enrolments)
+        if (isCacheEnabled)
+            setResponseToRedis(getCacheKey(userId), resp)
+        resp
+    }
     // TODO: to be removed once all are in scala.
     def setDao(courseDao: CourseBatchDao, userDao: UserCoursesDao, groupDao: GroupDaoImpl, redisCache: RedisCache) = {
         courseBatchDao = courseDao

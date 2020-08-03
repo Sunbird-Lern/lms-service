@@ -48,6 +48,7 @@ public class CassandraDACImpl extends CassandraOperationImpl {
       }
 
       ResultSet results = null;
+      logQueryData(select.getQueryString());
       results = session.execute(select);
       response = CassandraUtil.createResponse(results);
     } catch (Exception e) {

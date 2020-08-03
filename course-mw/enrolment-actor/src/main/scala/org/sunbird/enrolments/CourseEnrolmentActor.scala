@@ -1,6 +1,7 @@
 package org.sunbird.enrolments
 
 import java.sql.Timestamp
+import java.text.MessageFormat
 import java.time.format.DateTimeFormatter
 import java.time.{LocalDate, LocalDateTime}
 import java.util
@@ -11,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import javax.inject.{Inject, Named}
 import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang3.StringUtils
+import org.sunbird.cache.CacheFactory
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
 import org.sunbird.common.models.util.ProjectUtil.EnrolmentType
@@ -19,9 +21,11 @@ import org.sunbird.common.request.Request
 import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.learner.actors.coursebatch.dao.impl.{CourseBatchDaoImpl, UserCoursesDaoImpl}
 import org.sunbird.learner.actors.coursebatch.dao.{CourseBatchDao, UserCoursesDao}
+import org.sunbird.learner.actors.group.dao.impl.GroupDaoImpl
 import org.sunbird.learner.util.{ContentSearchUtil, Util}
 import org.sunbird.models.course.batch.CourseBatch
 import org.sunbird.models.user.courses.UserCourses
+import org.sunbird.redis.RedisCache
 import org.sunbird.telemetry.util.TelemetryUtil
 
 import scala.collection.JavaConversions._
@@ -35,7 +39,15 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
      */
     var courseBatchDao: CourseBatchDao = new CourseBatchDaoImpl()
     var userCoursesDao: UserCoursesDao = new UserCoursesDaoImpl()
-    
+    var groupDao: GroupDaoImpl = new GroupDaoImpl()
+
+    val isCacheEnabled = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("user_enrolments_response_cache_enable")))
+        (ProjectUtil.getConfigValue("user_enrolments_response_cache_enable")).toBoolean else true
+    val ttl: Long = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("user_enrolments_response_cache_ttl")))
+        (ProjectUtil.getConfigValue("user_enrolments_response_cache_ttl")).toLong else 60
+    var redisCache = CacheFactory.getInstance()
+    val mapper: ObjectMapper = new ObjectMapper()
+
     override def onReceive(request: Request): Unit = {
         Util.initializeContext(request, TelemetryEnvKey.BATCH)
         request.getOperation match {
@@ -78,15 +90,14 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
 
     def list(request: Request): Unit = {
         val userId = request.get(JsonKey.USER_ID).asInstanceOf[String]
-        val activeEnrolments:java.util.List[java.util.Map[String, AnyRef]] = getActiveEnrollments(userId)
-        val enrolments: java.util.List[java.util.Map[String, AnyRef]] = {
-            if(CollectionUtils.isNotEmpty(activeEnrolments)) {
-                val enrolmentList : java.util.List[java.util.Map[String, AnyRef]] = addCourseDetails(activeEnrolments, request)
-                addBatchDetails(enrolmentList, request)
-            } else new java.util.ArrayList[java.util.Map[String, AnyRef]]()
-        }
-        val response: Response = new Response()
-        response.put(JsonKey.COURSES, enrolments)
+        val response = if (isCacheEnabled && request.getContext.get("cache").asInstanceOf[Boolean]) {
+            val resp = getResponseFromRedis(getCacheKey(userId))
+            if (null != resp)
+                resp
+            else
+                getEnrolmentsData(request, userId)
+        } else
+            getEnrolmentsData(request, userId)
         sender().tell(response, self)
     }
 
@@ -145,10 +156,10 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             enrolmentList.map(enrolment => {
                 enrolment.put(JsonKey.BATCH, batchMap.getOrElse(enrolment.get(JsonKey.BATCH_ID).asInstanceOf[String], new java.util.HashMap[String, AnyRef]()))
                 //To Do : A temporary change to support updation of completed course remove in next release
-                if (enrolment.get("progress").asInstanceOf[Integer] < enrolment.get("leafNodesCount").asInstanceOf[Integer]) {
-                    enrolment.put("status", 1.asInstanceOf[Integer])
-                    enrolment.put("completedOn", null)
-                }
+                //                if (enrolment.get("progress").asInstanceOf[Integer] < enrolment.get("leafNodesCount").asInstanceOf[Integer]) {
+                //                    enrolment.put("status", 1.asInstanceOf[Integer])
+                //                    enrolment.put("completedOn", null)
+                //                }
                 enrolment
             }).toList.asJava
         } else
@@ -226,18 +237,88 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val correlationObject = new java.util.ArrayList[java.util.Map[String, AnyRef]]()
         TelemetryUtil.generateCorrelatedObject(courseId, JsonKey.COURSE, correlation, correlationObject)
         TelemetryUtil.generateCorrelatedObject(batchId, TelemetryEnvKey.BATCH, "user.batch", correlationObject)
-        val request: java.util.Map[String, AnyRef] = new java.util.HashMap[String, AnyRef](){{
-            put(JsonKey.USER_ID, userId)
-            put(JsonKey.COURSE_ID, courseId)
-            put(JsonKey.BATCH_ID, batchId)
-        }}
+        val request: java.util.Map[String, AnyRef] = new java.util.HashMap[String, AnyRef]() {
+            {
+                put(JsonKey.USER_ID, userId)
+                put(JsonKey.COURSE_ID, courseId)
+                put(JsonKey.BATCH_ID, batchId)
+            }
+        }
         TelemetryUtil.telemetryProcessingCall(request, targetedObject, correlationObject, context)
     }
-    
+    def updateProgressData(enrolments: java.util.List[java.util.Map[String, AnyRef]], userId: String) = {
+        enrolments.asScala.foreach(enrolment => {
+            val userActivityDBResponse = groupDao.read(enrolment.get("courseId").asInstanceOf[String], "Course", java.util.Arrays.asList(userId))
+            if (userActivityDBResponse.getResponseCode != ResponseCode.OK)
+                ProjectCommonException.throwServerErrorException(ResponseCode.erroCallGrooupAPI,
+                    MessageFormat.format(ResponseCode.erroCallGrooupAPI.getErrorMessage()))
+            val completedCount: Int = userActivityDBResponse.getResult
+                .getOrDefault("response", new util.ArrayList[util.Map[String, AnyRef]]())
+                .asInstanceOf[util.List[util.Map[String, AnyRef]]]
+                .headOption.getOrElse(new util.HashMap[String, AnyRef]())
+                .getOrDefault("agg", new util.HashMap[String, AnyRef]())
+                .asInstanceOf[util.Map[String, AnyRef]]
+                .getOrDefault("completedCount", 0.asInstanceOf[AnyRef]).asInstanceOf[Int]
+            val leafNodesCount: Int = enrolment.get("leafNodesCount").asInstanceOf[Int]
+            enrolment.put("progress", completedCount.asInstanceOf[AnyRef])
+            enrolment.put("status", getCompletionStatus(completedCount, leafNodesCount).asInstanceOf[AnyRef])
+            enrolment.put("completionPercentage", getCompletionPerc(completedCount, leafNodesCount).asInstanceOf[AnyRef])
+        })
+    }
+
+    def getCompletionStatus(completedCount: Int, leafNodesCount: Int): Int = completedCount match {
+        case 0 => 0
+        case it if 1 until leafNodesCount contains it => 1
+        case leafNodesCount => 2
+        case _ => 2
+    }
+
+    def getCompletionPerc(completedCount: Int, leafNodesCount: Int): Int = completedCount match {
+        case 0 => 0
+        case it if 1 until leafNodesCount contains it => (completedCount / leafNodesCount) * 100
+        case leafNodesCount => 100
+        case _ => 100
+    }
+
+    def getCacheKey(userId: String) = {
+        userId + ":user-enrolments"
+    }
+
+    def setResponseToRedis(key: String, response: Response) :Unit = {
+        redisCache.put("user-enrolments", key, response)
+        redisCache.setMapExpiry("user-enrolments", ttl)
+    }
+
+    def getResponseFromRedis(key: String): Response = {
+        val responseString = redisCache.get("user-enrolments", key)
+        if (responseString != null) {
+            mapper.readValue(responseString, classOf[Response])
+        } else null
+    }
+
+    def getEnrolmentsData(request: Request, userId: String) = {
+        val activeEnrolments: java.util.List[java.util.Map[String, AnyRef]] = getActiveEnrollments(userId)
+        val enrolments: java.util.List[java.util.Map[String, AnyRef]] = {
+            if (CollectionUtils.isNotEmpty(activeEnrolments)) {
+                val enrolmentList: java.util.List[java.util.Map[String, AnyRef]] = addCourseDetails(activeEnrolments, request)
+                updateProgressData(enrolmentList, userId)
+                addBatchDetails(enrolmentList, request)
+            } else new java.util.ArrayList[java.util.Map[String, AnyRef]]()
+        }
+        val resp: Response = new Response()
+        resp.put(JsonKey.COURSES, enrolments)
+        if (isCacheEnabled)
+            setResponseToRedis(getCacheKey(userId), resp)
+        resp
+    }
     // TODO: to be removed once all are in scala.
-    def setDao(courseDao: CourseBatchDao, userDao: UserCoursesDao) = {
+    def setDao(courseDao: CourseBatchDao, userDao: UserCoursesDao, groupDao: GroupDaoImpl, redisCache: RedisCache) = {
         courseBatchDao = courseDao
         userCoursesDao = userDao
+        this.groupDao = groupDao
+        this.redisCache = redisCache
         this
     }
 }
+
+

@@ -48,6 +48,9 @@ public class CourseEnrollmentController extends BaseController {
           request
               .getContext()
               .put(JsonKey.BATCH_DETAILS, httpRequest.queryString().get(JsonKey.BATCH_DETAILS));
+            if (queryParams.containsKey("cache")) {
+                request.getContext().put("cache", Boolean.parseBoolean(queryParams.get("cache")[0]));
+            }
           return null;
         },
         ProjectUtil.getLmsUserId(uid),

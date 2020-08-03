@@ -13,6 +13,7 @@ import javax.inject.{Inject, Named}
 import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang3.StringUtils
 import org.sunbird.cache.CacheFactory
+import org.sunbird.cache.interfaces.Cache
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
 import org.sunbird.common.models.util.ProjectUtil.EnrolmentType
@@ -25,7 +26,6 @@ import org.sunbird.learner.actors.group.dao.impl.GroupDaoImpl
 import org.sunbird.learner.util.{ContentSearchUtil, Util}
 import org.sunbird.models.course.batch.CourseBatch
 import org.sunbird.models.user.courses.UserCourses
-import org.sunbird.redis.RedisCache
 import org.sunbird.telemetry.util.TelemetryUtil
 
 import scala.collection.JavaConversions._
@@ -45,7 +45,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         (ProjectUtil.getConfigValue("user_enrolments_response_cache_enable")).toBoolean else true
     val ttl: Long = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("user_enrolments_response_cache_ttl")))
         (ProjectUtil.getConfigValue("user_enrolments_response_cache_ttl")).toLong else 60
-    var redisCache = CacheFactory.getInstance()
+    var redisCache: Cache = CacheFactory.getInstance()
     val mapper: ObjectMapper = new ObjectMapper()
 
     override def onReceive(request: Request): Unit = {
@@ -312,7 +312,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         resp
     }
     // TODO: to be removed once all are in scala.
-    def setDao(courseDao: CourseBatchDao, userDao: UserCoursesDao, groupDao: GroupDaoImpl, redisCache: RedisCache) = {
+    def setDao(courseDao: CourseBatchDao, userDao: UserCoursesDao, groupDao: GroupDaoImpl, redisCache: Cache) = {
         courseBatchDao = courseDao
         userCoursesDao = userDao
         this.groupDao = groupDao

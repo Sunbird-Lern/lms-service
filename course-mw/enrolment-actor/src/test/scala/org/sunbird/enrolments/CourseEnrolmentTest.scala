@@ -14,7 +14,7 @@ import org.sunbird.learner.actors.coursebatch.dao.impl.{CourseBatchDaoImpl, User
 import org.sunbird.learner.actors.group.dao.impl.GroupDaoImpl
 import org.sunbird.models.course.batch.CourseBatch
 import org.sunbird.models.user.courses.UserCourses
-import org.sunbird.redis.RedisCache
+import org.sunbird.cache.interfaces.Cache
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -25,7 +25,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         val courseDao = mock[CourseBatchDaoImpl]
         val userDao = mock[UserCoursesDaoImpl]
         val groupDao = mock[GroupDaoImpl]
-        val redisCache = mock[RedisCache]
+        val redisCache = mock[Cache]
         (courseDao.readById(_: String, _: String)).expects(*,*).returns(validCourseBatch())
         (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(null)
         (userDao.insertV2(_: java.util.Map[String, AnyRef])).expects(*)
@@ -37,7 +37,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         val courseDao = mock[CourseBatchDaoImpl]
         val userDao = mock[UserCoursesDaoImpl]
         val groupDao = mock[GroupDaoImpl]
-        val redisCache = mock[RedisCache]
+        val redisCache = mock[Cache]
         (courseDao.readById(_: String, _: String)).expects(*,*).returns(null)
         (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(null)
         val response = callActorForFailure(getEnrolRequest(), Props(new CourseEnrolmentActor(null).setDao(courseDao, userDao, groupDao, redisCache)))
@@ -48,7 +48,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         val courseDao = mock[CourseBatchDaoImpl]
         val userDao = mock[UserCoursesDaoImpl]
         val groupDao = mock[GroupDaoImpl]
-        val redisCache = mock[RedisCache]
+        val redisCache = mock[Cache]
         val courseBatch = validCourseBatch()
         courseBatch.setEnrollmentType("invite-only")
         (courseDao.readById(_: String, _: String)).expects(*,*).returns(courseBatch)
@@ -61,7 +61,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         val courseDao = mock[CourseBatchDaoImpl]
         val userDao = mock[UserCoursesDaoImpl]
         val groupDao = mock[GroupDaoImpl]
-        val redisCache = mock[RedisCache]
+        val redisCache = mock[Cache]
         val courseBatch = validCourseBatch()
         courseBatch.setStatus(2)
         (courseDao.readById(_: String, _: String)).expects(*,*).returns(courseBatch)
@@ -74,7 +74,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         val courseDao = mock[CourseBatchDaoImpl]
         val userDao = mock[UserCoursesDaoImpl]
         val groupDao = mock[GroupDaoImpl]
-        val redisCache = mock[RedisCache]
+        val redisCache = mock[Cache]
         val courseBatch = validCourseBatch()
         courseBatch.setStatus(1)
         courseBatch.setEnrollmentEndDate("2019-01-01")
@@ -88,7 +88,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         val courseDao = mock[CourseBatchDaoImpl]
         val userDao = mock[UserCoursesDaoImpl]
         val groupDao = mock[GroupDaoImpl]
-        val redisCache = mock[RedisCache]
+        val redisCache = mock[Cache]
         val courseBatch = validCourseBatch()
         val userCourse = validUserCourse()
         userCourse.setActive(true)
@@ -102,7 +102,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         val courseDao = mock[CourseBatchDaoImpl]
         val userDao = mock[UserCoursesDaoImpl]
         val groupDao = mock[GroupDaoImpl]
-        val redisCache = mock[RedisCache]
+        val redisCache = mock[Cache]
         val courseBatch = validCourseBatch()
         courseBatch.setEndDate("2019-07-01")
         (courseDao.readById(_: String, _: String)).expects(*,*).returns(courseBatch)
@@ -115,7 +115,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         val courseDao = mock[CourseBatchDaoImpl]
         val userDao = mock[UserCoursesDaoImpl]
         val groupDao = mock[GroupDaoImpl]
-        val redisCache = mock[RedisCache]
+        val redisCache = mock[Cache]
         val userCourse = validUserCourse()
         userCourse.setActive(false)
         (courseDao.readById(_: String, _: String)).expects(*,*).returns(validCourseBatch())
@@ -129,7 +129,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         val courseDao = mock[CourseBatchDaoImpl]
         val userDao = mock[UserCoursesDaoImpl]
         val groupDao = mock[GroupDaoImpl]
-        val redisCache = mock[RedisCache]
+        val redisCache = mock[Cache]
         val userCourse = validUserCourse()
         userCourse.setActive(true)
         (courseDao.readById(_: String, _: String)).expects(*,*).returns(validCourseBatch())
@@ -143,7 +143,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         val courseDao = mock[CourseBatchDaoImpl]
         val userDao = mock[UserCoursesDaoImpl]
         val groupDao = mock[GroupDaoImpl]
-        val redisCache = mock[RedisCache]
+        val redisCache = mock[Cache]
         val userCourse = validUserCourse()
         userCourse.setActive(false)
         (courseDao.readById(_: String, _: String)).expects(*,*).returns(validCourseBatch())
@@ -156,7 +156,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         val courseDao = mock[CourseBatchDaoImpl]
         val userDao = mock[UserCoursesDaoImpl]
         val groupDao = mock[GroupDaoImpl]
-        val redisCache = mock[RedisCache]
+        val redisCache = mock[Cache]
         val userCourse = validUserCourse()
         userCourse.setActive(true)
         userCourse.setStatus(2)
@@ -171,7 +171,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         val courseDao = mock[CourseBatchDaoImpl]
         val userDao = mock[UserCoursesDaoImpl]
         val groupDao = mock[GroupDaoImpl]
-        val redisCache = mock[RedisCache]
+        val redisCache = mock[Cache]
         val userCourse = validUserCourse()
         userCourse.setActive(true)
         userCourse.setCourseId("do_123")
@@ -185,10 +185,10 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
                 put("active", true.asInstanceOf[AnyRef])
             }})
         }}
-        
-        
+
         (userDao.listEnrolments(_ : String)).expects(*).returns(list)
-        
+        (redisCache.put(_: String, _: String, _: Object)).expects(*, *, *).returns(true)
+        (redisCache.setMapExpiry(_: String, _: Long)).expects(*, *).returns(true)
         val response = callActor(getListEnrolRequest(), Props(new CourseEnrolmentActor(null).setDao(courseDao, userDao, groupDao, redisCache)))
         println(response)
         assert(null != response)

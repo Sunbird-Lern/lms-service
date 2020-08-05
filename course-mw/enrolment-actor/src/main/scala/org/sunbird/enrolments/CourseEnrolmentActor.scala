@@ -23,7 +23,7 @@ import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.learner.actors.coursebatch.dao.impl.{CourseBatchDaoImpl, UserCoursesDaoImpl}
 import org.sunbird.learner.actors.coursebatch.dao.{CourseBatchDao, UserCoursesDao}
 import org.sunbird.learner.actors.group.dao.impl.GroupDaoImpl
-import org.sunbird.learner.util.{ContentSearchUtil, Util}
+import org.sunbird.learner.util.{ContentSearchUtil, JsonUtil, Util}
 import org.sunbird.models.course.batch.CourseBatch
 import org.sunbird.models.user.courses.UserCourses
 import org.sunbird.telemetry.util.TelemetryUtil
@@ -46,7 +46,6 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     val ttl: Long = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("user_enrolments_response_cache_ttl")))
         (ProjectUtil.getConfigValue("user_enrolments_response_cache_ttl")).toLong else 60
     var redisCache: Cache = CacheFactory.getInstance()
-    val mapper: ObjectMapper = new ObjectMapper()
 
     override def onReceive(request: Request): Unit = {
         Util.initializeContext(request, TelemetryEnvKey.BATCH)
@@ -237,13 +236,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val correlationObject = new java.util.ArrayList[java.util.Map[String, AnyRef]]()
         TelemetryUtil.generateCorrelatedObject(courseId, JsonKey.COURSE, correlation, correlationObject)
         TelemetryUtil.generateCorrelatedObject(batchId, TelemetryEnvKey.BATCH, "user.batch", correlationObject)
-        val request: java.util.Map[String, AnyRef] = new java.util.HashMap[String, AnyRef]() {
-            {
-                put(JsonKey.USER_ID, userId)
-                put(JsonKey.COURSE_ID, courseId)
-                put(JsonKey.BATCH_ID, batchId)
-            }
-        }
+        val request: java.util.Map[String, AnyRef] = Map[String, AnyRef](JsonKey.USER_ID -> userId, JsonKey.COURSE_ID -> courseId, JsonKey.BATCH_ID -> batchId).asJava
         TelemetryUtil.telemetryProcessingCall(request, targetedObject, correlationObject, context)
     }
     def updateProgressData(enrolments: java.util.List[java.util.Map[String, AnyRef]], userId: String) = {
@@ -292,7 +285,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     def getResponseFromRedis(key: String): Response = {
         val responseString = redisCache.get("user-enrolments", key)
         if (responseString != null) {
-            mapper.readValue(responseString, classOf[Response])
+            JsonUtil.deserialize(responseString, classOf[Response])
         } else null
     }
 

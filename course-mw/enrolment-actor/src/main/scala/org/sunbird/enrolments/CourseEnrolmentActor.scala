@@ -262,14 +262,14 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     def getCompletionStatus(completedCount: Int, leafNodesCount: Int): Int = completedCount match {
         case 0 => 0
         case it if 1 until leafNodesCount contains it => 1
-        case leafNodesCount => 2
+        case `leafNodesCount` => 2
         case _ => 2
     }
 
     def getCompletionPerc(completedCount: Int, leafNodesCount: Int): Int = completedCount match {
         case 0 => 0
-        case it if 1 until leafNodesCount contains it => (completedCount / leafNodesCount) * 100
-        case leafNodesCount => 100
+        case it if 1 until leafNodesCount contains it => (completedCount * 100) / leafNodesCount
+        case `leafNodesCount` => 100
         case _ => 100
     }
 

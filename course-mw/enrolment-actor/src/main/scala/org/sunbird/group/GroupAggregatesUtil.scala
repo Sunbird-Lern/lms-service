@@ -33,11 +33,11 @@ class GroupAggregatesUtil {
 
       ProjectLogger.log("GroupAggregatesActor:getGroupDetails : Read request group : " + request.get(SunbirdKey.GROUPID), LoggerEnum.INFO.name)
       val groupResponse = Unirest.get(requestUrl).headers(headers).asString
-      ProjectLogger.log("GroupAggregatesActor:getGroupDetails : groupResponse.getBody : " + groupResponse.getBody, LoggerEnum.INFO.name)
-      ProjectLogger.log("GroupAggregatesActor:getGroupDetails : groupResponse.getStatus : " + groupResponse.getStatus, LoggerEnum.INFO.name)
-      ProjectLogger.log("GroupAggregatesActor:getGroupDetails : groupResponse.getStatusText : " + groupResponse.getStatusText, LoggerEnum.INFO.name)
 
-      if ( null== groupResponse || groupResponse.getStatus != ResponseCode.OK.getResponseCode){
+      if ( null== groupResponse || groupResponse.getStatus != ResponseCode.OK.getResponseCode) {
+        ProjectLogger.log("GroupAggregatesActor:getGroupDetails : groupResponse.getBody : " + groupResponse.getBody, LoggerEnum.INFO.name)
+        ProjectLogger.log("GroupAggregatesActor:getGroupDetails : groupResponse.getStatus : " + groupResponse.getStatus, LoggerEnum.INFO.name)
+        ProjectLogger.log("GroupAggregatesActor:getGroupDetails : groupResponse.getStatusText : " + groupResponse.getStatusText, LoggerEnum.INFO.name)
         ProjectLogger.log("GroupAggregatesActor:getGroupDetails:NOT_OK : groupResponse.getStatus : " + groupResponse.getStatus, LoggerEnum.INFO.name)
         ProjectCommonException.throwServerErrorException(ResponseCode.SERVER_ERROR, "Error while fetching group members record.")
       }

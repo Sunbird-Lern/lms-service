@@ -16,7 +16,7 @@ import org.sunbird.keys.SunbirdKey
 
 class GroupAggregatesUtil {
 
-  private val GROUP_SERVICE_API_BASE_URL = if (StringUtils.isNotBlank(getConfigValue(JsonKey.GROUP_SERVICE_API_BASE_URL))) getConfigValue(JsonKey.GROUP_SERVICE_API_BASE_URL)+"/v1/group/read/"
+  private val GROUP_SERVICE_API_BASE_URL = if (StringUtils.isNotBlank(getConfigValue(JsonKey.GROUP_SERVICE_API_BASE_URL))) getConfigValue(JsonKey.GROUP_SERVICE_API_BASE_URL)+"/private/v1/group/read/"
   else "https://dev.sunbirded.org/api/group/v1/read/"
 
   private val mapper = new ObjectMapper
@@ -24,16 +24,23 @@ class GroupAggregatesUtil {
   def getGroupDetails(groupId: String, request: Request): Response = {
     try{
       val requestUrl = GROUP_SERVICE_API_BASE_URL + groupId + "?fields=members"
+      val authToken = request.getContext.get(JsonKey.HEADER).asInstanceOf[Map[String, String]].get(HeaderParam.X_Authenticated_User_Token.getName)
+      ProjectLogger.log("GroupAggregatesActor:getGroupDetails : Token Size: " + StringUtils.length(authToken))
       val headers = new util.HashMap[String, String]() {{
         put(SunbirdKey.CONTENT_TYPE_HEADER, SunbirdKey.APPLICATION_JSON)
-        put("x-authenticated-user-token", request.getContext.get(JsonKey.HEADER).asInstanceOf[Map[String, String]].get(HeaderParam.X_Authenticated_User_Token.getName))
+        put("x-authenticated-user-token", authToken)
       }}
 
       ProjectLogger.log("GroupAggregatesActor:getGroupDetails : Read request group : " + request.get(SunbirdKey.GROUPID), LoggerEnum.INFO.name)
       val groupResponse = Unirest.get(requestUrl).headers(headers).asString
 
-      if ( null== groupResponse || groupResponse.getStatus != ResponseCode.OK.getResponseCode)
-        ProjectCommonException.throwClientErrorException(ResponseCode.SERVER_ERROR, "Error while fetching group members record.")
+      if ( null== groupResponse || groupResponse.getStatus != ResponseCode.OK.getResponseCode) {
+        ProjectLogger.log("GroupAggregatesActor:getGroupDetails : groupResponse.getBody : " + groupResponse.getBody, LoggerEnum.INFO.name)
+        ProjectLogger.log("GroupAggregatesActor:getGroupDetails : groupResponse.getStatus : " + groupResponse.getStatus, LoggerEnum.INFO.name)
+        ProjectLogger.log("GroupAggregatesActor:getGroupDetails : groupResponse.getStatusText : " + groupResponse.getStatusText, LoggerEnum.INFO.name)
+        ProjectLogger.log("GroupAggregatesActor:getGroupDetails:NOT_OK : groupResponse.getStatus : " + groupResponse.getStatus, LoggerEnum.INFO.name)
+        ProjectCommonException.throwServerErrorException(ResponseCode.SERVER_ERROR, "Error while fetching group members record.")
+      }
 
       mapper.readValue(groupResponse.getBody, classOf[Response])
 

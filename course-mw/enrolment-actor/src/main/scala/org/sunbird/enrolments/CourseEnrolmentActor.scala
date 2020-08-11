@@ -12,8 +12,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import javax.inject.{Inject, Named}
 import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang3.StringUtils
-import org.sunbird.cache.CacheFactory
-import org.sunbird.cache.interfaces.Cache
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
 import org.sunbird.common.models.util.ProjectUtil.EnrolmentType
@@ -26,12 +24,15 @@ import org.sunbird.learner.actors.group.dao.impl.GroupDaoImpl
 import org.sunbird.learner.util.{ContentSearchUtil, JsonUtil, Util}
 import org.sunbird.models.course.batch.CourseBatch
 import org.sunbird.models.user.courses.UserCourses
+import org.sunbird.cache.connector.RedisConnector
+import org.sunbird.cache.util.RedisCacheUtil
 import org.sunbird.telemetry.util.TelemetryUtil
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 
-class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") courseBatchNotificationActorRef: ActorRef) extends BaseEnrolmentActor {
+class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") courseBatchNotificationActorRef: ActorRef,
+                                     redisCache: RedisConnector) extends BaseEnrolmentActor {
 
     /*
     The below variables are kept as var on testcase purpose.
@@ -40,12 +41,24 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     var courseBatchDao: CourseBatchDao = new CourseBatchDaoImpl()
     var userCoursesDao: UserCoursesDao = new UserCoursesDaoImpl()
     var groupDao: GroupDaoImpl = new GroupDaoImpl()
-
+    val cacheUtil = new RedisCacheUtil()
     val isCacheEnabled = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("user_enrolments_response_cache_enable")))
         (ProjectUtil.getConfigValue("user_enrolments_response_cache_enable")).toBoolean else true
-    val ttl: Long = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("user_enrolments_response_cache_ttl")))
-        (ProjectUtil.getConfigValue("user_enrolments_response_cache_ttl")).toLong else 60
-    var redisCache: Cache = CacheFactory.getInstance()
+    val ttl: Int = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("user_enrolments_response_cache_ttl")))
+        (ProjectUtil.getConfigValue("user_enrolments_response_cache_ttl")).toInt else 60
+
+    override def preStart { println("Starting CourseEnrolmentActor") }
+
+    override def postStop {
+        redisCache.closePool()
+        println("CourseEnrolmentActor stopped successfully")
+    }
+
+    override def preRestart(reason: Throwable, message: Option[Any]) {
+        println(s"Restarting CourseEnrolmentActor: $message")
+        reason.printStackTrace()
+        super.preRestart(reason, message)
+    }
 
     override def onReceive(request: Request): Unit = {
         Util.initializeContext(request, TelemetryEnvKey.BATCH)
@@ -278,12 +291,12 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     }
 
     def setResponseToRedis(key: String, response: Response) :Unit = {
-        redisCache.put("user-enrolments", key, response)
-        redisCache.setMapExpiry("user-enrolments", ttl)
+        val responseString = JsonUtil.serialize(response)
+        cacheUtil.set(key, responseString, ttl)
     }
 
     def getResponseFromRedis(key: String): Response = {
-        val responseString = redisCache.get("user-enrolments", key)
+        val responseString = cacheUtil.get(key)
         if (responseString != null) {
             JsonUtil.deserialize(responseString, classOf[Response])
         } else null
@@ -305,11 +318,10 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         resp
     }
     // TODO: to be removed once all are in scala.
-    def setDao(courseDao: CourseBatchDao, userDao: UserCoursesDao, groupDao: GroupDaoImpl, redisCache: Cache) = {
+    def setDao(courseDao: CourseBatchDao, userDao: UserCoursesDao, groupDao: GroupDaoImpl) = {
         courseBatchDao = courseDao
         userCoursesDao = userDao
         this.groupDao = groupDao
-        this.redisCache = redisCache
         this
     }
 }

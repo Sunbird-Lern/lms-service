@@ -12,8 +12,8 @@ import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.keys.SunbirdKey
 import org.sunbird.learner.actors.group.dao.impl.GroupDaoImpl
 import org.sunbird.actor.base.BaseActor
-import org.sunbird.cache.CacheFactory
-import org.sunbird.cache.interfaces.Cache
+import org.sunbird.cache.util.RedisCacheUtil
+import org.sunbird.learner.util.JsonUtil
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
@@ -22,9 +22,9 @@ class GroupAggregatesActor extends BaseActor {
   private val GROUP_MEMBERS_METADATA: java.util.List[String] = java.util.Arrays.asList("name", "userId", "role", "status", "createdBy")
   var groupDao: GroupDaoImpl = new GroupDaoImpl()
   var groupAggregatesUtil: GroupAggregatesUtil = new GroupAggregatesUtil()
-  var redisCache: Cache = CacheFactory.getInstance()
-  val ttl: Long = if(StringUtils.isNotBlank(ProjectUtil.getConfigValue("group_activity_agg_cache_ttl"))) (ProjectUtil.getConfigValue("group_activity_agg_cache_ttl")).toLong else 60
+  val ttl: Int = if(StringUtils.isNotBlank(ProjectUtil.getConfigValue("group_activity_agg_cache_ttl"))) (ProjectUtil.getConfigValue("group_activity_agg_cache_ttl")).toInt else 60
   val isCacheEnabled = if(StringUtils.isNotBlank(ProjectUtil.getConfigValue("group_activity_agg_cache_enable"))) (ProjectUtil.getConfigValue("group_activity_agg_cache_enable")).toBoolean else false
+  val cacheUtil = new RedisCacheUtil
 
   @throws[Throwable]
   override def onReceive(request: Request): Unit = {
@@ -46,7 +46,7 @@ class GroupAggregatesActor extends BaseActor {
 
     try {
       val key = getCacheKey(groupId, activityId, activityType)
-      val cachedResponse = if(isCacheEnabled) redisCache.get("activity-agg", key, classOf[Response]) else null
+      val cachedResponse = if(isCacheEnabled) getResponseFromRedis(key) else null
       val response = {
         if(null != cachedResponse) {
           ProjectLogger.log("GroupAggregatesAction:getGroupActivityAggregates:cachedResponse :: Data fetched from cache.", LoggerEnum.INFO.name)
@@ -136,14 +136,19 @@ class GroupAggregatesActor extends BaseActor {
   }
 
   def setResponseToRedis(key: String, response: Response) :Unit = {
-    redisCache.put("activity-agg", key, response)
-    redisCache.setMapExpiry("activity-agg", ttl)
+    cacheUtil.set( key, JsonUtil.serialize(response), ttl)
   }
 
-  def setInstanceVariable(groupAggregateUtil: GroupAggregatesUtil, groupDao: GroupDaoImpl, redisCache: Cache) = {
+  def getResponseFromRedis(key: String): Response = {
+    val responseString = cacheUtil.get(key)
+    if (responseString != null) {
+      JsonUtil.deserialize(responseString, classOf[Response])
+    } else null
+  }
+
+  def setInstanceVariable(groupAggregateUtil: GroupAggregatesUtil, groupDao: GroupDaoImpl) = {
     this.groupAggregatesUtil = groupAggregateUtil
     this.groupDao = groupDao
-    this.redisCache = redisCache
     this
   }
 }

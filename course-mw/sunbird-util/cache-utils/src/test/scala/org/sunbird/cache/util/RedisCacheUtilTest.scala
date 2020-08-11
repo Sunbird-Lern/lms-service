@@ -7,7 +7,7 @@ import org.sunbird.cache.util.RedisCacheUtil
 import scala.collection.immutable.Stream.Empty
 import scala.concurrent.Future
 
-class cacheUtilUtilTest extends AsyncFlatSpec with Matchers with BeforeAndAfterAll {
+class RedisCacheUtilTest extends AsyncFlatSpec with Matchers with BeforeAndAfterAll {
 
     var cons_message: String = ""
     var cacheUtil = new RedisCacheUtil()

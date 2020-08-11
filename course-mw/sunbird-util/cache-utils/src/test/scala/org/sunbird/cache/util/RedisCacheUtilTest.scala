@@ -1,4 +1,4 @@
-package org.sunbird.cache.impl
+package org.sunbird.cache.util
 
 
 import org.scalatest.{AsyncFlatSpec, BeforeAndAfterAll, Matchers}

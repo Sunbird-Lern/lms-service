@@ -6,6 +6,7 @@ jobs:
       - checkout
       - restore_cache:
           key: lms-dependency-cache-{{ checksum "pom.xml" }}
+      - run: sudo apt update
       - run:
           name: redis
           command: sudo apt install redis-server -y

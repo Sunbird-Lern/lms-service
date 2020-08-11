@@ -2,6 +2,7 @@ package org.sunbird.group
 
 import java.text.MessageFormat
 
+import javax.inject.Inject
 import org.apache.commons.collections.CollectionUtils
 import org.apache.commons.lang3.StringUtils
 import org.sunbird.common.exception.ProjectCommonException
@@ -17,7 +18,8 @@ import org.sunbird.learner.util.JsonUtil
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
-class GroupAggregatesActor (implicit val cacheUtil: RedisCacheUtil) extends BaseActor {
+
+class GroupAggregatesActor @Inject()(implicit val cacheUtil: RedisCacheUtil) extends BaseActor {
 
   private val GROUP_MEMBERS_METADATA: java.util.List[String] = java.util.Arrays.asList("name", "userId", "role", "status", "createdBy")
   var groupDao: GroupDaoImpl = new GroupDaoImpl()

@@ -2,13 +2,13 @@ version: 2.1
 jobs:
   build:
     machine: true
-    docker:
-      - image: circleci/openjdk:14-jdk-buster-node-browsers-legacy
-      - image: circleci/redis:latest
     steps:
       - checkout
       - restore_cache:
           key: lms-dependency-cache-{{ checksum "pom.xml" }}
+      - run:
+          name: redis
+          command: sudo apt install redis-server -y
       - run: mvn clean install
       - run: cd course-mw/enrolment-actor && mvn scoverage:report
       - run: cd service && mvn play2:dist

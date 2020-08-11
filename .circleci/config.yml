@@ -1,7 +1,7 @@
 version: 2.1
 jobs:
   build:
-    machine: true
+#    machine: true
     docker:
       - image: circleci/redis:latest
     steps:

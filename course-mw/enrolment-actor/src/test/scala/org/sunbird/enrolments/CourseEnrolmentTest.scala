@@ -7,7 +7,6 @@ import akka.testkit.TestKit
 import org.codehaus.jackson.map.ObjectMapper
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FlatSpec, Matchers}
-import org.sunbird.cache.connector.RedisConnector
 import org.sunbird.cache.util.RedisCacheUtil
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
@@ -26,21 +25,20 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
     val courseDao = mock[CourseBatchDaoImpl]
     val userDao = mock[UserCoursesDaoImpl]
     val groupDao = mock[GroupDaoImpl]
-    val redisConnector = new RedisConnector
     val cacheUtil = mock[RedisCacheUtil]
 
     "CourseEnrolmentActor" should "return success on enrol" in {
         (courseDao.readById(_: String, _: String)).expects(*,*).returns(validCourseBatch())
         (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(null)
         (userDao.insertV2(_: java.util.Map[String, AnyRef])).expects(*)
-        val response = callActor(getEnrolRequest(), Props(new CourseEnrolmentActor(null, redisConnector).setDao(courseDao, userDao, groupDao)))
+        val response = callActor(getEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         assert("Success".equalsIgnoreCase(response.get("response").asInstanceOf[String]))
     }
 
     "On invalid course batch" should "return client error" in  {
         (courseDao.readById(_: String, _: String)).expects(*,*).returns(null)
         (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(null)
-        val response = callActorForFailure(getEnrolRequest(), Props(new CourseEnrolmentActor(null, redisConnector).setDao(courseDao, userDao, groupDao)))
+        val response = callActorForFailure(getEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
     }
 
@@ -49,7 +47,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         courseBatch.setEnrollmentType("invite-only")
         (courseDao.readById(_: String, _: String)).expects(*,*).returns(courseBatch)
         (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(null)
-        val response = callActorForFailure(getEnrolRequest(), Props(new CourseEnrolmentActor(null, redisConnector).setDao(courseDao, userDao, groupDao)))
+        val response = callActorForFailure(getEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
     }
 
@@ -58,7 +56,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         courseBatch.setStatus(2)
         (courseDao.readById(_: String, _: String)).expects(*,*).returns(courseBatch)
         (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(null)
-        val response = callActorForFailure(getEnrolRequest(), Props(new CourseEnrolmentActor(null, redisConnector).setDao(courseDao, userDao, groupDao)))
+        val response = callActorForFailure(getEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
     }
 
@@ -68,7 +66,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         courseBatch.setEnrollmentEndDate("2019-01-01")
         (courseDao.readById(_: String, _: String)).expects(*,*).returns(courseBatch)
         (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(null)
-        val response = callActorForFailure(getEnrolRequest(), Props(new CourseEnrolmentActor(null, redisConnector).setDao(courseDao, userDao, groupDao)))
+        val response = callActorForFailure(getEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
     }
 
@@ -78,7 +76,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         userCourse.setActive(true)
         (courseDao.readById(_: String, _: String)).expects(*,*).returns(courseBatch)
         (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(userCourse)
-        val response = callActorForFailure(getEnrolRequest(), Props(new CourseEnrolmentActor(null, redisConnector).setDao(courseDao, userDao, groupDao)))
+        val response = callActorForFailure(getEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
     }
 
@@ -87,7 +85,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         courseBatch.setEndDate("2019-07-01")
         (courseDao.readById(_: String, _: String)).expects(*,*).returns(courseBatch)
         (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(null)
-        val response = callActorForFailure(getEnrolRequest(), Props(new CourseEnrolmentActor(null, redisConnector).setDao(courseDao, userDao, groupDao)))
+        val response = callActorForFailure(getEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
     }
 
@@ -97,7 +95,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         (courseDao.readById(_: String, _: String)).expects(*,*).returns(validCourseBatch())
         (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(userCourse)
         (userDao.updateV2(_: String,_: String,_: String, _: java.util.Map[String, AnyRef])).expects(*,*,*,*)
-        val response = callActor(getEnrolRequest(), Props(new CourseEnrolmentActor(null, redisConnector).setDao(courseDao, userDao, groupDao)))
+        val response = callActor(getEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         assert("Success".equalsIgnoreCase(response.get("response").asInstanceOf[String]))
     }
 
@@ -107,7 +105,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         (courseDao.readById(_: String, _: String)).expects(*,*).returns(validCourseBatch())
         (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(userCourse)
         (userDao.updateV2(_: String,_: String,_: String, _: java.util.Map[String, AnyRef])).expects(*,*,*,*)
-        val response = callActor(getUnEnrolRequest(), Props(new CourseEnrolmentActor(null, redisConnector).setDao(courseDao, userDao, groupDao)))
+        val response = callActor(getUnEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         assert("Success".equalsIgnoreCase(response.get("response").asInstanceOf[String]))
     }
 
@@ -116,7 +114,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         userCourse.setActive(false)
         (courseDao.readById(_: String, _: String)).expects(*,*).returns(validCourseBatch())
         (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(userCourse)
-        val response = callActorForFailure(getUnEnrolRequest(), Props(new CourseEnrolmentActor(null, redisConnector).setDao(courseDao, userDao, groupDao)))
+        val response = callActorForFailure(getUnEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
     }
 
@@ -126,52 +124,48 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         userCourse.setStatus(2)
         (courseDao.readById(_: String, _: String)).expects(*,*).returns(validCourseBatch())
         (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(userCourse)
-        val response = callActorForFailure(getUnEnrolRequest(), Props(new CourseEnrolmentActor(null, redisConnector).setDao(courseDao, userDao, groupDao)))
+        val response = callActorForFailure(getUnEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
     }
 
 
-    "listEnrol" should "return success on listing" ignore {
-        //        val searchUtil = m [ContentSearchUtil]
+    "listEnrol" should "return success on listing" in {
         val userCourse = validUserCourse()
         userCourse.setActive(true)
         userCourse.setCourseId("do_11305605610466508811")
         userCourse.setBatchId("0130598559365038081")
-        (cacheUtil.get(_: String, _: (String) => String, _: Int)).expects(*, *, *).returns(null)
         (userDao.listEnrolments(_: String)).expects(*).returns(getEnrolmentLists())
-//        (searchUtil.searchContentSync (_: String)).expects(*).returns(getEnrolmentLists())
         (cacheUtil.set(_: String, _: String, _: Int)).expects(*, *, *).once()
-        val response = callActor(getListEnrolRequest(), Props(new CourseEnrolmentActor(null, redisConnector).setDao(courseDao, userDao, groupDao)))
+        val response = callActor(getListEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         println(response)
         assert(null != response)
     }
 
-    "listEnrol with RedisConnector is true" should "return success on listing from redis RedisConnector" ignore {
+    "listEnrol with RedisConnector is true" should "return success on listing from redis RedisConnector" in {
         val userCourse = validUserCourse()
         userCourse.setActive(true)
         userCourse.setCourseId("do_11305605610466508811")
         userCourse.setBatchId("0130598559365038081")
-        (cacheUtil.get(_: String, _: (String) => String, _: Int)).expects(*, *, *).returns(getRedisString())
-        (userDao.listEnrolments(_: String)).expects(*).returns(getEnrolmentLists())
-        (groupDao.read(_: String, _: String, _: java.util.List[String])).expects(*,*, *).returns(new Response())
+        (cacheUtil.get(_: String, _: String => String, _: Int)).expects(*, *, *).returns(getRedisString())
         val request = getListEnrolRequest()
-        request.getContext.put("RedisConnector", true.asInstanceOf[AnyRef])
-        val response = callActor(request, Props(new CourseEnrolmentActor(null, redisConnector).setDao(courseDao, userDao, groupDao)))
+        request.getContext.put("cache", true.asInstanceOf[AnyRef])
+        val response = callActor(request, Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         println(response)
         assert(null != response)
     }
 
-    "listEnrol with RedisConnector is true but empty" should "return success on listing from redis RedisConnector" ignore {
+    "listEnrol with RedisConnector is true but empty" should "return success on listing from redis RedisConnector" in {
         val userCourse = validUserCourse()
         userCourse.setActive(true)
         userCourse.setCourseId("do_11305605610466508811")
         userCourse.setBatchId("0130598559365038081")
-        (cacheUtil.get(_: String, _: (String) => String, _: Int)).expects(*, *, *).returns(null)
+        (cacheUtil.get(_: String, _: String => String, _: Int)).expects(*, *, *).returns(null)
         (userDao.listEnrolments(_: String)).expects(*).returns(getEnrolmentLists())
         (cacheUtil.set(_: String, _: String, _: Int)).expects(*, *, *).once()
+        (groupDao.read(_: String, _: String, _: java.util.List[String])).expects(*, *, *).returns(new Response)
         val request = getListEnrolRequest()
-        request.getContext.put("RedisConnector", true.asInstanceOf[AnyRef])
-        val response = callActor(request, Props(new CourseEnrolmentActor(null, redisConnector).setDao(courseDao, userDao, groupDao)))
+        request.getContext.put("cache", true.asInstanceOf[AnyRef])
+        val response = callActor(request, Props(new CourseEnrolmentActor(null)( cacheUtil).setDao(courseDao, userDao, groupDao)))
         println(response)
         assert(null != response)
     }

@@ -24,15 +24,14 @@ import org.sunbird.learner.actors.group.dao.impl.GroupDaoImpl
 import org.sunbird.learner.util.{ContentSearchUtil, JsonUtil, Util}
 import org.sunbird.models.course.batch.CourseBatch
 import org.sunbird.models.user.courses.UserCourses
-import org.sunbird.cache.connector.RedisConnector
 import org.sunbird.cache.util.RedisCacheUtil
 import org.sunbird.telemetry.util.TelemetryUtil
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 
-class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") courseBatchNotificationActorRef: ActorRef,
-                                     redisCache: RedisConnector) extends BaseEnrolmentActor {
+class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") courseBatchNotificationActorRef: ActorRef
+                                    )(implicit val  cacheUtil: RedisCacheUtil ) extends BaseEnrolmentActor {
 
     /*
     The below variables are kept as var on testcase purpose.
@@ -41,7 +40,6 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     var courseBatchDao: CourseBatchDao = new CourseBatchDaoImpl()
     var userCoursesDao: UserCoursesDao = new UserCoursesDaoImpl()
     var groupDao: GroupDaoImpl = new GroupDaoImpl()
-    val cacheUtil = new RedisCacheUtil()
     val isCacheEnabled = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("user_enrolments_response_cache_enable")))
         (ProjectUtil.getConfigValue("user_enrolments_response_cache_enable")).toBoolean else true
     val ttl: Int = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("user_enrolments_response_cache_ttl")))
@@ -50,7 +48,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     override def preStart { println("Starting CourseEnrolmentActor") }
 
     override def postStop {
-        redisCache.closePool()
+        cacheUtil.closePool()
         println("CourseEnrolmentActor stopped successfully")
     }
 
@@ -297,7 +295,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
 
     def getResponseFromRedis(key: String): Response = {
         val responseString = cacheUtil.get(key)
-        if (responseString != null) {
+        if (StringUtils.isNotBlank(responseString)) {
             JsonUtil.deserialize(responseString, classOf[Response])
         } else null
     }

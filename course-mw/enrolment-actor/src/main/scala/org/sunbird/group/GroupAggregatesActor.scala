@@ -17,14 +17,13 @@ import org.sunbird.learner.util.JsonUtil
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
-class GroupAggregatesActor extends BaseActor {
+class GroupAggregatesActor (implicit val cacheUtil: RedisCacheUtil) extends BaseActor {
 
   private val GROUP_MEMBERS_METADATA: java.util.List[String] = java.util.Arrays.asList("name", "userId", "role", "status", "createdBy")
   var groupDao: GroupDaoImpl = new GroupDaoImpl()
   var groupAggregatesUtil: GroupAggregatesUtil = new GroupAggregatesUtil()
   val ttl: Int = if(StringUtils.isNotBlank(ProjectUtil.getConfigValue("group_activity_agg_cache_ttl"))) (ProjectUtil.getConfigValue("group_activity_agg_cache_ttl")).toInt else 60
   val isCacheEnabled = if(StringUtils.isNotBlank(ProjectUtil.getConfigValue("group_activity_agg_cache_enable"))) (ProjectUtil.getConfigValue("group_activity_agg_cache_enable")).toBoolean else false
-  val cacheUtil = new RedisCacheUtil
 
   @throws[Throwable]
   override def onReceive(request: Request): Unit = {

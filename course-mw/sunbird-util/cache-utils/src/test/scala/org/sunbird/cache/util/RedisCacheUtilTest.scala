@@ -10,11 +10,11 @@ import scala.concurrent.Future
 class RedisCacheUtilTest extends AsyncFlatSpec with Matchers with BeforeAndAfterAll {
 
     var cons_message: String = ""
-    var cacheUtil = new RedisCacheUtil()
+    var cacheUtil: RedisCacheUtil = _
 
 
     override def beforeAll(): Unit = {
-
+        cacheUtil = new RedisCacheUtil()
         super.beforeAll()
     }
 

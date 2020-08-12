@@ -19,8 +19,8 @@ class RedisCacheUtil {
 
     implicit val className = "org.sunbird.cache.connector.RedisConnector"
 
-    private val redis_host = Platform.getString("redis.host", "localhost")
-    private val redis_port = Platform.getInteger("redis.port", 6379)
+    private val redis_host = Platform.getString("sunbird_redis_host", "localhost")
+    private val redis_port = Platform.getInteger("sunbird_redis_port", 6379)
     private val index = Platform.getInteger("redis.dbIndex", 0)
 
 

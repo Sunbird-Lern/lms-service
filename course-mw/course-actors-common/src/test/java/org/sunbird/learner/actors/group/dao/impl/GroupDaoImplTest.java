@@ -27,15 +27,10 @@ import org.sunbird.learner.util.JsonUtil;
 @PrepareForTest({ServiceFactory.class})
 @PowerMockIgnore("javax.management.*")
 public class GroupDaoImplTest {
-
-    private CassandraOperation cassandraOperation;
-    private GroupDaoImpl groupDao;
+    private static CassandraOperation cassandraOperation;
 
     @BeforeClass
-    public static void setUp() {}
-
-    @Before
-    public void beforeEachTest() {
+    public static void setUp() {
         PowerMockito.mockStatic(ServiceFactory.class);
         cassandraOperation = mock(CassandraOperationImpl.class);
         when(ServiceFactory.getInstance()).thenReturn(cassandraOperation);

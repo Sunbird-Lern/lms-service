@@ -27,12 +27,13 @@ public class GroupDaoImpl {
         return response;
     }
 
-    public Response readEntries(String activityType, List<String> userId,  List<String> activityIds,  List<String> fields ) {
+    public Response readEntries(String activityType, List<String> userId, List<String> activityIds) {
         Map<String, Object> primaryKey = new HashMap<>();
         primaryKey.put(SunbirdKey.ACTIVITY_TYPE, activityType);
         primaryKey.put(SunbirdKey.ACTIVITY_ID, activityIds);
         primaryKey.put(SunbirdKey.USER_ID, userId);
-        return cassandraOperation.getRecordsByProperties(KEYSPACE_NAME, TABLE_NAME, primaryKey, fields);
+        Response response = cassandraOperation.getRecordsByProperties(KEYSPACE_NAME, TABLE_NAME, primaryKey);
+        return response;
     }
 
 

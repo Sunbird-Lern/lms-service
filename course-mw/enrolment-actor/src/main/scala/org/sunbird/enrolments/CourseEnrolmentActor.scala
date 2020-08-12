@@ -253,7 +253,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
 
     def updateProgressData(enrolments: java.util.List[java.util.Map[String, AnyRef]], userId: String): util.List[java.util.Map[String, AnyRef]] = {
         val enrolmentMap: Map[String, java.util.Map[String, AnyRef]] = enrolments.map(enrolment => enrolment.get("courseId").asInstanceOf[String] -> enrolment).toMap
-        val response: Response = groupDao.readEntries("Course", java.util.Arrays.asList(userId), enrolmentMap.keys.toList.asJava, new util.ArrayList[String]())
+        val response: Response = groupDao.readEntries("Course", java.util.Arrays.asList(userId), enrolmentMap.keys.toList.asJava)
         if (response.getResponseCode != ResponseCode.OK)
             ProjectCommonException.throwServerErrorException(ResponseCode.erroCallGrooupAPI, MessageFormat.format(ResponseCode.erroCallGrooupAPI.getErrorMessage()))
         val userActivityList: util.List[util.Map[String, AnyRef]] = response.getResult.getOrDefault("response", new util.ArrayList()).asInstanceOf[util.List[util.Map[String, AnyRef]]]

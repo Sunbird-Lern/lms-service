@@ -53,4 +53,22 @@ public class GroupDaoImplTest {
         Response readResponse = groupDao.read("do_1234", "course", Arrays.asList("user1"));
         Assert.assertNotNull(readResponse);
     }
+
+    @Test
+    public void readEntriesSuccess() throws Exception {
+        GroupDaoImpl groupDao = new GroupDaoImpl();
+        Map<String, Object> groupActivityMap = new HashMap<>();
+        groupActivityMap.put("user_id", "user1");
+        when(cassandraOperation.getRecordById(
+                Mockito.anyString(), Mockito.anyString(), Mockito.anyMap())).thenReturn(getReadEntriesResponse());
+        Response readResponse = groupDao.readEntries("Course",  Arrays.asList("user1"), Arrays.asList("do_1234", "do_3456"), Arrays.asList("agg", "activity_id"));
+        Assert.assertNotNull(readResponse);
+        Assert.assertEquals(readResponse.getResponseCode(), ResponseCode.OK);
+        Assert.assertNotNull(readResponse.getResult());
+    }
+
+    public static Response getReadEntriesResponse() throws Exception {
+        String  responseString = "{\"id\":null,\"ver\":null,\"ts\":null,\"params\":null,\"responseCode\":\"OK\",\"result\":{\"response\":[{\"agg\":{\"completedCount\":1},\"user_id\":\"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"activity_type\":\"Course\",\"agg_last_updated\":{\"completedCount\":1595506598142},\"activity_id\":\"do_11305984881537024012255\",\"context_id\":\"cb:0130598559365038081\"}]}}";
+        return JsonUtil.deserialize(responseString, Response.class);
+    }
 }

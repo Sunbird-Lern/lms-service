@@ -58,10 +58,10 @@ public class CourseBatchCertificateActor extends BaseActor {
     String templateId = (String) template.get(JsonKey.IDENTIFIER);
     validateTemplateDetails(templateId, template);
     ProjectLogger.log("Validated certificate template to batchID: " +  batchId, LoggerEnum.INFO);
-    courseBatchDao.addCertificateTemplateToCourseBatch(courseId, batchId, templateId, template);
+    courseBatchDao.addCertificateTemplateToCourseBatch(courseId, batchId, templateId, template, request.getRequestContext());
     ProjectLogger.log("Added certificate template to batchID: " +  batchId, LoggerEnum.INFO);
     Map<String, Object> courseBatch =
-        mapESFieldsToObject(courseBatchDao.getCourseBatch(courseId, batchId));
+        mapESFieldsToObject(courseBatchDao.getCourseBatch(courseId, batchId, request.getRequestContext()));
     CourseBatchUtil.syncCourseBatchForeground(batchId, courseBatch);
     ProjectLogger.log("Synced to es certificate template to batchID: " +  batchId, LoggerEnum.INFO);
     Response response = new Response();
@@ -78,9 +78,9 @@ public class CourseBatchCertificateActor extends BaseActor {
     Map<String, Object> template = (Map<String, Object>) batchRequest.get(CourseJsonKey.TEMPLATE);
     String templateId = (String) template.get(JsonKey.IDENTIFIER);
     CourseBatchUtil.validateTemplate(templateId);
-    courseBatchDao.removeCertificateTemplateFromCourseBatch(courseId, batchId, templateId);
+    courseBatchDao.removeCertificateTemplateFromCourseBatch(courseId, batchId, templateId, request.getRequestContext());
     Map<String, Object> courseBatch =
-        mapESFieldsToObject(courseBatchDao.getCourseBatch(courseId, batchId));
+        mapESFieldsToObject(courseBatchDao.getCourseBatch(courseId, batchId, request.getRequestContext()));
     CourseBatchUtil.syncCourseBatchForeground(batchId, courseBatch);
     Response response = new Response();
     response.put(JsonKey.RESPONSE, JsonKey.SUCCESS);

@@ -19,6 +19,7 @@ import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.ProjectUtil.BulkProcessStatus;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.learner.actors.bulkupload.dao.BulkUploadProcessDao;
 import org.sunbird.learner.actors.bulkupload.dao.impl.BulkUploadProcessDaoImpl;
@@ -139,7 +140,7 @@ public abstract class BaseBulkUploadActor extends BaseActor {
     return csvReader;
   }
 
-  public List<String[]> parseCsvFile(byte[] byteArray, String processId) throws IOException {
+  public List<String[]> parseCsvFile(byte[] byteArray, String processId, RequestContext requestContext) throws IOException {
     CSVReader csvReader = null;
     // Create List for holding objects
     List<String[]> rows = new ArrayList<>();
@@ -161,7 +162,7 @@ public abstract class BaseBulkUploadActor extends BaseActor {
       ProjectLogger.log("Exception occurred while processing csv file : ", ex);
       BulkUploadProcess bulkUploadProcess =
           getBulkUploadProcessForFailedStatus(processId, BulkProcessStatus.FAILED.getValue(), ex);
-      bulkUploadDao.update(bulkUploadProcess);
+      bulkUploadDao.update(bulkUploadProcess, requestContext);
       throw ex;
     } finally {
       try {

@@ -11,6 +11,7 @@ import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.actors.bulkupload.dao.BulkUploadProcessDao;
 import org.sunbird.learner.actors.bulkupload.model.BulkUploadProcess;
@@ -22,30 +23,30 @@ public class BulkUploadProcessDaoImpl implements BulkUploadProcessDao {
   private ObjectMapper mapper = new ObjectMapper();
   private static final String KEYSPACE_NAME = "sunbird";
   private static final String TABLE_NAME = "bulk_upload_process";
-
+  
   @Override
-  public Response create(BulkUploadProcess bulkUploadProcess) {
+  public Response create(BulkUploadProcess bulkUploadProcess, RequestContext requestContext) {
     Map<String, Object> map = mapper.convertValue(bulkUploadProcess, Map.class);
     map.put(JsonKey.CREATED_ON, new Timestamp(Calendar.getInstance().getTimeInMillis()));
-    Response response = cassandraOperation.insertRecord(KEYSPACE_NAME, TABLE_NAME, map);
+    Response response = cassandraOperation.insertRecord(KEYSPACE_NAME, TABLE_NAME, map, requestContext);
     // need to send ID along with success msg
     response.put(JsonKey.ID, map.get(JsonKey.ID));
     return response;
   }
 
   @Override
-  public Response update(BulkUploadProcess bulkUploadProcess) {
+  public Response update(BulkUploadProcess bulkUploadProcess, RequestContext requestContext) {
     Map<String, Object> map = mapper.convertValue(bulkUploadProcess, Map.class);
     if (map.containsKey(JsonKey.CREATED_ON)) {
       map.remove(JsonKey.CREATED_ON);
     }
     map.put(JsonKey.LAST_UPDATED_ON, new Timestamp(Calendar.getInstance().getTimeInMillis()));
-    return cassandraOperation.updateRecord(KEYSPACE_NAME, TABLE_NAME, map);
+    return cassandraOperation.updateRecord(KEYSPACE_NAME, TABLE_NAME, map, requestContext);
   }
 
   @Override
-  public BulkUploadProcess read(String id) {
-    Response response = cassandraOperation.getRecordById(KEYSPACE_NAME, TABLE_NAME, id);
+  public BulkUploadProcess read(String id, RequestContext requestContext) {
+    Response response = cassandraOperation.getRecordByIdentifier(KEYSPACE_NAME, TABLE_NAME, id, null, requestContext);
     List<Map<String, Object>> list = (List<Map<String, Object>>) response.get(JsonKey.RESPONSE);
     if (CollectionUtils.isEmpty(list)) {
       return null;

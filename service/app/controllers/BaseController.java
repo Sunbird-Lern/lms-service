@@ -19,6 +19,7 @@ import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.HeaderParam;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.keys.SunbirdKey;
 import org.sunbird.telemetry.util.TelemetryEvents;
@@ -39,6 +40,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
@@ -55,17 +57,31 @@ public class BaseController extends Controller {
   private static final String version = "v1";
   public static final int AKKA_WAIT_TIME = 30;
   protected Timeout timeout = new Timeout(AKKA_WAIT_TIME, TimeUnit.SECONDS);
+  private static final String logLevel = "false";
 
   private org.sunbird.common.request.Request initRequest(
       org.sunbird.common.request.Request request, String operation, Http.Request httpRequest) {
     request.setOperation(operation);
     request.setRequestId(httpRequest.flash().get(JsonKey.REQUEST_ID));
     request.setEnv(getEnvironment());
+    request.setRequestContext(getRequestContext(httpRequest, operation));
     request.getContext().put(JsonKey.REQUESTED_BY, httpRequest.flash().get(JsonKey.USER_ID));
     if (StringUtils.isNotBlank(httpRequest.flash().get(SunbirdKey.REQUESTED_FOR)))
       request.getContext().put(SunbirdKey.REQUESTED_FOR, httpRequest.flash().get(SunbirdKey.REQUESTED_FOR));
     request = transformUserId(request);
     return request;
+  }
+
+  private RequestContext getRequestContext(Request httpRequest, String actorOperation) {
+    RequestContext requestContext = new RequestContext();
+    requestContext.setReqId(httpRequest.header("x-request-id").orElse(UUID.randomUUID().toString()));
+    requestContext.setUid(httpRequest.flash().get(JsonKey.USER_ID));
+    if(httpRequest.header("x-device-id").isPresent()) requestContext.setDid(httpRequest.header("x-device-id").get());
+    if(httpRequest.header("x-session-id").isPresent()) requestContext.setSid(httpRequest.header("x-session-id").get());
+    if(httpRequest.header("x-app-id").isPresent()) requestContext.setAppId(httpRequest.header("x-app-id").get());
+    requestContext.setLogLevel((httpRequest.header("x-trace-enabled").isPresent() ? httpRequest.header("x-trace-enabled").orElse(logLevel): logLevel));
+    requestContext.setActorOperation(actorOperation);
+    return requestContext;
   }
 
   /**

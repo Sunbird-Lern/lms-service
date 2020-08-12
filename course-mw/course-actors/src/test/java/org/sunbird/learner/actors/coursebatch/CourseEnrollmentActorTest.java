@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import org.junit.*;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
@@ -167,7 +168,7 @@ public class CourseEnrollmentActorTest {
     if (isUserFirstTimeEnrolled) {
       Response insertResponse = createCassandraInsertSuccessResponse();
       when(cassandraOperation.insertRecord(
-              Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
+              Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
           .thenReturn(insertResponse);
     }
     mockUserCoursesEsResponse(true);
@@ -228,14 +229,14 @@ public class CourseEnrollmentActorTest {
   private void mockCassandraRequestForReadRecordById(
       boolean isUserFirstTimeEnrolled, boolean userEnrollStatus, int batchStatus) {
     if (isUserFirstTimeEnrolled)
-      when(cassandraOperation.getRecordById(
-              Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
+      when(cassandraOperation.getRecordByIdentifier(
+              Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList(), Mockito.any()))
           .thenReturn(
               createGetCourseBatchSuccessResponse(batchStatus),
               createGetUserCourseFailureResponse());
     else
-      when(cassandraOperation.getRecordById(
-              Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
+      when(cassandraOperation.getRecordByIdentifier(
+              Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList(), Mockito.any()))
           .thenReturn(
               createGetCourseBatchSuccessResponse(batchStatus),
               createGetUserCourseSuccessResponse(userEnrollStatus, batchStatus));

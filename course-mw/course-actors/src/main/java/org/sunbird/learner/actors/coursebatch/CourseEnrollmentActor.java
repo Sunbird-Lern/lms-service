@@ -22,6 +22,7 @@ import org.sunbird.common.models.util.*;
 import org.sunbird.common.models.util.ProjectUtil.EnrolmentType;
 import org.sunbird.common.models.util.ProjectUtil.ProgressStatus;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.keys.SunbirdKey;
@@ -85,7 +86,7 @@ public class CourseEnrollmentActor extends BaseActor {
     courseMap.put(JsonKey.USER_ID, requestMap.get(JsonKey.USER_ID));
     CourseBatch courseBatch =
         courseBatchDao.readById(
-            (String) courseMap.get(JsonKey.COURSE_ID), (String) courseMap.get(JsonKey.BATCH_ID));
+            (String) courseMap.get(JsonKey.COURSE_ID), (String) courseMap.get(JsonKey.BATCH_ID), actorMessage.getRequestContext());
     checkUserEnrollementStatus(
         (String) courseMap.get(JsonKey.COURSE_ID), (String) courseMap.get(JsonKey.USER_ID));
     validateCourseBatch(
@@ -97,7 +98,7 @@ public class CourseEnrollmentActor extends BaseActor {
 
     UserCourses userCourseResult =
         userCourseDao.read(
-            (String) courseMap.get(JsonKey.BATCH_ID), (String) courseMap.get(JsonKey.USER_ID));
+            (String) courseMap.get(JsonKey.BATCH_ID), (String) courseMap.get(JsonKey.USER_ID), actorMessage.getRequestContext());
 
     if (!ProjectUtil.isNull(userCourseResult) && userCourseResult.isActive()) {
       ProjectLogger.log("User Already Enrolled Course ");
@@ -109,10 +110,10 @@ public class CourseEnrollmentActor extends BaseActor {
     Response result = new Response();
     if (userCourseResult == null) {
       // user is doing enrollment first time
-      userCourseDao.insert(courseMap);
+      userCourseDao.insert(courseMap, actorMessage.getRequestContext());
     } else {
       // second time user is doing enrollment for same course batch
-      userCourseDao.update(userCourseResult.getBatchId(), userCourseResult.getUserId(), courseMap);
+      userCourseDao.update(userCourseResult.getBatchId(), userCourseResult.getUserId(), courseMap, actorMessage.getRequestContext());
     }
     result.put("response", "SUCCESS");
     sender().tell(result, self());
@@ -170,7 +171,7 @@ public class CourseEnrollmentActor extends BaseActor {
     request.remove(JsonKey.ID);
     CourseBatch courseBatch =
         courseBatchDao.readById(
-            (String) request.get(JsonKey.COURSE_ID), (String) request.get(JsonKey.BATCH_ID));
+            (String) request.get(JsonKey.COURSE_ID), (String) request.get(JsonKey.BATCH_ID), actorMessage.getRequestContext());
     validateCourseBatch(
         courseBatch,
         request,
@@ -179,9 +180,9 @@ public class CourseEnrollmentActor extends BaseActor {
         ActorOperations.UNENROLL_COURSE.getValue());
     UserCourses userCourseResult =
         userCourseDao.read(
-            (String) request.get(JsonKey.BATCH_ID), (String) request.get(JsonKey.USER_ID));
+            (String) request.get(JsonKey.BATCH_ID), (String) request.get(JsonKey.USER_ID), actorMessage.getRequestContext());
     UserCoursesService.validateUserUnenroll(userCourseResult);
-    Response result = updateUserCourses(userCourseResult);
+    Response result = updateUserCourses(userCourseResult, actorMessage.getRequestContext());
     sender().tell(result, self());
     generateAndProcessTelemetryEvent(request, "user.batch.course.unenroll", JsonKey.UPDATE, actorMessage.getContext());
 
@@ -348,12 +349,12 @@ public class CourseEnrollmentActor extends BaseActor {
     }
   }
 
-  private Response updateUserCourses(UserCourses userCourses) {
+  private Response updateUserCourses(UserCourses userCourses, RequestContext requestContext) {
     Map<String, Object> userCourseUpdateAttributes = new HashMap<>();
     userCourseUpdateAttributes.put(JsonKey.ACTIVE, false);
     Response result = new Response();
     userCourseDao.update(
-        userCourses.getBatchId(), userCourses.getUserId(), userCourseUpdateAttributes);
+        userCourses.getBatchId(), userCourses.getUserId(), userCourseUpdateAttributes, requestContext);
     result.put("response", "SUCCESS");
     UserCoursesService.sync(
         userCourseUpdateAttributes, userCourses.getBatchId(), userCourses.getUserId());

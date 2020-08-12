@@ -71,8 +71,8 @@ public class RequestInterceptorTest {
     when(properties.getProperty(JsonKey.SSO_PUBLIC_KEY)).thenReturn("somePublicKey");
     when(properties.getProperty(JsonKey.IS_SSO_ENABLED)).thenReturn("false");
     Http.Request req = createRequest("user", "/v1/course/batch/search");
-    when(cassandraOperation.getRecordById(
-            Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+    when(cassandraOperation.getRecordByIdentifier(
+            Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyList(), Mockito.any()))
         .thenReturn(getMockCassandraRecordByIdResponse(JsonKey.USER_ID, "userId"));
     Assert.assertEquals("userId", RequestInterceptor.verifyRequestData(req));
   }
@@ -83,8 +83,8 @@ public class RequestInterceptorTest {
     when(properties.getProperty(JsonKey.SSO_PUBLIC_KEY)).thenReturn("somePublicKey");
     when(properties.getProperty(JsonKey.IS_SSO_ENABLED)).thenReturn("false");
     Http.Request req = createRequest("user", "/v1/course/batch/create");
-    when(cassandraOperation.getRecordById(
-            Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+    when(cassandraOperation.getRecordByIdentifier(
+            Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyList(), Mockito.any()))
         .thenReturn(getMockCassandraRecordByIdResponse(JsonKey.USER_ID, "userId"));
     Assert.assertEquals("userId", RequestInterceptor.verifyRequestData(req));
   }
@@ -96,7 +96,7 @@ public class RequestInterceptorTest {
     when(properties.getProperty(JsonKey.IS_SSO_ENABLED)).thenReturn("false");
     Http.Request req = createRequest("client", "/v1/course/batch/create");
     when(cassandraOperation.getRecordsByProperties(
-            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
+            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
         .thenReturn(getMockCassandraRecordByIdResponse(JsonKey.ID, "clientId"));
     Assert.assertEquals("clientId", RequestInterceptor.verifyRequestData(req));
   }
@@ -108,7 +108,7 @@ public class RequestInterceptorTest {
     when(properties.getProperty(JsonKey.IS_SSO_ENABLED)).thenReturn("false");
     Http.Request req = createRequest("user", "/v1/course/batch/search");
     when(cassandraOperation.getRecordsByProperties(
-            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
+            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
         .thenReturn(null);
     Assert.assertEquals("Anonymous", RequestInterceptor.verifyRequestData(req));
   }

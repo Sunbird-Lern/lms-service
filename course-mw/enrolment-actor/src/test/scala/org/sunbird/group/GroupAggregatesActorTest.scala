@@ -10,7 +10,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import org.sunbird.cache.interfaces.Cache
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
-import org.sunbird.common.request.Request
+import org.sunbird.common.request.{Request, RequestContext}
 import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.learner.actors.group.dao.impl.GroupDaoImpl
 
@@ -26,7 +26,7 @@ class GroupAggregatesActorTest extends FlatSpec with Matchers with MockFactory {
     val redisCache = mock[Cache]
     //(redisCache.get(_: String, _:String, _: Class[_])).expects(*,*,*).returns(null)
     (groupAggregateUtil.getGroupDetails(_:String, _:Request)).expects(*,*).returns(validRestResponse())
-    (groupDao.read(_: String, _: String, _: java.util.List[String])).expects(*,*,*).returns(validDBResponse())
+    (groupDao.read(_: String, _: String, _: java.util.List[String], _: RequestContext)).expects(*,*,*,*).returns(validDBResponse())
     (redisCache.put(_: String, _: String, _: AnyRef)).expects(*,*,*)
     (redisCache.setMapExpiry(_: String, _: Long)).expects(*,*)
     val response = callActor(getGroupActivityAggRequest(), Props(new GroupAggregatesActor().setInstanceVariable(groupAggregateUtil, groupDao, redisCache)))
@@ -50,7 +50,7 @@ class GroupAggregatesActorTest extends FlatSpec with Matchers with MockFactory {
     val redisCache = mock[Cache]
     //(redisCache.get(_: String, _:String, _: Class[_])).expects(*,*,*).returns(null)
     (groupAggregateUtil.getGroupDetails(_:String, _:Request)).expects(*,*).returns(validRestResponse())
-    (groupDao.read(_: String, _: String, _: java.util.List[String])).expects(*,*,*).returns(blankDBResponse())
+    (groupDao.read(_: String, _: String, _: java.util.List[String], _: RequestContext)).expects(*,*,*,*).returns(blankDBResponse())
     val response = callActor(getGroupActivityAggRequest(), Props(new GroupAggregatesActor().setInstanceVariable(groupAggregateUtil, groupDao, redisCache)))
     assert(response.getResponseCode == ResponseCode.OK)
   }
@@ -61,7 +61,7 @@ class GroupAggregatesActorTest extends FlatSpec with Matchers with MockFactory {
     val redisCache = mock[Cache]
     //(redisCache.get(_: String, _:String, _: Class[_])).expects(*,*,*).returns(null)
     (groupAggregateUtil.getGroupDetails(_:String, _:Request)).expects(*,*).returns(validRestResponse())
-    (groupDao.read(_: String, _: String, _: java.util.List[String])).expects(*,*,*).returns(errorDBResponse())
+    (groupDao.read(_: String, _: String, _: java.util.List[String], _: RequestContext)).expects(*,*,*,*).returns(errorDBResponse())
     val response = callActorForFailure(getGroupActivityAggRequest(), Props(new GroupAggregatesActor().setInstanceVariable(groupAggregateUtil, groupDao, redisCache)))
     assert(response.getResponseCode == ResponseCode.SERVER_ERROR.getResponseCode)
   }

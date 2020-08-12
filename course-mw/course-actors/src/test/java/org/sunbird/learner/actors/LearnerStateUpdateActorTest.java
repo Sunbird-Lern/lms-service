@@ -11,7 +11,6 @@ import akka.actor.Props;
 import akka.dispatch.Futures;
 import akka.testkit.javadsl.TestKit;
 import java.math.BigInteger;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,7 +27,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.cassandraimpl.CassandraOperationImpl;
 import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.ElasticSearchRestHighImpl;
-import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
@@ -36,7 +34,6 @@ import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
-import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.kafka.client.InstructionEventGenerator;
 import org.sunbird.kafka.client.KafkaClient;
@@ -87,15 +84,15 @@ public class LearnerStateUpdateActorTest {
     when(EsClientFactory.getInstance(Mockito.anyString())).thenReturn(esService);
     when(ServiceFactory.getInstance()).thenReturn(cassandraOperation);
     when(cassandraOperation.batchInsert(
-            Mockito.anyString(), Mockito.anyString(), Mockito.anyList()))
+            Mockito.anyString(), Mockito.anyString(), Mockito.anyList(), Mockito.any()))
         .thenReturn(getSuccessResponse());
 
     when(cassandraOperation.upsertRecord(
-            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
+            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
         .thenReturn(getSuccessResponse());
 
     when(cassandraOperation.getRecords(
-            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList()))
+            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList(), Mockito.any()))
         .thenReturn(getCassandraRecordById());
 
     PowerMockito.doNothing()
@@ -217,8 +214,7 @@ public class LearnerStateUpdateActorTest {
     req.setOperation(ActorOperations.ADD_CONTENT.getValue());
     req.setRequest(innerMap);
 
-    when(cassandraOperation.getRecordById(
-            Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+    when(cassandraOperation.getRecordByIdentifier(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyList(), Mockito.any()))
         .thenReturn(getCassandraEmptyRecordById());
 
     subject.tell(req, probe.getRef());

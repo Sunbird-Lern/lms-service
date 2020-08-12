@@ -70,7 +70,7 @@ public class BadgrServiceImpl implements BadgingService {
 
     List<BadgeClassExtension> badgeClassExtList =
         badgeClassExtensionService.search(
-            issuerList, badgeList, rootOrgId, type, subtype, allowedRoles);
+            issuerList, badgeList, rootOrgId, type, subtype, allowedRoles, request.getRequestContext());
     List<String> filteredIssuerList =
         badgeClassExtList
             .stream()

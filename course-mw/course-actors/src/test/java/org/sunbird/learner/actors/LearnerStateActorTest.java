@@ -95,13 +95,13 @@ public class LearnerStateActorTest {
     List<Map<String, Object>> dbResponseList = new ArrayList<>();
     dbResponse.put(JsonKey.RESPONSE, dbResponseList);
     when(cassandraOperation.getRecordsByProperty(
-            Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyObject()))
+            Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyObject(),Mockito.anyList(), Mockito.any()))
         .thenReturn(dbResponse);
     when(cassandraOperation.getRecordsByProperties(
-            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
+            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
         .thenReturn(dbResponse);
     when(cassandraOperation.getRecords(
-            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList()))
+            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList(), Mockito.any()))
         .thenReturn(dbResponse);
   }
 

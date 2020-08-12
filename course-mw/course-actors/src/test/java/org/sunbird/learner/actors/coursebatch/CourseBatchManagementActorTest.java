@@ -74,7 +74,7 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
         .thenReturn(CustomObjectBuilder.getRandomCourse().get());
     when(group
             .getCassandraMockerService()
-            .insertRecord(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
+            .insertRecord(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
         .thenReturn(
             new CustomObjectBuilder.CustomObjectWrapper<Boolean>(true).asCassandraResponse());
     when(group.getUserOrgMockerService().getOrganisationById(Mockito.anyString()))

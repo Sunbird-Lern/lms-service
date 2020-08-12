@@ -6,7 +6,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.slf4j.helpers.MessageFormatter;
 import org.sunbird.actor.base.BaseActor;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.ElasticSearchHelper;
@@ -16,6 +15,7 @@ import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.*;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.helper.ServiceFactory;
@@ -56,7 +56,7 @@ public class LearnerStateActor extends BaseActor {
       Response res = new Response();
       Map<String, Object> requestMap = request.getRequest();
       String userId = (String) request.getRequest().get(JsonKey.USER_ID);
-      res = getCourseContentState(userId, requestMap);
+      res = getCourseContentState(userId, request);
       removeUnwantedProperties(res);
       sender().tell(res, self());
     } else {
@@ -242,8 +242,8 @@ public class LearnerStateActor extends BaseActor {
     return requestJson;
   }
 
-  private Response getCourseContentState(String userId, Map<String, Object> requestMap) {
-
+  private Response getCourseContentState(String userId, Request request) {
+    Map<String, Object> requestMap = request.getRequest();
     Response response = new Response();
     String batchId = (String) requestMap.get(JsonKey.BATCH_ID);
     String courseId = (String) requestMap.get(JsonKey.COURSE_ID);
@@ -267,14 +267,14 @@ public class LearnerStateActor extends BaseActor {
     if (CollectionUtils.isEmpty(contentIds)) {
       contentList = new ArrayList<>();
     } else {
-      contentList = getContents(userId, contentIds, batchId, courseId);
+      contentList = getContents(userId, contentIds, batchId, courseId, request.getRequestContext());
     }
     response.getResult().put(JsonKey.RESPONSE, contentList);
     return response;
   }
 
   private List<Map<String, Object>> getContents(
-      String userId, List<String> contentIds, String batchId, String courseId) {
+          String userId, List<String> contentIds, String batchId, String courseId, RequestContext requestContext) {
     List<Map<String, Object>> contentList = new ArrayList<Map<String, Object>>();
     Util.DbInfo dbInfo = Util.dbInfoMap.get(JsonKey.LEARNER_CONTENT_DB);
     Map<String, Object> filters =
@@ -287,7 +287,7 @@ public class LearnerStateActor extends BaseActor {
           }
         };
     Response response =
-        cassandraOperation.getRecords(dbInfo.getKeySpace(), dbInfo.getTableName(), filters, null);
+        cassandraOperation.getRecords(dbInfo.getKeySpace(), dbInfo.getTableName(), filters, null, requestContext);
     contentList.addAll((List<Map<String, Object>>) response.getResult().get(JsonKey.RESPONSE));
     return contentList;
   }

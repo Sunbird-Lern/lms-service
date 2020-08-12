@@ -23,6 +23,7 @@ import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.PropertiesCache;
 import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.common.util.CloudStorageUtil;
 import org.sunbird.common.util.CloudStorageUtil.CloudStorageType;
@@ -73,7 +74,7 @@ public class BulkUploadManagementActor extends BaseBulkUploadActor {
   private void getBulkUploadDownloadStatusLink(Request actorMessage) {
     String processId = (String) actorMessage.getRequest().get(JsonKey.PROCESS_ID);
     BulkUploadProcessDaoImpl bulkuploadDao = new BulkUploadProcessDaoImpl();
-    BulkUploadProcess bulkUploadProcess = bulkuploadDao.read(processId);
+    BulkUploadProcess bulkUploadProcess = bulkuploadDao.read(processId, actorMessage.getRequestContext());
     if (bulkUploadProcess != null) {
 
       try {
@@ -116,8 +117,8 @@ public class BulkUploadManagementActor extends BaseBulkUploadActor {
             JsonKey.SUCCESS_RESULT,
             JsonKey.FAILURE_RESULT);
     response =
-        cassandraOperation.getRecordById(
-            bulkDb.getKeySpace(), bulkDb.getTableName(), processId, fields);
+        cassandraOperation.getRecordByIdentifier(
+            bulkDb.getKeySpace(), bulkDb.getTableName(), processId, fields, actorMessage.getRequestContext());
     @SuppressWarnings("unchecked")
     List<Map<String, Object>> resList =
         ((List<Map<String, Object>>) response.get(JsonKey.RESPONSE));
@@ -175,13 +176,13 @@ public class BulkUploadManagementActor extends BaseBulkUploadActor {
     req.put(JsonKey.CREATED_BY, req.get(JsonKey.CREATED_BY));
     if (((String) req.get(JsonKey.OBJECT_TYPE)).equals(JsonKey.BATCH_LEARNER_ENROL)
         || ((String) req.get(JsonKey.OBJECT_TYPE)).equals(JsonKey.BATCH_LEARNER_UNENROL)) {
-      processBulkBatchEnrollment(req, processId, (String) req.get(JsonKey.OBJECT_TYPE));
+      processBulkBatchEnrollment(req, processId, (String) req.get(JsonKey.OBJECT_TYPE), actorMessage.getRequestContext());
     }
   }
 
   private void processBulkBatchEnrollment(
-      Map<String, Object> req, String processId, String objectType) throws IOException {
-    List<String[]> batchList = parseCsvFile((byte[]) req.get(JsonKey.FILE), processId);
+      Map<String, Object> req, String processId, String objectType, RequestContext requestContext) throws IOException {
+    List<String[]> batchList = parseCsvFile((byte[]) req.get(JsonKey.FILE), processId, requestContext);
     if (null != batchList) {
 
       if (null != PropertiesCache.getInstance().getProperty(JsonKey.BULK_UPLOAD_BATCH_DATA_SIZE)) {
@@ -208,7 +209,7 @@ public class BulkUploadManagementActor extends BaseBulkUploadActor {
     }
     // save csv file to db
     uploadCsvToDB(
-        batchList, processId, null, objectType, (String) req.get(JsonKey.CREATED_BY), null);
+        batchList, processId, null, objectType, (String) req.get(JsonKey.CREATED_BY), null, requestContext);
   }
 
   private void uploadCsvToDB(
@@ -217,7 +218,7 @@ public class BulkUploadManagementActor extends BaseBulkUploadActor {
       String orgId,
       String objectType,
       String requestedBy,
-      String rootOrgId) {
+      String rootOrgId, RequestContext requestContext) {
     ProjectLogger.log("BulkUploadManagementActor: uploadCsvToDB called.", LoggerEnum.INFO);
     List<Map<String, Object>> dataMapList = new ArrayList<>();
     if (dataList.size() > 1) {
@@ -271,7 +272,7 @@ public class BulkUploadManagementActor extends BaseBulkUploadActor {
     map.put(JsonKey.PROCESS_START_TIME, ProjectUtil.getFormattedDate());
     map.put(JsonKey.STATUS, ProjectUtil.BulkProcessStatus.NEW.getValue());
     Response res =
-        cassandraOperation.insertRecord(bulkDb.getKeySpace(), bulkDb.getTableName(), map);
+        cassandraOperation.insertRecord(bulkDb.getKeySpace(), bulkDb.getTableName(), map, requestContext);
     res.put(JsonKey.PROCESS_ID, processId);
     ProjectLogger.log(
         "BulkUploadManagementActor: uploadCsvToDB returned response for processId: " + processId,

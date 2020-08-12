@@ -57,8 +57,8 @@ public class AuthenticationHelper {
         userId = ssoManager.verifyToken(token, checkActive);
       } else {
         Response authResponse =
-            cassandraOperation.getRecordById(
-                userAuth.getKeySpace(), userAuth.getTableName(), token);
+            cassandraOperation.getRecordByIdentifier(
+                userAuth.getKeySpace(), userAuth.getTableName(), token, null, null);
         if (authResponse != null && authResponse.get(JsonKey.RESPONSE) != null) {
           List<Map<String, Object>> authList =
               (List<Map<String, Object>>) authResponse.get(JsonKey.RESPONSE);
@@ -84,7 +84,7 @@ public class AuthenticationHelper {
     try {
       Response clientResponse =
           cassandraOperation.getRecordsByProperties(
-              clientDbInfo.getKeySpace(), clientDbInfo.getTableName(), propertyMap);
+              clientDbInfo.getKeySpace(), clientDbInfo.getTableName(), propertyMap, null);
       if (null != clientResponse && !clientResponse.getResult().isEmpty()) {
         List<Map<String, Object>> dataList =
             (List<Map<String, Object>>) clientResponse.getResult().get(JsonKey.RESPONSE);

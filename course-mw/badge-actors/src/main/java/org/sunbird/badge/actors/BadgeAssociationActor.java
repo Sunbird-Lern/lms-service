@@ -26,6 +26,7 @@ import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.StringFormatter;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.content.service.ContentService;
 import org.sunbird.learner.util.CourseBatchSchedulerUtil;
@@ -87,7 +88,7 @@ public class BadgeAssociationActor extends BaseActor {
                 + badgesTobeAddedList,
             LoggerEnum.INFO);
         cassandraCreateMapList = newActiveBadgeMap(badgesTobeAddedList, requestedBy, contentId);
-        response = contentBadgeAssociationDao.insertBadgeAssociation(cassandraCreateMapList);
+        response = contentBadgeAssociationDao.insertBadgeAssociation(cassandraCreateMapList, request.getRequestContext());
       }
     }
     sender().tell(response, self());
@@ -115,7 +116,7 @@ public class BadgeAssociationActor extends BaseActor {
           ContentService.updateEkstepContent(
               contentId, BadgingJsonKey.BADGE_ASSOCIATIONS, updatedActiveBadges);
       if (flag) {
-        updateMapList = updateCassandraAndGetUpdateMapList(associationIds, requestedBy);
+        updateMapList = updateCassandraAndGetUpdateMapList(associationIds, requestedBy, request.getRequestContext());
       }
     }
     sender().tell(response, self());
@@ -137,13 +138,13 @@ public class BadgeAssociationActor extends BaseActor {
   }
 
   private List<Map<String, Object>> updateCassandraAndGetUpdateMapList(
-      List<String> associationIds, String requestedBy) {
+          List<String> associationIds, String requestedBy, RequestContext requestContext) {
     List<Map<String, Object>> updateList = new ArrayList<>();
     for (String id : associationIds) {
       Map<String, Object> updateMap =
           associationService.getCassandraBadgeAssociationUpdateMap(id, requestedBy);
       updateList.add(updateMap);
-      contentBadgeAssociationDao.updateBadgeAssociation(updateMap);
+      contentBadgeAssociationDao.updateBadgeAssociation(updateMap, requestContext);
     }
     return updateList;
   }

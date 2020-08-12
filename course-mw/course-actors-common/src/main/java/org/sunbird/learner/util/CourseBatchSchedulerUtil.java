@@ -17,6 +17,7 @@ import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.PropertiesCache;
 import org.sunbird.common.request.HeaderParam;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.helper.ServiceFactory;
 import scala.concurrent.Future;
 
@@ -45,10 +46,11 @@ public final class CourseBatchSchedulerUtil {
   /**
    * Method to update course batch status to db as well as EkStep .
    *
-   * @param increment
    * @param map
+   * @param increment
+   * @param requestContext
    */
-  public static void updateCourseBatchDbStatus(Map<String, Object> map, Boolean increment) {
+  public static void updateCourseBatchDbStatus(Map<String, Object> map, Boolean increment, RequestContext requestContext) {
     ProjectLogger.log(
         "CourseBatchSchedulerUtil:updateCourseBatchDbStatus: updating course batch details start",
         LoggerEnum.INFO.name());
@@ -62,7 +64,7 @@ public final class CourseBatchSchedulerUtil {
       if (response) {
         boolean flag = updateDataIntoES(map);
         if (flag) {
-          updateDataIntoCassandra(map);
+          updateDataIntoCassandra(map, requestContext);
         }
       } else {
         ProjectLogger.log(
@@ -95,12 +97,14 @@ public final class CourseBatchSchedulerUtil {
     return flag;
   }
 
-  /** @param map */
-  public static void updateDataIntoCassandra(Map<String, Object> map) {
+  /**
+   * @param map
+   * @param requestContext */
+  public static void updateDataIntoCassandra(Map<String, Object> map, RequestContext requestContext) {
     CassandraOperation cassandraOperation = ServiceFactory.getInstance();
     Util.DbInfo courseBatchDBInfo = Util.dbInfoMap.get(JsonKey.COURSE_BATCH_DB);
     cassandraOperation.updateRecord(
-        courseBatchDBInfo.getKeySpace(), courseBatchDBInfo.getTableName(), map);
+        courseBatchDBInfo.getKeySpace(), courseBatchDBInfo.getTableName(), map, requestContext);
     ProjectLogger.log(
         "CourseBatchSchedulerUtil:updateDataIntoCassandra: Update Successful for batchId "
             + map.get(JsonKey.ID),

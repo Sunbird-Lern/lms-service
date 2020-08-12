@@ -127,9 +127,9 @@ public class CourseBatchSchedulerUtilTest {
     PowerMockito.when(
             group
                 .getCassandraMockerService()
-                .updateRecord(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
+                .updateRecord(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
         .thenReturn(new Response());
-    CourseBatchSchedulerUtil.updateCourseBatchDbStatus(courseBatch, true);
+    CourseBatchSchedulerUtil.updateCourseBatchDbStatus(courseBatch, true, null);
     PowerMockito.verifyStatic();
     ContentUtil.searchContent(Mockito.anyString(), Mockito.anyMap());
   }

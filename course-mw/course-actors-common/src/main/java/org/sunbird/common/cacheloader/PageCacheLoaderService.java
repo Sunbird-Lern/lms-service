@@ -28,7 +28,7 @@ public class PageCacheLoaderService implements Runnable {
   public Map<String, Map<String, Object>> cacheLoader(String tableName) {
     Map<String, Map<String, Object>> map = new HashMap<>();
     try {
-      Response response = cassandraOperation.getAllRecords(KEY_SPACE_NAME, tableName);
+      Response response = cassandraOperation.getAllRecords(KEY_SPACE_NAME, tableName, null);
       List<Map<String, Object>> responseList =
           (List<Map<String, Object>>) response.get(JsonKey.RESPONSE);
       if (CollectionUtils.isNotEmpty(responseList)) {

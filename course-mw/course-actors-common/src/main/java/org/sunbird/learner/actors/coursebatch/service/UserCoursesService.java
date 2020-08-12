@@ -10,6 +10,7 @@ import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.datasecurity.OneWayHashing;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.learner.actors.coursebatch.dao.UserCoursesDao;
@@ -64,7 +65,7 @@ public class UserCoursesService {
             + batchId);
   }
 
-  public void enroll(String batchId, String courseId, List<String> userIds) {
+  public void enroll(String batchId, String courseId, List<String> userIds, RequestContext requestContext) {
     Integer count = 0;
 
     List<Map<String, Object>> records = new ArrayList<>();
@@ -84,13 +85,13 @@ public class UserCoursesService {
       count++;
       records.add(userCourses);
       if (count > CASSANDRA_BATCH_SIZE) {
-        performBatchInsert(records);
+        performBatchInsert(records, requestContext);
         syncUsersToES(records);
         records.clear();
         count = 0;
       }
       if (count != 0) {
-        performBatchInsert(records);
+        performBatchInsert(records, requestContext);
         syncUsersToES(records);
         records.clear();
         count = 0;
@@ -108,9 +109,9 @@ public class UserCoursesService {
     }
   }
 
-  protected void performBatchInsert(List<Map<String, Object>> records) {
+  protected void performBatchInsert(List<Map<String, Object>> records, RequestContext requestContext) {
     try {
-      userCourseDao.batchInsert(records);
+      userCourseDao.batchInsert(records, requestContext);
     } catch (Exception ex) {
       ProjectLogger.log(
           "UserCoursesService:performBatchInsert: Performing retry due to exception = "
@@ -118,7 +119,7 @@ public class UserCoursesService {
           LoggerEnum.ERROR);
       for (Map<String, Object> task : records) {
         try {
-          userCourseDao.insertV2(task);
+          userCourseDao.insertV2(task, requestContext);
         } catch (Exception exception) {
           ProjectLogger.log(
               "UserCoursesService:performBatchInsert: Exception occurred with error message = "
@@ -131,12 +132,12 @@ public class UserCoursesService {
     }
   }
 
-  public void unenroll(String batchId, String userId) {
-    UserCourses userCourses = userCourseDao.read(batchId, userId);
+  public void unenroll(String batchId, String userId, RequestContext requestContext) {
+    UserCourses userCourses = userCourseDao.read(batchId, userId, requestContext);
     validateUserUnenroll(userCourses);
     Map<String, Object> updateAttributes = new HashMap<>();
     updateAttributes.put(JsonKey.ACTIVE, ProjectUtil.ActiveStatus.INACTIVE.getValue());
-    userCourseDao.update(userCourses.getBatchId(), userCourses.getUserId(), updateAttributes);
+    userCourseDao.update(userCourses.getBatchId(), userCourses.getUserId(), updateAttributes, requestContext);
     sync(updateAttributes, userCourses.getBatchId(), userCourses.getUserId());
   }
 
@@ -165,9 +166,9 @@ public class UserCoursesService {
         LoggerEnum.INFO.name());
   }
 
-  public List<String> getEnrolledUserFromBatch(String batchId) {
+  public List<String> getEnrolledUserFromBatch(String batchId, RequestContext requestContext) {
 
-    return userCourseDao.getAllActiveUserOfBatch(batchId);
+    return userCourseDao.getAllActiveUserOfBatch(batchId, requestContext);
   }
 
   public Integer getBatchSize(String key) {
@@ -181,7 +182,7 @@ public class UserCoursesService {
     return batchSize;
   }
 
-  public List<String> getParticipantsList(String batchId, boolean active) {
-    return userCourseDao.getBatchParticipants(batchId, active);
+  public List<String> getParticipantsList(String batchId, boolean active, RequestContext requestContext) {
+    return userCourseDao.getBatchParticipants(batchId, active, requestContext);
   }
 }

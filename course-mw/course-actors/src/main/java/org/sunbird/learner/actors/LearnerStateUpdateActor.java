@@ -18,6 +18,7 @@ import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.*;
 import org.sunbird.common.models.util.datasecurity.OneWayHashing;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.helper.ServiceFactory;
@@ -153,7 +154,7 @@ public class LearnerStateUpdateActor extends BaseActor {
               if (validUserIds.contains(userId)) {
                 List<String> contentIds = entry.getValue().stream().map(c -> (String) c.get("contentId")).collect(Collectors.toList());
                 Map<String, Map<String, Object>> existingContents =
-                        getContents(userId, contentIds, batchId).stream()
+                        getContents(userId, contentIds, batchId, request.getRequestContext()).stream()
                                 .collect(Collectors.groupingBy(x -> (String) x.get("contentId")))
                                 .entrySet().stream().collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue().get(0)));
 
@@ -163,9 +164,9 @@ public class LearnerStateUpdateActor extends BaseActor {
                                   existingContents.get(inputContent.get("contentId"));
                           return processContent(inputContent, existingContent, userId);
                         }).collect(Collectors.toList());
-                cassandraOperation.batchInsert(consumptionDBInfo.getKeySpace(), consumptionDBInfo.getTableName(), contents);
+                cassandraOperation.batchInsert(consumptionDBInfo.getKeySpace(), consumptionDBInfo.getTableName(), contents, request.getRequestContext());
                 Map<String, Object> updatedBatch = getBatchCurrentStatus(batchId, userId, contents);
-                cassandraOperation.upsertRecord(userCourseDBInfo.getKeySpace(), userCourseDBInfo.getTableName(), updatedBatch);
+                cassandraOperation.upsertRecord(userCourseDBInfo.getKeySpace(), userCourseDBInfo.getTableName(), updatedBatch, request.getRequestContext());
                 // Generate Instruction event. Send userId, batchId, courseId, contents.
                 pushInstructionEvent(userId, batchId, courseId, contents);
                 contentIds.forEach(contentId -> updateMessages(respMessages, contentId, JsonKey.SUCCESS));
@@ -253,7 +254,7 @@ public class LearnerStateUpdateActor extends BaseActor {
   }
 
   private List<Map<String, Object>> getContents(
-      String userId, List<String> contentIds, String batchId) {
+          String userId, List<String> contentIds, String batchId, RequestContext requestContext) {
     Map<String, Object> filters =
         new HashMap<String, Object>() {
           {
@@ -264,7 +265,7 @@ public class LearnerStateUpdateActor extends BaseActor {
         };
     Response response =
         cassandraOperation.getRecords(
-            consumptionDBInfo.getKeySpace(), consumptionDBInfo.getTableName(), filters, null);
+            consumptionDBInfo.getKeySpace(), consumptionDBInfo.getTableName(), filters, null, requestContext);
     List<Map<String, Object>> resultList =
         (List<Map<String, Object>>) response.getResult().get(JsonKey.RESPONSE);
     if (CollectionUtils.isEmpty(resultList)) {

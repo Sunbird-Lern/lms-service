@@ -14,6 +14,7 @@ import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.util.Util;
@@ -32,12 +33,12 @@ public class BadgeClassExtensionServiceImpl implements BadgeClassExtensionServic
 
   @Override
   public List<BadgeClassExtension> search(
-      List<String> issuerList,
-      List<String> badgeList,
-      String rootOrgId,
-      String type,
-      String subtype,
-      List<String> roles) {
+          List<String> issuerList,
+          List<String> badgeList,
+          String rootOrgId,
+          String type,
+          String subtype,
+          List<String> roles, RequestContext requestContext) {
     Map<String, Object> propertyMap = new HashMap<>();
 
     if (rootOrgId != null) {
@@ -54,7 +55,7 @@ public class BadgeClassExtensionServiceImpl implements BadgeClassExtensionServic
 
     Response response =
         cassandraOperation.getRecordsByProperties(
-            Util.KEY_SPACE_NAME, BADGE_CLASS_EXT_TABLE_NAME, propertyMap);
+            Util.KEY_SPACE_NAME, BADGE_CLASS_EXT_TABLE_NAME, propertyMap, requestContext);
     List<Map<String, Object>> badgeClassExtList =
         (List<Map<String, Object>>) response.get(JsonKey.RESPONSE);
 
@@ -78,9 +79,9 @@ public class BadgeClassExtensionServiceImpl implements BadgeClassExtensionServic
   }
 
   @Override
-  public BadgeClassExtension get(String badgeId) throws ProjectCommonException {
+  public BadgeClassExtension get(String badgeId, RequestContext requestContext) throws ProjectCommonException {
     Response response =
-        cassandraOperation.getRecordById(Util.KEY_SPACE_NAME, BADGE_CLASS_EXT_TABLE_NAME, badgeId);
+        cassandraOperation.getRecordByIdentifier(Util.KEY_SPACE_NAME, BADGE_CLASS_EXT_TABLE_NAME, badgeId, null, requestContext);
     List<Map<String, Object>> badgeList =
         (List<Map<String, Object>>) response.get(JsonKey.RESPONSE);
 

@@ -20,6 +20,7 @@ import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.*;
 import org.sunbird.common.models.util.ProjectUtil.EsType;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.learner.actors.coursebatch.service.UserCoursesService;
@@ -89,7 +90,7 @@ public class SearchHandlerActor extends BaseActor {
           for (Map<String, Object> courseBatch : courseBatchList) {
             courseBatch.put(
                 JsonKey.PARTICIPANTS,
-                getParticipantList((String) courseBatch.get(JsonKey.BATCH_ID)));
+                getParticipantList((String) courseBatch.get(JsonKey.BATCH_ID), request.getRequestContext()));
           }
         }
         Response response = new Response();
@@ -160,9 +161,9 @@ public class SearchHandlerActor extends BaseActor {
 		return resp;
   }
 
-  private List<String> getParticipantList(String id) {
+  private List<String> getParticipantList(String id, RequestContext requestContext) {
     UserCoursesService userCourseService = new UserCoursesService();
-    return userCourseService.getEnrolledUserFromBatch(id);
+    return userCourseService.getEnrolledUserFromBatch(id, requestContext);
   }
 
   private void generateSearchTelemetryEvent(

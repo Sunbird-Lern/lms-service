@@ -38,7 +38,7 @@ public class DataCacheHandler implements Runnable {
   @SuppressWarnings("unchecked")
   private void cache(Map<String, Map<String, Object>> map, String tableName) {
     try {
-      Response response = cassandraOperation.getAllRecords(KEY_SPACE_NAME, tableName);
+      Response response = cassandraOperation.getAllRecords(KEY_SPACE_NAME, tableName, null);
       List<Map<String, Object>> responseList =
           (List<Map<String, Object>>) response.get(JsonKey.RESPONSE);
       if (null != responseList && !responseList.isEmpty()) {

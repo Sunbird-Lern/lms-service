@@ -9,7 +9,7 @@ import org.sunbird.cassandra.CassandraOperation
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
 import org.sunbird.common.models.util._
-import org.sunbird.common.request.Request
+import org.sunbird.common.request.{Request, RequestContext}
 import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.helper.ServiceFactory
 import org.sunbird.kafka.client.{InstructionEventGenerator, KafkaClient}
@@ -110,14 +110,14 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                         if(validUserIds.contains(userId)) {
                             val courseId = entry._2.head.getOrDefault(JsonKey.COURSE_ID, "").asInstanceOf[String]
                             val contentIds = entry._2.map(e => e.getOrDefault(JsonKey.CONTENT_ID, "").asInstanceOf[String]).asJava
-                            val existingContents = getContentsConsumption(userId, courseId, contentIds, batchId).groupBy(x => x.get("contentId").asInstanceOf[String]).map(e => e._1 -> e._2.toList.head).toMap
+                            val existingContents = getContentsConsumption(userId, courseId, contentIds, batchId, request.getRequestContext).groupBy(x => x.get("contentId").asInstanceOf[String]).map(e => e._1 -> e._2.toList.head).toMap
                             val contents:List[java.util.Map[String, AnyRef]] = entry._2.toList.map(inputContent => {
                                 val existingContent = existingContents.getOrElse(inputContent.get("contentId").asInstanceOf[String], new java.util.HashMap[String, AnyRef])
                                 processContentConsumption(inputContent, existingContent, userId)
                             })
-                            cassandraOperation.batchInsert(consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, contents)
+                            cassandraOperation.batchInsert(consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, contents, request.getRequestContext)
                             val updatedEnrolment = getLatestReadDetails(userId, batchId, contents)
-                            cassandraOperation.upsertRecord("sunbird_courses", "user_enrolments", updatedEnrolment)
+                            cassandraOperation.upsertRecord("sunbird_courses", "user_enrolments", updatedEnrolment, request.getRequestContext)
                             pushInstructionEvent(userId, batchId, courseId, contents.asJava)
                             contentIds.map(id => responseMessage.put(id,JsonKey.SUCCESS))
                         } else {
@@ -173,7 +173,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         }
     }
 
-    def getContentsConsumption(userId: String, courseId : String, contentIds: java.util.List[String], batchId: String):java.util.List[java.util.Map[String, AnyRef]] = {
+    def getContentsConsumption(userId: String, courseId : String, contentIds: java.util.List[String], batchId: String, requestContext: RequestContext):java.util.List[java.util.Map[String, AnyRef]] = {
         val filters = new java.util.HashMap[String, AnyRef]() {{
             put("userid", userId)
             put("courseid", courseId)
@@ -181,7 +181,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             if(CollectionUtils.isNotEmpty(contentIds))
                 put("contentid", contentIds)
         }}
-        val response = cassandraOperation.getRecords(consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, filters, null)
+        val response = cassandraOperation.getRecords(consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, filters, null, requestContext)
         response.getResult.getOrDefault(JsonKey.RESPONSE, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
     }
 
@@ -287,7 +287,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         val batchId = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
         val courseId = request.get(JsonKey.COURSE_ID).asInstanceOf[String]
         val contentIds = request.getRequest.getOrDefault(JsonKey.CONTENT_IDS, new java.util.ArrayList[String]()).asInstanceOf[java.util.List[String]]
-        val contentsConsumed = getContentsConsumption(userId, courseId, contentIds, batchId)
+        val contentsConsumed = getContentsConsumption(userId, courseId, contentIds, batchId, request.getRequestContext)
         val response = new Response
         if(CollectionUtils.isNotEmpty(contentsConsumed)) {
             val filteredContents = contentsConsumed.map(m => {

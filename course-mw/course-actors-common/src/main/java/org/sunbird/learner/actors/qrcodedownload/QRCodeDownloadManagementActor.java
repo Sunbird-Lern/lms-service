@@ -24,6 +24,7 @@ import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.common.util.CloudStorageUtil;
 import org.sunbird.helper.ServiceFactory;
@@ -92,7 +93,7 @@ public class QRCodeDownloadManagementActor extends BaseActor {
                     content ->
                         ((String) content.get("identifier")) + "<<<" + (String) content.get("name"),
                     content -> (List<String>) content.get("dialcodes"), (a,b) -> b, LinkedHashMap::new));
-    File file = generateCSVFile(dialCodesMap);
+    File file = generateCSVFile(dialCodesMap, request.getRequestContext());
     Response response = new Response();
     if (null == file)
       throw new ProjectCommonException(
@@ -170,9 +171,10 @@ public class QRCodeDownloadManagementActor extends BaseActor {
    * Generates the CSV File for the data provided
    *
    * @param dialCodeMap
+   * @param requestContext
    * @return
    */
-  private File generateCSVFile(Map<String, List<String>> dialCodeMap) {
+  private File generateCSVFile(Map<String, List<String>> dialCodeMap, RequestContext requestContext) {
     File file = null;
     if (MapUtils.isEmpty(dialCodeMap))
       throw new ProjectCommonException(
@@ -197,7 +199,7 @@ public class QRCodeDownloadManagementActor extends BaseActor {
                               .append(",")
                               .append(dialCode)
                               .append(",")
-                              .append(getQRCodeImageUrl(dialCode));
+                              .append(getQRCodeImageUrl(dialCode, requestContext));
                         });
               });
       FileUtils.writeStringToFile(file, csvFile.toString());
@@ -214,9 +216,10 @@ public class QRCodeDownloadManagementActor extends BaseActor {
    * Fetch the QR code Url for the given dialcodes
    *
    * @param dialCode
+   * @param requestContext
    * @return
    */
-  private String getQRCodeImageUrl(String dialCode) {
+  private String getQRCodeImageUrl(String dialCode, RequestContext requestContext) {
     // TODO: Dialcode as primary key in cassandra
     Response response =
         cassandraOperation.getRecordsByProperty(
@@ -224,7 +227,7 @@ public class QRCodeDownloadManagementActor extends BaseActor {
             courseDialCodeInfo.getTableName(),
             JsonKey.FILE_NAME,
             "0_" + dialCode,
-            Arrays.asList("url"));
+            Arrays.asList("url"), requestContext);
     if (null != response && response.get(JsonKey.RESPONSE) != null) {
       Object obj = response.get(JsonKey.RESPONSE);
       if (null != obj && obj instanceof List) {

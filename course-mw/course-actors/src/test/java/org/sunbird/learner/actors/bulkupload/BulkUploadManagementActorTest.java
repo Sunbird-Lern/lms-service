@@ -68,8 +68,7 @@ public class BulkUploadManagementActorTest {
   @Test
   public void testBulkUploadGetStatus() {
     Response response = getCassandraRecordByIdForBulkUploadResponse();
-    when(cassandraOperation.getRecordById(
-            Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyList()))
+    when(cassandraOperation.getRecordByIdentifier(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyList(), Mockito.any()))
         .thenReturn(response);
     TestKit probe = new TestKit(system);
     ActorRef subject = system.actorOf(props);
@@ -99,7 +98,7 @@ public class BulkUploadManagementActorTest {
 
     Response insertResponse = createCassandraInsertSuccessResponse();
     when(cassandraOperation.insertRecord(
-            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
+            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
         .thenReturn(insertResponse);
 
     Request reqObj = new Request();
@@ -131,7 +130,7 @@ public class BulkUploadManagementActorTest {
 
     Response insertResponse = createCassandraInsertSuccessResponse();
     when(cassandraOperation.insertRecord(
-            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
+            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
         .thenReturn(insertResponse);
 
     Request reqObj = new Request();

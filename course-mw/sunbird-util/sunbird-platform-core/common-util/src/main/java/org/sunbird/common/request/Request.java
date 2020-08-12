@@ -22,6 +22,8 @@ public class Request implements Serializable {
   private static final int WAIT_TIME_VALUE = 30;
 
   protected Map<String, Object> context;
+  
+  private RequestContext requestContext;
 
   private String id;
   private String ver;
@@ -165,5 +167,13 @@ public class Request implements Serializable {
           MessageFormat.format(ResponseCode.invalidRequestTimeout.getErrorMessage(), timeout));
     }
     this.timeout = timeout;
+  }
+
+  public RequestContext getRequestContext() {
+    return requestContext;
+  }
+
+  public void setRequestContext(RequestContext requestContext) {
+    this.requestContext = requestContext;
   }
 }

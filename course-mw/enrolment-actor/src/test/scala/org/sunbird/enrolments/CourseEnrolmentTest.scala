@@ -8,7 +8,7 @@ import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FlatSpec, Matchers}
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
-import org.sunbird.common.request.Request
+import org.sunbird.common.request.{Request, RequestContext}
 import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.learner.actors.coursebatch.dao.impl.{CourseBatchDaoImpl, UserCoursesDaoImpl}
 import org.sunbird.models.course.batch.CourseBatch
@@ -22,9 +22,9 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
     "CourseEnrolmentActor" should "return success on enrol" in {
         val courseDao = mock[CourseBatchDaoImpl]
         val userDao = mock[UserCoursesDaoImpl]
-        (courseDao.readById(_: String, _: String)).expects(*,*).returns(validCourseBatch())
-        (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(null)
-        (userDao.insertV2(_: java.util.Map[String, AnyRef])).expects(*)
+        ((courseId: String, batchId: String, requestContext: RequestContext) => courseDao.readById(courseId, batchId, null)).expects(*,*, *).returns(validCourseBatch())
+        ((userId: String, courseId: String, batchId: String, requestContext: RequestContext) => userDao.read(userId, courseId, batchId, null)).expects(*,*,*,*).returns(null)
+        ((userCoursesDetails: _root_.java.util.Map[String, AnyRef], requestContext: RequestContext) => userDao.insertV2(userCoursesDetails, null)).expects(*, *)
         val response = callActor(getEnrolRequest(), Props(new CourseEnrolmentActor(null).setDao(courseDao, userDao)))
         assert("Success".equalsIgnoreCase(response.get("response").asInstanceOf[String]))
     }
@@ -32,8 +32,8 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
     "On invalid course batch" should "return client error" in  {
         val courseDao = mock[CourseBatchDaoImpl]
         val userDao = mock[UserCoursesDaoImpl]
-        (courseDao.readById(_: String, _: String)).expects(*,*).returns(null)
-        (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(null)
+        ((courseId: String, batchId: String, requestContext: RequestContext) => courseDao.readById(courseId, batchId, null)).expects(*,*,*).returns(null)
+        ((userId: String, courseId: String, batchId: String, requestContext: RequestContext) => userDao.read(userId, courseId, batchId, null)).expects(*,*,*,*).returns(null)
         val response = callActorForFailure(getEnrolRequest(), Props(new CourseEnrolmentActor(null).setDao(courseDao, userDao)))
         assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
     }
@@ -43,8 +43,8 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         val userDao = mock[UserCoursesDaoImpl]
         val courseBatch = validCourseBatch()
         courseBatch.setEnrollmentType("invite-only")
-        (courseDao.readById(_: String, _: String)).expects(*,*).returns(courseBatch)
-        (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(null)
+        ((courseId: String, batchId: String) => courseDao.readById(courseId, batchId, null)).expects(*,*).returns(courseBatch)
+        (userDao.read(_: String,_: String,_: String, _:RequestContext)).expects(*,*,*,*).returns(null)
         val response = callActorForFailure(getEnrolRequest(), Props(new CourseEnrolmentActor(null).setDao(courseDao, userDao)))
         assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
     }
@@ -54,8 +54,8 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         val userDao = mock[UserCoursesDaoImpl]
         val courseBatch = validCourseBatch()
         courseBatch.setStatus(2)
-        (courseDao.readById(_: String, _: String)).expects(*,*).returns(courseBatch)
-        (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(null)
+        ((courseId: String, batchId: String, requestContext: RequestContext) => courseDao.readById(courseId, batchId, null)).expects(*,*,*).returns(courseBatch)
+        ((userId: String, courseId: String, batchId: String, requestContext: RequestContext) => userDao.read(userId, courseId, batchId, null)).expects(*,*,*,*).returns(null)
         val response = callActorForFailure(getEnrolRequest(), Props(new CourseEnrolmentActor(null).setDao(courseDao, userDao)))
         assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
     }
@@ -66,8 +66,8 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         val courseBatch = validCourseBatch()
         courseBatch.setStatus(1)
         courseBatch.setEnrollmentEndDate("2019-01-01")
-        (courseDao.readById(_: String, _: String)).expects(*,*).returns(courseBatch)
-        (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(null)
+        ((courseId: String, batchId: String, _:RequestContext) => courseDao.readById(courseId, batchId, null)).expects(*,*,*).returns(courseBatch)
+        ((userId: String, courseId: String, batchId: String, _: RequestContext) => userDao.read(userId, courseId, batchId, null)).expects(*,*,*,*).returns(null)
         val response = callActorForFailure(getEnrolRequest(), Props(new CourseEnrolmentActor(null).setDao(courseDao, userDao)))
         assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
     }
@@ -78,8 +78,8 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         val courseBatch = validCourseBatch()
         val userCourse = validUserCourse()
         userCourse.setActive(true)
-        (courseDao.readById(_: String, _: String)).expects(*,*).returns(courseBatch)
-        (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(userCourse)
+        ((courseId: String, batchId: String) => courseDao.readById(courseId, batchId, null)).expects(*,*).returns(courseBatch)
+        (userDao.read(_: String,_: String,_: String, _: RequestContext)).expects(*,*,*,*).returns(userCourse)
         val response = callActorForFailure(getEnrolRequest(), Props(new CourseEnrolmentActor(null).setDao(courseDao, userDao)))
         assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
     }
@@ -89,8 +89,8 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         val userDao = mock[UserCoursesDaoImpl]
         val courseBatch = validCourseBatch()
         courseBatch.setEndDate("2019-07-01")
-        (courseDao.readById(_: String, _: String)).expects(*,*).returns(courseBatch)
-        (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(null)
+        ((courseId: String, batchId: String) => courseDao.readById(courseId, batchId, null)).expects(*,*).returns(courseBatch)
+        (userDao.read(_: String,_: String,_: String, _: RequestContext)).expects(*,*,*,*).returns(null)
         val response = callActorForFailure(getEnrolRequest(), Props(new CourseEnrolmentActor(null).setDao(courseDao, userDao)))
         assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
     }
@@ -100,9 +100,9 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         val userDao = mock[UserCoursesDaoImpl]
         val userCourse = validUserCourse()
         userCourse.setActive(false)
-        (courseDao.readById(_: String, _: String)).expects(*,*).returns(validCourseBatch())
-        (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(userCourse)
-        (userDao.updateV2(_: String,_: String,_: String, _: java.util.Map[String, AnyRef])).expects(*,*,*,*)
+        (courseDao.readById(_: String, _: String, _: RequestContext)).expects(*,*,*).returns(validCourseBatch())
+        (userDao.read(_: String,_: String,_: String, _: RequestContext)).expects(*,*,*,*).returns(userCourse)
+        ((userId: String, courseId: String, batchId: String, updateAttributes: _root_.java.util.Map[String, AnyRef]) => userDao.updateV2(userId, courseId, batchId, updateAttributes, null)).expects(*,*,*,*)
         val response = callActor(getEnrolRequest(), Props(new CourseEnrolmentActor(null).setDao(courseDao, userDao)))
         assert("Success".equalsIgnoreCase(response.get("response").asInstanceOf[String]))
     }
@@ -112,9 +112,9 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         val userDao = mock[UserCoursesDaoImpl]
         val userCourse = validUserCourse()
         userCourse.setActive(true)
-        (courseDao.readById(_: String, _: String)).expects(*,*).returns(validCourseBatch())
-        (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(userCourse)
-        (userDao.updateV2(_: String,_: String,_: String, _: java.util.Map[String, AnyRef])).expects(*,*,*,*)
+        (courseDao.readById(_: String, _: String, _: RequestContext)).expects(*,*,*).returns(validCourseBatch())
+        (userDao.read(_: String,_: String,_: String, _: RequestContext)).expects(*,*,*,*).returns(userCourse)
+        ((userId: String, courseId: String, batchId: String, updateAttributes: _root_.java.util.Map[String, AnyRef]) => userDao.updateV2(userId, courseId, batchId, updateAttributes, null)).expects(*,*,*,*)
         val response = callActor(getUnEnrolRequest(), Props(new CourseEnrolmentActor(null).setDao(courseDao, userDao)))
         assert("Success".equalsIgnoreCase(response.get("response").asInstanceOf[String]))
     }
@@ -124,8 +124,8 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         val userDao = mock[UserCoursesDaoImpl]
         val userCourse = validUserCourse()
         userCourse.setActive(false)
-        (courseDao.readById(_: String, _: String)).expects(*,*).returns(validCourseBatch())
-        (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(userCourse)
+        ((courseId: String, batchId: String) => courseDao.readById(courseId, batchId, null)).expects(*,*).returns(validCourseBatch())
+        (userDao.read(_: String,_: String,_: String, _: RequestContext)).expects(*,*,*,*).returns(userCourse)
         val response = callActorForFailure(getUnEnrolRequest(), Props(new CourseEnrolmentActor(null).setDao(courseDao, userDao)))
         assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
     }
@@ -136,8 +136,8 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         val userCourse = validUserCourse()
         userCourse.setActive(true)
         userCourse.setStatus(2)
-        (courseDao.readById(_: String, _: String)).expects(*,*).returns(validCourseBatch())
-        (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(userCourse)
+        (courseDao.readById(_: String, _: String, _: RequestContext)).expects(*,*,*).returns(validCourseBatch())
+        (userDao.read(_: String,_: String,_: String, _: RequestContext)).expects(*,*,*,*).returns(userCourse)
         val response = callActorForFailure(getUnEnrolRequest(), Props(new CourseEnrolmentActor(null).setDao(courseDao, userDao)))
         assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
     }
@@ -161,7 +161,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         }}
         
         
-        (userDao.listEnrolments(_ : String)).expects(*).returns(list)
+        ((userId: String) => userDao.listEnrolments(userId, null)).expects(*).returns(list)
         
         val response = callActor(getListEnrolRequest(), Props(new CourseEnrolmentActor(null).setDao(courseDao, userDao)))
         println(response)

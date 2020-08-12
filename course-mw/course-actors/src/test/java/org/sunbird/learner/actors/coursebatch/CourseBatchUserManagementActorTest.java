@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -50,7 +51,7 @@ public class CourseBatchUserManagementActorTest extends SunbirdApplicationActorT
     when(group
             .getCassandraMockerService()
             .getRecords(
-                Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList()))
+                Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList(), Mockito.any()))
         .thenReturn(CustomObjectBuilder.getRandomUserCoursesList(5).asCassandraResponse());
     Request req = new Request();
     HashMap<String, Object> innerMap = new HashMap<>();
@@ -78,7 +79,7 @@ public class CourseBatchUserManagementActorTest extends SunbirdApplicationActorT
     when(group
             .getCassandraMockerService()
             .getRecords(
-                Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList()))
+                Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList(), Mockito.any()))
         .thenReturn(CustomObjectBuilder.getUserCoursesBuilder().buildList().asCassandraResponse());
     Request req = new Request();
     HashMap<String, Object> innerMap = new HashMap<>();
@@ -146,7 +147,7 @@ public class CourseBatchUserManagementActorTest extends SunbirdApplicationActorT
     when(group
             .getCassandraMockerService()
             .getRecords(
-                Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList()))
+                Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList(), Mockito.any()))
         .thenReturn(userCoursesWrapper.asCassandraResponse());
     when(group
             .getESMockerService()
@@ -195,7 +196,7 @@ public class CourseBatchUserManagementActorTest extends SunbirdApplicationActorT
     when(group
             .getCassandraMockerService()
             .getRecords(
-                Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList()))
+                Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList(), Mockito.any()))
         .thenReturn(userCoursesWrapper.asCassandraResponse());
     when(group
             .getESMockerService()
@@ -206,7 +207,7 @@ public class CourseBatchUserManagementActorTest extends SunbirdApplicationActorT
         .thenReturn(Futures.successful(true));
     when(group
             .getCassandraMockerService()
-            .getRecordById(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
+            .getRecordByIdentifier(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList(), Mockito.any()))
         .then(
             new Answer<Response>() {
 

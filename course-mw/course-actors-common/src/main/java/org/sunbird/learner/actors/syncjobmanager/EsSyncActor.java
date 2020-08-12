@@ -66,7 +66,7 @@ public class EsSyncActor extends BaseActor {
           "EsSyncBackgroundActor:sync: Sync all data for type = " + objectType, LoggerEnum.INFO);
 
       cassandraOperation.applyOperationOnRecordsAsync(
-          dbInfo.getKeySpace(), dbInfo.getTableName(), null, null, getSyncCallback(objectType));
+          dbInfo.getKeySpace(), dbInfo.getTableName(), null, null, getSyncCallback(objectType), req.getRequestContext());
       return;
     }
 
@@ -97,7 +97,7 @@ public class EsSyncActor extends BaseActor {
       Map<String, Object> filters = new HashMap<>();
       filters.put(partitionKey, partitionKeys);
       cassandraOperation.applyOperationOnRecordsAsync(
-          dbInfo.getKeySpace(), dbInfo.getTableName(), filters, null, getSyncCallback(objectType));
+          dbInfo.getKeySpace(), dbInfo.getTableName(), filters, null, getSyncCallback(objectType), req.getRequestContext());
     }
 
     if (CollectionUtils.isNotEmpty(idFilters)) {
@@ -108,7 +108,7 @@ public class EsSyncActor extends BaseActor {
                   dbInfo.getTableName(),
                   idMap,
                   null,
-                  getSyncCallback(objectType)));
+                  getSyncCallback(objectType), req.getRequestContext()));
     }
     ProjectLogger.log(
         "EsSyncBackgroundActor:sync: Syncing data for " + requestLogMsg + " completed",

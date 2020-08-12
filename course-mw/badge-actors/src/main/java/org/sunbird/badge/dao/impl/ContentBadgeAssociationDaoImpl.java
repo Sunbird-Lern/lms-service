@@ -11,6 +11,7 @@ import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.helper.ServiceFactory;
 
 public class ContentBadgeAssociationDaoImpl implements ContentBadgeAssociationDao {
@@ -21,13 +22,13 @@ public class ContentBadgeAssociationDaoImpl implements ContentBadgeAssociationDa
   private ElasticSearchService esUtil = EsClientFactory.getInstance(JsonKey.REST);
 
   @Override
-  public Response insertBadgeAssociation(List<Map<String, Object>> contentInfo) {
-    return cassandraOperation.batchInsert(KEYSPACE, TABLE_NAME, contentInfo);
+  public Response insertBadgeAssociation(List<Map<String, Object>> contentInfo, RequestContext requestContext) {
+    return cassandraOperation.batchInsert(KEYSPACE, TABLE_NAME, contentInfo, requestContext);
   }
 
   @Override
-  public Response updateBadgeAssociation(Map<String, Object> updateMap) {
-    return cassandraOperation.updateRecord(KEYSPACE, TABLE_NAME, updateMap);
+  public Response updateBadgeAssociation(Map<String, Object> updateMap, RequestContext requestContext) {
+    return cassandraOperation.updateRecord(KEYSPACE, TABLE_NAME, updateMap, requestContext);
   }
 
   @Override

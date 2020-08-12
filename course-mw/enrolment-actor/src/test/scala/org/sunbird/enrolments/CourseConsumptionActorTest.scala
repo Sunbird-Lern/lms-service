@@ -39,7 +39,7 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
                 put("contentId", "do_789")
             }})
         }})
-        (cassandraOperation.getRecords(_: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.List[String])).expects(*,*,*,*).returns(response)
+        ((keyspace: _root_.scala.Predef.String, table: _root_.scala.Predef.String, filters: _root_.java.util.Map[_root_.scala.Predef.String, AnyRef], fields: _root_.java.util.List[_root_.scala.Predef.String]) => cassandraOperation.getRecords(keyspace, table, filters, fields, null)).expects(*,*,*,*).returns(response)
         val result = callActor(getStateReadRequest(), Props(new ContentConsumptionActor().setCassandraOperation(cassandraOperation, false)))
         assert(null!= result)
     }
@@ -48,7 +48,7 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
         val cassandraOperation = mock[CassandraOperation]
         val response = new Response()
         response.put("response", new java.util.ArrayList[java.util.Map[String, AnyRef]])
-        (cassandraOperation.getRecords(_: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.List[String])).expects(*,*,*,*).returns(response)
+        ((keyspace: _root_.scala.Predef.String, table: _root_.scala.Predef.String, filters: _root_.java.util.Map[_root_.scala.Predef.String, AnyRef], fields: _root_.java.util.List[_root_.scala.Predef.String]) => cassandraOperation.getRecords(keyspace, table, filters, fields, null)).expects(*,*,*,*).returns(response)
         val result = callActor(getStateReadRequest(), Props(new ContentConsumptionActor().setCassandraOperation(cassandraOperation, false)))
         assert(null!= result)
     }
@@ -73,9 +73,9 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
             }})
         }})
         (esService.search(_: SearchDTO, _: String)).expects(*,*).returns(concurrent.Future{validBatchData()})
-        (cassandraOperation.getRecords(_: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.List[String])).expects(*,*,*,*).returns(response)
-        (cassandraOperation.batchInsert(_: String, _: String, _: java.util.List[java.util.Map[String, AnyRef]])).expects(*,*,*)
-        (cassandraOperation.upsertRecord(_: String, _: String, _: java.util.Map[String, AnyRef])).expects(*,*,*)
+        ((keyspace: _root_.scala.Predef.String, table: _root_.scala.Predef.String, filters: _root_.java.util.Map[_root_.scala.Predef.String, AnyRef], fields: _root_.java.util.List[_root_.scala.Predef.String]) => cassandraOperation.getRecords(keyspace, table, filters, fields, null)).expects(*,*,*,*).returns(response)
+        ((keyspaceName: _root_.scala.Predef.String, tableName: _root_.scala.Predef.String, records: _root_.java.util.List[_root_.java.util.Map[_root_.scala.Predef.String, AnyRef]]) => cassandraOperation.batchInsert(keyspaceName, tableName, records, null)).expects(*,*,*)
+        ((keyspaceName: _root_.scala.Predef.String, tableName: _root_.scala.Predef.String, request: _root_.java.util.Map[_root_.scala.Predef.String, AnyRef]) => cassandraOperation.upsertRecord(keyspaceName, tableName, request, null)).expects(*,*,*)
         val result = callActor(getStateUpdateRequest(), Props(new ContentConsumptionActor().setCassandraOperation(cassandraOperation, false).setEsService(esService)))
         assert(null!= result)
     }

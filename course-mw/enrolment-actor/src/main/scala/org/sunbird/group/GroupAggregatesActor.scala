@@ -7,7 +7,7 @@ import org.apache.commons.lang3.StringUtils
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
 import org.sunbird.common.models.util.{LoggerEnum, ProjectLogger, ProjectUtil}
-import org.sunbird.common.request.Request
+import org.sunbird.common.request.{Request, RequestContext}
 import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.keys.SunbirdKey
 import org.sunbird.learner.actors.group.dao.impl.GroupDaoImpl
@@ -57,7 +57,7 @@ class GroupAggregatesActor extends BaseActor {
           val usersAggs: java.util.List[java.util.Map[String, AnyRef]] = if (CollectionUtils.isEmpty(groupMembers)) {
             groupMembers
           } else {
-            getUserActivityAggs(activityId, activityType, groupMembers)
+            getUserActivityAggs(activityId, activityType, groupMembers, request.getRequestContext)
           }
           ProjectLogger.log("GroupAggregatesAction:getGroupActivityAggregates:usersAggs :: Group: " + groupId + " :: Activity : " + activityId + " :: Enrolled Member Count: " + usersAggs.size(), LoggerEnum.INFO.name)
           populateResponse(groupId, activityId, activityType, usersAggs, groupMembers)
@@ -82,9 +82,9 @@ class GroupAggregatesActor extends BaseActor {
       members
   }
 
-  def getUserActivityAggs(activityId: String, activityType: String, memberList: java.util.List[java.util.Map[String, AnyRef]]): java.util.List[java.util.Map[String, AnyRef]]= {
+  def getUserActivityAggs(activityId: String, activityType: String, memberList: java.util.List[java.util.Map[String, AnyRef]], requestContext: RequestContext): java.util.List[java.util.Map[String, AnyRef]]= {
     val userList: java.util.List[String] = memberList.asScala.toList.map(obj => obj.getOrDefault("userId", "").asInstanceOf[String]).filter(x => StringUtils.isNotBlank(x)).asJava
-    val userActivityDBResponse = groupDao.read(activityId, activityType, userList)
+    val userActivityDBResponse = groupDao.read(activityId, activityType, userList, requestContext)
     if (userActivityDBResponse.getResponseCode != ResponseCode.OK)
       ProjectCommonException.throwServerErrorException(ResponseCode.erroCallGrooupAPI,
         MessageFormat.format(ResponseCode.erroCallGrooupAPI.getErrorMessage()))

@@ -101,13 +101,13 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     def list(request: Request): Unit = {
         val userId = request.get(JsonKey.USER_ID).asInstanceOf[String]
         val response = if (isCacheEnabled && request.getContext.get("cache").asInstanceOf[Boolean]) {
-            val resp = getResponseFromRedis(getCacheKey(userId))
+            val resp = getCachedEnrolmentList(getCacheKey(userId))
             if (null != resp)
                 resp
             else
-                getEnrolmentsData(request, userId)
+                getEnrolmentList(request, userId)
         } else
-            getEnrolmentsData(request, userId)
+            getEnrolmentList(request, userId)
         sender().tell(response, self)
     }
 
@@ -250,24 +250,23 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val request: java.util.Map[String, AnyRef] = Map[String, AnyRef](JsonKey.USER_ID -> userId, JsonKey.COURSE_ID -> courseId, JsonKey.BATCH_ID -> batchId).asJava
         TelemetryUtil.telemetryProcessingCall(request, targetedObject, correlationObject, context)
     }
-    def updateProgressData(enrolments: java.util.List[java.util.Map[String, AnyRef]], userId: String) = {
-        enrolments.asScala.foreach(enrolment => {
-            val userActivityDBResponse = groupDao.read(enrolment.get("courseId").asInstanceOf[String], "Course", java.util.Arrays.asList(userId))
-            if (userActivityDBResponse.getResponseCode != ResponseCode.OK)
-                ProjectCommonException.throwServerErrorException(ResponseCode.erroCallGrooupAPI,
-                    MessageFormat.format(ResponseCode.erroCallGrooupAPI.getErrorMessage()))
-            val completedCount: Int = userActivityDBResponse.getResult
-                .getOrDefault("response", new util.ArrayList[util.Map[String, AnyRef]]())
-                .asInstanceOf[util.List[util.Map[String, AnyRef]]]
-                .headOption.getOrElse(new util.HashMap[String, AnyRef]())
-                .getOrDefault("agg", new util.HashMap[String, AnyRef]())
-                .asInstanceOf[util.Map[String, AnyRef]]
-                .getOrDefault("completedCount", 0.asInstanceOf[AnyRef]).asInstanceOf[Int]
+
+    def updateProgressData(enrolments: java.util.List[java.util.Map[String, AnyRef]], userId: String): util.List[java.util.Map[String, AnyRef]] = {
+        val enrolmentMap: Map[String, java.util.Map[String, AnyRef]] = enrolments.map(enrolment => enrolment.get("courseId").asInstanceOf[String] -> enrolment).toMap
+        val response: Response = groupDao.readEntries("Course", java.util.Arrays.asList(userId), enrolmentMap.keys.toList.asJava, new util.ArrayList[String]())
+        if (response.getResponseCode != ResponseCode.OK)
+            ProjectCommonException.throwServerErrorException(ResponseCode.erroCallGrooupAPI, MessageFormat.format(ResponseCode.erroCallGrooupAPI.getErrorMessage()))
+        val userActivityList: util.List[util.Map[String, AnyRef]] = response.getResult.getOrDefault("response", new util.ArrayList()).asInstanceOf[util.List[util.Map[String, AnyRef]]]
+        userActivityList.map(activity => {
+            val completedCount: Int = activity.getOrDefault("agg", new util.HashMap[String, AnyRef]())
+                .asInstanceOf[util.Map[String, AnyRef]].getOrDefault("completedCount", 0.asInstanceOf[AnyRef]).asInstanceOf[Int]
+            val enrolment = enrolmentMap.getOrDefault(activity.getOrDefault("activity_id", "").asInstanceOf[String], new util.HashMap[String, AnyRef]())
             val leafNodesCount: Int = enrolment.get("leafNodesCount").asInstanceOf[Int]
             enrolment.put("progress", completedCount.asInstanceOf[AnyRef])
             enrolment.put("status", getCompletionStatus(completedCount, leafNodesCount).asInstanceOf[AnyRef])
             enrolment.put("completionPercentage", getCompletionPerc(completedCount, leafNodesCount).asInstanceOf[AnyRef])
         })
+        enrolmentMap.values.toList.asJava
     }
 
     def getCompletionStatus(completedCount: Int, leafNodesCount: Int): Int = completedCount match {
@@ -293,20 +292,20 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         cacheUtil.set(key, responseString, ttl)
     }
 
-    def getResponseFromRedis(key: String): Response = {
+    def getCachedEnrolmentList(key: String): Response = {
         val responseString = cacheUtil.get(key)
         if (StringUtils.isNotBlank(responseString)) {
             JsonUtil.deserialize(responseString, classOf[Response])
         } else null
     }
 
-    def getEnrolmentsData(request: Request, userId: String) = {
+    def getEnrolmentList(request: Request, userId: String): Response = {
         val activeEnrolments: java.util.List[java.util.Map[String, AnyRef]] = getActiveEnrollments(userId)
         val enrolments: java.util.List[java.util.Map[String, AnyRef]] = {
             if (CollectionUtils.isNotEmpty(activeEnrolments)) {
                 val enrolmentList: java.util.List[java.util.Map[String, AnyRef]] = addCourseDetails(activeEnrolments, request)
-                updateProgressData(enrolmentList, userId)
-                addBatchDetails(enrolmentList, request)
+                val updatedEnrolmentList = updateProgressData(enrolmentList, userId)
+                addBatchDetails(updatedEnrolmentList, request)
             } else new java.util.ArrayList[java.util.Map[String, AnyRef]]()
         }
         val resp: Response = new Response()

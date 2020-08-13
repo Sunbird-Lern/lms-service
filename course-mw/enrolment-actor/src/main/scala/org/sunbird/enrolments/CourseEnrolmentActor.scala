@@ -291,10 +291,8 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             JsonUtil.deserialize(responseString, classOf[Response])
         } else {
             val response = handleEmptyCache()
-            if (isCacheEnabled) {
-                val responseString = JsonUtil.serialize(response)
-                cacheUtil.set(key, responseString, ttl)
-            }
+            val responseString = JsonUtil.serialize(response)
+            cacheUtil.set(key, responseString, ttl)
             response
         }
     }

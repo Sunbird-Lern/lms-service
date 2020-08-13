@@ -136,7 +136,6 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         userCourse.setCourseId("do_11305605610466508811")
         userCourse.setBatchId("0130598559365038081")
         (userDao.listEnrolments(_: String)).expects(*).returns(getEnrolmentLists())
-        (cacheUtil.set(_: String, _: String, _: Int)).expects(*, *, *).once()
         (groupDao.readEntries(_: String, _: java.util.List[String], _: java.util.List[String])).expects(*, *, *).returns(getReadEntriesResponse)
             val response = callActor(getListEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         println(response)

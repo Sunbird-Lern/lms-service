@@ -105,7 +105,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val userId = request.get(JsonKey.USER_ID).asInstanceOf[String]
         logger.info("CourseEnrolmentActor :: list :: UserId = " + userId)
         val response = if (isCacheEnabled && request.getContext.get("cache").asInstanceOf[Boolean])
-            getCachedEnrolmentList(getCacheKey(userId), () => getEnrolmentList(request, userId)) else getEnrolmentList(request, userId)
+            getCachedEnrolmentList(userId, () => getEnrolmentList(request, userId)) else getEnrolmentList(request, userId)
         sender().tell(response, self)
     }
 
@@ -281,22 +281,22 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         case _ => 100
     }
 
-    def getCacheKey(userId: String) = {
-        userId + ":user-enrolments"
-    }
+    def getCacheKey(userId: String) = s"$userId:user-enrolments"
 
-    def setResponseToRedis(key: String, response: Response) :Unit = {
-        val responseString = JsonUtil.serialize(response)
-        cacheUtil.set(key, responseString, ttl)
-    }
-
-    def getCachedEnrolmentList(key: String, handleEmptyCache: () => Response): Response = {
-        logger.info("CourseEnrolmentActor :: getCachedEnrolmentList :: Cache is enabled = ")
+    def getCachedEnrolmentList(userId: String, handleEmptyCache: () => Response): Response = {
+        val key = getCacheKey(userId)
         val responseString = cacheUtil.get(key)
         if (StringUtils.isNotBlank(responseString)) {
-            logger.info("CourseEnrolmentActor :: getCachedEnrolmentList :: No cached entry in redis for key " + key)
+            logger.info("CourseEnrolmentActor :: getCachedEnrolmentList :: Entry in redis for key " + key)
             JsonUtil.deserialize(responseString, classOf[Response])
-        } else handleEmptyCache()
+        } else {
+            val response = handleEmptyCache()
+            if (isCacheEnabled) {
+                val responseString = JsonUtil.serialize(response)
+                cacheUtil.set(key, responseString, ttl)
+            }
+            response
+        }
     }
 
     def getEnrolmentList(request: Request, userId: String): Response = {
@@ -311,8 +311,6 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         }
         val resp: Response = new Response()
         resp.put(JsonKey.COURSES, enrolments)
-        if (isCacheEnabled)
-            setResponseToRedis(getCacheKey(userId), resp)
         resp
     }
     // TODO: to be removed once all are in scala.

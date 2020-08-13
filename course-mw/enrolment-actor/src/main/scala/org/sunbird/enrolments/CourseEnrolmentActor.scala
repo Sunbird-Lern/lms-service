@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import javax.inject.{Inject, Named}
 import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang3.StringUtils
+import org.slf4j.{Logger, LoggerFactory}
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
 import org.sunbird.common.models.util.ProjectUtil.EnrolmentType
@@ -44,6 +45,8 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         (ProjectUtil.getConfigValue("user_enrolments_response_cache_enable")).toBoolean else true
     val ttl: Int = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("user_enrolments_response_cache_ttl")))
         (ProjectUtil.getConfigValue("user_enrolments_response_cache_ttl")).toInt else 60
+    private val logger: Logger = LoggerFactory.getLogger(classOf[CourseEnrolmentActor])
+
 
     override def preStart { println("Starting CourseEnrolmentActor") }
 
@@ -100,14 +103,9 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
 
     def list(request: Request): Unit = {
         val userId = request.get(JsonKey.USER_ID).asInstanceOf[String]
-        val response = if (isCacheEnabled && request.getContext.get("cache").asInstanceOf[Boolean]) {
-            val resp = getCachedEnrolmentList(getCacheKey(userId))
-            if (null != resp)
-                resp
-            else
-                getEnrolmentList(request, userId)
-        } else
-            getEnrolmentList(request, userId)
+        logger.info("CourseEnrolmentActor :: list :: UserId = " + userId)
+        val response = if (isCacheEnabled && request.getContext.get("cache").asInstanceOf[Boolean])
+            getCachedEnrolmentList(getCacheKey(userId), () => getEnrolmentList(request, userId)) else getEnrolmentList(request, userId)
         sender().tell(response, self)
     }
 
@@ -292,14 +290,17 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         cacheUtil.set(key, responseString, ttl)
     }
 
-    def getCachedEnrolmentList(key: String): Response = {
+    def getCachedEnrolmentList(key: String, handleEmptyCache: () => Response): Response = {
+        logger.info("CourseEnrolmentActor :: getCachedEnrolmentList :: Cache is enabled = ")
         val responseString = cacheUtil.get(key)
         if (StringUtils.isNotBlank(responseString)) {
+            logger.info("CourseEnrolmentActor :: getCachedEnrolmentList :: No cached entry in redis for key " + key)
             JsonUtil.deserialize(responseString, classOf[Response])
-        } else null
+        } else handleEmptyCache()
     }
 
     def getEnrolmentList(request: Request, userId: String): Response = {
+        logger.info("CourseEnrolmentActor :: getCachedEnrolmentList :: fetching data from cassandra with userId " + userId)
         val activeEnrolments: java.util.List[java.util.Map[String, AnyRef]] = getActiveEnrollments(userId)
         val enrolments: java.util.List[java.util.Map[String, AnyRef]] = {
             if (CollectionUtils.isNotEmpty(activeEnrolments)) {

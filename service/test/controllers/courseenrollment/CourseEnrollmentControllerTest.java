@@ -33,6 +33,7 @@ public class CourseEnrollmentControllerTest extends BaseApplicationTest {
   private static final String UENROLL_BATCH_URL = "/v1/course/unenroll";
   private static final String GET_ENROLLED_COURSES_URL = "/v1/user/courses/list/"+USER_ID;
   private static final String GET_ENROLLED_COURSE_URL_V2 = "/v2/user/courses/list";
+  private static final String GET_ENROLLED_COURSE_URL_CACHE = "/v1/user/courses/list/" + USER_ID + "?cache=false";
 
   @Before
   public void before() {
@@ -145,6 +146,16 @@ public class CourseEnrollmentControllerTest extends BaseApplicationTest {
                     .uri(GET_ENROLLED_COURSE_URL_V2)
                     .bodyJson(createCourseEnrollmentRequest(null,null, USER_ID))
                     .method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 200, result.status());
+  }
+
+  @Test
+  public void testGetUserEnrolledCoursesWithCache() {
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(GET_ENROLLED_COURSE_URL_CACHE)
+                    .method("GET");
     Result result = Helpers.route(application, req);
     Assert.assertEquals( 200, result.status());
   }

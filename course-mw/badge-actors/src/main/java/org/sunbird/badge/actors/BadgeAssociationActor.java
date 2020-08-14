@@ -23,6 +23,7 @@ import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.BadgingJsonKey;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerEnum;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.StringFormatter;
 import org.sunbird.common.request.Request;
@@ -37,6 +38,7 @@ public class BadgeAssociationActor extends BaseActor {
   private BadgeAssociationService associationService = new BadgeAssociationServiceImpl();
   private ContentBadgeAssociationDao contentBadgeAssociationDao =
       new ContentBadgeAssociationDaoImpl();
+  private LoggerUtil logger = LoggerUtil.getInstance(BadgeAssociationActor.class); 
 
   @Override
   public void onReceive(Request request) throws Throwable {
@@ -60,33 +62,24 @@ public class BadgeAssociationActor extends BaseActor {
   private void createBadgeAssociation(Request request) {
     String contentId = (String) request.getRequest().get(JsonKey.CONTENT_ID);
     String requestedBy = (String) request.getContext().get(JsonKey.REQUESTED_BY);
-    Map<String, Object> contentDetails = getContentDetails(contentId);
+    Map<String, Object> contentDetails = getContentDetails(request.getRequestContext(), contentId);
     List<Map<String, Object>> activeBadges =
         (List<Map<String, Object>>) contentDetails.get(BadgingJsonKey.BADGE_ASSOCIATIONS);
     List<String> requestedBadges =
         (List<String>) request.getRequest().get(BadgingJsonKey.BADGE_IDs);
     List<Map<String, Object>> badgesTobeAddedList =
-        getBadgesDetailsToBeAdded(activeBadges, requestedBadges);
+        getBadgesDetailsToBeAdded(request.getRequestContext(), activeBadges, requestedBadges);
     List<Map<String, Object>> cassandraCreateMapList = new ArrayList<>();
     Response response = new Response();
     if (!CollectionUtils.isEmpty(badgesTobeAddedList)) {
       activeBadges = createActiveBadgeForContentUpdate(badgesTobeAddedList, activeBadges);
-      ProjectLogger.log(
-          "BadgeAssociationActor:createBadgeAssociation: new list of badgeAssociation details for "
-              + contentId
-              + " is : "
-              + activeBadges,
-          LoggerEnum.INFO);
+      logger.info(request.getRequestContext(), "createBadgeAssociation: new list of badgeAssociation details for "+ contentId + " is : "  + activeBadges);
       boolean flag =
           ContentService.updateEkstepContent(
               contentId, BadgingJsonKey.BADGE_ASSOCIATIONS, activeBadges);
       if (flag) {
-        ProjectLogger.log(
-            "BadgeAssociationActor:createBadgeAssociation: adding content badge association details in cassandra for "
-                + contentId
-                + " is : "
-                + badgesTobeAddedList,
-            LoggerEnum.INFO);
+        logger.info(request.getRequestContext(), "createBadgeAssociation: adding content badge association details in cassandra for" + contentId
+                + " is : "  + badgesTobeAddedList);
         cassandraCreateMapList = newActiveBadgeMap(badgesTobeAddedList, requestedBy, contentId);
         response = contentBadgeAssociationDao.insertBadgeAssociation(cassandraCreateMapList, request.getRequestContext());
       }
@@ -101,7 +94,7 @@ public class BadgeAssociationActor extends BaseActor {
   private void removeBadgeAssociation(Request request) {
     String contentId = (String) request.getRequest().get(JsonKey.CONTENT_ID);
     String requestedBy = (String) request.getContext().get(JsonKey.REQUESTED_BY);
-    Map<String, Object> contentDetails = getContentDetails(contentId);
+    Map<String, Object> contentDetails = getContentDetails(request.getRequestContext(), contentId);
     List<Map<String, Object>> activeBadges =
         (List<Map<String, Object>>) contentDetails.get(BadgingJsonKey.BADGE_ASSOCIATIONS);
     List<String> reqestedBadges = (List<String>) request.getRequest().get(BadgingJsonKey.BADGE_IDs);
@@ -172,25 +165,23 @@ public class BadgeAssociationActor extends BaseActor {
     return associationIds;
   }
 
-  private Map<String, Object> getContentDetails(String contentId) {
+  private Map<String, Object> getContentDetails(RequestContext requestContext, String contentId) {
     Map<String, String> headers = CourseBatchSchedulerUtil.headerMap;
     Map<String, Object> contentDetails =
-        CourseBatchSchedulerUtil.getCourseObject(contentId, headers);
+        CourseBatchSchedulerUtil.getCourseObject(requestContext, contentId, headers);
     if (MapUtils.isEmpty(contentDetails)) {
       ProjectCommonException.throwClientErrorException(ResponseCode.invalidContentId);
     }
     return contentDetails;
   }
 
-  private List<Map<String, Object>> getBadgesDetailsToBeAdded(
+  private List<Map<String, Object>> getBadgesDetailsToBeAdded(RequestContext requestContext, 
       List<Map<String, Object>> activeBadgesList, List<String> requestedBadges) {
     List<String> newBadgeIdsList = getUncommonBadgeIds(requestedBadges, activeBadgesList);
-    ProjectLogger.log(
-        "BadgeAssociationAcotr: getBadgesDetailsToBeAdded: new BadgeIdsList is " + newBadgeIdsList,
-        LoggerEnum.INFO);
+    logger.info(requestContext, "getBadgesDetailsToBeAdded: new BadgeIdsList is: {}" , newBadgeIdsList);
     List<Map<String, Object>> newBadgesDetails = new ArrayList<>();
     if (CollectionUtils.isNotEmpty(newBadgeIdsList)) {
-      newBadgesDetails = getBadgesDetails(newBadgeIdsList);
+      newBadgesDetails = getBadgesDetails(requestContext, newBadgeIdsList);
       if (newBadgesDetails.size() != newBadgeIdsList.size()) {
         List<String> badgeIdsFoundList =
             newBadgesDetails
@@ -238,15 +229,13 @@ public class BadgeAssociationActor extends BaseActor {
   }
 
   @SuppressWarnings("unchecked")
-  private List<Map<String, Object>> getBadgesDetails(List<String> badgeIds) {
-    Request request = new Request();
+  private List<Map<String, Object>> getBadgesDetails(RequestContext requestContext, List<String> badgeIds) {
+    Request request = new Request(requestContext);
     Map<String, Object> requestMap = new HashMap<>();
     requestMap.put(BadgingJsonKey.BADGE_LIST, badgeIds);
     request.put(JsonKey.FILTERS, requestMap);
-    ProjectLogger.log(
-        "BadgeAssociationActor:getBadgesDetails: Requesting badge details from badgr server for badgeIds: "
-            + badgeIds,
-        LoggerEnum.INFO);
+    logger.info(requestContext, "getBadgesDetails: Requesting badge details from badgr server for badgeIds: "
+            + badgeIds);
     Response response = service.searchBadgeClass(request);
     return (List<Map<String, Object>>) response.get(BadgingJsonKey.BADGES);
   }

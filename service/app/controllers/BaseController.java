@@ -57,7 +57,7 @@ public class BaseController extends Controller {
   private static final String version = "v1";
   public static final int AKKA_WAIT_TIME = 30;
   protected Timeout timeout = new Timeout(AKKA_WAIT_TIME, TimeUnit.SECONDS);
-  private static final String logLevel = "false";
+  private static final String debugEnabled = "false";
 
   private org.sunbird.common.request.Request initRequest(
       org.sunbird.common.request.Request request, String operation, Http.Request httpRequest) {
@@ -73,14 +73,12 @@ public class BaseController extends Controller {
   }
 
   private RequestContext getRequestContext(Request httpRequest, String actorOperation) {
-    RequestContext requestContext = new RequestContext();
-    requestContext.setReqId(httpRequest.header("x-request-id").orElse(UUID.randomUUID().toString()));
-    requestContext.setUid(httpRequest.flash().get(JsonKey.USER_ID));
-    if(httpRequest.header("x-device-id").isPresent()) requestContext.setDid(httpRequest.header("x-device-id").get());
-    if(httpRequest.header("x-session-id").isPresent()) requestContext.setSid(httpRequest.header("x-session-id").get());
-    if(httpRequest.header("x-app-id").isPresent()) requestContext.setAppId(httpRequest.header("x-app-id").get());
-    requestContext.setLogLevel((httpRequest.header("x-trace-enabled").isPresent() ? httpRequest.header("x-trace-enabled").orElse(logLevel): logLevel));
-    requestContext.setActorOperation(actorOperation);
+    RequestContext requestContext = new RequestContext(httpRequest.flash().get(JsonKey.USER_ID), 
+            httpRequest.header("x-device-id").get(), httpRequest.header("x-session-id").get(),
+            httpRequest.header("x-app-id").get(), httpRequest.header("x-app-ver").get(),
+            httpRequest.header("x-request-id").orElse(UUID.randomUUID().toString()),
+            (httpRequest.header("x-trace-enabled").isPresent() ? httpRequest.header("x-trace-enabled").orElse(debugEnabled): debugEnabled),
+            actorOperation);
     return requestContext;
   }
 

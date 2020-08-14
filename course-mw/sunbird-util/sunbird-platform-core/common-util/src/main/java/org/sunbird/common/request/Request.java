@@ -44,6 +44,13 @@ public class Request implements Serializable {
     this.params = new RequestParams();
   }
 
+  public Request(RequestContext requestContext) {
+    this.context = new WeakHashMap<>();
+    this.params = new RequestParams();
+    this.requestContext = requestContext;
+  }
+  
+
   public void toLower() {
     Arrays.asList(
             ProjectUtil.getConfigValue(JsonKey.SUNBIRD_API_REQUEST_LOWER_CASE_FIELDS).split(","))

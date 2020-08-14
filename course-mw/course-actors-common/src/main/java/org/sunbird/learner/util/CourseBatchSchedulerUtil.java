@@ -13,6 +13,7 @@ import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.util.HttpUtil;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerEnum;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.PropertiesCache;
@@ -33,6 +34,7 @@ public final class CourseBatchSchedulerUtil {
   private static ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private static String EKSTEP_COURSE_SEARCH_QUERY =
       "{\"request\": {\"filters\":{\"contentType\": [\"Course\"], \"objectType\": [\"Content\"], \"identifier\": \"COURSE_ID_PLACEHOLDER\", \"status\": \"Live\"},\"limit\": 1}}";
+  private static LoggerUtil logger = LoggerUtil.getInstance(CourseBatchSchedulerUtil.class);
 
   static {
     String header = ProjectUtil.getConfigValue(JsonKey.EKSTEP_AUTHORIZATION);
@@ -51,9 +53,7 @@ public final class CourseBatchSchedulerUtil {
    * @param requestContext
    */
   public static void updateCourseBatchDbStatus(Map<String, Object> map, Boolean increment, RequestContext requestContext) {
-    ProjectLogger.log(
-        "CourseBatchSchedulerUtil:updateCourseBatchDbStatus: updating course batch details start",
-        LoggerEnum.INFO.name());
+    logger.info(requestContext, "updateCourseBatchDbStatus: updating course batch details start");
     try {
       boolean response =
           doOperationInContentCourse(
@@ -126,7 +126,7 @@ public final class CourseBatchSchedulerUtil {
       String courseId, boolean increment, String enrollmentType) {
     String contentName = getCountName(enrollmentType);
     boolean response = false;
-    Map<String, Object> ekStepContent = getCourseObject(courseId, getBasicHeader());
+    Map<String, Object> ekStepContent = getCourseObject(null, courseId, getBasicHeader());
     if (MapUtils.isNotEmpty(ekStepContent)) {
       int val = getUpdatedBatchCount(ekStepContent, contentName, increment);
       if (ekStepContent.get(JsonKey.CHANNEL) != null) {
@@ -195,7 +195,7 @@ public final class CourseBatchSchedulerUtil {
   }
 
   @SuppressWarnings("unchecked")
-  public static Map<String, Object> getCourseObject(String courseId, Map<String, String> headers) {
+  public static Map<String, Object> getCourseObject(RequestContext requestContext, String courseId, Map<String, String> headers) {
     ProjectLogger.log("Requested course id is ==" + courseId, LoggerEnum.INFO.name());
     if (!StringUtils.isBlank(courseId)) {
       try {
@@ -205,6 +205,7 @@ public final class CourseBatchSchedulerUtil {
           return ((List<Map<String, Object>>) result.get(JsonKey.CONTENTS)).get(0);
           // return (Map<String, Object>) contentObject;
         } else {
+          
           ProjectLogger.log(
               "CourseEnrollmentActor:getCourseObjectFromEkStep: Content not found for requested courseId "
                   + courseId,

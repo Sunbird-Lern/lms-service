@@ -234,6 +234,11 @@
 			<artifactId>logback-json-classic</artifactId>
 			<version>0.1.5</version>
 		</dependency>
+		<dependency>
+			<groupId>net.logstash.logback</groupId>
+			<artifactId>logstash-logback-encoder</artifactId>
+			<version>6.3</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<sourceDirectory>${basedir}/app</sourceDirectory>

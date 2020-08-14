@@ -53,7 +53,7 @@ public class CourseBatchSchedulerUtilTest {
     PowerMockito.when(ContentUtil.searchContent(Mockito.anyString(), Mockito.anyMap()))
         .thenReturn(CustomObjectBuilder.getRandomCourse().get());
     Map<String, Object> course =
-        CourseBatchSchedulerUtil.getCourseObject("randomCourseId", new HashMap<>());
+        CourseBatchSchedulerUtil.getCourseObject(null, "randomCourseId", new HashMap<>());
     Assert.assertNotNull(course);
   }
 
@@ -62,7 +62,7 @@ public class CourseBatchSchedulerUtilTest {
     PowerMockito.when(ContentUtil.searchContent(Mockito.anyString(), Mockito.anyMap()))
         .thenReturn(null);
     Map<String, Object> course =
-        CourseBatchSchedulerUtil.getCourseObject("randomCourseId", new HashMap<>());
+        CourseBatchSchedulerUtil.getCourseObject(null, "randomCourseId", new HashMap<>());
     Assert.assertNull(course);
   }
 

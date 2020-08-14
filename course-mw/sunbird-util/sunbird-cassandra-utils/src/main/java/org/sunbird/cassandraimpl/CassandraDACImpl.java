@@ -50,7 +50,7 @@ public class CassandraDACImpl extends CassandraOperationImpl {
       }
 
       ResultSet results = null;
-      logQueryData(select.getQueryString(), requestContext);
+      ProjectLogger.logQuery(select.getQueryString(), requestContext);
       results = session.execute(select);
       response = CassandraUtil.createResponse(results);
     } catch (Exception e) {
@@ -89,7 +89,7 @@ public class CassandraDACImpl extends CassandraOperationImpl {
           }
         }
       }
-      logQueryData(select.getQueryString(), requestContext);
+      ProjectLogger.logQuery(select.getQueryString(), requestContext);
       ResultSetFuture future = session.executeAsync(select);
       Futures.addCallback(future, callback, Executors.newFixedThreadPool(1));
     } catch (Exception e) {
@@ -151,7 +151,7 @@ public class CassandraDACImpl extends CassandraOperationImpl {
     try {
       Response response = new Response();
       ProjectLogger.log("Remove Map-Key Query: " + update.toString(), LoggerEnum.INFO);
-      logQueryData(update.getQueryString(), requestContext);
+      ProjectLogger.logQuery(update.getQueryString(), requestContext);
       connectionManager.getSession(keySpace).execute(update);
       response.put(Constants.RESPONSE, Constants.SUCCESS);
       return response;

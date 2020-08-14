@@ -6,6 +6,7 @@ import org.sunbird.cassandraimpl.CassandraDACImpl;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.LoggerEnum;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
@@ -13,6 +14,7 @@ import org.sunbird.common.responsecode.ResponseCode;
 public abstract class BaseActor extends UntypedAbstractActor {
 
   public abstract void onReceive(Request request) throws Throwable;
+  private LoggerUtil logger = LoggerUtil.getInstance(BaseActor.class);
 
   @Override
   public void onReceive(Object message) throws Throwable {
@@ -23,7 +25,8 @@ public abstract class BaseActor extends UntypedAbstractActor {
       try {
         onReceive(request);
       } catch (Exception e) {
-        ProjectLogger.log("Error while processing the message :" + operation, e);
+        logger.error(request.getRequestContext(), "Error while processing the message : " + operation, e);
+        //ProjectLogger.log("Error while processing the message :" + operation, e);
         onReceiveException(operation, e);
       }
     } else {

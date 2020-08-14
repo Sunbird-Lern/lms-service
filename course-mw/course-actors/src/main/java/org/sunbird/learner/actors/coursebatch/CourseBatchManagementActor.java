@@ -51,6 +51,7 @@ public class CourseBatchManagementActor extends BaseActor {
   private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
   private List<String> validCourseStatus = Arrays.asList("Live", "Unlisted");
   private String validContenttype = "Course";
+  private LoggerUtil logger = LoggerUtil.getInstance(CourseBatchManagementActor.class);
 
   @Inject
   @Named("course-batch-notification-actor")
@@ -144,12 +145,15 @@ public class CourseBatchManagementActor extends BaseActor {
   }
 
   private boolean courseNotificationActive() {
-    ProjectLogger.log(
+    logger.info(null, "courseNotificationActive:", Boolean.parseBoolean(
+            PropertiesCache.getInstance()
+                    .getProperty(JsonKey.SUNBIRD_COURSE_BATCH_NOTIFICATIONS_ENABLED)));
+   /* ProjectLogger.log(
         "CourseBatchManagementActor: courseNotificationActive: "
             + Boolean.parseBoolean(
                 PropertiesCache.getInstance()
                     .getProperty(JsonKey.SUNBIRD_COURSE_BATCH_NOTIFICATIONS_ENABLED)),
-        LoggerEnum.INFO.name());
+        LoggerEnum.INFO.name());*/
     return Boolean.parseBoolean(
         PropertiesCache.getInstance()
             .getProperty(JsonKey.SUNBIRD_COURSE_BATCH_NOTIFICATIONS_ENABLED));

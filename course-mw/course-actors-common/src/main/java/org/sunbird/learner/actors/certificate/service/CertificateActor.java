@@ -10,8 +10,7 @@ import org.sunbird.actor.base.BaseActor;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.models.util.datasecurity.OneWayHashing;
@@ -24,6 +23,8 @@ import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.Util;
 
 public class CertificateActor extends BaseActor {
+  
+  private LoggerUtil logger = new LoggerUtil(CertificateActor.class);
 
   private static enum ResponseMessage {
     SUBMITTED("Certificates issue action for Course Batch Id {0} submitted Successfully!"),
@@ -55,15 +56,13 @@ public class CertificateActor extends BaseActor {
   }
 
   private void issueCertificate(Request request) {
-    ProjectLogger.log(
-        "CertificateActor:issueCertificate request=" + request.getRequest(),
-        LoggerEnum.INFO.name());
+    logger.info(request.getRequestContext(), "issueCertificate request=" + request.getRequest());
     final String batchId = (String) request.getRequest().get(JsonKey.BATCH_ID);
     final String courseId = (String) request.getRequest().get(JsonKey.COURSE_ID);
     List<String> userIds = (List<String>) request.getRequest().get(JsonKey.USER_IDs);
     final boolean reIssue = isReissue(request.getContext().get(CourseJsonKey.REISSUE));
     Map<String, Object> courseBatchResponse =
-        CourseBatchUtil.validateCourseBatch(courseId, batchId);
+        CourseBatchUtil.validateCourseBatch(request.getRequestContext(), courseId, batchId);
     if (null == courseBatchResponse.get("cert_templates")) {
       ProjectCommonException.throwClientErrorException(
           ResponseCode.CLIENT_ERROR, "No certificate templates associated with " + batchId);
@@ -78,12 +77,8 @@ public class CertificateActor extends BaseActor {
     try {
       pushInstructionEvent(batchId, courseId, userIds, reIssue);
     } catch (Exception e) {
-      ProjectLogger.log(
-          "CertificateActor:issueCertificate pushInstructionEvent error for courseId="
-              + courseId
-              + ", batchId="
-              + batchId,
-          e);
+      logger.error(request.getRequestContext(), "issueCertificate pushInstructionEvent error for courseId="
+                      + courseId + ", batchId=" + batchId, e);
       resultData.put(
           JsonKey.STATUS, MessageFormat.format(ResponseMessage.FAILED.getValue(), batchId));
     }

@@ -3,6 +3,20 @@ package org.sunbird.learner.actors.bulkupload;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.ArrayUtils;
+import org.sunbird.actor.base.BaseActor;
+import org.sunbird.common.exception.ProjectCommonException;
+import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.LoggerUtil;
+import org.sunbird.common.models.util.ProjectUtil;
+import org.sunbird.common.models.util.ProjectUtil.BulkProcessStatus;
+import org.sunbird.common.request.RequestContext;
+import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.learner.actors.bulkupload.dao.BulkUploadProcessDao;
+import org.sunbird.learner.actors.bulkupload.dao.impl.BulkUploadProcessDaoImpl;
+import org.sunbird.learner.actors.bulkupload.model.BulkUploadProcess;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -11,19 +25,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.ArrayUtils;
-import org.sunbird.actor.base.BaseActor;
-import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.models.util.ProjectUtil;
-import org.sunbird.common.models.util.ProjectUtil.BulkProcessStatus;
-import org.sunbird.common.request.RequestContext;
-import org.sunbird.common.responsecode.ResponseCode;
-import org.sunbird.learner.actors.bulkupload.dao.BulkUploadProcessDao;
-import org.sunbird.learner.actors.bulkupload.dao.impl.BulkUploadProcessDaoImpl;
-import org.sunbird.learner.actors.bulkupload.model.BulkUploadProcess;
 
 /**
  * Actor contains the common functionality for bulk upload.
@@ -36,6 +37,7 @@ public abstract class BaseBulkUploadActor extends BaseActor {
   protected Integer DEFAULT_BATCH_SIZE = 10;
   protected Integer CASSANDRA_BATCH_SIZE = getBatchSize(JsonKey.CASSANDRA_WRITE_BATCH_SIZE);
   protected ObjectMapper mapper = new ObjectMapper();
+  private LoggerUtil logger = new LoggerUtil(BaseBulkUploadActor.class);
 
   public void validateBulkUploadFields(
       String[] csvHeaderLine, String[] allowedFields, Boolean allFieldsMandatory) {
@@ -140,7 +142,7 @@ public abstract class BaseBulkUploadActor extends BaseActor {
     return csvReader;
   }
 
-  public List<String[]> parseCsvFile(byte[] byteArray, String processId, RequestContext requestContext) throws IOException {
+  public List<String[]> parseCsvFile(RequestContext requestContext, byte[] byteArray, String processId) throws IOException {
     CSVReader csvReader = null;
     // Create List for holding objects
     List<String[]> rows = new ArrayList<>();
@@ -159,16 +161,16 @@ public abstract class BaseBulkUploadActor extends BaseActor {
         rows.add(list.toArray(list.toArray(new String[strArray.length])));
       }
     } catch (Exception ex) {
-      ProjectLogger.log("Exception occurred while processing csv file : ", ex);
+      logger.error(requestContext, "Exception occurred while processing csv file : ", ex);
       BulkUploadProcess bulkUploadProcess =
           getBulkUploadProcessForFailedStatus(processId, BulkProcessStatus.FAILED.getValue(), ex);
-      bulkUploadDao.update(bulkUploadProcess, requestContext);
+      bulkUploadDao.update(requestContext, bulkUploadProcess);
       throw ex;
     } finally {
       try {
         IOUtils.closeQuietly(csvReader);
       } catch (Exception e) {
-        ProjectLogger.log("Exception occurred while closing csv reader : ", e);
+        logger.error(requestContext, "Exception occurred while closing csv reader : ", e);
       }
     }
     return rows;
@@ -219,7 +221,7 @@ public abstract class BaseBulkUploadActor extends BaseActor {
     try {
       batchSize = Integer.parseInt(ProjectUtil.getConfigValue(key));
     } catch (Exception ex) {
-      ProjectLogger.log("Failed to read cassandra batch size for:" + key, ex);
+      logger.error(null, "Failed to read cassandra batch size for:" + key, ex);
     }
     return batchSize;
   }

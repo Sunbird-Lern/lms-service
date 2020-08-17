@@ -5,8 +5,6 @@ import com.datastax.driver.core.Row;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.FutureCallback;
-import java.text.MessageFormat;
-import java.util.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.sunbird.actor.base.BaseActor;
 import org.sunbird.cassandra.CassandraOperation;
@@ -15,13 +13,25 @@ import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.*;
+import org.sunbird.common.models.util.ActorOperations;
+import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.LoggerUtil;
+import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.actors.coursebatch.service.UserCoursesService;
 import org.sunbird.learner.util.Util;
 import org.sunbird.learner.util.Util.DbInfo;
+
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /** Sync data between Cassandra and Elastic Search. */
 public class EsSyncActor extends BaseActor {
@@ -29,6 +39,7 @@ public class EsSyncActor extends BaseActor {
   private CassandraOperation cassandraOperation = ServiceFactory.getInstance();
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private static final int BATCH_SIZE = 100;
+  private LoggerUtil logger = new LoggerUtil(EsSyncActor.class);
 
   @Override
   public void onReceive(Request request) throws Throwable {
@@ -44,8 +55,7 @@ public class EsSyncActor extends BaseActor {
   private void triggerSync(Request req) {
     Map<String, Object> dataMap = (Map<String, Object>) req.get(JsonKey.DATA);
     String objectType = (String) dataMap.get(JsonKey.OBJECT_TYPE);
-    ProjectLogger.log(
-        "EsSyncBackgroundActor: sync called for objectType=" + objectType, LoggerEnum.INFO);
+    logger.info(req.getRequestContext(), "EsSyncBackgroundActor: sync called for objectType=" + objectType);
     Util.DbInfo dbInfo = getDbInfoObj(objectType);
     if (null == dbInfo) {
       throw new ProjectCommonException(
@@ -62,11 +72,10 @@ public class EsSyncActor extends BaseActor {
       objectIds = (List<Object>) dataMap.get(JsonKey.OBJECT_IDS);
     }
     if (CollectionUtils.isEmpty(objectIds)) {
-      ProjectLogger.log(
-          "EsSyncBackgroundActor:sync: Sync all data for type = " + objectType, LoggerEnum.INFO);
+      logger.info(req.getRequestContext(), "EsSyncBackgroundActor:sync: Sync all data for type = " + objectType);
 
       cassandraOperation.applyOperationOnRecordsAsync(
-          dbInfo.getKeySpace(), dbInfo.getTableName(), null, null, getSyncCallback(objectType), req.getRequestContext());
+              req.getRequestContext(), dbInfo.getKeySpace(), dbInfo.getTableName(), null, null, getSyncCallback(req.getRequestContext(), objectType));
       return;
     }
 
@@ -79,9 +88,7 @@ public class EsSyncActor extends BaseActor {
         MessageFormat.format(
             "type = {0} and IDs = {1}", objectType, Arrays.toString(objectIds.toArray()));
 
-    ProjectLogger.log(
-        "EsSyncBackgroundActor:sync: Syncing data for " + requestLogMsg + " started",
-        LoggerEnum.INFO);
+    logger.info(req.getRequestContext(), "EsSyncBackgroundActor:sync: Syncing data for " + requestLogMsg + " started");
 
     List<String> partitionKeys = new ArrayList<>();
     List<Map<String, Object>> idFilters = new ArrayList<>();
@@ -97,22 +104,20 @@ public class EsSyncActor extends BaseActor {
       Map<String, Object> filters = new HashMap<>();
       filters.put(partitionKey, partitionKeys);
       cassandraOperation.applyOperationOnRecordsAsync(
-          dbInfo.getKeySpace(), dbInfo.getTableName(), filters, null, getSyncCallback(objectType), req.getRequestContext());
+              req.getRequestContext(), dbInfo.getKeySpace(), dbInfo.getTableName(), filters, null, getSyncCallback(req.getRequestContext(), objectType));
     }
 
     if (CollectionUtils.isNotEmpty(idFilters)) {
       idFilters.forEach(
           idMap ->
               cassandraOperation.applyOperationOnRecordsAsync(
-                  dbInfo.getKeySpace(),
+                      req.getRequestContext(), dbInfo.getKeySpace(),
                   dbInfo.getTableName(),
                   idMap,
                   null,
-                  getSyncCallback(objectType), req.getRequestContext()));
+                  getSyncCallback(req.getRequestContext(), objectType)));
     }
-    ProjectLogger.log(
-        "EsSyncBackgroundActor:sync: Syncing data for " + requestLogMsg + " completed",
-        LoggerEnum.INFO);
+    logger.info(req.getRequestContext(), "EsSyncBackgroundActor:sync: Syncing data for " + requestLogMsg + " completed");
   }
 
   private String getType(String objectType) {
@@ -136,7 +141,7 @@ public class EsSyncActor extends BaseActor {
     return null;
   }
 
-  private FutureCallback<ResultSet> getSyncCallback(String objectType) {
+  private FutureCallback<ResultSet> getSyncCallback(RequestContext requestContext, String objectType) {
     return new FutureCallback<ResultSet>() {
       @Override
       public void onSuccess(ResultSet result) {
@@ -148,34 +153,32 @@ public class EsSyncActor extends BaseActor {
           Iterator<Row> resultIterator = result.iterator();
           while (resultIterator.hasNext()) {
             Row row = resultIterator.next();
-            Map<String, Object> doc = syncDataForEachRow(row, columnMap, objectType);
+            Map<String, Object> doc = syncDataForEachRow(requestContext, row, columnMap, objectType);
             docList.add(doc);
             count++;
             if (docList.size() >= BATCH_SIZE) {
-              esService.bulkInsert(getType(objectType), docList);
+              esService.bulkInsert(requestContext, getType(objectType), docList);
               docList.clear();
             }
           }
           if (!docList.isEmpty()) {
-            esService.bulkInsert(getType(objectType), docList);
+            esService.bulkInsert(requestContext, getType(objectType), docList);
           }
-          ProjectLogger.log(
-              "getSyncCallback sync successful objectType=" + objectType + " count=" + count,
-              LoggerEnum.INFO.name());
+          logger.info(requestContext, "getSyncCallback sync successful objectType=" + objectType + " count=" + count);
         } catch (Exception e) {
-          ProjectLogger.log("Exception occurred while getSyncCallback on count" + count, e);
+          logger.error(requestContext, "Exception occurred while getSyncCallback on count" + count, e);
         }
       }
 
       @Override
       public void onFailure(Throwable t) {
-        ProjectLogger.log("Exception occurred while getSyncCallback ", t);
+        logger.error(requestContext, "Exception occurred while getSyncCallback ", t);
       }
     };
   }
 
   private Map<String, Object> syncDataForEachRow(
-      Row row, Map<String, String> columnMap, String objectType) {
+          RequestContext requestContext, Row row, Map<String, String> columnMap, String objectType) {
     Map<String, Object> rowMap = new HashMap<>();
     columnMap
         .entrySet()
@@ -186,7 +189,7 @@ public class EsSyncActor extends BaseActor {
                 try {
                   rowMap.put(entry.getKey(), new ObjectMapper().writeValueAsString(value));
                 } catch (JsonProcessingException e) {
-                  ProjectLogger.log("JsonProcessingException occurred while getSyncCallback ", e);
+                  logger.error(requestContext, "JsonProcessingException occurred while getSyncCallback ", e);
                 }
               } else {
                 rowMap.put(entry.getKey(), value);

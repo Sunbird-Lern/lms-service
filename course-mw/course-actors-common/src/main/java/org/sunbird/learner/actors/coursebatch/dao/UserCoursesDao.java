@@ -15,54 +15,54 @@ public interface UserCoursesDao {
    * @param requestContext
    * @return User courses information
    */
-  UserCourses read(String batchId, String userId, RequestContext requestContext);
+  UserCourses read(RequestContext requestContext, String batchId, String userId);
 
-  UserCourses read(String userId, String courseId, String batchId, RequestContext requestContext);
+  UserCourses read(RequestContext requestContext, String userId, String courseId, String batchId);
 
   /**
    * Create an entry for user courses information
    *
-   * @param userCoursesDetails User courses information
    * @param requestContext
+   * @param userCoursesDetails User courses information
    */
-  Response insert(Map<String, Object> userCoursesDetails, RequestContext requestContext);
+  Response insert(RequestContext requestContext, Map<String, Object> userCoursesDetails);
 
-  Response insertV2(Map<String, Object> userCoursesDetails, RequestContext requestContext);
+  Response insertV2(RequestContext requestContext, Map<String, Object> userCoursesDetails);
 
   /**
    * Update user courses information
    *
-   * @param updateAttributes Map containing user courses attributes which needs to be updated
    * @param requestContext
+   * @param updateAttributes Map containing user courses attributes which needs to be updated
    */
-  Response update(String batchId, String userId, Map<String, Object> updateAttributes, RequestContext requestContext);
+  Response update(RequestContext requestContext, String batchId, String userId, Map<String, Object> updateAttributes);
 
-  Response updateV2(String userId,String courseId, String batchId, Map<String, Object> updateAttributes, RequestContext requestContext);
+  Response updateV2(RequestContext requestContext, String userId, String courseId, String batchId, Map<String, Object> updateAttributes);
 
   /**
    * Get all active participant IDs in given batch
    *
-   * @param batchId Batch ID
    * @param requestContext
+   * @param batchId Batch ID
    */
-  List<String> getAllActiveUserOfBatch(String batchId, RequestContext requestContext);
+  List<String> getAllActiveUserOfBatch(RequestContext requestContext, String batchId);
 
   /**
    * Add specified list of participants in given batch.
    *
-   * @param userCoursesDetails List of participant details
    * @param requestContext
+   * @param userCoursesDetails List of participant details
    */
-  Response batchInsert(List<Map<String, Object>> userCoursesDetails, RequestContext requestContext);
+  Response batchInsert(RequestContext requestContext, List<Map<String, Object>> userCoursesDetails);
 
   /**
    * Get all active participant IDs in given batch
-   *  @param batchId Batch ID
-   * @param active
    * @param requestContext
+   * @param batchId Batch ID
+   * @param active
    */
-  List<String> getBatchParticipants(String batchId, boolean active, RequestContext requestContext);
+  List<String> getBatchParticipants(RequestContext requestContext, String batchId, boolean active);
   
   
-  List<Map<String, Object>> listEnrolments(String userId, RequestContext requestContext);
+  List<Map<String, Object>> listEnrolments(RequestContext requestContext, String userId);
 }

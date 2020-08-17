@@ -19,6 +19,7 @@ import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.BadgingJsonKey;
 import org.sunbird.common.models.util.HttpUtil;
 import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.PropertiesCache;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
@@ -30,6 +31,7 @@ public class BadgrServiceImpl implements BadgingService {
   private ObjectMapper mapper = new ObjectMapper();
   private static CassandraOperation cassandraOperation = ServiceFactory.getInstance();
   public static Map<String, String> headerMap = new HashMap<>();
+  private LoggerUtil logger = new LoggerUtil(BadgrServiceImpl.class);
 
   static {
     String header = System.getenv(JsonKey.EKSTEP_AUTHORIZATION);
@@ -70,7 +72,7 @@ public class BadgrServiceImpl implements BadgingService {
 
     List<BadgeClassExtension> badgeClassExtList =
         badgeClassExtensionService.search(
-            issuerList, badgeList, rootOrgId, type, subtype, allowedRoles, request.getRequestContext());
+                request.getRequestContext(), issuerList, badgeList, rootOrgId, type, subtype, allowedRoles);
     List<String> filteredIssuerList =
         badgeClassExtList
             .stream()

@@ -12,8 +12,6 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.DocWriteResponse;
-import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
-import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequestBuilder;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -43,6 +41,7 @@ import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.PropertiesCache;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.helper.ConnectionManager;
@@ -61,13 +60,15 @@ public class ElasticSearchRestHighImpl implements ElasticSearchService {
    * This method will put a new data entry inside Elastic search. identifier value becomes _id
    * inside ES, so every time provide a unique value while saving it.
    *
+   *
+   * @param requestContext
    * @param index String ES index name
    * @param identifier ES column identifier as an String
    * @param data Map<String,Object>
    * @return Future<String> which contains identifier for created data
    */
   @Override
-  public Future<String> save(String index, String identifier, Map<String, Object> data) {
+  public Future<String> save(RequestContext requestContext, String index, String identifier, Map<String, Object> data) {
     long startTime = System.currentTimeMillis();
     Promise<String> promise = Futures.promise();
     ProjectLogger.log(
@@ -143,13 +144,15 @@ public class ElasticSearchRestHighImpl implements ElasticSearchService {
   /**
    * This method will update data entry inside Elastic search, using identifier and provided data .
    *
+   *
+   * @param requestContext
    * @param index String ES index name
    * @param identifier ES column identifier as an String
    * @param data Map<String,Object>
    * @return true or false
    */
   @Override
-  public Future<Boolean> update(String index, String identifier, Map<String, Object> data) {
+  public Future<Boolean> update(RequestContext requestContext, String index, String identifier, Map<String, Object> data) {
     long startTime = System.currentTimeMillis();
     ProjectLogger.log(
         "ElasticSearchRestHighImpl:update: method started at =="
@@ -207,12 +210,12 @@ public class ElasticSearchRestHighImpl implements ElasticSearchService {
    * This method will provide data form ES based on incoming identifier. we can get data by passing
    * index and identifier values , or all the three
    *
-   * @param type String
+   * @param requestContext
    * @param identifier String
    * @return Map<String,Object> or empty map
    */
   @Override
-  public Future<Map<String, Object>> getDataByIdentifier(String index, String identifier) {
+  public Future<Map<String, Object>> getDataByIdentifier(RequestContext requestContext, String index, String identifier) {
     long startTime = System.currentTimeMillis();
     Promise<Map<String, Object>> promise = Futures.promise();
     if (StringUtils.isNotEmpty(identifier) && StringUtils.isNotEmpty(index)) {
@@ -278,7 +281,6 @@ public class ElasticSearchRestHighImpl implements ElasticSearchService {
    * This method will remove data from ES based on identifier.
    *
    * @param index String
-   * @param type String
    * @param identifier String
    */
   @Override
@@ -342,7 +344,6 @@ public class ElasticSearchRestHighImpl implements ElasticSearchService {
    * criteria like fields, facets, sort by , filters etc. here user can pass single type to search
    * or multiple type or null
    *
-   * @param type var arg of String
    * @return search result as Map.
    */
   @Override
@@ -531,13 +532,14 @@ public class ElasticSearchRestHighImpl implements ElasticSearchService {
   /**
    * This method will do the bulk data insertion.
    *
+   *
+   * @param requestContext
    * @param index String index name
-   * @param type String type name
    * @param dataList List<Map<String, Object>>
    * @return boolean
    */
   @Override
-  public Future<Boolean> bulkInsert(String index, List<Map<String, Object>> dataList) {
+  public Future<Boolean> bulkInsert(RequestContext requestContext, String index, List<Map<String, Object>> dataList) {
     long startTime = System.currentTimeMillis();
     ProjectLogger.log(
         "ElasticSearchRestHighImpl:bulkInsert: method started at =="
@@ -629,14 +631,15 @@ public class ElasticSearchRestHighImpl implements ElasticSearchService {
    * This method will update data based on identifier.take the data based on identifier and merge
    * with incoming data then update it.
    *
+   *
+   * @param requestContext
    * @param index String
-   * @param type String
    * @param identifier String
    * @param data Map<String,Object>
    * @return boolean
    */
   @Override
-  public Future<Boolean> upsert(String index, String identifier, Map<String, Object> data) {
+  public Future<Boolean> upsert(RequestContext requestContext, String index, String identifier, Map<String, Object> data) {
     long startTime = System.currentTimeMillis();
     Promise<Boolean> promise = Futures.promise();
     ProjectLogger.log(
@@ -700,7 +703,6 @@ public class ElasticSearchRestHighImpl implements ElasticSearchService {
    * @param ids List of String
    * @param fields List of String
    * @param index index of elasticserach for query
-   * @param data Map<String,Object>
    * @return future of requested data in the form of map
    */
   @Override

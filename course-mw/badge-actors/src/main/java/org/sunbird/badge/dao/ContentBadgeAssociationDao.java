@@ -13,7 +13,7 @@ public interface ContentBadgeAssociationDao {
    * @param Map<String, Object> contentBadgeDetails
    * @return Response
    */
-  public Response insertBadgeAssociation(List<Map<String, Object>> contentInfoList, RequestContext requestContext);
+  public Response insertBadgeAssociation(RequestContext requestContext, List<Map<String, Object>> contentInfoList);
 
   /*
    * This method will update content-badge association details.
@@ -21,9 +21,9 @@ public interface ContentBadgeAssociationDao {
    * @param Map<String, Object> contentBadgeDetails
    * @return Response
    */
-  public Response updateBadgeAssociation(Map<String, Object> updateMap, RequestContext requestContext);
+  public Response updateBadgeAssociation(RequestContext requestContext, Map<String, Object> updateMap);
 
-  public void createDataToES(Map<String, Object> badgeMap);
+  public void createDataToES(RequestContext requestContext, Map<String, Object> badgeMap);
 
-  public void updateDataToES(Map<String, Object> badgeMap);
+  public void updateDataToES(RequestContext requestContext, Map<String, Object> badgeMap);
 }

@@ -30,6 +30,7 @@ import play.mvc.Http;
 import play.mvc.Http.Request;
 import play.mvc.Result;
 import play.mvc.Results;
+import util.Attrs;
 import util.AuthenticationHelper;
 
 import java.io.File;
@@ -65,15 +66,15 @@ public class BaseController extends Controller {
     request.setRequestId(httpRequest.flash().get(JsonKey.REQUEST_ID));
     request.setEnv(getEnvironment());
     request.setRequestContext(getRequestContext(httpRequest, operation));
-    request.getContext().put(JsonKey.REQUESTED_BY, httpRequest.flash().get(JsonKey.USER_ID));
-    if (StringUtils.isNotBlank(httpRequest.flash().get(SunbirdKey.REQUESTED_FOR)))
-      request.getContext().put(SunbirdKey.REQUESTED_FOR, httpRequest.flash().get(SunbirdKey.REQUESTED_FOR));
+    request.getContext().put(JsonKey.REQUESTED_BY, httpRequest.attrs().get(Attrs.USER_ID));
+    if (StringUtils.isNotBlank(httpRequest.attrs().get(Attrs.REQUESTED_FOR)))
+      request.getContext().put(SunbirdKey.REQUESTED_FOR, httpRequest.attrs().get(Attrs.REQUESTED_FOR));
     request = transformUserId(request);
     return request;
   }
 
   private RequestContext getRequestContext(Request httpRequest, String actorOperation) {
-    RequestContext requestContext = new RequestContext(httpRequest.flash().get(JsonKey.USER_ID), 
+    RequestContext requestContext = new RequestContext(httpRequest.attrs().get(Attrs.USER_ID), 
             httpRequest.header("x-device-id").get(), httpRequest.header("x-session-id").get(),
             httpRequest.header("x-app-id").get(), httpRequest.header("x-app-ver").get(),
             httpRequest.header("x-request-id").orElse(UUID.randomUUID().toString()),

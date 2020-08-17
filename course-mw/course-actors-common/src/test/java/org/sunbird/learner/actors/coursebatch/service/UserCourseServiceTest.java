@@ -71,7 +71,8 @@ public class UserCourseServiceTest {
   @Test
   public void validateUserUnenrollEmptyUserCoursesTest() {
     try {
-      UserCoursesService.validateUserUnenroll(null);
+      userCoursesService = new UserCoursesService();
+      userCoursesService.validateUserUnenroll(null, null);
     } catch (ProjectCommonException e) {
       Assert.assertEquals(ResponseCode.userNotEnrolledCourse.getErrorCode(), e.getCode());
     }
@@ -82,7 +83,8 @@ public class UserCourseServiceTest {
     try {
       UserCourses userCourses = new UserCourses();
       userCourses.setActive(false);
-      UserCoursesService.validateUserUnenroll(userCourses);
+      userCoursesService = new UserCoursesService();
+      userCoursesService.validateUserUnenroll(null, userCourses);
     } catch (ProjectCommonException e) {
       Assert.assertEquals(ResponseCode.userNotEnrolledCourse.getErrorCode(), e.getCode());
     }
@@ -95,7 +97,8 @@ public class UserCourseServiceTest {
       userCourses.setActive(true);
       // userCourses.setLeafNodesCount(1);
       userCourses.setProgress(1);
-      UserCoursesService.validateUserUnenroll(userCourses);
+      userCoursesService = new UserCoursesService();
+      userCoursesService.validateUserUnenroll(null, userCourses);
     } catch (ProjectCommonException e) {
       Assert.assertEquals(ResponseCode.userAlreadyCompletedCourse.getErrorCode(), e.getCode());
     }

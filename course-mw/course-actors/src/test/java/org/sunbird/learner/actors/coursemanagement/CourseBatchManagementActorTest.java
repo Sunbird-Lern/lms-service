@@ -86,7 +86,7 @@ public class CourseBatchManagementActorTest {
       String endDate,
       Response mockGetRecordByIdResponse) throws Exception {
     when(mockCassandraOperation.getRecordByIdentifier(
-            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList(), Mockito.any()))
+            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList()))
         .thenReturn(mockGetRecordByIdResponse);
    
     TestKit probe = new TestKit(system);
@@ -115,15 +115,15 @@ public class CourseBatchManagementActorTest {
       Response mockUpdateRecordResponse) throws Exception {
 
     when(mockCassandraOperation.getRecordByIdentifier(
-            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList(), Mockito.any()))
+            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList()))
         .thenReturn(mockGetRecordByIdResponse);
 
     when(mockCassandraOperation.updateRecord(
-            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyMap(), Mockito.any()))
+            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyMap()))
         .thenReturn(mockUpdateRecordResponse);
 
     PowerMockito.doNothing().when(CourseBatchUtil.class);
-    CourseBatchUtil.syncCourseBatchForeground(BATCH_ID, new HashMap<>());
+    CourseBatchUtil.syncCourseBatchForeground(null, BATCH_ID, new HashMap<>());
 
     TestKit probe = new TestKit(system);
     ActorRef subject = system.actorOf(props);

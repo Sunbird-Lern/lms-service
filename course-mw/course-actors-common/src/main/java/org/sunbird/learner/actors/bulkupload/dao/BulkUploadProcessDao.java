@@ -15,16 +15,16 @@ public interface BulkUploadProcessDao {
   Response create(BulkUploadProcess bulkUploadProcess, RequestContext requestContext);
 
   /**
-   * @param bulkUploadProcess
    * @param requestContext
+   * @param bulkUploadProcess
    * @return response Response
    */
-  Response update(BulkUploadProcess bulkUploadProcess, RequestContext requestContext);
+  Response update(RequestContext requestContext, BulkUploadProcess bulkUploadProcess);
 
   /**
-   * @param id
    * @param requestContext
+   * @param id
    * @return response Response
    */
-  BulkUploadProcess read(String id, RequestContext requestContext);
+  BulkUploadProcess read(RequestContext requestContext, String id);
 }

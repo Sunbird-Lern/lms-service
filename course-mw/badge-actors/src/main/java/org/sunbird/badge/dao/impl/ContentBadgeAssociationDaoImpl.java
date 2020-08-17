@@ -8,8 +8,7 @@ import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.RequestContext;
 import org.sunbird.helper.ServiceFactory;
@@ -20,43 +19,40 @@ public class ContentBadgeAssociationDaoImpl implements ContentBadgeAssociationDa
   private static final String TABLE_NAME = "content_badge_association";
   private CassandraOperation cassandraOperation = ServiceFactory.getInstance();
   private ElasticSearchService esUtil = EsClientFactory.getInstance(JsonKey.REST);
+  private LoggerUtil logger = new LoggerUtil(ContentBadgeAssociationDaoImpl.class);
 
   @Override
-  public Response insertBadgeAssociation(List<Map<String, Object>> contentInfo, RequestContext requestContext) {
-    return cassandraOperation.batchInsert(KEYSPACE, TABLE_NAME, contentInfo, requestContext);
+  public Response insertBadgeAssociation(RequestContext requestContext, List<Map<String, Object>> contentInfo) {
+    return cassandraOperation.batchInsert(requestContext, KEYSPACE, TABLE_NAME, contentInfo);
   }
 
   @Override
-  public Response updateBadgeAssociation(Map<String, Object> updateMap, RequestContext requestContext) {
-    return cassandraOperation.updateRecord(KEYSPACE, TABLE_NAME, updateMap, requestContext);
+  public Response updateBadgeAssociation(RequestContext requestContext, Map<String, Object> updateMap) {
+    return cassandraOperation.updateRecord(requestContext, KEYSPACE, TABLE_NAME, updateMap);
   }
 
   @Override
-  public void createDataToES(Map<String, Object> badgeMap) {
-    esUtil.save(
+  public void createDataToES(RequestContext requestContext, Map<String, Object> badgeMap) {
+    esUtil.save(requestContext, 
         ProjectUtil.EsType.badgeassociations.getTypeName(),
         (String) badgeMap.get(JsonKey.ID),
         badgeMap);
   }
 
   @Override
-  public void updateDataToES(Map<String, Object> badgeMap) {
-    ProjectLogger.log(
-        "ContentBadgeAssociationDaoImpl:updateDataToES: Updating data to ES for associationId: "
-            + (String) badgeMap.get(JsonKey.ID),
-        LoggerEnum.INFO);
+  public void updateDataToES(RequestContext requestContext, Map<String, Object> badgeMap) {
+    logger.info(requestContext, "ContentBadgeAssociationDaoImpl:updateDataToES: Updating data to ES for associationId: "
+            + (String) badgeMap.get(JsonKey.ID));
     try {
-      esUtil.update(
+      esUtil.update(requestContext, 
           ProjectUtil.EsType.badgeassociations.getTypeName(),
           (String) badgeMap.get(JsonKey.ID),
           badgeMap);
     } catch (Exception e) {
-      ProjectLogger.log(
-          "ContentBadgeAssociationDaoImpl:updateDataToES: Exception occured while Updating data to ES for associationId: "
+      logger.error(requestContext, "ContentBadgeAssociationDaoImpl:updateDataToES: Exception occured while Updating data to ES for associationId: "
               + (String) badgeMap.get(JsonKey.ID)
               + " with exception "
-              + e.getMessage(),
-          LoggerEnum.INFO);
+              + e.getMessage(), e);
     }
   }
 }

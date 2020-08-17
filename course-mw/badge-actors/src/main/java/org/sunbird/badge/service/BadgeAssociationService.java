@@ -1,5 +1,7 @@
 package org.sunbird.badge.service;
 
+import org.sunbird.common.request.RequestContext;
+
 import java.util.List;
 import java.util.Map;
 
@@ -31,5 +33,5 @@ public interface BadgeAssociationService {
   public Map<String, Object> getCassandraBadgeAssociationUpdateMap(
       String associationId, String requestedBy);
 
-  public void syncToES(List<Map<String, Object>> badgeAssociationMapList, boolean toBeCreated);
+  public void syncToES(RequestContext requestContext, List<Map<String, Object>> badgeAssociationMapList, boolean toBeCreated);
 }

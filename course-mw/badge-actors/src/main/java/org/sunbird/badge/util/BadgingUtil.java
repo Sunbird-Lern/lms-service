@@ -15,6 +15,7 @@ import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.util.BadgingJsonKey;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerEnum;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.MapperUtil;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.PropertiesCache;
@@ -37,6 +38,7 @@ public class BadgingUtil {
   private static PropertiesCache propertiesCache = PropertiesCache.getInstance();
   private static BadgingService service = BadgingFactory.getInstance();
   private static ObjectMapper mapper = new ObjectMapper();
+  private LoggerUtil logger = new LoggerUtil(BadgingUtil.class);
 
   public static String getBadgrBaseUrl() {
     String badgerBaseUrl = SUNBIRD_BADGR_SERVER_URL_DEFAULT;

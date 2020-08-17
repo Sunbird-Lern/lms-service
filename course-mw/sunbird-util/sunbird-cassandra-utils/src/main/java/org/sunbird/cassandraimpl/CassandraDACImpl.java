@@ -26,7 +26,7 @@ public class CassandraDACImpl extends CassandraOperationImpl {
     
     @Override
   public Response getRecords(
-          String keySpace, String table, Map<String, Object> filters, List<String> fields, RequestContext requestContext) {
+            RequestContext requestContext, String keySpace, String table, Map<String, Object> filters, List<String> fields) {
     Response response = new Response();
     Session session = connectionManager.getSession(keySpace);
     try {
@@ -64,11 +64,11 @@ public class CassandraDACImpl extends CassandraOperationImpl {
   }
 
   public void applyOperationOnRecordsAsync(
-          String keySpace,
+          RequestContext requestContext, String keySpace,
           String table,
           Map<String, Object> filters,
           List<String> fields,
-          FutureCallback<ResultSet> callback, RequestContext requestContext) {
+          FutureCallback<ResultSet> callback) {
     Session session = connectionManager.getSession(keySpace);
     try {
       Select select;
@@ -102,28 +102,28 @@ public class CassandraDACImpl extends CassandraOperationImpl {
   }
 
   public Response updateAddMapRecord(
-          String keySpace,
+          RequestContext requestContext, String keySpace,
           String table,
           Map<String, Object> primaryKey,
           String column,
           String key,
-          Object value, RequestContext requestContext) {
-    return updateMapRecord(keySpace, table, primaryKey, column, key, value, true, requestContext);
+          Object value) {
+    return updateMapRecord(requestContext, keySpace, table, primaryKey, column, key, value, true);
   }
 
   public Response updateRemoveMapRecord(
-          String keySpace, String table, Map<String, Object> primaryKey, String column, String key, RequestContext requestContext) {
-    return updateMapRecord(keySpace, table, primaryKey, column, key, null, false, requestContext);
+          RequestContext requestContext, String keySpace, String table, Map<String, Object> primaryKey, String column, String key) {
+    return updateMapRecord(requestContext, keySpace, table, primaryKey, column, key, null, false);
   }
 
   public Response updateMapRecord(
-          String keySpace,
+          RequestContext requestContext, String keySpace,
           String table,
           Map<String, Object> primaryKey,
           String column,
           String key,
           Object value,
-          boolean add, RequestContext requestContext) {
+          boolean add) {
     Update update = QueryBuilder.update(keySpace, table);
     if (add) {
       update.with(QueryBuilder.put(column, key, value));

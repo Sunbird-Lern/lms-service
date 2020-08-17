@@ -52,7 +52,7 @@ public class BadgeClassExtensionServiceImplTest {
         JsonKey.RESPONSE, new ArrayList<Map<String, Object>>(Arrays.asList(new HashMap<>())));
 
     PowerMockito.when(
-            mockDBService.getRecordByIdentifier(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyList(), Mockito.any()))
+            mockDBService.getRecordByIdentifier(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyList()))
         .thenReturn(response);
 
     BadgeClassExtension badgeClassExtension = badgeClassExtensionServiceImpl.get(VALUE_BADGE_ID, null);
@@ -74,17 +74,17 @@ public class BadgeClassExtensionServiceImplTest {
     response.put(JsonKey.RESPONSE, new ArrayList<Map<String, Object>>(Arrays.asList(badgeMap)));
 
     PowerMockito.when(
-            mockDBService.getRecordsByProperties(Mockito.any(), Mockito.any(), Mockito.anyMap(), Mockito.any()))
+            mockDBService.getRecordsByProperties(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyMap()))
         .thenReturn(response);
 
     List<BadgeClassExtension> badgeClassExtList =
         badgeClassExtensionServiceImpl.search(
-            new ArrayList<>(),
+                null, new ArrayList<>(),
             new ArrayList<>(),
             VALUE_ROOT_ORG_ID,
             VALUE_TYPE,
             VALUE_SUBTYPE,
-            VALUE_ROLES_LIST, null);
+            VALUE_ROLES_LIST);
 
     Assert.assertTrue(null != badgeClassExtList);
     Assert.assertEquals(1, badgeClassExtList.size());
@@ -101,17 +101,17 @@ public class BadgeClassExtensionServiceImplTest {
     response.put(JsonKey.RESPONSE, new ArrayList<Map<String, Object>>());
 
     PowerMockito.when(
-            mockDBService.getRecordsByProperties(Mockito.any(), Mockito.any(), Mockito.anyMap(), Mockito.any()))
+            mockDBService.getRecordsByProperties(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyMap()))
         .thenReturn(response);
 
     List<BadgeClassExtension> badgeClassExtList =
         badgeClassExtensionServiceImpl.search(
-            new ArrayList<>(),
+                null, new ArrayList<>(),
             new ArrayList<>(),
             VALUE_ROOT_ORG_ID,
             VALUE_TYPE,
             VALUE_SUBTYPE,
-            VALUE_ROLES_LIST, null);
+            VALUE_ROLES_LIST);
 
     Assert.assertTrue(null != badgeClassExtList);
     Assert.assertEquals(0, badgeClassExtList.size());
@@ -123,7 +123,7 @@ public class BadgeClassExtensionServiceImplTest {
     response.put(JsonKey.RESPONSE, new ArrayList<Map<String, Object>>());
 
     PowerMockito.when(
-            mockDBService.getRecordByIdentifier(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyList(), Mockito.any()))
+            mockDBService.getRecordByIdentifier(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyList()))
         .thenReturn(new Response());
 
     boolean thrown = false;
@@ -146,7 +146,7 @@ public class BadgeClassExtensionServiceImplTest {
     response.put(JsonKey.RESPONSE, new ArrayList<Map<String, Object>>());
 
     PowerMockito.when(
-            mockDBService.getRecordByIdentifier(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyList(), Mockito.any()))
+            mockDBService.getRecordByIdentifier(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyList()))
         .thenReturn(response);
 
     boolean thrown = false;

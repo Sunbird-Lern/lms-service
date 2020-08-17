@@ -10,11 +10,11 @@ public interface CourseBatchDao {
   /**
    * Create course batch.
    *
-   * @param courseBatch Course batch information to be created
    * @param requestContext
+   * @param courseBatch Course batch information to be created
    * @return Response containing identifier of created course batch
    */
-  Response create(CourseBatch courseBatch, RequestContext requestContext);
+  Response create(RequestContext requestContext, CourseBatch courseBatch);
 
   /**
    * Update course batch.
@@ -22,7 +22,7 @@ public interface CourseBatchDao {
    * @param courseBatchMap Course batch information to be updated
    * @return Response containing status of course batch update
    */
-  Response update(String courseId, String batchId, Map<String, Object> courseBatchMap, RequestContext requestContext);
+  Response update(RequestContext requestContext, String courseId, String batchId, Map<String, Object> courseBatchMap);
 
   /**
    * Read course batch for given identifier.
@@ -32,34 +32,34 @@ public interface CourseBatchDao {
    */
   CourseBatch readById(String courseId, String batchId, RequestContext requestContext);
 
-  Map<String, Object> getCourseBatch(String courseId, String batchId, RequestContext requestContext);
+  Map<String, Object> getCourseBatch(RequestContext requestContext, String courseId, String batchId);
 
   /**
    * Delete specified course batch.
    *
-   * @param courseBatchId Course batch identifier
    * @param requestContext
+   * @param courseBatchId Course batch identifier
    * @return Response containing status of course batch delete
    */
-  Response delete(String courseBatchId, RequestContext requestContext);
+  Response delete(RequestContext requestContext, String courseBatchId);
 
   /**
    * Attaches a certificate template to course batch
-   *  @param courseId
+   * @param requestContext
+   * @param courseId
    * @param batchId
    * @param templateId
    * @param templateDetails
-   * @param requestContext
    */
   void addCertificateTemplateToCourseBatch(
-          String courseId, String batchId, String templateId, Map<String, Object> templateDetails, RequestContext requestContext);
+          RequestContext requestContext, String courseId, String batchId, String templateId, Map<String, Object> templateDetails);
 
   /**
    * Removes an attached certificate template from course batch
-   *  @param courseId
+   * @param requestContext
+   * @param courseId
    * @param batchId
    * @param templateId
-   * @param requestContext
    */
-  void removeCertificateTemplateFromCourseBatch(String courseId, String batchId, String templateId, RequestContext requestContext);
+  void removeCertificateTemplateFromCourseBatch(RequestContext requestContext, String courseId, String batchId, String templateId);
 }

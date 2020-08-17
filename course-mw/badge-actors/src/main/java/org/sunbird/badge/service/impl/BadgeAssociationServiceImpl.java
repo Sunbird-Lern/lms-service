@@ -12,6 +12,7 @@ import org.sunbird.badge.service.BadgeAssociationService;
 import org.sunbird.common.models.util.BadgingJsonKey;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectUtil;
+import org.sunbird.common.request.RequestContext;
 
 public class BadgeAssociationServiceImpl implements BadgeAssociationService {
 
@@ -56,14 +57,14 @@ public class BadgeAssociationServiceImpl implements BadgeAssociationService {
   }
 
   @Override
-  public void syncToES(List<Map<String, Object>> badgeAssociationMapList, boolean toBeCreated) {
+  public void syncToES(RequestContext requestContext, List<Map<String, Object>> badgeAssociationMapList, boolean toBeCreated) {
     for (Map<String, Object> badgeMap : badgeAssociationMapList) {
       if (toBeCreated) {
-        associationDao.createDataToES(badgeMap);
+        associationDao.createDataToES(requestContext, badgeMap);
       } else {
         badgeMap.put(JsonKey.UPDATED_ON, new Timestamp(Calendar.getInstance().getTime().getTime()));
         badgeMap.remove(JsonKey.LAST_UPDATED_ON);
-        associationDao.updateDataToES(badgeMap);
+        associationDao.updateDataToES(requestContext, badgeMap);
       }
     }
   }

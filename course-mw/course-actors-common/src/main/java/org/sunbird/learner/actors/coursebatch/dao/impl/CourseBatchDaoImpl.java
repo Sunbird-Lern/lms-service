@@ -23,14 +23,14 @@ public class CourseBatchDaoImpl implements CourseBatchDao {
   private ObjectMapper mapper = new ObjectMapper();
   
   @Override
-  public Response create(CourseBatch courseBatch, RequestContext requestContext) {
+  public Response create(RequestContext requestContext, CourseBatch courseBatch) {
     Map<String, Object> map = mapper.convertValue(courseBatch, Map.class);
     return cassandraOperation.insertRecord(
-        courseBatchDb.getKeySpace(), courseBatchDb.getTableName(), map, requestContext);
+            requestContext, courseBatchDb.getKeySpace(), courseBatchDb.getTableName(), map);
   }
 
   @Override
-  public Response update(String courseId, String batchId, Map<String, Object> map, RequestContext requestContext) {
+  public Response update(RequestContext requestContext, String courseId, String batchId, Map<String, Object> map) {
     Map<String, Object> primaryKey = new HashMap<>();
     primaryKey.put(JsonKey.COURSE_ID, courseId);
     primaryKey.put(JsonKey.BATCH_ID, batchId);
@@ -39,7 +39,7 @@ public class CourseBatchDaoImpl implements CourseBatchDao {
     attributeMap.remove(JsonKey.COURSE_ID);
     attributeMap.remove(JsonKey.BATCH_ID);
     return cassandraOperation.updateRecord(
-        courseBatchDb.getKeySpace(), courseBatchDb.getTableName(), attributeMap, primaryKey, requestContext);
+            requestContext, courseBatchDb.getKeySpace(), courseBatchDb.getTableName(), attributeMap, primaryKey);
   }
 
   @Override
@@ -49,7 +49,7 @@ public class CourseBatchDaoImpl implements CourseBatchDao {
     primaryKey.put(JsonKey.BATCH_ID, batchId);
     Response courseBatchResult =
         cassandraOperation.getRecordByIdentifier(
-            courseBatchDb.getKeySpace(), courseBatchDb.getTableName(), primaryKey,null, requestContext);
+                requestContext, courseBatchDb.getKeySpace(), courseBatchDb.getTableName(), primaryKey,null);
     List<Map<String, Object>> courseList =
         (List<Map<String, Object>>) courseBatchResult.get(JsonKey.RESPONSE);
     if (courseList.isEmpty()) {
@@ -64,50 +64,50 @@ public class CourseBatchDaoImpl implements CourseBatchDao {
   }
 
   @Override
-  public Map<String, Object> getCourseBatch(String courseId, String batchId, RequestContext requestContext) {
+  public Map<String, Object> getCourseBatch(RequestContext requestContext, String courseId, String batchId) {
     Map<String, Object> primaryKey = new HashMap<>();
     primaryKey.put(JsonKey.COURSE_ID, courseId);
     primaryKey.put(JsonKey.BATCH_ID, batchId);
     Response courseBatchResult =
         cassandraOperation.getRecordByIdentifier(
-            courseBatchDb.getKeySpace(), courseBatchDb.getTableName(), primaryKey, null, requestContext);
+                requestContext, courseBatchDb.getKeySpace(), courseBatchDb.getTableName(), primaryKey, null);
     List<Map<String, Object>> courseList =
         (List<Map<String, Object>>) courseBatchResult.get(JsonKey.RESPONSE);
     return courseList.get(0);
   }
 
   @Override
-  public Response delete(String id, RequestContext requestContext) {
+  public Response delete(RequestContext requestContext, String id) {
     return cassandraOperation.deleteRecord(
         courseBatchDb.getKeySpace(), courseBatchDb.getTableName(), id, requestContext);
   }
 
   @Override
   public void addCertificateTemplateToCourseBatch(
-          String courseId, String batchId, String templateId, Map<String, Object> templateDetails, RequestContext requestContext) {
+          RequestContext requestContext, String courseId, String batchId, String templateId, Map<String, Object> templateDetails) {
     Map<String, Object> primaryKey = new HashMap<>();
     primaryKey.put(JsonKey.COURSE_ID, courseId);
     primaryKey.put(JsonKey.BATCH_ID, batchId);
     cassandraOperation.updateAddMapRecord(
-        courseBatchDb.getKeySpace(),
+            requestContext, courseBatchDb.getKeySpace(),
         courseBatchDb.getTableName(),
         primaryKey,
         CourseJsonKey.CERTIFICATE_TEMPLATES_COLUMN,
         templateId,
-        templateDetails, requestContext);
+        templateDetails);
   }
 
   @Override
   public void removeCertificateTemplateFromCourseBatch(
-          String courseId, String batchId, String templateId, RequestContext requestContext) {
+          RequestContext requestContext, String courseId, String batchId, String templateId) {
     Map<String, Object> primaryKey = new HashMap<>();
     primaryKey.put(JsonKey.COURSE_ID, courseId);
     primaryKey.put(JsonKey.BATCH_ID, batchId);
     cassandraOperation.updateRemoveMapRecord(
-        courseBatchDb.getKeySpace(),
+            requestContext, courseBatchDb.getKeySpace(),
         courseBatchDb.getTableName(),
         primaryKey,
         CourseJsonKey.CERTIFICATE_TEMPLATES_COLUMN,
-        templateId, requestContext);
+        templateId);
   }
 }

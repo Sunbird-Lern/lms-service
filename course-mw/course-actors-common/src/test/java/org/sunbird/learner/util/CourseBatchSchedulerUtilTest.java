@@ -73,7 +73,7 @@ public class CourseBatchSchedulerUtilTest {
         .thenReturn(JsonKey.SUCCESS);
     boolean success =
         CourseBatchSchedulerUtil.updateCourseContent(
-            "randomCourseId", "c_test_open_batch_count", 1);
+                null, "randomCourseId", "c_test_open_batch_count", 1);
     Assert.assertTrue(success);
   }
 
@@ -84,7 +84,7 @@ public class CourseBatchSchedulerUtilTest {
         .thenReturn(JsonKey.FAILURE);
     boolean success =
         CourseBatchSchedulerUtil.updateCourseContent(
-            "randomCourseId", "c_test_open_batch_count", 1);
+                null, "randomCourseId", "c_test_open_batch_count", 1);
     Assert.assertFalse(success);
   }
 
@@ -97,7 +97,7 @@ public class CourseBatchSchedulerUtilTest {
         .thenReturn(JsonKey.SUCCESS);
     boolean success =
         CourseBatchSchedulerUtil.doOperationInContentCourse(
-            "randomCourseId", true, ProjectUtil.EnrolmentType.open.getVal());
+                null, "randomCourseId", true, ProjectUtil.EnrolmentType.open.getVal());
     Assert.assertTrue(success);
   }
 
@@ -107,7 +107,7 @@ public class CourseBatchSchedulerUtilTest {
         .thenReturn(null);
     boolean success =
         CourseBatchSchedulerUtil.doOperationInContentCourse(
-            "randomCourseId", true, ProjectUtil.EnrolmentType.open.getVal());
+                null, "randomCourseId", true, ProjectUtil.EnrolmentType.open.getVal());
     Assert.assertFalse(success);
   }
 
@@ -122,12 +122,12 @@ public class CourseBatchSchedulerUtilTest {
     PowerMockito.when(
             group
                 .getESMockerService()
-                .update(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
+                .update(Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
         .thenReturn(Futures.successful(true));
     PowerMockito.when(
             group
                 .getCassandraMockerService()
-                .updateRecord(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
+                .updateRecord(Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
         .thenReturn(new Response());
     CourseBatchSchedulerUtil.updateCourseBatchDbStatus(courseBatch, true, null);
     PowerMockito.verifyStatic();

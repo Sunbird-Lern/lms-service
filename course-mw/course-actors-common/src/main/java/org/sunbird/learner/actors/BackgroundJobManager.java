@@ -1,23 +1,28 @@
 package org.sunbird.learner.actors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.base.BaseActor;
 import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.inf.ElasticSearchService;
-import org.sunbird.common.models.util.*;
+import org.sunbird.common.models.util.ActorOperations;
+import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.LoggerUtil;
+import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.learner.actors.coursebatch.service.UserCoursesService;
 import org.sunbird.learner.util.CourseBatchSchedulerUtil;
 import org.sunbird.learner.util.Util;
 import scala.concurrent.Future;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This class will handle all the background job. Example when ever course is published then this
@@ -31,7 +36,7 @@ public class BackgroundJobManager extends BaseActor {
   private static Map<String, String> headerMap = new HashMap<>();
   private static Util.DbInfo dbInfo = null;
   private ObjectMapper mapper = new ObjectMapper();
-
+  private LoggerUtil logger = new LoggerUtil(BackgroundJobManager.class);
   static {
     headerMap.put("content-type", "application/json");
     headerMap.put("accept", "application/json");
@@ -41,14 +46,10 @@ public class BackgroundJobManager extends BaseActor {
 
   @Override
   public void onReceive(Request request) throws Throwable {
-    ProjectLogger.log(
-        "BackgroundJobManager received action: " + request.getOperation(), LoggerEnum.INFO.name());
-    ProjectLogger.log("BackgroundJobManager  onReceive called");
     if (dbInfo == null) {
       dbInfo = Util.dbInfoMap.get(JsonKey.COURSE_MANAGEMENT_DB);
     }
     String operation = request.getOperation();
-    ProjectLogger.log("Operation name is ==" + operation);
     if (operation.equalsIgnoreCase(ActorOperations.INSERT_USR_COURSES_INFO_ELASTIC.getValue())) {
       insertUserCourseInfoToEs(request);
     } else if (operation.equalsIgnoreCase(ActorOperations.INSERT_COURSE_BATCH_ES.getValue())) {
@@ -59,13 +60,12 @@ public class BackgroundJobManager extends BaseActor {
         ActorOperations.UPDATE_USR_COURSES_INFO_ELASTIC.getValue())) {
       updateUserCourseInfoToEs(request);
     } else {
-      ProjectLogger.log("UNSUPPORTED OPERATION");
       ProjectCommonException exception =
           new ProjectCommonException(
               ResponseCode.invalidOperationName.getErrorCode(),
               ResponseCode.invalidOperationName.getErrorMessage(),
               ResponseCode.CLIENT_ERROR.getResponseCode());
-      ProjectLogger.log("UnSupported operation in Background Job Manager", exception);
+      logger.error(request.getRequestContext(), "UnSupported operation in Background Job Manager", exception);
     }
   }
 
@@ -88,7 +88,7 @@ public class BackgroundJobManager extends BaseActor {
 
     Map<String, Object> batch =
         (Map<String, Object>) actorMessage.getRequest().get(JsonKey.USER_COURSES);
-    updateDataToElastic(
+    updateDataToElastic(actorMessage.getRequestContext(), 
         ProjectUtil.EsIndex.sunbird.getIndexName(),
         ProjectUtil.EsType.usercourses.getTypeName(),
         (String) batch.get(JsonKey.ID),
@@ -103,7 +103,7 @@ public class BackgroundJobManager extends BaseActor {
     String userId = (String) batch.get(JsonKey.USER_ID);
     String batchId = (String) batch.get(JsonKey.BATCH_ID);
     String identifier = UserCoursesService.generateUserCourseESId(batchId, userId);
-    insertDataToElastic(
+    insertDataToElastic(actorMessage.getRequestContext(), 
         ProjectUtil.EsIndex.sunbird.getIndexName(),
         ProjectUtil.EsType.usercourses.getTypeName(),
         identifier,
@@ -114,7 +114,7 @@ public class BackgroundJobManager extends BaseActor {
   private void updateCourseBatchInfoToEs(Request actorMessage) {
     Map<String, Object> batch = (Map<String, Object>) actorMessage.getRequest().get(JsonKey.BATCH);
     updateDataToElastic(
-        ProjectUtil.EsIndex.sunbird.getIndexName(),
+            actorMessage.getRequestContext(), ProjectUtil.EsIndex.sunbird.getIndexName(),
         ProjectUtil.EsType.courseBatch.getTypeName(),
         (String) batch.get(JsonKey.ID),
         batch);
@@ -124,32 +124,33 @@ public class BackgroundJobManager extends BaseActor {
   private void insertCourseBatchInfoToEs(Request actorMessage) {
     Map<String, Object> batch = (Map<String, Object>) actorMessage.getRequest().get(JsonKey.BATCH);
     // making call to register tag
-    registertag(
+    registertag(actorMessage.getRequestContext(), 
         (String) batch.getOrDefault(JsonKey.HASH_TAG_ID, batch.get(JsonKey.ID)),
         "{}",
         CourseBatchSchedulerUtil.headerMap);
     // register tag for course
     registertag(
-        (String) batch.getOrDefault(JsonKey.COURSE_ID, batch.get(JsonKey.COURSE_ID)),
+            actorMessage.getRequestContext(), (String) batch.getOrDefault(JsonKey.COURSE_ID, batch.get(JsonKey.COURSE_ID)),
         "{}",
         CourseBatchSchedulerUtil.headerMap);
   }
 
   private boolean updateDataToElastic(
-      String indexName, String typeName, String identifier, Map<String, Object> data) {
-    Future<Boolean> responseF = esService.update(typeName, identifier, data);
+          RequestContext requestContext, String indexName, String typeName, String identifier, Map<String, Object> data) {
+    Future<Boolean> responseF = esService.update(requestContext, typeName, identifier, data);
     boolean response = (boolean) ElasticSearchHelper.getResponseFromFuture(responseF);
     if (response) {
       return true;
     }
-    ProjectLogger.log(
-        "unbale to save the data inside ES with identifier " + identifier, LoggerEnum.INFO.name());
+    logger.info(requestContext, "unbale to save the data inside ES with identifier " + identifier);
     return false;
   }
 
   /**
    * Method to cache the course data .
    *
+   *
+   * @param requestContext
    * @param index String
    * @param type String
    * @param identifier String
@@ -157,63 +158,35 @@ public class BackgroundJobManager extends BaseActor {
    * @return boolean
    */
   private boolean insertDataToElastic(
-      String index, String type, String identifier, Map<String, Object> data) {
-    ProjectLogger.log(
-        "BackgroundJobManager:insertDataToElastic: type = " + type + " identifier = " + identifier,
-        LoggerEnum.INFO.name());
-    /*
-     * if (type.equalsIgnoreCase(ProjectUtil.EsType.user.getTypeName())) { // now
-     * calculate profile completeness and error filed and store it in ES
-     * ProfileCompletenessService service =
-     * ProfileCompletenessFactory.getInstance(); Map<String, Object> responsemap =
-     * service.computeProfile(data); data.putAll(responsemap); }
-     */
-
-    Future<String> responseF = esService.save(type, identifier, data);
+          RequestContext requestContext, String index, String type, String identifier, Map<String, Object> data) {
+    logger.info(requestContext, "BackgroundJobManager:insertDataToElastic: type = " + type + " identifier = " + identifier);
+    Future<String> responseF = esService.save(requestContext, type, identifier, data);
     String response = (String) ElasticSearchHelper.getResponseFromFuture(responseF);
-    ProjectLogger.log(
-        "Getting  ********** ES save response for type , identiofier=="
-            + type
-            + "  "
-            + identifier
-            + "  "
-            + response,
-        LoggerEnum.INFO.name());
+    logger.debug(requestContext, "ES save response for identifier :" + identifier + " : ", response);
     if (!StringUtils.isBlank(response)) {
-      ProjectLogger.log("User Data is saved successfully ES ." + type + "  " + identifier);
       return true;
     }
-    ProjectLogger.log(
-        "unbale to save the data inside ES with identifier " + identifier, LoggerEnum.INFO.name());
+    logger.info(requestContext,"unbale to save the data inside ES with identifier " + identifier);
     return false;
   }
 
   /**
    * This method will make EkStep api call register the tag.
    *
+   *
+   * @param requestContext
    * @param tagId String unique tag id.
    * @param body String requested body
    * @param header Map<String,String>
    * @return String
    */
-  private String registertag(String tagId, String body, Map<String, String> header) {
+  private String registertag(RequestContext requestContext, String tagId, String body, Map<String, String> header) {
     String tagStatus = "";
     try {
-      ProjectLogger.log(
-          "BackgroundJobManager:registertag register tag call started with tagid = " + tagId,
-          LoggerEnum.INFO.name());
       tagStatus = ProjectUtil.registertag(tagId, body, header);
-      ProjectLogger.log(
-          "BackgroundJobManager:registertag  register tag call end with id and status = "
-              + tagId
-              + ", "
-              + tagStatus,
-          LoggerEnum.INFO.name());
     } catch (Exception e) {
-      ProjectLogger.log(
-          "BackgroundJobManager:registertag register tag call failure with error message = "
-              + e.getMessage(),
-          e);
+      logger.error(requestContext, "BackgroundJobManager:registertag register tag call failure with error message = "
+                      + e.getMessage(), e);
     }
     return tagStatus;
   }

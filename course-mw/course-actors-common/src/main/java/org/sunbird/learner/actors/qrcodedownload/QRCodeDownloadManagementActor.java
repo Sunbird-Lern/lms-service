@@ -20,6 +20,7 @@ import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.TelemetryEnvKey;
@@ -51,6 +52,7 @@ public class QRCodeDownloadManagementActor extends BaseActor {
   private static int SEARCH_CONTENTS_LIMIT = Integer.parseInt(StringUtils.isNotBlank(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_QRCODE_COURSES_LIMIT)) ? ProjectUtil.getConfigValue(JsonKey.SUNBIRD_QRCODE_COURSES_LIMIT) : "2000");
 
   private static CassandraOperation cassandraOperation = ServiceFactory.getInstance();
+  private LoggerUtil logger = new LoggerUtil(QRCodeDownloadManagementActor.class);
 
   @Override
   public void onReceive(Request request) throws Throwable {
@@ -76,7 +78,7 @@ public class QRCodeDownloadManagementActor extends BaseActor {
     Map<String, String> headers = (Map<String, String>) request.getRequest().get(JsonKey.HEADER);
     Map<String, Object> requestMap = (Map<String, Object>) request.getRequest().get(JsonKey.FILTER);
     requestMap.put(JsonKey.CONTENT_TYPE, "course");
-    Map<String, Object> searchResponse = searchCourses(requestMap, headers);
+    Map<String, Object> searchResponse = searchCourses(request.getRequestContext(), requestMap, headers);
     List<Map<String, Object>> contents = (List<Map<String, Object>>) searchResponse.get("contents");
     if (CollectionUtils.isEmpty(contents))
       throw new ProjectCommonException(
@@ -93,7 +95,7 @@ public class QRCodeDownloadManagementActor extends BaseActor {
                     content ->
                         ((String) content.get("identifier")) + "<<<" + (String) content.get("name"),
                     content -> (List<String>) content.get("dialcodes"), (a,b) -> b, LinkedHashMap::new));
-    File file = generateCSVFile(dialCodesMap, request.getRequestContext());
+    File file = generateCSVFile(request.getRequestContext(), dialCodesMap);
     Response response = new Response();
     if (null == file)
       throw new ProjectCommonException(
@@ -101,22 +103,24 @@ public class QRCodeDownloadManagementActor extends BaseActor {
           ResponseCode.errorProcessingFile.getErrorMessage(),
           ResponseCode.SERVER_ERROR.getResponseCode());
 
-    response = uploadFile(file);
+    response = uploadFile(request.getRequestContext(), file);
     sender().tell(response, self());
   }
 
   /**
    * Search call to Learning Platform composite search engine
    *
+   *
+   * @param requestContext
    * @param requestMap
    * @param headers
    * @return
    */
   private Map<String, Object> searchCourses(
-      Map<String, Object> requestMap, Map<String, String> headers) {
-    String request = prepareSearchRequest(requestMap);
+          RequestContext requestContext, Map<String, Object> requestMap, Map<String, String> headers) {
+    String request = prepareSearchRequest (requestContext, requestMap);
     Map<String, Object> searchResponse =
-        ContentSearchUtil.searchContentSync(null, request, headers);
+        ContentSearchUtil.searchContentSync(requestContext, null, request, headers);
     return searchResponse;
   }
 
@@ -124,10 +128,12 @@ public class QRCodeDownloadManagementActor extends BaseActor {
    * Request Preparation for search Request for getting courses created by user and dialcodes linked
    * to them.
    *
+   *
+   * @param requestContext
    * @param requestMap
    * @return
    */
-  private String prepareSearchRequest(Map<String, Object> requestMap) {
+  private String prepareSearchRequest(RequestContext requestContext, Map<String, Object> requestMap) {
     Map<String, Object> searchRequestMap =
         new HashMap<String, Object>() {
           {
@@ -159,10 +165,8 @@ public class QRCodeDownloadManagementActor extends BaseActor {
     try {
       requestJson = new ObjectMapper().writeValueAsString(request);
     } catch (JsonProcessingException e) {
-      ProjectLogger.log(
-          "QRCodeDownloadManagement:prepareSearchRequest: Exception occurred with error message = "
-              + e.getMessage(),
-          e);
+      logger.error(requestContext, "QRCodeDownloadManagement:prepareSearchRequest: Exception occurred with error message = "
+                      + e.getMessage(), e);
     }
     return requestJson;
   }
@@ -170,11 +174,11 @@ public class QRCodeDownloadManagementActor extends BaseActor {
   /**
    * Generates the CSV File for the data provided
    *
-   * @param dialCodeMap
    * @param requestContext
+   * @param dialCodeMap
    * @return
    */
-  private File generateCSVFile(Map<String, List<String>> dialCodeMap, RequestContext requestContext) {
+  private File generateCSVFile(RequestContext requestContext, Map<String, List<String>> dialCodeMap) {
     File file = null;
     if (MapUtils.isEmpty(dialCodeMap))
       throw new ProjectCommonException(
@@ -199,15 +203,13 @@ public class QRCodeDownloadManagementActor extends BaseActor {
                               .append(",")
                               .append(dialCode)
                               .append(",")
-                              .append(getQRCodeImageUrl(dialCode, requestContext));
+                              .append(getQRCodeImageUrl(requestContext, dialCode));
                         });
               });
       FileUtils.writeStringToFile(file, csvFile.toString());
     } catch (IOException e) {
-      ProjectLogger.log(
-          "QRCodeDownloadManagement:createCSVFile: Exception occurred with error message = "
-              + e.getMessage(),
-          e);
+      logger.error(requestContext, "QRCodeDownloadManagement:createCSVFile: Exception occurred with error message = "
+                      + e.getMessage(), e);
     }
     return file;
   }
@@ -215,19 +217,19 @@ public class QRCodeDownloadManagementActor extends BaseActor {
   /**
    * Fetch the QR code Url for the given dialcodes
    *
-   * @param dialCode
    * @param requestContext
+   * @param dialCode
    * @return
    */
-  private String getQRCodeImageUrl(String dialCode, RequestContext requestContext) {
+  private String getQRCodeImageUrl(RequestContext requestContext, String dialCode) {
     // TODO: Dialcode as primary key in cassandra
     Response response =
         cassandraOperation.getRecordsByProperty(
-            courseDialCodeInfo.getKeySpace(),
+                requestContext, courseDialCodeInfo.getKeySpace(),
             courseDialCodeInfo.getTableName(),
             JsonKey.FILE_NAME,
             "0_" + dialCode,
-            Arrays.asList("url"), requestContext);
+            Arrays.asList("url"));
     if (null != response && response.get(JsonKey.RESPONSE) != null) {
       Object obj = response.get(JsonKey.RESPONSE);
       if (null != obj && obj instanceof List) {
@@ -243,10 +245,12 @@ public class QRCodeDownloadManagementActor extends BaseActor {
   /**
    * Uploading the generated csv to aws
    *
+   *
+   * @param requestContext
    * @param file
    * @return
    */
-  private Response uploadFile(File file) {
+  private Response uploadFile(RequestContext requestContext, File file) {
     String objectKey =
         getConfigValue(CLOUD_FOLDER_CONTENT)
             + separator
@@ -273,10 +277,8 @@ public class QRCodeDownloadManagementActor extends BaseActor {
       }
       return response;
     } catch (Exception e) {
-      ProjectLogger.log(
-          "QRCodeDownloadManagement:uploadFile: Exception occurred with error message = "
-              + e.getMessage(),
-          e);
+      logger.error(requestContext, "QRCodeDownloadManagement:uploadFile: Exception occurred with error message = "
+                      + e.getMessage(), e);
       throw e;
     } finally {
       FileUtils.deleteQuietly(file);

@@ -14,6 +14,7 @@ import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.PropertiesCache;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
 import scala.concurrent.Future;
@@ -25,33 +26,39 @@ public interface ElasticSearchService {
    * This method will put a new data entry inside Elastic search. identifier value becomes _id
    * inside ES, so every time provide a unique value while saving it.
    *
+   *
+   * @param requestContext
    * @param index String ES index name
    * @param identifier ES column identifier as an String
    * @param data Map<String,Object>
    * @return String identifier for created data
    */
-  public Future<String> save(String index, String identifier, Map<String, Object> data);
+  public Future<String> save(RequestContext requestContext, String index, String identifier, Map<String, Object> data);
 
   /**
    * This method will update data based on identifier.take the data based on identifier and merge
    * with incoming data then update it.
    *
+   *
+   * @param requestContext
    * @param index String
    * @param identifier String
    * @param data Map<String,Object>
    * @return boolean
    */
-  public Future<Boolean> update(String index, String identifier, Map<String, Object> data);
+  public Future<Boolean> update(RequestContext requestContext, String index, String identifier, Map<String, Object> data);
 
   /**
    * This method will provide data form ES based on incoming identifier. we can get data by passing
    * index and identifier values , or all the three index, identifier and type
    *
+   *
+   * @param requestContext
    * @param index String
    * @param identifier String
    * @return Map<String,Object> or null
    */
-  public Future<Map<String, Object>> getDataByIdentifier(String index, String identifier);
+  public Future<Map<String, Object>> getDataByIdentifier(RequestContext requestContext, String index, String identifier);
 
   /**
    * This method will remove data from ES based on identifier.
@@ -81,22 +88,26 @@ public interface ElasticSearchService {
   /**
    * This method will do the bulk data insertion.
    *
+   *
+   * @param requestContext
    * @param index String index name
    * @param dataList List<Map<String, Object>>
    * @return boolean
    */
-  public Future<Boolean> bulkInsert(String index, List<Map<String, Object>> dataList);
+  public Future<Boolean> bulkInsert(RequestContext requestContext, String index, List<Map<String, Object>> dataList);
 
   /**
    * This method will upsert data based on identifier.take the data based on identifier and merge
    * with incoming data then update it or if not present already will create it.
    *
+   *
+   * @param requestContext
    * @param index String
    * @param identifier String
    * @param data Map<String,Object>
    * @return boolean
    */
-  public Future<Boolean> upsert(String index, String identifier, Map<String, Object> data);
+  public Future<Boolean> upsert(RequestContext requestContext, String index, String identifier, Map<String, Object> data);
 
   /**
    * @param ids List of ids of document

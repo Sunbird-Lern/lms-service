@@ -3,7 +3,7 @@ package org.sunbird.learner.util;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.models.util.BadgingJsonKey;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.request.Request;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.helper.CassandraConnectionManager;
@@ -35,6 +35,7 @@ public final class Util {
   public static final String COURSE_KEY_SPACE_NAME = "sunbird_courses";
   public static final String DIALCODE_KEY_SPACE_NAME = "dialcodes";
   private static Properties prop = new Properties();
+  private static LoggerUtil logger = new LoggerUtil(Util.class);
 
   static {
     loadPropertiesFile();
@@ -79,7 +80,7 @@ public final class Util {
    */
   public static void checkCassandraDbConnections() {
     if (readConfigFromEnv()) {
-      ProjectLogger.log("db connection is created from System env variable.");
+      logger.debug(null, "db connection is created from System env variable.");
       return;
     }
     CassandraConnectionManager cassandraConnectionManager =
@@ -98,13 +99,13 @@ public final class Util {
       // load a properties file
       prop.load(input);
     } catch (IOException ex) {
-      ProjectLogger.log(ex.getMessage(), ex);
+      logger.error(null, ex.getMessage(), ex);
     } finally {
       if (input != null) {
         try {
           input.close();
         } catch (IOException e) {
-          ProjectLogger.log(e.getMessage(), e);
+          logger.error(null, e.getMessage(), e);
         }
       }
     }
@@ -122,7 +123,7 @@ public final class Util {
             CassandraConnectionMngrFactory.getInstance();
 
     if (StringUtils.isBlank(ips) || StringUtils.isBlank(envPort)) {
-      ProjectLogger.log("Configuration value is not coming form System variable.");
+      logger.debug(null, "Configuration value is not coming form System variable.");
       return false;
     }
     String[] ipList = ips.split(",");

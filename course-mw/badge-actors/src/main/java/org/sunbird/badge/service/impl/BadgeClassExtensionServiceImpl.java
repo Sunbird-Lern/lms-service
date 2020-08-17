@@ -1,10 +1,5 @@
 package org.sunbird.badge.service.impl;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 import org.sunbird.badge.model.BadgeClassExtension;
 import org.sunbird.badge.service.BadgeClassExtensionService;
@@ -12,16 +7,22 @@ import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.util.Util;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 public class BadgeClassExtensionServiceImpl implements BadgeClassExtensionService {
   private CassandraOperation cassandraOperation;
   public static final String BADGE_CLASS_EXT_TABLE_NAME = "badge_class_extension";
+  private LoggerUtil logger = new LoggerUtil(BadgeClassExtensionServiceImpl.class);
 
   public BadgeClassExtensionServiceImpl() {
     this.cassandraOperation = ServiceFactory.getInstance();
@@ -33,12 +34,12 @@ public class BadgeClassExtensionServiceImpl implements BadgeClassExtensionServic
 
   @Override
   public List<BadgeClassExtension> search(
-          List<String> issuerList,
+          RequestContext requestContext, List<String> issuerList,
           List<String> badgeList,
           String rootOrgId,
           String type,
           String subtype,
-          List<String> roles, RequestContext requestContext) {
+          List<String> roles) {
     Map<String, Object> propertyMap = new HashMap<>();
 
     if (rootOrgId != null) {
@@ -55,7 +56,7 @@ public class BadgeClassExtensionServiceImpl implements BadgeClassExtensionServic
 
     Response response =
         cassandraOperation.getRecordsByProperties(
-            Util.KEY_SPACE_NAME, BADGE_CLASS_EXT_TABLE_NAME, propertyMap, requestContext);
+                requestContext, Util.KEY_SPACE_NAME, BADGE_CLASS_EXT_TABLE_NAME, propertyMap);
     List<Map<String, Object>> badgeClassExtList =
         (List<Map<String, Object>>) response.get(JsonKey.RESPONSE);
 
@@ -81,14 +82,12 @@ public class BadgeClassExtensionServiceImpl implements BadgeClassExtensionServic
   @Override
   public BadgeClassExtension get(String badgeId, RequestContext requestContext) throws ProjectCommonException {
     Response response =
-        cassandraOperation.getRecordByIdentifier(Util.KEY_SPACE_NAME, BADGE_CLASS_EXT_TABLE_NAME, badgeId, null, requestContext);
+        cassandraOperation.getRecordByIdentifier(requestContext, Util.KEY_SPACE_NAME, BADGE_CLASS_EXT_TABLE_NAME, badgeId, null);
     List<Map<String, Object>> badgeList =
         (List<Map<String, Object>>) response.get(JsonKey.RESPONSE);
 
     if ((badgeList == null) || badgeList.isEmpty()) {
-      ProjectLogger.log(
-          "BadgeClassExtensionServiceImpl:get: Badge not found " + badgeId,
-          LoggerEnum.ERROR.name());
+      logger.error(requestContext, "BadgeClassExtensionServiceImpl:get: Badge not found " + badgeId, null);
       throw new ProjectCommonException(
           ResponseCode.resourceNotFound.getErrorCode(),
           ResponseCode.resourceNotFound.getErrorMessage(),

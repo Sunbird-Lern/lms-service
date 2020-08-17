@@ -27,6 +27,7 @@ import play.mvc.Action;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Results;
+import util.Attrs;
 import util.RequestInterceptor;
 
 public class OnRequestHandler implements ActionCreator {
@@ -53,8 +54,6 @@ public class OnRequestHandler implements ActionCreator {
         CompletionStage<Result> result = checkForServiceHealth(request);
         if (result != null) return result;
         // Setting Actual userId (requestedBy) and managed userId (requestedFor) placeholders in flash memory to null before processing.
-        request.flash().put(JsonKey.USER_ID, null);
-        request.flash().put(SunbirdKey.REQUESTED_FOR, null);
         // Unauthorized, Anonymous, UserID
         String message = RequestInterceptor.verifyRequestData(request);
         Optional<String> forAuth = request.header(HeaderParam.X_Authenticated_For.getName());
@@ -62,18 +61,18 @@ public class OnRequestHandler implements ActionCreator {
         if (StringUtils.isNotBlank(message) && forAuth.isPresent() && StringUtils.isNotBlank(forAuth.orElse(""))) {
           childId = ManagedTokenValidator.verify(forAuth.get(), message);
           if (StringUtils.isNotBlank(childId) && !USER_UNAUTH_STATES.contains(childId)) {
-            request.flash().put(SunbirdKey.REQUESTED_FOR, childId);
+              request = request.addAttr(Attrs.REQUESTED_FOR, childId);
           }
           
         }
         // call method to set all the required params for the telemetry event(log)...
-        intializeRequestInfo(request, message, messageId);
+        request = intializeRequestInfo(request, message, messageId);
         if ((!USER_UNAUTH_STATES.contains(message)) && (childId==null || !USER_UNAUTH_STATES.contains(childId))) {
-          request.flash().put(JsonKey.USER_ID, message);
-          request.flash().put(JsonKey.IS_AUTH_REQ, "false");
+            request = request.addAttr(Attrs.USER_ID, message);
+            request = request.addAttr(Attrs.IS_AUTH_REQ, "false");
           for (String uri : RequestInterceptor.restrictedUriList) {
             if (request.path().contains(uri)) {
-              request.flash().put(JsonKey.IS_AUTH_REQ, "true");
+                request = request.addAttr(Attrs.IS_AUTH_REQ, "true");
               break;
             }
           }
@@ -106,7 +105,7 @@ public class OnRequestHandler implements ActionCreator {
     return CompletableFuture.completedFuture(Results.status(responseCode, Json.toJson(resp)));
   }
 
-  private void intializeRequestInfo(Http.Request request, String userId, String requestId) { 
+  private Http.Request intializeRequestInfo(Http.Request request, String userId, String requestId) { 
       try {
           String actionMethod = request.method();
           String url = request.uri();
@@ -189,11 +188,12 @@ public class OnRequestHandler implements ActionCreator {
           if (StringUtils.isBlank(requestId)) {
               requestId = JsonKey.DEFAULT_CONSUMER_ID;
           }
-          request.flash().put(JsonKey.REQUEST_ID, requestId);
-          request.flash().put(JsonKey.CONTEXT, mapper.writeValueAsString(map));
+          request = request.addAttr(Attrs.REQUEST_ID, requestId);
+          request = request.addAttr(Attrs.CONTEXT, mapper.writeValueAsString(map));
       } catch (Exception e) {
           ProjectCommonException.throwServerErrorException(ResponseCode.SERVER_ERROR, e.getMessage());
       }
+      return request;
   }
 
   private String getEnv(Http.Request request) {

@@ -8,12 +8,12 @@ import org.sunbird.common.request.RequestContext;
 public interface BadgeClassExtensionService {
 
   List<BadgeClassExtension> search(
-          List<String> issuerList,
+          RequestContext requestContext, List<String> issuerList,
           List<String> badgeList,
           String rootOrgId,
           String type,
           String subtype,
-          List<String> roles, RequestContext requestContext);
+          List<String> roles);
 
   BadgeClassExtension get(String badgeId, RequestContext requestContext) throws ProjectCommonException;
 }

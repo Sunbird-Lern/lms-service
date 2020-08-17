@@ -51,7 +51,7 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
     ServiceFactory.class,
     EsClientFactory.class,
     UserOrgServiceImpl.class,
-    ContentUtil.class,  InstructionEventGenerator.class, KafkaClient.class, CourseEnrollmentActor.class
+    ContentUtil.class,  InstructionEventGenerator.class, KafkaClient.class
   })
   public void createBatchInviteSuccess() throws Exception {
     group =
@@ -68,13 +68,13 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
             .get();
     when(group
             .getESMockerService()
-            .save(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
+            .save(Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
         .thenReturn(Futures.successful("randomESID"));
     when(ContentUtil.searchContent(Mockito.anyString(), Mockito.anyMap()))
         .thenReturn(CustomObjectBuilder.getRandomCourse().get());
     when(group
             .getCassandraMockerService()
-            .insertRecord(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
+            .insertRecord(Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
         .thenReturn(
             new CustomObjectBuilder.CustomObjectWrapper<Boolean>(true).asCassandraResponse());
     when(group.getUserOrgMockerService().getOrganisationById(Mockito.anyString()))
@@ -112,7 +112,7 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
                     .get(0);
               }
             });
-    PowerMockito.mockStatic(CourseEnrollmentActor.class);
+    PowerMockito.mockStatic(ContentUtil.class);
     mockCourseEnrollmentActor();
 
     Request req = new Request();
@@ -127,7 +127,7 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
   @PrepareForTest({EsClientFactory.class})
   public void getBatchSuccess() {
     group = MockerBuilder.getFreshMockerGroup().withESMock(new ESMocker());
-    when(group.getESMockerService().getDataByIdentifier(Mockito.anyString(), Mockito.anyString()))
+    when(group.getESMockerService().getDataByIdentifier(Mockito.any(), Mockito.anyString(), Mockito.anyString()))
         .thenReturn(CustomObjectBuilder.getRandomCourseBatch().asESIdentifierResult());
     Request req = new Request();
     req.setOperation("getBatch");
@@ -141,7 +141,7 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
       put("contentType", "Course");
       put("status", "Live");
     }};
-    when(CourseEnrollmentActor.getCourseObject(
+    when(ContentUtil.getContent(
             Mockito.anyString())).thenReturn(courseMap);
   }
 }

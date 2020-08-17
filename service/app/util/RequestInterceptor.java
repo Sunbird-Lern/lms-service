@@ -67,7 +67,7 @@ public class RequestInterceptor {
         clientId =
             AuthenticationHelper.verifyClientAccessToken(authClientId.get(), authClientToken.get());
         if (!JsonKey.UNAUTHORIZED.equals(clientId)) {
-          request.flash().put(JsonKey.AUTH_WITH_MASTER_KEY, Boolean.toString(true));
+          request = request.addAttr(Attrs.AUTH_WITH_MASTER_KEY, Boolean.toString(true));
         }
       }
       return clientId;

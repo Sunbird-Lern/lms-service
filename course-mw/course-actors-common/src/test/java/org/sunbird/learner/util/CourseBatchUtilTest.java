@@ -1,14 +1,11 @@
 package org.sunbird.learner.util;
 
-import static org.powermock.api.mockito.PowerMockito.when;
-
 import akka.dispatch.Futures;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
 import com.mashape.unirest.request.body.RequestBodyEntity;
-import java.util.Map;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,6 +25,10 @@ import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.responsecode.ResponseCode;
 
+import java.util.Map;
+
+import static org.powermock.api.mockito.PowerMockito.when;
+
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({Unirest.class})
 @PowerMockIgnore("javax.management.*")
@@ -45,7 +46,7 @@ public class CourseBatchUtilTest {
     mockResponseForTemplate(
         200,
         "{\"result\":{\"certificate\":{\"template\":{\"identifier\":\"randomTemplateId\",\"name\":\"randomTemplate\"}}}}");
-    Map<String, Object> certificate = CourseBatchUtil.validateTemplate("randomTemplateId");
+    Map<String, Object> certificate = CourseBatchUtil.validateTemplate(null, "randomTemplateId");
     Assert.assertNotNull(certificate);
     Assert.assertTrue(certificate.containsKey("name"));
     Assert.assertEquals("randomTemplate", certificate.get("name"));
@@ -55,7 +56,7 @@ public class CourseBatchUtilTest {
   public void validateTemplateFailureTest() throws UnirestException {
     mockResponseForTemplate(404, null);
     try {
-      Map<String, Object> certificate = CourseBatchUtil.validateTemplate("randomTemplateId");
+      Map<String, Object> certificate = CourseBatchUtil.validateTemplate(null, "randomTemplateId");
     } catch (ProjectCommonException ex) {
       Assert.assertNotNull(ex);
       Assert.assertEquals(ResponseCode.RESOURCE_NOT_FOUND.getErrorCode(), ex.getCode());
@@ -66,7 +67,7 @@ public class CourseBatchUtilTest {
   public void validateTemplateFailureBodyTest() throws UnirestException {
     mockResponseForTemplate(200, null);
     try {
-      Map<String, Object> certificate = CourseBatchUtil.validateTemplate("randomTemplateId");
+      Map<String, Object> certificate = CourseBatchUtil.validateTemplate(null, "randomTemplateId");
     } catch (ProjectCommonException ex) {
       Assert.assertNotNull(ex);
       Assert.assertEquals(ResponseCode.SERVER_ERROR.getErrorCode(), ex.getCode());
@@ -79,7 +80,7 @@ public class CourseBatchUtilTest {
         200,
         "{\"result\":{\"certificate\":{\"template\":{\"identifier\":\"randomTemplateId\",\"name\":\"randomTemplate\"}}}}");
     try {
-      Map<String, Object> certificate = CourseBatchUtil.validateTemplate("templateId");
+      Map<String, Object> certificate = CourseBatchUtil.validateTemplate(null, "templateId");
     } catch (ProjectCommonException ex) {
       Assert.assertNotNull(ex);
       Assert.assertEquals(ResponseCode.CLIENT_ERROR.getErrorCode(), ex.getCode());
@@ -92,7 +93,7 @@ public class CourseBatchUtilTest {
         200,
         "{\"result\":{\"certificate\":{\"identifier\":\"randomTemplateId\",\"name\":\"randomTemplate\"}}}");
     try {
-      Map<String, Object> certificate = CourseBatchUtil.validateTemplate("randomTemplateId");
+      Map<String, Object> certificate = CourseBatchUtil.validateTemplate(null, "randomTemplateId");
     } catch (ProjectCommonException ex) {
       Assert.assertNotNull(ex);
       Assert.assertEquals(ResponseCode.CLIENT_ERROR.getErrorCode(), ex.getCode());
@@ -105,7 +106,7 @@ public class CourseBatchUtilTest {
         200,
         "{\"result\":{\"template\":{\"identifier\":\"randomTemplateId\",\"name\":\"randomTemplate\"}}}");
     try {
-      Map<String, Object> certificate = CourseBatchUtil.validateTemplate("randomTemplateId");
+      Map<String, Object> certificate = CourseBatchUtil.validateTemplate(null, "randomTemplateId");
     } catch (ProjectCommonException ex) {
       Assert.assertNotNull(ex);
       Assert.assertEquals(ResponseCode.CLIENT_ERROR.getErrorCode(), ex.getCode());
@@ -118,11 +119,11 @@ public class CourseBatchUtilTest {
     group.withESMock(new ESMocker());
     CustomObjectWrapper<Map<String, Object>> courseBatchIn =
         CustomObjectBuilder.getRandomCourseBatch();
-    when(group.getESMockerService().getDataByIdentifier(Mockito.anyString(), Mockito.anyString()))
+    when(group.getESMockerService().getDataByIdentifier(null, Mockito.anyString(), Mockito.anyString()))
         .thenReturn(courseBatchIn.asESIdentifierResult());
     Map<String, Object> courseBatchOut =
         CourseBatchUtil.validateCourseBatch(
-            (String) courseBatchIn.get().get(JsonKey.COURSE_ID),
+                null, (String) courseBatchIn.get().get(JsonKey.COURSE_ID),
             (String) courseBatchIn.get().get(JsonKey.BATCH_ID));
     Assert.assertNotNull(courseBatchOut);
     Assert.assertEquals(courseBatchIn.get(), courseBatchOut);
@@ -132,11 +133,11 @@ public class CourseBatchUtilTest {
   @PrepareForTest({EsClientFactory.class, ElasticSearchHelper.class, Unirest.class})
   public void validateCourseBatchFailureTest() {
     group.withESMock(new ESMocker());
-    when(group.getESMockerService().getDataByIdentifier(Mockito.anyString(), Mockito.anyString()))
+    when(group.getESMockerService().getDataByIdentifier(null, Mockito.anyString(), Mockito.anyString()))
         .thenReturn(CustomObjectBuilder.getEmptyMap().asESIdentifierResult());
     try {
       Map<String, Object> courseBatchOut =
-          CourseBatchUtil.validateCourseBatch("courseId", "batchId");
+          CourseBatchUtil.validateCourseBatch(null, "courseId", "batchId");
     } catch (ProjectCommonException ex) {
       Assert.assertNotNull(ex);
       Assert.assertEquals(ResponseCode.CLIENT_ERROR.getErrorCode(), ex.getCode());
@@ -149,12 +150,12 @@ public class CourseBatchUtilTest {
     group.withESMock(new ESMocker());
     CustomObjectWrapper<Map<String, Object>> courseBatchIn =
         CustomObjectBuilder.getRandomCourseBatch();
-    when(group.getESMockerService().getDataByIdentifier(Mockito.anyString(), Mockito.anyString()))
+    when(group.getESMockerService().getDataByIdentifier(null, Mockito.anyString(), Mockito.anyString()))
         .thenReturn(courseBatchIn.asESIdentifierResult());
     try {
       Map<String, Object> courseBatchOut =
           CourseBatchUtil.validateCourseBatch(
-              "anotherCourseId", (String) courseBatchIn.get().get(JsonKey.BATCH_ID));
+                  null, "anotherCourseId", (String) courseBatchIn.get().get(JsonKey.BATCH_ID));
     } catch (ProjectCommonException ex) {
       Assert.assertNotNull(ex);
       Assert.assertEquals(ResponseCode.CLIENT_ERROR.getErrorCode(), ex.getCode());
@@ -167,10 +168,10 @@ public class CourseBatchUtilTest {
     group.withESMock(new ESMocker());
     when(group
             .getESMockerService()
-            .save(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
+            .save(null, Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
         .thenReturn(Futures.successful("randomBatchId"));
     CourseBatchUtil.syncCourseBatchForeground(
-        "randomBatchId", CustomObjectBuilder.getRandomCourseBatch().get());
+            null, "randomBatchId", CustomObjectBuilder.getRandomCourseBatch().get());
     PowerMockito.verifyStatic();
     ElasticSearchHelper.getResponseFromFuture(Mockito.any());
   }

@@ -1,38 +1,44 @@
 package org.sunbird.userorg;
 
-import static org.apache.http.HttpHeaders.AUTHORIZATION;
-import static org.sunbird.common.exception.ProjectCommonException.throwServerErrorException;
-import static org.sunbird.common.models.util.JsonKey.*;
-import static org.sunbird.common.models.util.LoggerEnum.ERROR;
-import static org.sunbird.common.models.util.LoggerEnum.INFO;
-import static org.sunbird.common.models.util.ProjectLogger.log;
-import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
-import static org.sunbird.common.responsecode.ResponseCode.errorProcessingRequest;
-import static org.sunbird.learner.constants.CourseJsonKey.SUNBIRD_SEND_EMAIL_NOTIFICATION_API;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.HttpMethod;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.common.util.KeycloakRequiredActionLinkUtil;
-import org.sunbird.services.sso.SSOManager;
-import org.sunbird.services.sso.SSOServiceFactory;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.apache.http.HttpHeaders.AUTHORIZATION;
+import static org.sunbird.common.exception.ProjectCommonException.throwServerErrorException;
+import static org.sunbird.common.models.util.JsonKey.BEARER;
+import static org.sunbird.common.models.util.JsonKey.CONTENT;
+import static org.sunbird.common.models.util.JsonKey.FILTERS;
+import static org.sunbird.common.models.util.JsonKey.ID;
+import static org.sunbird.common.models.util.JsonKey.RESPONSE;
+import static org.sunbird.common.models.util.JsonKey.SUNBIRD_AUTHORIZATION;
+import static org.sunbird.common.models.util.JsonKey.SUNBIRD_GET_MULTIPLE_USER_API;
+import static org.sunbird.common.models.util.JsonKey.SUNBIRD_GET_ORGANISATION_API;
+import static org.sunbird.common.models.util.JsonKey.SUNBIRD_GET_SINGLE_USER_API;
+import static org.sunbird.common.models.util.JsonKey.SUNBIRD_USER_ORG_API_BASE_URL;
+import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
+import static org.sunbird.common.responsecode.ResponseCode.errorProcessingRequest;
+import static org.sunbird.learner.constants.CourseJsonKey.SUNBIRD_SEND_EMAIL_NOTIFICATION_API;
 
 public class UserOrgServiceImpl implements UserOrgService {
 
   private ObjectMapper mapper = new ObjectMapper();
   private static final String FORWARD_SLASH = "/";
   private static final String X_AUTHENTICATED_USER_TOKEN = "x-authenticated-user-token";
+  private LoggerUtil logger = new LoggerUtil(UserOrgServiceImpl.class);
 
   private static UserOrgService instance = null;
 
@@ -61,25 +67,23 @@ public class UserOrgServiceImpl implements UserOrgService {
     String requestUrl = getConfigValue(SUNBIRD_USER_ORG_API_BASE_URL) + requestAPI;
     HttpResponse<String> httpResponse = null;
     String responseBody = null;
-    log(
+    logger.info( null,
         "UserOrgServiceImpl:getResponse:Sending "
             + requestType
             + " Request, Request URL: "
-            + requestUrl,
-        INFO.name());
+            + requestUrl);
     try {
       String reqBody = mapper.writeValueAsString(requestMap);
-      log("UserOrgServiceImpl:getResponse:Sending Request Body=" + reqBody, INFO.name());
+      logger.info(null, "UserOrgServiceImpl:getResponse:Sending Request Body=" + reqBody);
       if (HttpMethod.POST.equals(requestType)) {
         httpResponse = Unirest.post(requestUrl).headers(headers).body(reqBody).asString();
       }
       if (HttpMethod.GET.equals(requestType)) {
         httpResponse = Unirest.get(requestUrl).headers(headers).asString();
       }
-      log(
+      logger.info(null, 
           "UserOrgServiceImpl:getResponse Response Status : "
-              + (httpResponse != null ? httpResponse.getStatus() : null),
-          ERROR.name());
+              + (httpResponse != null ? httpResponse.getStatus() : null));
       if (httpResponse == null || StringUtils.isBlank(httpResponse.getBody())) {
         throwServerErrorException(
             ResponseCode.SERVER_ERROR, errorProcessingRequest.getErrorMessage());
@@ -94,7 +98,7 @@ public class UserOrgServiceImpl implements UserOrgService {
             response.getResponseCode().getResponseCode());
       }
     } catch (ProjectCommonException e) {
-      log(
+      logger.error(null, 
           "UserOrgServiceImpl:getResponse ProjectCommonException:"
               + requestType
               + "Request , Status : "
@@ -102,11 +106,10 @@ public class UserOrgServiceImpl implements UserOrgService {
               + " "
               + e.getMessage()
               + ",Response Body :"
-              + responseBody,
-          ERROR.name());
+              + responseBody,e);
       throw e;
     } catch (Exception e) {
-      log(
+      logger.error(null,
           "UserOrgServiceImpl:getResponse:Exception occurred with error message = "
               + e.getMessage()
               + ", Response Body : "
@@ -186,9 +189,8 @@ public class UserOrgServiceImpl implements UserOrgService {
         getUserOrgResponse(
             getConfigValue(SUNBIRD_SEND_EMAIL_NOTIFICATION_API), HttpMethod.POST, request, headers);
     if (response != null) {
-      log(
-          "UserOrgServiceImpl:sendEmailNotification Response" + response.get(RESPONSE),
-          INFO.name());
+      logger.info(null,
+          "UserOrgServiceImpl:sendEmailNotification Response" + response.get(RESPONSE));
     }
   }
 
@@ -219,7 +221,7 @@ public class UserOrgServiceImpl implements UserOrgService {
     try {
       accessToken = KeycloakRequiredActionLinkUtil.getAdminAccessToken();
     } catch (Exception e) {
-      ProjectLogger.log(e.getMessage(), e);
+      logger.error(null, e.getMessage(), e);
     }
     return accessToken;
   }

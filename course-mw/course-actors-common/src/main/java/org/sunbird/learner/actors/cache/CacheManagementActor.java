@@ -7,12 +7,14 @@ import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerEnum;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 
 public class CacheManagementActor extends BaseActor {
   private Cache cache = CacheFactory.getInstance();
+  private LoggerUtil logger =  new LoggerUtil(CacheManagementActor.class);
 
   @Override
   public void onReceive(Request request) throws Throwable {
@@ -27,8 +29,7 @@ public class CacheManagementActor extends BaseActor {
 
   private void clearCache(Request request) {
     String mapName = (String) request.getContext().get(JsonKey.MAP_NAME);
-    ProjectLogger.log("CacheManagementActor:clearCache: mapName = " + mapName, LoggerEnum.INFO);
-
+    logger.info(request.getRequestContext(), "CacheManagementActor:clearCache: mapName = " + mapName);
     try {
       if (!JsonKey.ALL.equals(mapName)) {
         cache.clear(mapName);
@@ -41,12 +42,8 @@ public class CacheManagementActor extends BaseActor {
 
       sender().tell(response, self());
     } catch (Exception e) {
-      ProjectLogger.log(
-          "CacheManagementActor:clearCache: Error occurred for mapName = "
-              + mapName
-              + " error = "
-              + e.getMessage(),
-          LoggerEnum.ERROR);
+      logger.error(request.getRequestContext(), "CacheManagementActor:clearCache: Error occurred for mapName = "
+              + mapName + " error = " + e.getMessage(), e);
       sender().tell(e, self());
     }
   }

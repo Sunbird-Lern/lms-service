@@ -47,7 +47,7 @@ public class GroupDaoImplTest {
         groupActivityMap.put("user_id", "user1");
         response.put(JsonKey.RESPONSE, Arrays.asList(groupActivityMap));
         when(cassandraOperation.getRecordByIdentifier(
-                Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList(), Mockito.any())).thenReturn(response);
+                Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList())).thenReturn(response);
         Response readResponse = groupDao.read("do_1234", "course", Arrays.asList("user1"), null);
         Assert.assertNotNull(readResponse);
     }

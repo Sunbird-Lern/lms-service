@@ -17,20 +17,9 @@ import java.util.Map;
 public class LoggerUtil {
 
     private Logger logger;
-    private static Map<String, LoggerUtil> loggers = new HashMap<>();
     
-    private LoggerUtil(Class c) {
+    public  LoggerUtil(Class c) {
         logger = LoggerFactory.getLogger(c);
-    }
-    
-    public static LoggerUtil getInstance(Class c) {
-        if(null != loggers.get(c.getName())) {
-            return loggers.get(c.getName());
-        } else {
-            LoggerUtil loggerUtil = new LoggerUtil(c);
-            loggers.put(c.getName(), loggerUtil);
-            return loggerUtil;
-        }
     }
     
     public void info(RequestContext requestContext, String message, Object data) {
@@ -80,7 +69,11 @@ public class LoggerUtil {
         }
     }
 
+    public void debug(RequestContext requestContext, String message) {debug(requestContext, message, null);}
+
     private static boolean isDebugEnabled(RequestContext requestContext) {
+        if(null != requestContext && StringUtils.equalsIgnoreCase("true", requestContext.getDebugEnabled())) {
+        }
         return (null != requestContext && StringUtils.equalsIgnoreCase("true", requestContext.getDebugEnabled()));
     }
 

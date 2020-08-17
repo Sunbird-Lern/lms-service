@@ -18,6 +18,7 @@
         <module>sunbird-platform-core</module>
         <module>sunbird-notification</module>
         <module>sunbird-cache-utils</module>
+        <module>cache-utils</module>
     </modules>
 
 

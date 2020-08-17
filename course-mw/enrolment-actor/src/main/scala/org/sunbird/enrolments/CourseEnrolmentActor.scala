@@ -1,6 +1,7 @@
 package org.sunbird.enrolments
 
 import java.sql.Timestamp
+import java.text.MessageFormat
 import java.time.format.DateTimeFormatter
 import java.time.{LocalDate, LocalDateTime}
 import java.util
@@ -11,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import javax.inject.{Inject, Named}
 import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang3.StringUtils
+import org.slf4j.{Logger, LoggerFactory}
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
 import org.sunbird.common.models.util.ProjectUtil.EnrolmentType
@@ -19,15 +21,18 @@ import org.sunbird.common.request.{Request, RequestContext}
 import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.learner.actors.coursebatch.dao.impl.{CourseBatchDaoImpl, UserCoursesDaoImpl}
 import org.sunbird.learner.actors.coursebatch.dao.{CourseBatchDao, UserCoursesDao}
-import org.sunbird.learner.util.{ContentSearchUtil, Util}
+import org.sunbird.learner.actors.group.dao.impl.GroupDaoImpl
+import org.sunbird.learner.util.{ContentSearchUtil, JsonUtil, Util}
 import org.sunbird.models.course.batch.CourseBatch
 import org.sunbird.models.user.courses.UserCourses
+import org.sunbird.cache.util.RedisCacheUtil
 import org.sunbird.telemetry.util.TelemetryUtil
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 
-class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") courseBatchNotificationActorRef: ActorRef) extends BaseEnrolmentActor {
+class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") courseBatchNotificationActorRef: ActorRef
+                                    )(implicit val  cacheUtil: RedisCacheUtil ) extends BaseEnrolmentActor {
 
     /*
     The below variables are kept as var on testcase purpose.
@@ -35,7 +40,27 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
      */
     var courseBatchDao: CourseBatchDao = new CourseBatchDaoImpl()
     var userCoursesDao: UserCoursesDao = new UserCoursesDaoImpl()
-    
+    var groupDao: GroupDaoImpl = new GroupDaoImpl()
+    val isCacheEnabled = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("user_enrolments_response_cache_enable")))
+        (ProjectUtil.getConfigValue("user_enrolments_response_cache_enable")).toBoolean else true
+    val ttl: Int = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("user_enrolments_response_cache_ttl")))
+        (ProjectUtil.getConfigValue("user_enrolments_response_cache_ttl")).toInt else 60
+    private val logger: Logger = LoggerFactory.getLogger(classOf[CourseEnrolmentActor])
+
+
+    override def preStart { println("Starting CourseEnrolmentActor") }
+
+    override def postStop {
+        cacheUtil.closePool()
+        println("CourseEnrolmentActor stopped successfully")
+    }
+
+    override def preRestart(reason: Throwable, message: Option[Any]) {
+        println(s"Restarting CourseEnrolmentActor: $message")
+        reason.printStackTrace()
+        super.preRestart(reason, message)
+    }
+
     override def onReceive(request: Request): Unit = {
         Util.initializeContext(request, TelemetryEnvKey.BATCH)
         request.getOperation match {
@@ -78,15 +103,9 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
 
     def list(request: Request): Unit = {
         val userId = request.get(JsonKey.USER_ID).asInstanceOf[String]
-        val activeEnrolments:java.util.List[java.util.Map[String, AnyRef]] = getActiveEnrollments(userId, request.getRequestContext)
-        val enrolments: java.util.List[java.util.Map[String, AnyRef]] = {
-            if(CollectionUtils.isNotEmpty(activeEnrolments)) {
-                val enrolmentList : java.util.List[java.util.Map[String, AnyRef]] = addCourseDetails(activeEnrolments, request)
-                addBatchDetails(enrolmentList, request)
-            } else new java.util.ArrayList[java.util.Map[String, AnyRef]]()
-        }
-        val response: Response = new Response()
-        response.put(JsonKey.COURSES, enrolments)
+        logger.info("CourseEnrolmentActor :: list :: UserId = " + userId)
+        val response = if (isCacheEnabled && request.getContext.get("cache").asInstanceOf[Boolean])
+            getCachedEnrolmentList(userId, () => getEnrolmentList(request, userId)) else getEnrolmentList(request, userId)
         sender().tell(response, self)
     }
 
@@ -145,10 +164,10 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             enrolmentList.map(enrolment => {
                 enrolment.put(JsonKey.BATCH, batchMap.getOrElse(enrolment.get(JsonKey.BATCH_ID).asInstanceOf[String], new java.util.HashMap[String, AnyRef]()))
                 //To Do : A temporary change to support updation of completed course remove in next release
-                if (enrolment.get("progress").asInstanceOf[Integer] < enrolment.get("leafNodesCount").asInstanceOf[Integer]) {
-                    enrolment.put("status", 1.asInstanceOf[Integer])
-                    enrolment.put("completedOn", null)
-                }
+                //                if (enrolment.get("progress").asInstanceOf[Integer] < enrolment.get("leafNodesCount").asInstanceOf[Integer]) {
+                //                    enrolment.put("status", 1.asInstanceOf[Integer])
+                //                    enrolment.put("completedOn", null)
+                //                }
                 enrolment
             }).toList.asJava
         } else
@@ -226,18 +245,79 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val correlationObject = new java.util.ArrayList[java.util.Map[String, AnyRef]]()
         TelemetryUtil.generateCorrelatedObject(courseId, JsonKey.COURSE, correlation, correlationObject)
         TelemetryUtil.generateCorrelatedObject(batchId, TelemetryEnvKey.BATCH, "user.batch", correlationObject)
-        val request: java.util.Map[String, AnyRef] = new java.util.HashMap[String, AnyRef](){{
-            put(JsonKey.USER_ID, userId)
-            put(JsonKey.COURSE_ID, courseId)
-            put(JsonKey.BATCH_ID, batchId)
-        }}
+        val request: java.util.Map[String, AnyRef] = Map[String, AnyRef](JsonKey.USER_ID -> userId, JsonKey.COURSE_ID -> courseId, JsonKey.BATCH_ID -> batchId).asJava
         TelemetryUtil.telemetryProcessingCall(request, targetedObject, correlationObject, context)
     }
-    
+
+    def updateProgressData(enrolments: java.util.List[java.util.Map[String, AnyRef]], userId: String): util.List[java.util.Map[String, AnyRef]] = {
+        val enrolmentMap: Map[String, java.util.Map[String, AnyRef]] = enrolments.map(enrolment => enrolment.get("courseId").asInstanceOf[String] -> enrolment).toMap
+        val response: Response = groupDao.readEntries("Course", java.util.Arrays.asList(userId), enrolmentMap.keys.toList.asJava)
+        if (response.getResponseCode != ResponseCode.OK)
+            ProjectCommonException.throwServerErrorException(ResponseCode.erroCallGrooupAPI, MessageFormat.format(ResponseCode.erroCallGrooupAPI.getErrorMessage()))
+        val userActivityList: util.List[util.Map[String, AnyRef]] = response.getResult.getOrDefault("response", new util.ArrayList()).asInstanceOf[util.List[util.Map[String, AnyRef]]]
+        userActivityList.map(activity => {
+            val completedCount: Int = activity.getOrDefault("agg", new util.HashMap[String, AnyRef]())
+                .asInstanceOf[util.Map[String, AnyRef]].getOrDefault("completedCount", 0.asInstanceOf[AnyRef]).asInstanceOf[Int]
+            val enrolment = enrolmentMap.getOrDefault(activity.getOrDefault("activity_id", "").asInstanceOf[String], new util.HashMap[String, AnyRef]())
+            val leafNodesCount: Int = enrolment.get("leafNodesCount").asInstanceOf[Int]
+            enrolment.put("progress", completedCount.asInstanceOf[AnyRef])
+            enrolment.put("status", getCompletionStatus(completedCount, leafNodesCount).asInstanceOf[AnyRef])
+            enrolment.put("completionPercentage", getCompletionPerc(completedCount, leafNodesCount).asInstanceOf[AnyRef])
+        })
+        enrolmentMap.values.toList.asJava
+    }
+
+    def getCompletionStatus(completedCount: Int, leafNodesCount: Int): Int = completedCount match {
+        case 0 => 0
+        case it if 1 until leafNodesCount contains it => 1
+        case `leafNodesCount` => 2
+        case _ => 2
+    }
+
+    def getCompletionPerc(completedCount: Int, leafNodesCount: Int): Int = completedCount match {
+        case 0 => 0
+        case it if 1 until leafNodesCount contains it => (completedCount * 100) / leafNodesCount
+        case `leafNodesCount` => 100
+        case _ => 100
+    }
+
+    def getCacheKey(userId: String) = s"$userId:user-enrolments"
+
+    def getCachedEnrolmentList(userId: String, handleEmptyCache: () => Response): Response = {
+        val key = getCacheKey(userId)
+        val responseString = cacheUtil.get(key)
+        if (StringUtils.isNotBlank(responseString)) {
+            logger.info("CourseEnrolmentActor :: getCachedEnrolmentList :: Entry in redis for key " + key)
+            JsonUtil.deserialize(responseString, classOf[Response])
+        } else {
+            val response = handleEmptyCache()
+            val responseString = JsonUtil.serialize(response)
+            cacheUtil.set(key, responseString, ttl)
+            response
+        }
+    }
+
+    def getEnrolmentList(request: Request, userId: String): Response = {
+        logger.info("CourseEnrolmentActor :: getCachedEnrolmentList :: fetching data from cassandra with userId " + userId)
+        val activeEnrolments: java.util.List[java.util.Map[String, AnyRef]] = getActiveEnrollments(userId)
+        val enrolments: java.util.List[java.util.Map[String, AnyRef]] = {
+            if (CollectionUtils.isNotEmpty(activeEnrolments)) {
+                val enrolmentList: java.util.List[java.util.Map[String, AnyRef]] = addCourseDetails(activeEnrolments, request)
+                val updatedEnrolmentList = updateProgressData(enrolmentList, userId)
+                addBatchDetails(updatedEnrolmentList, request)
+            } else new java.util.ArrayList[java.util.Map[String, AnyRef]]()
+        }
+        val resp: Response = new Response()
+        resp.put(JsonKey.COURSES, enrolments)
+        resp
+    }
     // TODO: to be removed once all are in scala.
-    def setDao(courseDao: CourseBatchDao, userDao: UserCoursesDao) = {
+    def setDao(courseDao: CourseBatchDao, userDao: UserCoursesDao, groupDao: GroupDaoImpl) = {
         courseBatchDao = courseDao
         userCoursesDao = userDao
+        this.groupDao = groupDao
         this
     }
 }
+
+

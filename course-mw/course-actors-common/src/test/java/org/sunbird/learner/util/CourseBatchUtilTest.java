@@ -119,7 +119,7 @@ public class CourseBatchUtilTest {
     group.withESMock(new ESMocker());
     CustomObjectWrapper<Map<String, Object>> courseBatchIn =
         CustomObjectBuilder.getRandomCourseBatch();
-    when(group.getESMockerService().getDataByIdentifier(null, Mockito.anyString(), Mockito.anyString()))
+    when(group.getESMockerService().getDataByIdentifier(Mockito.any(), Mockito.anyString(), Mockito.anyString()))
         .thenReturn(courseBatchIn.asESIdentifierResult());
     Map<String, Object> courseBatchOut =
         CourseBatchUtil.validateCourseBatch(
@@ -133,7 +133,7 @@ public class CourseBatchUtilTest {
   @PrepareForTest({EsClientFactory.class, ElasticSearchHelper.class, Unirest.class})
   public void validateCourseBatchFailureTest() {
     group.withESMock(new ESMocker());
-    when(group.getESMockerService().getDataByIdentifier(null, Mockito.anyString(), Mockito.anyString()))
+    when(group.getESMockerService().getDataByIdentifier(Mockito.any(), Mockito.anyString(), Mockito.anyString()))
         .thenReturn(CustomObjectBuilder.getEmptyMap().asESIdentifierResult());
     try {
       Map<String, Object> courseBatchOut =

@@ -76,7 +76,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         val userCourse = validUserCourse()
         userCourse.setActive(true)
         (courseDao.readById(_: String, _: String, _:RequestContext)).expects(*,*,*).returns(courseBatch)
-        (userDao.read(_: RequestContext, _: String,_: String,_: String)).expects(*,*,*,*).returns(null)
+        (userDao.read(_: RequestContext, _: String,_: String,_: String)).expects(*,*,*,*).returns(userCourse)
         val response = callActorForFailure(getEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
     }

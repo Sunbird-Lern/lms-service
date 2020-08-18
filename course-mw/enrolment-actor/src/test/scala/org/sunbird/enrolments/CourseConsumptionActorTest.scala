@@ -74,8 +74,8 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
         }})
         ((requestContext: RequestContext, searchDTO: _root_.org.sunbird.dto.SearchDTO, index: _root_.scala.Predef.String) => esService.search(requestContext, searchDTO, index)).expects(*,*,*).returns(concurrent.Future{validBatchData()})
         ((requestContext: RequestContext, keyspace: _root_.scala.Predef.String, table: _root_.scala.Predef.String, filters: _root_.java.util.Map[_root_.scala.Predef.String, AnyRef], fields: _root_.java.util.List[_root_.scala.Predef.String]) => cassandraOperation.getRecords(requestContext, keyspace, table, filters, fields)).expects(*,*,*,*,*).returns(response)
-        ((keyspaceName: _root_.scala.Predef.String, tableName: _root_.scala.Predef.String, records: _root_.java.util.List[_root_.java.util.Map[_root_.scala.Predef.String, AnyRef]]) => cassandraOperation.batchInsert(null, keyspaceName, tableName, records)).expects(*,*,*)
-        ((keyspaceName: _root_.scala.Predef.String, tableName: _root_.scala.Predef.String, request: _root_.java.util.Map[_root_.scala.Predef.String, AnyRef]) => cassandraOperation.upsertRecord(keyspaceName, tableName, request, null)).expects(*,*,*)
+        ((requestContext: RequestContext,keyspaceName: _root_.scala.Predef.String, tableName: _root_.scala.Predef.String, records: _root_.java.util.List[_root_.java.util.Map[_root_.scala.Predef.String, AnyRef]]) => cassandraOperation.batchInsert(requestContext, keyspaceName, tableName, records)).expects(*,*,*,*)
+        ((keyspaceName: _root_.scala.Predef.String, tableName: _root_.scala.Predef.String, request: _root_.java.util.Map[_root_.scala.Predef.String, AnyRef], requestContext: RequestContext) => cassandraOperation.upsertRecord(keyspaceName, tableName, request, requestContext)).expects(*,*,*,*)
         val result = callActor(getStateUpdateRequest(), Props(new ContentConsumptionActor().setCassandraOperation(cassandraOperation, false).setEsService(esService)))
         assert(null!= result)
     }

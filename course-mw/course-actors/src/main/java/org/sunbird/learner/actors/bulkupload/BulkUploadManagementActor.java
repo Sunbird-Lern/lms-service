@@ -44,7 +44,6 @@ public class BulkUploadManagementActor extends BaseBulkUploadActor {
   private Util.DbInfo bulkDb = Util.dbInfoMap.get(JsonKey.BULK_OP_DB);
   private int batchDataSize = 0;
   private ObjectMapper mapper = new ObjectMapper();
-  private LoggerUtil logger = new LoggerUtil(BulkUploadManagementActor.class);
 
   @Inject
   @Named("bulk-upload-background-job-actor")

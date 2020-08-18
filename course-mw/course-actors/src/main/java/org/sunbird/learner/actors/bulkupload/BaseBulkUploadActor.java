@@ -37,7 +37,6 @@ public abstract class BaseBulkUploadActor extends BaseActor {
   protected Integer DEFAULT_BATCH_SIZE = 10;
   protected Integer CASSANDRA_BATCH_SIZE = getBatchSize(JsonKey.CASSANDRA_WRITE_BATCH_SIZE);
   protected ObjectMapper mapper = new ObjectMapper();
-  private LoggerUtil logger = new LoggerUtil(BaseBulkUploadActor.class);
 
   public void validateBulkUploadFields(
       String[] csvHeaderLine, String[] allowedFields, Boolean allFieldsMandatory) {

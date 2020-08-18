@@ -8,7 +8,6 @@ import org.sunbird.helper.ServiceFactory;
 import org.sunbird.keys.SunbirdKey;
 import org.sunbird.learner.util.Util;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,12 +27,12 @@ public class GroupDaoImpl {
         return response;
     }
 
-    public Response readEntries(String activityType, List<String> userId, List<String> activityIds) {
+    public Response readEntries(String activityType, List<String> userId, List<String> activityIds, RequestContext requestContext) {
         Map<String, Object> primaryKey = new HashMap<>();
         primaryKey.put(SunbirdKey.ACTIVITY_TYPE, activityType);
         primaryKey.put(SunbirdKey.ACTIVITY_ID, activityIds);
         primaryKey.put(SunbirdKey.USER_ID, userId);
-        Response response = cassandraOperation.getRecordsByProperties(KEYSPACE_NAME, TABLE_NAME, primaryKey);
+        Response response = cassandraOperation.getRecordsByProperties(requestContext, KEYSPACE_NAME, TABLE_NAME, primaryKey);
         return response;
     }
 

@@ -66,15 +66,15 @@ public class BaseController extends Controller {
     request.setRequestId(httpRequest.flash().get(JsonKey.REQUEST_ID));
     request.setEnv(getEnvironment());
     request.setRequestContext(getRequestContext(httpRequest, operation));
-    request.getContext().put(JsonKey.REQUESTED_BY, httpRequest.attrs().get(Attrs.USER_ID));
-    if (StringUtils.isNotBlank(httpRequest.attrs().get(Attrs.REQUESTED_FOR)))
+    request.getContext().put(JsonKey.REQUESTED_BY, httpRequest.attrs().getOptional(Attrs.USER_ID).orElse(null));
+    if (StringUtils.isNotBlank(httpRequest.attrs().getOptional(Attrs.REQUESTED_FOR).orElse(null)))
       request.getContext().put(SunbirdKey.REQUESTED_FOR, httpRequest.attrs().get(Attrs.REQUESTED_FOR));
     request = transformUserId(request);
     return request;
   }
 
   private RequestContext getRequestContext(Request httpRequest, String actorOperation) {
-    RequestContext requestContext = new RequestContext(httpRequest.attrs().get(Attrs.USER_ID), 
+    RequestContext requestContext = new RequestContext(httpRequest.attrs().getOptional(Attrs.USER_ID).orElse(null), 
             httpRequest.header("x-device-id").get(), httpRequest.header("x-session-id").get(),
             httpRequest.header("x-app-id").get(), httpRequest.header("x-app-ver").get(),
             httpRequest.header("x-request-id").orElse(UUID.randomUUID().toString()),
@@ -795,10 +795,10 @@ public class BaseController extends Controller {
 
   public void setContextData(Http.Request httpReq, org.sunbird.common.request.Request reqObj) {
     try {
-      String reqContext = httpReq.flash().get(JsonKey.CONTEXT);
+      String reqContext = httpReq.attrs().get(Attrs.CONTEXT);
       Map<String, Object> requestInfo =
               objectMapper.readValue(reqContext, new TypeReference<Map<String, Object>>() {});
-      reqObj.setRequestId(httpReq.flash().get(JsonKey.REQUEST_ID));
+      reqObj.setRequestId(httpReq.attrs().get(Attrs.REQUEST_ID));
       reqObj.getContext().putAll((Map<String, Object>) requestInfo.get(JsonKey.CONTEXT));
       reqObj.getContext().putAll((Map<String, Object>) requestInfo.get(JsonKey.ADDITIONAL_INFO));
     } catch (Exception ex) {
@@ -808,7 +808,7 @@ public class BaseController extends Controller {
 
   private void generateExceptionTelemetry(Request request, ProjectCommonException exception) {
     try {
-      String reqContext = request.flash().get(JsonKey.CONTEXT);
+      String reqContext = request.attrs().get(Attrs.CONTEXT);
       Map<String, Object> requestInfo = objectMapper.readValue(reqContext, new TypeReference<Map<String, Object>>() {});
       org.sunbird.common.request.Request reqForTelemetry = new org.sunbird.common.request.Request();
       Map<String, Object> params = (Map<String, Object>) requestInfo.getOrDefault(JsonKey.ADDITIONAL_INFO, new HashMap<>());

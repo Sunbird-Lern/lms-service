@@ -10,7 +10,7 @@ import org.sunbird.common.responsecode.ResponseCode;
 public abstract class BaseActor extends UntypedAbstractActor {
 
   public abstract void onReceive(Request request) throws Throwable;
-  private LoggerUtil logger = new LoggerUtil(BaseActor.class);
+  public LoggerUtil logger = new LoggerUtil(this.getClass());
 
   @Override
   public void onReceive(Object message) throws Throwable {

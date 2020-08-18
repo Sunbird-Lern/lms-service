@@ -52,7 +52,6 @@ public class QRCodeDownloadManagementActor extends BaseActor {
   private static int SEARCH_CONTENTS_LIMIT = Integer.parseInt(StringUtils.isNotBlank(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_QRCODE_COURSES_LIMIT)) ? ProjectUtil.getConfigValue(JsonKey.SUNBIRD_QRCODE_COURSES_LIMIT) : "2000");
 
   private static CassandraOperation cassandraOperation = ServiceFactory.getInstance();
-  private LoggerUtil logger = new LoggerUtil(QRCodeDownloadManagementActor.class);
 
   @Override
   public void onReceive(Request request) throws Throwable {

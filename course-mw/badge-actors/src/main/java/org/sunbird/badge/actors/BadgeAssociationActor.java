@@ -37,7 +37,6 @@ public class BadgeAssociationActor extends BaseActor {
   private BadgeAssociationService associationService = new BadgeAssociationServiceImpl();
   private ContentBadgeAssociationDao contentBadgeAssociationDao =
       new ContentBadgeAssociationDaoImpl();
-  private LoggerUtil logger = new LoggerUtil(BadgeAssociationActor.class); 
 
   @Override
   public void onReceive(Request request) throws Throwable {

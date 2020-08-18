@@ -40,7 +40,7 @@ class GroupAggregatesActorTest extends FlatSpec with Matchers with MockFactory {
 
   "GroupAggregatesActor" should "return no enrolled member found" in {
     (groupAggregateUtil.getGroupDetails(_:String, _:Request)).expects(*,*).returns(validRestResponse())
-    (groupDao.read(_: String, _: String, _: java.util.List[String], _: RequestContext,)).expects(*,*,*, *).returns(blankDBResponse())
+    (groupDao.read(_: String, _: String, _: java.util.List[String], _: RequestContext)).expects(*,*,*, *).returns(blankDBResponse())
     val response = callActor(getGroupActivityAggRequest(), Props(new GroupAggregatesActor()(cacheUtil).setInstanceVariable(groupAggregateUtil, groupDao)))
     assert(response.getResponseCode == ResponseCode.OK)
   }

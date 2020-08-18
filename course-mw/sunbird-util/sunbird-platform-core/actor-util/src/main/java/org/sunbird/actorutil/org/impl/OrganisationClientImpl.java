@@ -143,7 +143,7 @@ public class OrganisationClientImpl implements OrganisationClient {
   public Organisation esGetOrgById(String id) {
     Map<String, Object> map = null;
     Future<Map<String, Object>> mapF =
-        esUtil.getDataByIdentifier(requestContext, ProjectUtil.EsType.organisation.getTypeName(), id);
+        esUtil.getDataByIdentifier(null, ProjectUtil.EsType.organisation.getTypeName(), id);
 
     map = (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(mapF);
     if (MapUtils.isEmpty(map)) {

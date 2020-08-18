@@ -14,7 +14,6 @@ import org.sunbird.common.responsecode.ResponseCode;
 
 public class CacheManagementActor extends BaseActor {
   private Cache cache = CacheFactory.getInstance();
-  private LoggerUtil logger =  new LoggerUtil(CacheManagementActor.class);
 
   @Override
   public void onReceive(Request request) throws Throwable {

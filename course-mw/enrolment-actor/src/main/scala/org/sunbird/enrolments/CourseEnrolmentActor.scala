@@ -45,7 +45,6 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         (ProjectUtil.getConfigValue("user_enrolments_response_cache_enable")).toBoolean else true
     val ttl: Int = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("user_enrolments_response_cache_ttl")))
         (ProjectUtil.getConfigValue("user_enrolments_response_cache_ttl")).toInt else 60
-    private val logger: Logger = LoggerFactory.getLogger(classOf[CourseEnrolmentActor])
 
 
     override def preStart { println("Starting CourseEnrolmentActor") }
@@ -76,7 +75,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val courseId: String = request.get(JsonKey.COURSE_ID).asInstanceOf[String]
         val userId: String = request.get(JsonKey.USER_ID).asInstanceOf[String]
         val batchId: String = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
-        val batchData: CourseBatch = courseBatchDao.readById(request.getRequestContext, courseId, batchId)
+        val batchData: CourseBatch = courseBatchDao.readById( courseId, batchId, request.getRequestContext)
         val enrolmentData: UserCourses = userCoursesDao.read(request.getRequestContext, userId, courseId, batchId)
         validateEnrolment(batchData, enrolmentData, true)
         val data: java.util.Map[String, AnyRef] = createUserEnrolmentMap(userId, courseId, batchId, enrolmentData, request.getContext.getOrDefault(JsonKey.REQUEST_ID, "").asInstanceOf[String])
@@ -91,7 +90,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val courseId: String = request.get(JsonKey.COURSE_ID).asInstanceOf[String]
         val userId: String = request.get(JsonKey.USER_ID).asInstanceOf[String]
         val batchId: String = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
-        val batchData: CourseBatch = courseBatchDao.readById(request.getRequestContext, courseId, batchId)
+        val batchData: CourseBatch = courseBatchDao.readById(courseId, batchId, request.getRequestContext)
         val enrolmentData: UserCourses = userCoursesDao.read(request.getRequestContext, userId, courseId, batchId)
         validateEnrolment(batchData, enrolmentData, false)
         val data: java.util.Map[String, AnyRef] = new java.util.HashMap[String, AnyRef]() {{ put(JsonKey.ACTIVE, ProjectUtil.ActiveStatus.INACTIVE.getValue.asInstanceOf[AnyRef]) }}
@@ -103,7 +102,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
 
     def list(request: Request): Unit = {
         val userId = request.get(JsonKey.USER_ID).asInstanceOf[String]
-        logger.info("CourseEnrolmentActor :: list :: UserId = " + userId)
+        logger.info(request.getRequestContext,"CourseEnrolmentActor :: list :: UserId = " + userId)
         val response = if (isCacheEnabled && request.getContext.get("cache").asInstanceOf[Boolean])
             getCachedEnrolmentList(userId, () => getEnrolmentList(request, userId)) else getEnrolmentList(request, userId)
         sender().tell(response, self)
@@ -249,9 +248,9 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         TelemetryUtil.telemetryProcessingCall(request, targetedObject, correlationObject, context)
     }
 
-    def updateProgressData(enrolments: java.util.List[java.util.Map[String, AnyRef]], userId: String): util.List[java.util.Map[String, AnyRef]] = {
+    def updateProgressData(enrolments: java.util.List[java.util.Map[String, AnyRef]], userId: String, requestContext: RequestContext): util.List[java.util.Map[String, AnyRef]] = {
         val enrolmentMap: Map[String, java.util.Map[String, AnyRef]] = enrolments.map(enrolment => enrolment.get("courseId").asInstanceOf[String] -> enrolment).toMap
-        val response: Response = groupDao.readEntries("Course", java.util.Arrays.asList(userId), enrolmentMap.keys.toList.asJava)
+        val response: Response = groupDao.readEntries("Course", java.util.Arrays.asList(userId), enrolmentMap.keys.toList.asJava, requestContext)
         if (response.getResponseCode != ResponseCode.OK)
             ProjectCommonException.throwServerErrorException(ResponseCode.erroCallGrooupAPI, MessageFormat.format(ResponseCode.erroCallGrooupAPI.getErrorMessage()))
         val userActivityList: util.List[util.Map[String, AnyRef]] = response.getResult.getOrDefault("response", new util.ArrayList()).asInstanceOf[util.List[util.Map[String, AnyRef]]]
@@ -287,7 +286,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val key = getCacheKey(userId)
         val responseString = cacheUtil.get(key)
         if (StringUtils.isNotBlank(responseString)) {
-            logger.info("CourseEnrolmentActor :: getCachedEnrolmentList :: Entry in redis for key " + key)
+            logger.info(null, "CourseEnrolmentActor :: getCachedEnrolmentList :: Entry in redis for key " + key)
             JsonUtil.deserialize(responseString, classOf[Response])
         } else {
             val response = handleEmptyCache()
@@ -298,12 +297,12 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     }
 
     def getEnrolmentList(request: Request, userId: String): Response = {
-        logger.info("CourseEnrolmentActor :: getCachedEnrolmentList :: fetching data from cassandra with userId " + userId)
-        val activeEnrolments: java.util.List[java.util.Map[String, AnyRef]] = getActiveEnrollments(userId)
+        logger.info(request.getRequestContext,"CourseEnrolmentActor :: getCachedEnrolmentList :: fetching data from cassandra with userId " + userId)
+        val activeEnrolments: java.util.List[java.util.Map[String, AnyRef]] = getActiveEnrollments( userId, request.getRequestContext)
         val enrolments: java.util.List[java.util.Map[String, AnyRef]] = {
             if (CollectionUtils.isNotEmpty(activeEnrolments)) {
                 val enrolmentList: java.util.List[java.util.Map[String, AnyRef]] = addCourseDetails(activeEnrolments, request)
-                val updatedEnrolmentList = updateProgressData(enrolmentList, userId)
+                val updatedEnrolmentList = updateProgressData(enrolmentList, userId, request.getRequestContext)
                 addBatchDetails(updatedEnrolmentList, request)
             } else new java.util.ArrayList[java.util.Map[String, AnyRef]]()
         }

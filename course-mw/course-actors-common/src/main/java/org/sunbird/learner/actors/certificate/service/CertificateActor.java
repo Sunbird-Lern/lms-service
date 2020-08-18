@@ -24,7 +24,6 @@ import org.sunbird.learner.util.Util;
 
 public class CertificateActor extends BaseActor {
   
-  private LoggerUtil logger = new LoggerUtil(CertificateActor.class);
 
   private static enum ResponseMessage {
     SUBMITTED("Certificates issue action for Course Batch Id {0} submitted Successfully!"),

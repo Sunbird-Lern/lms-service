@@ -39,7 +39,6 @@ public class EsSyncActor extends BaseActor {
   private CassandraOperation cassandraOperation = ServiceFactory.getInstance();
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private static final int BATCH_SIZE = 100;
-  private LoggerUtil logger = new LoggerUtil(EsSyncActor.class);
 
   @Override
   public void onReceive(Request request) throws Throwable {

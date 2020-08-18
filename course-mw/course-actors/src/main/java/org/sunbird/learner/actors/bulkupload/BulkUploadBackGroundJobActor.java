@@ -47,7 +47,6 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
   private static ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private UserCoursesDao userCourseDao = UserCoursesDaoImpl.getInstance();
   private UserOrgService userOrgService = UserOrgServiceImpl.getInstance();
-  private LoggerUtil logger = new LoggerUtil(BulkUploadBackGroundJobActor.class);
 
   @Inject
   @Named("background-job-manager-actor")

@@ -51,7 +51,7 @@ public class CourseBatchManagementActor extends BaseActor {
   private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
   private List<String> validCourseStatus = Arrays.asList("Live", "Unlisted");
   private String validContenttype = "Course";
-  private LoggerUtil logger = new LoggerUtil(CourseBatchManagementActor.class);
+  //private LoggerUtil logger = new LoggerUtil(CourseBatchManagementActor.class);
 
   @Inject
   @Named("course-batch-notification-actor")

@@ -30,7 +30,6 @@ public class CourseBatchCertificateActor extends BaseActor {
 
   private CourseBatchDao courseBatchDao = new CourseBatchDaoImpl();
   private ObjectMapper mapper = new ObjectMapper();
-  private LoggerUtil logger = new LoggerUtil(CourseBatchCertificateActor.class);
 
   @Override
   public void onReceive(Request request) throws Throwable {

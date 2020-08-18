@@ -31,7 +31,6 @@ public class CourseBatchNotificationActor extends BaseActor {
   private static String baseUrl =
       PropertiesCache.getInstance().getProperty(JsonKey.SUNBIRD_WEB_URL);
   private UserOrgService userOrgService = UserOrgServiceImpl.getInstance();
-  private LoggerUtil logger = new LoggerUtil(CourseBatchNotificationActor.class);
 
   @Override
   public void onReceive(Request request) throws Throwable {

@@ -6,7 +6,6 @@ import static org.powermock.api.mockito.PowerMockito.when;
 import java.util.*;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,9 +52,9 @@ public class GroupDaoImplTest {
     public void readEntriesSuccess() throws Exception {
         GroupDaoImpl groupDao = new GroupDaoImpl();
         Response response = getReadEntriesResponse();
-        when(cassandraOperation.getRecordsByProperties(
+        when(cassandraOperation.getRecordsByProperties(Mockito.any(),
                 Mockito.anyString(), Mockito.anyString(), Mockito.anyMap())).thenReturn(response);
-        Response readResponse = groupDao.readEntries("Course",  Arrays.asList("user1"), Arrays.asList("do_1234", "do_3456"));
+        Response readResponse = groupDao.readEntries("Course",  Arrays.asList("user1"), Arrays.asList("do_1234", "do_3456"), null);
         Assert.assertNotNull(readResponse);
         Assert.assertEquals(readResponse.getResponseCode(), ResponseCode.OK);
         Assert.assertNotNull(readResponse.getResult());

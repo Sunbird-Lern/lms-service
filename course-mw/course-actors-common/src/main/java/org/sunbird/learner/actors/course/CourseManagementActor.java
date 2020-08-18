@@ -28,7 +28,6 @@ import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
 public class CourseManagementActor extends BaseActor {
     private static ObjectMapper mapper = new ObjectMapper();
     private static HierarchyGenerationHelper helper = new HierarchyGenerationHelper();
-    private LoggerUtil logger =  new LoggerUtil(CourseManagementActor.class);
 
     @Override
     public void onReceive(Request request) throws Throwable {

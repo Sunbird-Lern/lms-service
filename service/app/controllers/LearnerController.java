@@ -31,16 +31,9 @@ public class LearnerController extends BaseController {
   private LearnerStateRequestValidator validator = new LearnerStateRequestValidator();
 
   @Inject
-  @Named("learner-state-update-actor")
-  private ActorRef learnerStateUpdateActorRef;
-
-  @Inject
   @Named("content-consumption-actor")
   private ActorRef contentConsumptionActor;
 
-  @Inject
-  @Named("learner-state-actor")
-  private ActorRef learnerStateActorRef;
   /**
    * This method will provide list of user content state. Content refer user activity {started,half
    * completed ,completed} against TOC (table of content).

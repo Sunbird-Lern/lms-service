@@ -170,7 +170,7 @@ public class UserCoursesDaoTest {
     when(cassandraOperation.batchInsert(
             Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyList()))
         .thenReturn(new Response());
-    Response response = userCoursesDao.batchInsert(Mockito.any(), Arrays.asList(userCourseMap));
+    Response response = userCoursesDao.batchInsert(null, Arrays.asList(userCourseMap));
     Assert.assertNotEquals(null, response);
   }
 

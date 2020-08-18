@@ -48,7 +48,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         if(CollectionUtils.isNotEmpty(assessmentEvents)) {
             val batchAssessmentList: Map[String, List[java.util.Map[String, AnyRef]]] = assessmentEvents.filter(event => StringUtils.isNotBlank(event.getOrDefault(JsonKey.BATCH_ID, "").asInstanceOf[String])).toList.groupBy(event => event.get(JsonKey.BATCH_ID).asInstanceOf[String])
             val batchIds = batchAssessmentList.keySet.toList.asJava
-            val batches:Map[String, List[java.util.Map[String, AnyRef]]] = getBatches(new java.util.ArrayList[String](batchIds), null).toList.groupBy(batch => batch.get(JsonKey.BATCH_ID).asInstanceOf[String])
+            val batches:Map[String, List[java.util.Map[String, AnyRef]]] = getBatches(request.getRequestContext ,new java.util.ArrayList[String](batchIds), null).toList.groupBy(batch => batch.get(JsonKey.BATCH_ID).asInstanceOf[String])
             val invalidBatchIds = batchAssessmentList.keySet.diff(batches.keySet).toList.asJava
             val validBatches:Map[String, List[java.util.Map[String, AnyRef]]]  = batches.filterKeys(key => batchIds.contains(key))
             val completedBatchIds = validBatches.filter(batch => 1 != batch._2.head.get(JsonKey.STATUS).asInstanceOf[Integer]).keys.toList.asJava
@@ -81,7 +81,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                     put("invalidAssessments", invalidAssessments)
                     put("ets", System.currentTimeMillis.asInstanceOf[AnyRef])
                 }}
-                pushInvalidDataToKafka(map, "Assessments")
+                pushInvalidDataToKafka(request.getRequestContext, map, "Assessments")
             }
             val response = new Response()
             response.putAll(responseMessage)
@@ -94,7 +94,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         if(CollectionUtils.isNotEmpty(contentList)) {
             val batchContentList: Map[String, List[java.util.Map[String, AnyRef]]] = contentList.filter(event => StringUtils.isNotBlank(event.getOrDefault(JsonKey.BATCH_ID, "").asInstanceOf[String])).toList.groupBy(event => event.get(JsonKey.BATCH_ID).asInstanceOf[String])
             val batchIds = batchContentList.keySet.toList.asJava
-            val batches:Map[String, List[java.util.Map[String, AnyRef]]] = getBatches(new java.util.ArrayList[String](batchIds), null).toList.groupBy(batch => batch.get(JsonKey.BATCH_ID).asInstanceOf[String])
+            val batches:Map[String, List[java.util.Map[String, AnyRef]]] = getBatches(request.getRequestContext ,new java.util.ArrayList[String](batchIds), null).toList.groupBy(batch => batch.get(JsonKey.BATCH_ID).asInstanceOf[String])
             val invalidBatchIds = batchContentList.keySet.diff(batches.keySet).toList.asJava
             val validBatches:Map[String, List[java.util.Map[String, AnyRef]]]  = batches.filterKeys(key => batchIds.contains(key))
             val completedBatchIds = validBatches.filter(batch => 1 != batch._2.head.get(JsonKey.STATUS).asInstanceOf[Integer]).keys.toList.asJava
@@ -118,10 +118,10 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                             cassandraOperation.batchInsert(request.getRequestContext, consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, contents)
                             val updatedEnrolment = getLatestReadDetails(userId, batchId, contents)
                             cassandraOperation.upsertRecord("sunbird_courses", "user_enrolments", updatedEnrolment, request.getRequestContext)
-                            pushInstructionEvent(userId, batchId, courseId, contents.asJava)
+                            pushInstructionEvent(request.getRequestContext, userId, batchId, courseId, contents.asJava)
                             contentIds.map(id => responseMessage.put(id,JsonKey.SUCCESS))
                         } else {
-                            ProjectLogger.log("ContentConsumptionActor: addContent : User Id is invalid : " + userId, LoggerEnum.INFO)
+                            logger.info(request.getRequestContext, "ContentConsumptionActor: addContent : User Id is invalid : " + userId)
                             invalidContents.addAll(entry._2.asJava)
                         }
                     })
@@ -136,7 +136,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                     put("invalidContents", invalidContents)
                     put("ets", System.currentTimeMillis.asInstanceOf[AnyRef])
                 }}
-                pushInvalidDataToKafka(map, "Contents")
+                pushInvalidDataToKafka(request.getRequestContext, map, "Contents")
             }
             val response = new Response()
             response.putAll(responseMessage)
@@ -161,8 +161,8 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         else throw new ProjectCommonException("BE_JOB_REQUEST_EXCEPTION", "Invalid topic id.", ResponseCode.CLIENT_ERROR.getResponseCode)
     }
 
-    private def pushInvalidDataToKafka(data: java.util.Map[String, AnyRef], dataType: String): Unit = {
-        ProjectLogger.log("LearnerStateUpdater - Invalid " + dataType, data, LoggerEnum.INFO.name)
+    private def pushInvalidDataToKafka(requestContext: RequestContext, data: java.util.Map[String, AnyRef], dataType: String): Unit = {
+        logger.info(requestContext, "LearnerStateUpdater - Invalid " + dataType, data)
         val topic = ProjectUtil.getConfigValue("kafka_topics_contentstate_invalid")
         try {
             val event = mapper.writeValueAsString(data)
@@ -253,7 +253,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     }
 
     @throws[Exception]
-    private def pushInstructionEvent(userId: String, batchId: String, courseId: String, contents: java.util.List[java.util.Map[String, AnyRef]]): Unit = {
+    private def pushInstructionEvent(requestContext: RequestContext, userId: String, batchId: String, courseId: String, contents: java.util.List[java.util.Map[String, AnyRef]]): Unit = {
         val data = new java.util.HashMap[String, AnyRef]
         data.put(CourseJsonKey.ACTOR, new java.util.HashMap[String, AnyRef]() {{
             put(JsonKey.ID, InstructionEvent.BATCH_USER_STATE_UPDATE.getActorId)
@@ -277,7 +277,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             put(CourseJsonKey.ITERATION, 1.asInstanceOf[AnyRef])
         }})
         val topic = ProjectUtil.getConfigValue("kafka_topics_instruction")
-        ProjectLogger.log("LearnerStateUpdateActor: pushInstructionEvent :Event Data " + data + " and Topic " + topic, LoggerEnum.INFO.name)
+        logger.info(requestContext,"LearnerStateUpdateActor: pushInstructionEvent :Event Data " + data + " and Topic " + topic)
         if(pushTokafkaEnabled)
             InstructionEventGenerator.pushInstructionEvent(userId, topic, data)
     }

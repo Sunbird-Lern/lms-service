@@ -127,7 +127,7 @@ public class OrganisationClientImpl implements OrganisationClient {
     filter.put(JsonKey.PROVIDER, provider);
     searchDto.getAdditionalProperties().put(JsonKey.FILTERS, filter);
     Future<Map<String, Object>> esResponseF =
-        esUtil.search(searchDto, ProjectUtil.EsType.organisation.getTypeName());
+        esUtil.search(requestContext, searchDto, ProjectUtil.EsType.organisation.getTypeName());
     Map<String, Object> esResponse =
         (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(esResponseF);
     List<Map<String, Object>> list = (List<Map<String, Object>>) esResponse.get(JsonKey.CONTENT);
@@ -165,7 +165,7 @@ public class OrganisationClientImpl implements OrganisationClient {
   private List<Organisation> searchOrganisation(SearchDTO searchDto) {
     List<Organisation> orgList = new ArrayList<>();
     Future<Map<String, Object>> resultF =
-        esUtil.search(searchDto, ProjectUtil.EsType.organisation.getTypeName());
+        esUtil.search(requestContext, searchDto, ProjectUtil.EsType.organisation.getTypeName());
     Map<String, Object> result =
         (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
 

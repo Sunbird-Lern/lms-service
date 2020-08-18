@@ -51,7 +51,7 @@ public class LoggerUtil {
         }
         telemetryProcess(requestContext, telemetryInfo, e);
     }
-    
+
     public void warn(RequestContext requestContext, String message, Throwable e) {
         if(null != requestContext) {
             logger.warn(Markers.appendEntries(requestContext.getContextMap()), message, e);

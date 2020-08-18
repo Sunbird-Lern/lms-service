@@ -63,10 +63,11 @@ public interface ElasticSearchService {
   /**
    * This method will remove data from ES based on identifier.
    *
+   * @param requestContext
    * @param index String
    * @param identifier String
    */
-  public Future<Boolean> delete(String index, String identifier);
+  public Future<Boolean> delete(RequestContext requestContext, String index, String identifier);
 
   /**
    * Method to perform the elastic search on the basis of SearchDTO . SearchDTO contains the search
@@ -74,9 +75,10 @@ public interface ElasticSearchService {
    * or multiple type or null
    *
    * @param type var arg of String
+   * @param requestContext
    * @return search result as Map.
    */
-  public Future<Map<String, Object>> search(SearchDTO searchDTO, String index);
+  public Future<Map<String, Object>> search(RequestContext requestContext, SearchDTO searchDTO, String index);
 
   /**
    * This method will do the health check of elastic search.
@@ -116,7 +118,7 @@ public interface ElasticSearchService {
    * @return Map<String,Map<String,Object>> It will return a map with id as key and the data from ES
    *     as value
    */
-  public Future<Map<String, Map<String, Object>>> getEsResultByListOfIds(
+  public Future<Map<String, Map<String, Object>>> getEsResultByListOfIds( RequestContext requestContext, 
       List<String> organisationIds, List<String> fields, String index);
 
   /**

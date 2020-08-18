@@ -628,7 +628,7 @@ public class PageManagementActor extends BaseActor {
           getContext().dispatcher());
     } else {
       Map<String, Object> esResponse =
-          searchFromES((Map<String, Object>) searchQueryMap.get(JsonKey.REQUEST), dataSource);
+          searchFromES(requestContext, (Map<String, Object>) searchQueryMap.get(JsonKey.REQUEST), dataSource);
       section.put(JsonKey.COUNT, esResponse.get(JsonKey.COUNT));
       section.put(JsonKey.CONTENTS, esResponse.get(JsonKey.CONTENT));
       removeUnwantedData(section, "getPageData");
@@ -646,7 +646,7 @@ public class PageManagementActor extends BaseActor {
     }
   }
 
-  private Map<String, Object> searchFromES(Map<String, Object> map, String dataSource) {
+  private Map<String, Object> searchFromES(RequestContext requestContext, Map<String, Object> map, String dataSource) {
     SearchDTO searcDto = new SearchDTO();
     searcDto.setQuery((String) map.get(JsonKey.QUERY));
     searcDto.setLimit((Integer) map.get(JsonKey.LIMIT));
@@ -659,7 +659,7 @@ public class PageManagementActor extends BaseActor {
       return null;
     }
 
-    Future<Map<String, Object>> resultF = esService.search(searcDto, type);
+    Future<Map<String, Object>> resultF = esService.search(requestContext, searcDto, type);
     Map<String, Object> result =
         (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
     return result;

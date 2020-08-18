@@ -120,7 +120,6 @@ public final class CassandraUtil {
     query.append(String.join(" = ? ,", key));
     query.append(
         Constants.EQUAL_WITH_QUE_MARK + Constants.WHERE_ID + Constants.EQUAL_WITH_QUE_MARK);
-    ProjectLogger.log(query.toString());
     return query.toString();
   }
 

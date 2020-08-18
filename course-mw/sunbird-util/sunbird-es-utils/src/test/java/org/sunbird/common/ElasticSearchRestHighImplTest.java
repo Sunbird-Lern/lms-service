@@ -175,7 +175,7 @@ public class ElasticSearchRestHighImplTest {
   @Test
   public void testDeleteSuccess() {
     mockRulesForDelete(false, false);
-    Future<Boolean> result = esService.delete("test", "001");
+    Future<Boolean> result = esService.delete(null, "test", "001");
     boolean res = (boolean) ElasticSearchHelper.getResponseFromFuture(result);
     assertEquals(true, res);
   }
@@ -183,7 +183,7 @@ public class ElasticSearchRestHighImplTest {
   @Test
   public void testDeleteSuccessWithoutDelete() {
     mockRulesForDelete(false, true);
-    Future<Boolean> result = esService.delete("test", "001");
+    Future<Boolean> result = esService.delete(null, "test", "001");
     boolean res = (boolean) ElasticSearchHelper.getResponseFromFuture(result);
     assertEquals(false, res);
   }
@@ -191,7 +191,7 @@ public class ElasticSearchRestHighImplTest {
   @Test
   public void testDeleteFailure() {
     mockRulesForDelete(true, false);
-    Future<Boolean> result = esService.delete("test", "001");
+    Future<Boolean> result = esService.delete(null, "test", "001");
     Object res = ElasticSearchHelper.getResponseFromFuture(result);
     assertEquals(null, res);
   }
@@ -199,7 +199,7 @@ public class ElasticSearchRestHighImplTest {
   @Test
   public void testDeleteFailureWithEmptyIdentifier() {
     try {
-      esService.delete("test", "");
+      esService.delete(null, "test", "");
     } catch (ProjectCommonException e) {
       assertEquals(e.getResponseCode(), ResponseCode.invalidData.getResponseCode());
     }
@@ -208,7 +208,7 @@ public class ElasticSearchRestHighImplTest {
   @Test
   public void testDeleteFailureWithEmptyIndex() {
     try {
-      esService.delete("", "001");
+      esService.delete(null, "", "001");
     } catch (ProjectCommonException e) {
       assertEquals(e.getResponseCode(), ResponseCode.invalidData.getResponseCode());
     }

@@ -4,11 +4,13 @@ import org.sunbird.common.ElasticSearchRestHighImpl;
 import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerEnum;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectLogger;
 
 public class EsClientFactory {
 
   private static ElasticSearchService restClient = null;
+  private static LoggerUtil logger = new LoggerUtil(EsClientFactory.class);
 
   /**
    * This method return REST/TCP client for elastic search
@@ -20,8 +22,8 @@ public class EsClientFactory {
     if (JsonKey.REST.equals(type)) {
       return getRestClient();
     } else {
-      ProjectLogger.log(
-          "EsClientFactory:getInstance: value for client type provided null ", LoggerEnum.ERROR);
+      logger.error( null,
+          "EsClientFactory:getInstance: value for client type provided null ", null);
     }
     return null;
   }

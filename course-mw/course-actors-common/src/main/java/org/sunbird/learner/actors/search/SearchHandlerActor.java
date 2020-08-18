@@ -13,7 +13,6 @@ import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.HttpUtil;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.ProjectUtil.EsType;
 import org.sunbird.common.models.util.PropertiesCache;
@@ -81,7 +80,7 @@ public class SearchHandlerActor extends BaseActor {
       Map<String, Object> result = null;
       logger.info(request.getRequestContext(), "SearchHandlerActor:onReceive  request search instant duration="
               + (Instant.now().toEpochMilli() - instant.toEpochMilli()));
-      Future<Map<String, Object>> resultF = esService.search(searchDto, types[0]);
+      Future<Map<String, Object>> resultF = esService.search(requestContext, searchDto, types[0]);
       result = (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
       logger.info(request.getRequestContext(), 
           "SearchHandlerActor:onReceive search complete instant duration="

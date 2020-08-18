@@ -3,8 +3,8 @@ package org.sunbird.cache.util
 import java.time.Duration
 
 import org.apache.commons.lang3.StringUtils
-import org.slf4j.{Logger, LoggerFactory}
 import org.sunbird.cache.platform.Platform
+import org.sunbird.common.models.util.LoggerUtil
 import redis.clients.jedis.{Jedis, JedisPool, JedisPoolConfig}
 
 import scala.collection.JavaConverters._
@@ -15,7 +15,7 @@ import scala.concurrent.{ExecutionContext, Future}
   */
 class RedisCacheUtil {
 
-    private val logger: Logger = LoggerFactory.getLogger(classOf[RedisCacheUtil])
+    private val logger: LoggerUtil = new LoggerUtil(classOf[RedisCacheUtil])
 
     implicit val className = "org.sunbird.cache.connector.RedisConnector"
 
@@ -99,7 +99,7 @@ class RedisCacheUtil {
             if (ttl > 0) jedis.expire(key, ttl)
         } catch {
             case e: Exception =>
-                logger.error("Exception Occurred While Saving String Data to Redis Cache for Key : " + key + "| Exception is:", e)
+                logger.error(null, "Exception Occurred While Saving String Data to Redis Cache for Key : " + key + "| Exception is:", e)
                 throw e
         } finally returnConnection(jedis)
     }
@@ -125,7 +125,7 @@ class RedisCacheUtil {
         }
         catch {
             case e: Exception =>
-                logger.error("Exception Occurred While Fetching String Data from Redis Cache for Key : " + key + "| Exception is:", e)
+                logger.error(null, "Exception Occurred While Fetching String Data from Redis Cache for Key : " + key + "| Exception is:", e)
                 throw e
         } finally returnConnection(jedis)
     }
@@ -156,7 +156,7 @@ class RedisCacheUtil {
         }
         catch {
             case e: Exception =>
-                logger.error("Exception Occurred While Fetching String Data from Redis Cache for Key : " + key + "| Exception is:", e)
+                logger.error(null, "Exception Occurred While Fetching String Data from Redis Cache for Key : " + key + "| Exception is:", e)
                 throw e
         } finally returnConnection(jedis)
     }
@@ -173,7 +173,7 @@ class RedisCacheUtil {
         try jedis.incrByFloat(key, inc)
         catch {
             case e: Exception =>
-                logger.error("Exception Occurred While Incrementing Value for Key : " + key + " | Exception is : ", e)
+                logger.error(null, "Exception Occurred While Incrementing Value for Key : " + key + " | Exception is : ", e)
                 throw e
         } finally returnConnection(jedis)
     }
@@ -195,7 +195,7 @@ class RedisCacheUtil {
             if (ttl > 0 && !isPartialUpdate) jedis.expire(key, ttl)
         } catch {
             case e: Exception =>
-                logger.error("Exception Occurred While Saving List Data to Redis Cache for Key : " + key + "| Exception is:", e)
+                logger.error(null, "Exception Occurred While Saving List Data to Redis Cache for Key : " + key + "| Exception is:", e)
                 throw e
         } finally returnConnection(jedis)
     }
@@ -230,7 +230,7 @@ class RedisCacheUtil {
             data
         } catch {
             case e: Exception =>
-                logger.error("Exception Occurred While Fetching List Data from Redis Cache for Key : " + key + "| Exception is:", e)
+                logger.error(null, "Exception Occurred While Fetching List Data from Redis Cache for Key : " + key + "| Exception is:", e)
                 throw e
         } finally returnConnection(jedis)
     }
@@ -260,7 +260,7 @@ class RedisCacheUtil {
             }
         } catch {
             case e: Exception =>
-                logger.error("Exception Occurred While Fetching List Data from Redis Cache for Key : " + key + "| Exception is:", e)
+                logger.error(null, "Exception Occurred While Fetching List Data from Redis Cache for Key : " + key + "| Exception is:", e)
                 throw e
         } finally returnConnection(jedis)
     }
@@ -276,7 +276,7 @@ class RedisCacheUtil {
         try data.foreach(entry => jedis.srem(key, entry))
         catch {
             case e: Exception =>
-                logger.error("Exception Occurred While Deleting Partial Data From Redis Cache for Key : " + key + "| Exception is:", e)
+                logger.error(null, "Exception Occurred While Deleting Partial Data From Redis Cache for Key : " + key + "| Exception is:", e)
                 throw e
         } finally returnConnection(jedis)
     }
@@ -291,7 +291,7 @@ class RedisCacheUtil {
         try jedis.del(keys.map(_.asInstanceOf[String]): _*)
         catch {
             case e: Exception =>
-                logger.error("Exception Occurred While Deleting Records From Redis Cache for Identifiers : " + keys.toArray + " | Exception is : ", e)
+                logger.error(null, "Exception Occurred While Deleting Records From Redis Cache for Identifiers : " + keys.toArray + " | Exception is : ", e)
                 throw e
         } finally returnConnection(jedis)
     }
@@ -310,7 +310,7 @@ class RedisCacheUtil {
                     jedis.del(keys.toArray.map(_.asInstanceOf[String]): _*)
             } catch {
                 case e: Exception =>
-                    logger.error("Exception Occurred While Deleting Records From Redis Cache for Pattern : " + pattern + " | Exception is : ", e)
+                    logger.error(null, "Exception Occurred While Deleting Records From Redis Cache for Pattern : " + pattern + " | Exception is : ", e)
                     throw e
             } finally returnConnection(jedis)
         }

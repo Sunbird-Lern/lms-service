@@ -151,7 +151,7 @@ public class UserCourseServiceTest {
     Map<String, Object> map = new HashMap<>();
     Promise<Map<String, Object>> promise = Futures.promise();
     promise.trySuccess(map);
-    when(esUtil.search(requestContext, Mockito.anyObject(), Mockito.anyString())).thenReturn(promise.future());
+    when(esUtil.search(null, Mockito.anyObject(), Mockito.anyString())).thenReturn(promise.future());
     Assert.assertNotEquals(null, userCoursesService.getActiveEnrollments(JsonKey.USER_ID));
   }
 
@@ -159,7 +159,7 @@ public class UserCourseServiceTest {
   public void getActiveUserCourseFailure() {
     Promise<Map<String, Object>> promise = Futures.promise();
     promise.success(null);
-    when(esUtil.search(requestContext, Mockito.anyObject(), Mockito.anyString())).thenReturn(promise.future());
+    when(esUtil.search(null, Mockito.anyObject(), Mockito.anyString())).thenReturn(promise.future());
     Assert.assertEquals(null, userCoursesService.getActiveEnrollments(JsonKey.USER_ID));
   }
 }

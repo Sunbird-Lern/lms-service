@@ -146,7 +146,7 @@ public class UserCoursesService {
     SearchDTO searchDto = new SearchDTO();
     searchDto.getAdditionalProperties().put(JsonKey.FILTERS, filter);
     Future<Map<String, Object>> resultF =
-        esService.search(requestContext, searchDto, ProjectUtil.EsType.usercourses.getTypeName());
+        esService.search(null, searchDto, ProjectUtil.EsType.usercourses.getTypeName());
     Map<String, Object> result =
         (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
     return result;

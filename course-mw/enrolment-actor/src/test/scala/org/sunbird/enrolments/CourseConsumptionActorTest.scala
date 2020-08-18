@@ -11,7 +11,7 @@ import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.inf.ElasticSearchService
 import org.sunbird.common.models.response.Response
 import org.sunbird.common.models.util.ProjectUtil
-import org.sunbird.common.request.Request
+import org.sunbird.common.request.{Request, RequestContext}
 import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.dto.SearchDTO
 
@@ -39,7 +39,7 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
                 put("contentId", "do_789")
             }})
         }})
-        ((keyspace: _root_.scala.Predef.String, table: _root_.scala.Predef.String, filters: _root_.java.util.Map[_root_.scala.Predef.String, AnyRef], fields: _root_.java.util.List[_root_.scala.Predef.String]) => cassandraOperation.getRecords(null, keyspace, table, filters, fields)).expects(*,*,*,*).returns(response)
+        ((requestContext: RequestContext, keyspace: _root_.scala.Predef.String, table: _root_.scala.Predef.String, filters: _root_.java.util.Map[_root_.scala.Predef.String, AnyRef], fields: _root_.java.util.List[_root_.scala.Predef.String]) => cassandraOperation.getRecords(requestContext, keyspace, table, filters, fields)).expects(*,*,*,*,*).returns(response)
         val result = callActor(getStateReadRequest(), Props(new ContentConsumptionActor().setCassandraOperation(cassandraOperation, false)))
         assert(null!= result)
     }
@@ -48,7 +48,7 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
         val cassandraOperation = mock[CassandraOperation]
         val response = new Response()
         response.put("response", new java.util.ArrayList[java.util.Map[String, AnyRef]])
-        ((keyspace: _root_.scala.Predef.String, table: _root_.scala.Predef.String, filters: _root_.java.util.Map[_root_.scala.Predef.String, AnyRef], fields: _root_.java.util.List[_root_.scala.Predef.String]) => cassandraOperation.getRecords(null, keyspace, table, filters, fields)).expects(*,*,*,*).returns(response)
+        ((requestContext: RequestContext, keyspace: _root_.scala.Predef.String, table: _root_.scala.Predef.String, filters: _root_.java.util.Map[_root_.scala.Predef.String, AnyRef], fields: _root_.java.util.List[_root_.scala.Predef.String]) => cassandraOperation.getRecords(requestContext, keyspace, table, filters, fields)).expects(*,*,*,*,*).returns(response)
         val result = callActor(getStateReadRequest(), Props(new ContentConsumptionActor().setCassandraOperation(cassandraOperation, false)))
         assert(null!= result)
     }
@@ -72,8 +72,8 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
                 put("contentId", "do_789")
             }})
         }})
-        ((searchDTO: _root_.org.sunbird.dto.SearchDTO, index: _root_.scala.Predef.String) => esService.search(requestContext)).expects(*,*).returns(concurrent.Future{validBatchData()})
-        ((keyspace: _root_.scala.Predef.String, table: _root_.scala.Predef.String, filters: _root_.java.util.Map[_root_.scala.Predef.String, AnyRef], fields: _root_.java.util.List[_root_.scala.Predef.String]) => cassandraOperation.getRecords(null, keyspace, table, filters, fields)).expects(*,*,*,*).returns(response)
+        ((requestContext: RequestContext, searchDTO: _root_.org.sunbird.dto.SearchDTO, index: _root_.scala.Predef.String) => esService.search(requestContext, searchDTO, index)).expects(*,*,*).returns(concurrent.Future{validBatchData()})
+        ((requestContext: RequestContext, keyspace: _root_.scala.Predef.String, table: _root_.scala.Predef.String, filters: _root_.java.util.Map[_root_.scala.Predef.String, AnyRef], fields: _root_.java.util.List[_root_.scala.Predef.String]) => cassandraOperation.getRecords(requestContext, keyspace, table, filters, fields)).expects(*,*,*,*,*).returns(response)
         ((keyspaceName: _root_.scala.Predef.String, tableName: _root_.scala.Predef.String, records: _root_.java.util.List[_root_.java.util.Map[_root_.scala.Predef.String, AnyRef]]) => cassandraOperation.batchInsert(null, keyspaceName, tableName, records)).expects(*,*,*)
         ((keyspaceName: _root_.scala.Predef.String, tableName: _root_.scala.Predef.String, request: _root_.java.util.Map[_root_.scala.Predef.String, AnyRef]) => cassandraOperation.upsertRecord(keyspaceName, tableName, request, null)).expects(*,*,*)
         val result = callActor(getStateUpdateRequest(), Props(new ContentConsumptionActor().setCassandraOperation(cassandraOperation, false).setEsService(esService)))
@@ -83,7 +83,7 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
     "update AssementScore " should "return success on updating the progress" in {
         val cassandraOperation = mock[CassandraOperation]
         val esService = mock[ElasticSearchService]
-        ((searchDTO: _root_.org.sunbird.dto.SearchDTO, index: _root_.scala.Predef.String) => esService.search(requestContext, searchDTO, index)).expects(*,*).returns(concurrent.Future{validBatchData()})
+        ((requestContext: RequestContext, searchDTO: _root_.org.sunbird.dto.SearchDTO, index: _root_.scala.Predef.String) => esService.search(requestContext, searchDTO, index)).expects(*,*,*).returns(concurrent.Future{validBatchData()})
         val result = callActorForFailure(getAssementUpdateRequest(), Props(new ContentConsumptionActor().setCassandraOperation(cassandraOperation, false).setEsService(esService)))
         assert(result.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
     }

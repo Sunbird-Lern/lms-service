@@ -1,18 +1,15 @@
 package org.sunbird.auth.verifier;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.jclouds.openstack.nova.v2_0.domain.Server;
-import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.common.models.util.LoggerUtil;
 
 import java.util.Map;
 
 public class ManagedTokenValidator {
     
     private static ObjectMapper mapper = new ObjectMapper();
+    private static LoggerUtil logger = new LoggerUtil(ManagedTokenValidator.class);
     
     /** managedtoken is validated and requestedByUserID values are validated aganist the managedEncToken
      * @param managedEncToken
@@ -30,21 +27,20 @@ public class ManagedTokenValidator {
             String payLoad = header + JsonKey.DOT_SEPARATOR + body;
             Map<Object, Object> headerData = mapper.readValue(new String(decodeFromBase64(header)), Map.class);
             String keyId = headerData.get("kid").toString();
-            ProjectLogger.log("ManagedTokenValidator:verify: keyId: " + keyId,
-                    LoggerEnum.INFO.name());
+           logger.info(null, "ManagedTokenValidator:verify: keyId: " + keyId);
             Map<String, String> tokenBody = mapper.readValue(new String(decodeFromBase64(body)), Map.class);
             String parentId = tokenBody.get(JsonKey.PARENT_ID);
             String muaId = tokenBody.get(JsonKey.SUB);
-            ProjectLogger.log("ManagedTokenValidator:verify : X-Authenticated-For validation starts.", LoggerEnum.INFO.name());
+           logger.info(null, "ManagedTokenValidator:verify : X-Authenticated-For validation starts.");
             isValid = CryptoUtil.verifyRSASign(payLoad, decodeFromBase64(signature), KeyManager.getPublicKey(keyId).getPublicKey(), JsonKey.SHA_256_WITH_RSA);
-            ProjectLogger.log("ManagedTokenValidator:verify : X-Authenticated-For validation done and isValid = " + isValid, LoggerEnum.INFO.name());
+           logger.info(null, "ManagedTokenValidator:verify : X-Authenticated-For validation done and isValid = " + isValid);
             isValid &= parentId.equalsIgnoreCase(requestedByUserId);
-            ProjectLogger.log("ManagedTokenValidator:verify : ParentId and RequestedBy userId validation done and isValid = " + isValid, LoggerEnum.INFO.name());
+           logger.info(null, "ManagedTokenValidator:verify : ParentId and RequestedBy userId validation done and isValid = " + isValid);
             if (isValid) {
                 managedFor = muaId;
             }
         } catch (Exception ex) {
-            ProjectLogger.log("Exception in ManagedTokenValidator: verify ", LoggerEnum.ERROR);
+           logger.error(null, "Exception in ManagedTokenValidator: verify ", ex);
             ex.printStackTrace();
         }
         return managedFor;

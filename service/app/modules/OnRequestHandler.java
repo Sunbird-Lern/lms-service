@@ -124,9 +124,9 @@ public class OnRequestHandler implements ActionCreator {
               }
           }
           Map<String, Object> reqContext = new WeakHashMap<>();
-          request.flash().put(JsonKey.SIGNUP_TYPE, signType);
+          request = request.addAttr(Attrs.SIGNUP_TYPE, signType);
           reqContext.put(JsonKey.SIGNUP_TYPE, signType);
-          request.flash().put(JsonKey.REQUEST_SOURCE, source);
+          request = request.addAttr(Attrs.REQUEST_SOURCE, source);
           reqContext.put(JsonKey.REQUEST_SOURCE, source);
 
           // set env and channel to the
@@ -142,27 +142,27 @@ public class OnRequestHandler implements ActionCreator {
                               : JsonKey.DEFAULT_ROOT_ORG_ID;
           }
           reqContext.put(JsonKey.CHANNEL, channel);
-          request.flash().put(JsonKey.CHANNEL, channel);
+          request = request.addAttr(Attrs.CHANNEL, channel);
           reqContext.put(JsonKey.ENV, getEnv(request));
           reqContext.put(JsonKey.REQUEST_ID, requestId);
           Optional<String> optionalAppId = request.header(HeaderParam.X_APP_ID.getName());
           // check if in request header X-app-id is coming then that need to
           // be pass in search telemetry.
           if (optionalAppId.isPresent()) {
-              request.flash().put(JsonKey.APP_ID, optionalAppId.get());
+              request = request.addAttr(Attrs.APP_ID, optionalAppId.get());
               reqContext.put(JsonKey.APP_ID, optionalAppId.get());
           }
           // checking device id in headers
           Optional<String> optionalDeviceId = request.header(HeaderParam.X_Device_ID.getName());
           if (optionalDeviceId.isPresent()) {
-              request.flash().put(JsonKey.DEVICE_ID, optionalDeviceId.get());
+              request = request.addAttr(Attrs.DEVICE_ID, optionalDeviceId.get());
               reqContext.put(JsonKey.DEVICE_ID, optionalDeviceId.get());
           }
           if (!USER_UNAUTH_STATES.contains(userId)) {
               reqContext.put(JsonKey.ACTOR_ID, userId);
               reqContext.put(JsonKey.ACTOR_TYPE, StringUtils.capitalize(JsonKey.USER));
-              request.flash().put(JsonKey.ACTOR_ID, userId);
-              request.flash().put(JsonKey.ACTOR_TYPE, JsonKey.USER);
+              request = request.addAttr(Attrs.ACTOR_ID, userId);
+              request = request.addAttr(Attrs.ACTOR_TYPE, JsonKey.USER);
           } else {
               Optional<String> optionalConsumerId = request.header(HeaderParam.X_Consumer_ID.getName());
               String consumerId;
@@ -173,8 +173,8 @@ public class OnRequestHandler implements ActionCreator {
               }
               reqContext.put(JsonKey.ACTOR_ID, consumerId);
               reqContext.put(JsonKey.ACTOR_TYPE, StringUtils.capitalize(JsonKey.CONSUMER));
-              request.flash().put(JsonKey.ACTOR_ID, consumerId);
-              request.flash().put(JsonKey.ACTOR_TYPE, JsonKey.CONSUMER);
+              request = request.addAttr(Attrs.ACTOR_ID, consumerId);
+              request = request.addAttr(Attrs.ACTOR_TYPE, JsonKey.CONSUMER);
           }
           Map<String, Object> map = new WeakHashMap<>();
           map.put(JsonKey.CONTEXT, reqContext);

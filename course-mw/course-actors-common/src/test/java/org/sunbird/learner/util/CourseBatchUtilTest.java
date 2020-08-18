@@ -137,7 +137,7 @@ public class CourseBatchUtilTest {
         .thenReturn(CustomObjectBuilder.getEmptyMap().asESIdentifierResult());
     try {
       Map<String, Object> courseBatchOut =
-          CourseBatchUtil.validateCourseBatch(null, "courseId", "batchId");
+          CourseBatchUtil.validateCourseBatch(Mockito.any(), "courseId", "batchId");
     } catch (ProjectCommonException ex) {
       Assert.assertNotNull(ex);
       Assert.assertEquals(ResponseCode.CLIENT_ERROR.getErrorCode(), ex.getCode());
@@ -150,7 +150,7 @@ public class CourseBatchUtilTest {
     group.withESMock(new ESMocker());
     CustomObjectWrapper<Map<String, Object>> courseBatchIn =
         CustomObjectBuilder.getRandomCourseBatch();
-    when(group.getESMockerService().getDataByIdentifier(null, Mockito.anyString(), Mockito.anyString()))
+    when(group.getESMockerService().getDataByIdentifier(Mockito.any(), Mockito.anyString(), Mockito.anyString()))
         .thenReturn(courseBatchIn.asESIdentifierResult());
     try {
       Map<String, Object> courseBatchOut =
@@ -168,7 +168,7 @@ public class CourseBatchUtilTest {
     group.withESMock(new ESMocker());
     when(group
             .getESMockerService()
-            .save(null, Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
+            .save(Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
         .thenReturn(Futures.successful("randomBatchId"));
     CourseBatchUtil.syncCourseBatchForeground(
             null, "randomBatchId", CustomObjectBuilder.getRandomCourseBatch().get());

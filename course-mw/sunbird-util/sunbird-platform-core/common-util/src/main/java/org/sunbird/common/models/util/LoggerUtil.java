@@ -11,7 +11,6 @@ import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.telemetry.util.TelemetryEvents;
 import org.sunbird.telemetry.util.TelemetryWriter;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class LoggerUtil {
@@ -63,7 +62,7 @@ public class LoggerUtil {
     
     public void debug(RequestContext requestContext, String message, Object data) {
         if(isDebugEnabled(requestContext)) {
-            logger.debug(Markers.appendEntries(requestContext.getContextMap()), message, data);
+            logger.info(Markers.appendEntries(requestContext.getContextMap()), message, data);
         } else {
             logger.debug(message, data);
         }
@@ -72,8 +71,6 @@ public class LoggerUtil {
     public void debug(RequestContext requestContext, String message) {debug(requestContext, message, null);}
 
     private static boolean isDebugEnabled(RequestContext requestContext) {
-        if(null != requestContext && StringUtils.equalsIgnoreCase("true", requestContext.getDebugEnabled())) {
-        }
         return (null != requestContext && StringUtils.equalsIgnoreCase("true", requestContext.getDebugEnabled()));
     }
 

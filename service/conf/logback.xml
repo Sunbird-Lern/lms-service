@@ -64,7 +64,7 @@
         <appender-ref ref="queryLoggerAppender" />
     </logger>
     
-    <logger name="org.sunbird" level="DEBUG">
+    <logger name="org.sunbird" level="INFO">
         <appender-ref ref="defaultLoggerAppender" />
     </logger>
 

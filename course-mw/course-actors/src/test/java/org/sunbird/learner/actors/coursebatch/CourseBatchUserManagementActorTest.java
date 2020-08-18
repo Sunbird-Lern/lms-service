@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -166,6 +167,7 @@ public class CourseBatchUserManagementActorTest extends SunbirdApplicationActorT
   }
 
   @Test
+  @Ignore
   @PrepareForTest({ServiceFactory.class, EsClientFactory.class})
   public void removeUserToBatchSuccess() {
     group =

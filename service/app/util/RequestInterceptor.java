@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.request.HeaderParam;
 import play.mvc.Http;
@@ -19,6 +20,7 @@ public class RequestInterceptor {
 
   public static List<String> restrictedUriList = null;
   private static ConcurrentHashMap<String, Short> apiHeaderIgnoreMap = new ConcurrentHashMap<>();
+  private static LoggerUtil logger =  new LoggerUtil(RequestInterceptor.class);
 
   private RequestInterceptor() {}
 
@@ -85,7 +87,7 @@ public class RequestInterceptor {
             clientAccessTokenId = null;
           }
         } catch (Exception ex) {
-          ProjectLogger.log(ex.getMessage(), ex);
+          logger.error(null, ex.getMessage(), ex);
           clientAccessTokenId = null;
         }
         return StringUtils.isNotBlank(clientAccessTokenId)

@@ -17,6 +17,7 @@ import org.sunbird.common.request.Request;
 import org.sunbird.common.request.RequestValidator;
 import play.mvc.Http;
 import play.mvc.Result;
+import util.Attrs;
 
 /**
  * This controller will handle all the request related user and organization search.
@@ -42,8 +43,8 @@ public class SearchController extends BaseController {
       RequestValidator.validateSyncRequest(reqObj);
       String operation = (String) reqObj.getRequest().get(JsonKey.OPERATION_FOR);
       reqObj.setOperation(ActorOperations.SYNC.getValue());
-      reqObj.setRequestId(httpRequest.flash().get(JsonKey.REQUEST_ID));
-      reqObj.getRequest().put(JsonKey.CREATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
+      reqObj.setRequestId(httpRequest.attrs().getOptional(Attrs.REQUEST_ID).orElse(null));
+      reqObj.getRequest().put(JsonKey.CREATED_BY, httpRequest.attrs().getOptional(Attrs.USER_ID).orElse(null));
       reqObj.setEnv(getEnvironment());
       HashMap<String, Object> map = new HashMap<>();
       map.put(JsonKey.DATA, reqObj.getRequest());

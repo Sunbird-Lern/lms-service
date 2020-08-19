@@ -21,6 +21,7 @@ import org.sunbird.common.models.util.ProjectUtil.EsType;
 import org.sunbird.common.request.Request;
 import play.mvc.Http;
 import play.mvc.Result;
+import util.Attrs;
 
 public class CourseBatchController extends BaseController {
 
@@ -110,9 +111,9 @@ public class CourseBatchController extends BaseController {
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
         reqObj.put("creatorDetails", httpRequest.queryString().containsKey("creatorDetails"));
       reqObj.setOperation(ActorOperations.COMPOSITE_SEARCH.getValue());
-      reqObj.setRequestId(httpRequest.flash().get(JsonKey.REQUEST_ID));
+      reqObj.setRequestId(httpRequest.attrs().getOptional(Attrs.REQUEST_ID).orElse(null));
       reqObj.setEnv(getEnvironment());
-      reqObj.put(JsonKey.REQUESTED_BY, httpRequest.flash().get(JsonKey.USER_ID));
+      reqObj.put(JsonKey.REQUESTED_BY, httpRequest.attrs().getOptional(Attrs.USER_ID).orElse(null));
       String requestedField = httpRequest.getQueryString(JsonKey.FIELDS);
       reqObj.getContext().put(JsonKey.PARTICIPANTS, requestedField);
       List<String> esObjectType = new ArrayList<>();

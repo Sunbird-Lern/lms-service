@@ -75,8 +75,8 @@ public class BaseController extends Controller {
 
   private RequestContext getRequestContext(Request httpRequest, String actorOperation) {
     RequestContext requestContext = new RequestContext(httpRequest.attrs().getOptional(Attrs.USER_ID).orElse(null), 
-            httpRequest.header("x-device-id").get(), httpRequest.header("x-session-id").get(),
-            httpRequest.header("x-app-id").get(), httpRequest.header("x-app-ver").get(),
+            httpRequest.header("x-device-id").orElse(null), httpRequest.header("x-session-id").orElse(null),
+            httpRequest.header("x-app-id").orElse(null), httpRequest.header("x-app-ver").orElse(null),
             httpRequest.header("x-request-id").orElse(UUID.randomUUID().toString()),
             (httpRequest.header("x-trace-enabled").isPresent() ? httpRequest.header("x-trace-enabled").orElse(debugEnabled): debugEnabled),
             actorOperation);

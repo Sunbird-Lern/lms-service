@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.telemetry.util.TelemetryEvents;
@@ -16,6 +18,7 @@ import play.libs.streams.Accumulator;
 import play.mvc.EssentialAction;
 import play.mvc.EssentialFilter;
 import play.mvc.Result;
+import util.Attrs;
 
 public class AccessLogFilter extends EssentialFilter {
 
@@ -49,16 +52,18 @@ public class AccessLogFilter extends EssentialFilter {
                                     params.put(JsonKey.DURATION, requestTime);
                                     params.put(JsonKey.STATUS, result.status());
                                     params.put(JsonKey.LOG_LEVEL, JsonKey.INFO);
-                                    String contextDetails = request.flash().get(JsonKey.CONTEXT);
-                                    Map<String, Object> context =
-                                            objectMapper.readValue(
-                                                    contextDetails, new TypeReference<Map<String, Object>>() {});
-                                    req.setRequest(
-                                            generateTelemetryRequestForController(
-                                                    TelemetryEvents.LOG.getName(),
-                                                    params,
-                                                    (Map<String, Object>) context.get(JsonKey.CONTEXT)));
-                                    TelemetryWriter.write(req);
+                                    String contextDetails = request.attrs().getOptional(Attrs.CONTEXT).orElse("");
+                                    if(StringUtils.isNotBlank(contextDetails)) {
+                                        Map<String, Object> context =
+                                                objectMapper.readValue(
+                                                        contextDetails, new TypeReference<Map<String, Object>>() {});
+                                        req.setRequest(
+                                                generateTelemetryRequestForController(
+                                                        TelemetryEvents.LOG.getName(),
+                                                        params,
+                                                        (Map<String, Object>) context.get(JsonKey.CONTEXT)));
+                                        TelemetryWriter.write(req);
+                                    }
                                 } catch (Exception ex) {
                                     ProjectLogger.log("AccessLogFilter:apply Exception in writing telemetry", ex);
                                 }

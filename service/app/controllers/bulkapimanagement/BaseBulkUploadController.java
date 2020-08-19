@@ -22,6 +22,7 @@ import play.libs.Files;
 import play.mvc.Http;
 import play.mvc.Http.MultipartFormData;
 import play.mvc.Http.MultipartFormData.FilePart;
+import util.Attrs;
 
 /**
  * Class to provide common functionality to ulk upload controllers.
@@ -92,10 +93,10 @@ public class BaseBulkUploadController extends BaseController {
       checkFileSize(byteArray, objectType);
     }
     reqObj.setOperation(operation);
-    reqObj.setRequestId(httpRequest.flash().get(JsonKey.REQUEST_ID));
+    reqObj.setRequestId(httpRequest.attrs().getOptional(Attrs.REQUEST_ID).orElse(null));
     reqObj.setEnv(getEnvironment());
     map.put(JsonKey.OBJECT_TYPE, objectType);
-    map.put(JsonKey.CREATED_BY, httpRequest.flash().getOptional(JsonKey.USER_ID).orElse(null));
+    map.put(JsonKey.CREATED_BY, httpRequest.attrs().getOptional(Attrs.USER_ID).orElse(null));
     map.put(JsonKey.FILE, byteArray);
     HashMap<String, Object> innerMap = new HashMap<>();
     innerMap.put(JsonKey.DATA, map);

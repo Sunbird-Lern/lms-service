@@ -174,24 +174,24 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         assert(null != response)
     }
 
-    "CourseEnrolmentActor: enrol at the day of enrolment endday and batch enddate" should "return success on enrol" in {
-        (courseDao.readById(_: String, _: String)).expects(*,*).returns(getBatchWithValidEnrolmentEnddayandBatchEndday())
+    "CourseEnrolmentActor: enrol at the enrolmentEndDate and batchEndDate" should "return success on enrol" in {
+        (courseDao.readById(_: String, _: String)).expects(*,*).returns(getBatchWithValidEnrolmentEndDateAndBatchEndDate())
         (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(null)
         (userDao.insertV2(_: java.util.Map[String, AnyRef])).expects(*)
         val response = callActor(getEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         assert("Success".equalsIgnoreCase(response.get("response").asInstanceOf[String]))
     }
 
-    "CourseEnrolmentActor: enrol after batch endday" should "return Exception on enrol" in {
-        (courseDao.readById(_: String, _: String)).expects(*,*).returns(getBatchDataWithInvalidBatchEndday())
+    "CourseEnrolmentActor: enrol after batchEndDate" should "return Exception on enrol" in {
+        (courseDao.readById(_: String, _: String)).expects(*,*).returns(getBatchWithInvalidBatchEndDate())
         (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(null)
         val response = callActorForFailure(getEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
         assert(response.getMessage().equals(ResponseCode.courseBatchAlreadyCompleted.getErrorMessage))
     }
 
-    "CourseEnrolmentActor: enrol after enrolment endday" should "return Exception on enrol" in {
-        (courseDao.readById(_: String, _: String)).expects(*,*).returns(getBatchDataWithInvalidEnrolmentEndday())
+    "CourseEnrolmentActor: enrol after enrolmentEndDate" should "return Exception on enrol" in {
+        (courseDao.readById(_: String, _: String)).expects(*,*).returns(getBatchWithInvalidEnrolmentEndDate())
         (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(null)
         val response = callActorForFailure(getEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
@@ -274,22 +274,26 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         JsonUtil.deserialize(responseString, classOf[Response])
     }
     
-    private def getBatchWithValidEnrolmentEnddayandBatchEndday(): CourseBatch = {
-        val formattedDateTime = LocalDateTime.now().format(dateTimeFormatter)
-        val batchData: String = "{\"batchId\": \"0130901005678510081\",\"endDate\": \""+ formattedDateTime +"\",\"description\": \"batch description1\",\"batchId\": \"0130901005678510081\",\"createdDate\": \"2020-08-20 08:28:47:534+0000\",\"createdBy\": \"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"name\": \"Batch-3\",\"enrollmentType\": \"open\",\"courseId\": \"do_11308799051844812811152\",\"enrollmentEndDate\": \""+ formattedDateTime +"\",\"startDate\": \"2020-08-20\",\"status\": 1}"
+    private def getBatchWithValidEnrolmentEndDateAndBatchEndDate(): CourseBatch = {
+        val startDate = LocalDateTime.now().minusDays(3).format(dateTimeFormatter)
+        val today = LocalDateTime.now().format(dateTimeFormatter)
+        val batchData: String = "{\"batchId\": \"0130901005678510081\",\"endDate\": \""+ today +"\",\"description\": \"batch description1\",\"batchId\": \"0130901005678510081\",\"createdDate\": \"2020-08-20 08:28:47:534+0000\",\"createdBy\": \"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"name\": \"Batch-3\",\"enrollmentType\": \"open\",\"courseId\": \"do_11308799051844812811152\",\"enrollmentEndDate\": \""+ today +"\",\"startDate\": \""+ startDate +"\",\"status\": 1}"
         mapper.readValue(batchData, classOf[CourseBatch])
     }
 
-    private def getBatchDataWithInvalidEnrolmentEndday(): CourseBatch = {
-        val formattedDateTime = LocalDateTime.now().minusDays(1).format(dateTimeFormatter)
-        val formattedDateTime_endDate = LocalDateTime.now().format(dateTimeFormatter)
-        val batchData: String = "{\"batchId\": \"0130901005678510081\",\"endDate\": \""+ formattedDateTime_endDate +"\",\"description\": \"batch description1\",\"batchId\": \"0130901005678510081\",\"createdDate\": \"2020-08-20 08:28:47:534+0000\",\"createdBy\": \"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"name\": \"Batch-3\",\"enrollmentType\": \"open\",\"courseId\": \"do_11308799051844812811152\",\"enrollmentEndDate\": \""+ formattedDateTime +"\",\"startDate\": \"2020-08-20\",\"status\": 1}"
+    private def getBatchWithInvalidEnrolmentEndDate(): CourseBatch = {
+        val startDate = LocalDateTime.now().minusDays(3).format(dateTimeFormatter)
+        val endDate = LocalDateTime.now().plusDays(1).format(dateTimeFormatter)
+        val enrolmentEnddate = LocalDateTime.now().minusDays(1).format(dateTimeFormatter)
+        val batchData: String = "{\"batchId\": \"0130901005678510081\",\"endDate\": \""+ endDate +"\",\"description\": \"batch description1\",\"batchId\": \"0130901005678510081\",\"createdDate\": \"2020-08-20 08:28:47:534+0000\",\"createdBy\": \"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"name\": \"Batch-3\",\"enrollmentType\": \"open\",\"courseId\": \"do_11308799051844812811152\",\"enrollmentEndDate\": \""+ enrolmentEnddate +"\",\"startDate\": \""+ startDate +"\",\"status\": 1}"
         mapper.readValue(batchData, classOf[CourseBatch])
     }
 
-    private def getBatchDataWithInvalidBatchEndday(): CourseBatch = {
-        val formattedDateTime = LocalDateTime.now().minusDays(1).format(dateTimeFormatter)
-        val batchData: String = "{\"batchId\": \"0130901005678510081\",\"endDate\": \""+ formattedDateTime +"\",\"description\": \"batch description1\",\"batchId\": \"0130901005678510081\",\"createdDate\": \"2020-08-20 08:28:47:534+0000\",\"createdBy\": \"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"name\": \"Batch-3\",\"enrollmentType\": \"open\",\"courseId\": \"do_11308799051844812811152\",\"enrollmentEndDate\": \"2020-08-20\",\"startDate\": \"2020-08-20\",\"status\": 1}"
+    private def getBatchWithInvalidBatchEndDate(): CourseBatch = {
+        val startDate = LocalDateTime.now().minusDays(3).format(dateTimeFormatter)
+        val endDate = LocalDateTime.now().minusDays(1).format(dateTimeFormatter)
+        val enrolmentEndDate = LocalDateTime.now().minusDays(2).format(dateTimeFormatter)
+        val batchData: String = "{\"batchId\": \"0130901005678510081\",\"endDate\": \""+ endDate +"\",\"description\": \"batch description1\",\"batchId\": \"0130901005678510081\",\"createdDate\": \"2020-08-20 08:28:47:534+0000\",\"createdBy\": \"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"name\": \"Batch-3\",\"enrollmentType\": \"open\",\"courseId\": \"do_11308799051844812811152\",\"enrollmentEndDate\": \""+ enrolmentEndDate +"\",\"startDate\": \""+ startDate +"\",\"status\": 1}"
         mapper.readValue(batchData, classOf[CourseBatch])
     }
 }

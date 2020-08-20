@@ -32,6 +32,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         (courseDao.readById(_: String, _: String)).expects(*,*).returns(validCourseBatch())
         (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(null)
         (userDao.insertV2(_: java.util.Map[String, AnyRef])).expects(*)
+        (cacheUtil.delete(_: String)).expects(*).once()
         val response = callActor(getEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         assert("Success".equalsIgnoreCase(response.get("response").asInstanceOf[String]))
     }
@@ -96,6 +97,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         (courseDao.readById(_: String, _: String)).expects(*,*).returns(validCourseBatch())
         (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(userCourse)
         (userDao.updateV2(_: String,_: String,_: String, _: java.util.Map[String, AnyRef])).expects(*,*,*,*)
+        (cacheUtil.delete(_: String)).expects(*).once()
         val response = callActor(getEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         assert("Success".equalsIgnoreCase(response.get("response").asInstanceOf[String]))
     }
@@ -106,6 +108,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         (courseDao.readById(_: String, _: String)).expects(*,*).returns(validCourseBatch())
         (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(userCourse)
         (userDao.updateV2(_: String,_: String,_: String, _: java.util.Map[String, AnyRef])).expects(*,*,*,*)
+        (cacheUtil.delete(_: String)).expects(*).once()
         val response = callActor(getUnEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         assert("Success".equalsIgnoreCase(response.get("response").asInstanceOf[String]))
     }

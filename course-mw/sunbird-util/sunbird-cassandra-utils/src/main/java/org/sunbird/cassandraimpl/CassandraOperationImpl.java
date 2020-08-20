@@ -403,15 +403,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
           .entrySet()
           .stream()
           .forEach(
-              x -> {
-                if(StringUtils.equalsIgnoreCase(x.getKey(), "cert_templates")) {
-                  Map<String, Object> template = (Map<String, Object>) x.getValue();
-                  template.entrySet().forEach(each -> {
-                    Assignment assignment = QueryBuilder.put(x.getKey(), each.getKey(), each.getValue());
-                    assignments.and(assignment);
-                  } );
-                } else assignments.and(QueryBuilder.set(x.getKey(), x.getValue()));
-              });
+              x -> { assignments.and(QueryBuilder.set(x.getKey(), x.getValue())); });
       compositeKey
           .entrySet()
           .stream()

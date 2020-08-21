@@ -81,6 +81,8 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         validateEnrolment(batchData, enrolmentData, true)
         val data: java.util.Map[String, AnyRef] = createUserEnrolmentMap(userId, courseId, batchId, enrolmentData, request.getContext.getOrDefault(JsonKey.REQUEST_ID, "").asInstanceOf[String])
         upsertEnrollment(userId, courseId, batchId, data, (null == enrolmentData))
+        logger.info("CourseEnrolmentActor :: enroll :: Deleting redis for key " + getCacheKey(userId))
+        cacheUtil.delete(getCacheKey(userId))
         sender().tell(successResponse(), self)
         generateTelemetryAudit(userId, courseId, batchId, batchData, "user.enrol", JsonKey.CREATE, request.getContext)
         notifyUser(userId, batchData, JsonKey.ADD)
@@ -96,6 +98,8 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         validateEnrolment(batchData, enrolmentData, false)
         val data: java.util.Map[String, AnyRef] = new java.util.HashMap[String, AnyRef]() {{ put(JsonKey.ACTIVE, ProjectUtil.ActiveStatus.INACTIVE.getValue.asInstanceOf[AnyRef]) }}
         upsertEnrollment(userId,courseId, batchId, data, false)
+        logger.info("CourseEnrolmentActor :: unEnroll :: Deleting redis for key " + getCacheKey(userId))
+        cacheUtil.delete(getCacheKey(userId))
         sender().tell(successResponse(), self)
         generateTelemetryAudit(userId, courseId, batchId, batchData, "user.unenrol", JsonKey.UPDATE, request.getContext)
         notifyUser(userId, batchData, JsonKey.REMOVE)

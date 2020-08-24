@@ -213,9 +213,9 @@ public class CourseBatchManagementActor extends BaseActor {
     validateMentors(courseBatch);
     participantsMap = getMentorLists(participantsMap, oldBatch, courseBatch);
     Map<String, Object> courseBatchMap = new ObjectMapper().convertValue(courseBatch, Map.class);
-    Map<String, Object> updatedCourseObject = mapESFieldsToObject(courseBatchMap);
     Response result =
         courseBatchDao.update((String) request.get(JsonKey.COURSE_ID), batchId, courseBatchMap);
+    Map<String, Object> updatedCourseObject = mapESFieldsToObject(courseBatchMap);
     sender().tell(result, self());
     CourseBatchUtil.syncCourseBatchForeground(batchId, updatedCourseObject);
 

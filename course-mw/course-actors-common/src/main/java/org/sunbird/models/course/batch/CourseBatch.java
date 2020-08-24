@@ -34,6 +34,9 @@ public class CourseBatch implements Serializable {
   private Integer status;
   private String updatedDate;
 
+  private Map<String, Object> cert_templates;
+
+
   public String getCourseCreator() {
     return courseCreator;
   }
@@ -166,4 +169,9 @@ public class CourseBatch implements Serializable {
   public void setBatchId(String batchId) {
     this.batchId = batchId;
   }
+
+  public Map<String, Object> getCert_templates() {
+    return cert_templates;
+  }
+
 }

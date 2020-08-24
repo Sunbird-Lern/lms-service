@@ -403,7 +403,9 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
           .entrySet()
           .stream()
           .forEach(
-              x -> { assignments.and(QueryBuilder.set(x.getKey(), x.getValue())); });
+              x -> {
+                assignments.and(QueryBuilder.set(x.getKey(), x.getValue()));
+              });
       compositeKey
           .entrySet()
           .stream()

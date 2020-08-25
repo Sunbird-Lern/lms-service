@@ -267,6 +267,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             enrolment.put("progress", completedCount.asInstanceOf[AnyRef])
             enrolment.put("status", getCompletionStatus(completedCount, leafNodesCount).asInstanceOf[AnyRef])
             enrolment.put("completionPercentage", getCompletionPerc(completedCount, leafNodesCount).asInstanceOf[AnyRef])
+            enrolment.put(JsonKey.COLLECTION_ID, enrolment.get(JsonKey.COURSE_ID))
         })
         enrolmentMap.values.toList.asJava
     }

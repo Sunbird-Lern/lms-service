@@ -140,6 +140,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             enrolment.put(JsonKey.COURSE_LOGO_URL, courseContent.get(JsonKey.APP_ICON))
             enrolment.put(JsonKey.CONTENT_ID, enrolment.get(JsonKey.COURSE_ID))
             enrolment.put(JsonKey.CONTENT, courseContent)
+            enrolment.put(JsonKey.COLLECTION_ID, enrolment.get(JsonKey.COURSE_ID))
             enrolment
         }).toList.asJava
     }
@@ -269,7 +270,6 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             enrolment.put("progress", completedCount.asInstanceOf[AnyRef])
             enrolment.put("status", getCompletionStatus(completedCount, leafNodesCount).asInstanceOf[AnyRef])
             enrolment.put("completionPercentage", getCompletionPerc(completedCount, leafNodesCount).asInstanceOf[AnyRef])
-            enrolment.put(JsonKey.COLLECTION_ID, enrolment.get(JsonKey.COURSE_ID))
         })
         enrolmentMap.values.toList.asJava
     }

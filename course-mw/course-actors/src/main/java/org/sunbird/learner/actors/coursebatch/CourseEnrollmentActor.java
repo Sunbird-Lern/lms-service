@@ -41,7 +41,7 @@ import scala.concurrent.Future;
 public class CourseEnrollmentActor extends BaseActor {
 
   private static String EKSTEP_COURSE_SEARCH_QUERY =
-      "{\"request\": {\"filters\":{\"contentType\": [\"Course\"], \"objectType\": [\"Content\"], \"identifier\": \"COURSE_ID_PLACEHOLDER\", \"status\": [\"Live\", \"Unlisted\"], \"mimeType\": \"application/vnd.ekstep.content-collection\", \"trackable\": \"Yes\"},\"limit\": 1}}";
+      "{\"request\": {\"filters\":{\"contentType\": [\"Course\"], \"identifier\": \"COURSE_ID_PLACEHOLDER\", \"status\": [\"Live\", \"Unlisted\"], \"mimeType\": \"application/vnd.ekstep.content-collection\", \"trackable\": \"Yes\"},\"limit\": 1}}";
 
   private CourseBatchDao courseBatchDao = new CourseBatchDaoImpl();
   private UserCoursesDao userCourseDao = UserCoursesDaoImpl.getInstance();

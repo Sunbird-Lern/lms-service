@@ -218,7 +218,7 @@ public class LearnerStateActor extends BaseActor {
     filters.put(JsonKey.CONTENT_TYPE, new String[] {JsonKey.COURSE});
     filters.put(JsonKey.IDENTIFIER, courseIds);
     filters.put(JsonKey.STATUS, "Live");
-    filters.put(JsonKey.MIME_TYPE, JsonKey.COLLECTION);
+    filters.put(JsonKey.MIME_TYPE, JsonKey.COLLECTION_MIME_TYPE);
     filters.put(JsonKey.TRACKABLE, JsonKey.YES);
     if(MapUtils.isNotEmpty(filterMap)) filters.putAll(filterMap);
     ProjectLogger.log(

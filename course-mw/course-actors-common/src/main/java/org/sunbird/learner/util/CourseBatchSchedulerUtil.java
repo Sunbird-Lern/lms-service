@@ -31,7 +31,7 @@ public final class CourseBatchSchedulerUtil {
   public static Map<String, String> headerMap = new HashMap<>();
   private static ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private static String EKSTEP_COURSE_SEARCH_QUERY =
-      "{\"request\": {\"filters\":{\"contentType\": [\"Course\"], \"identifier\": \"COURSE_ID_PLACEHOLDER\", \"status\": \"Live\", \"mimeType\": \"application/vnd.ekstep.content-collection\", \"trackable\": \"Yes\"},\"limit\": 1}}";
+      "{\"request\": {\"filters\":{\"contentType\": [\"Course\"], \"identifier\": \"COURSE_ID_PLACEHOLDER\", \"status\": \"Live\", \"mimeType\": \"application/vnd.ekstep.content-collection\", \"trackable.enabled\": \"Yes\"},\"limit\": 1}}";
 
   static {
     String header = ProjectUtil.getConfigValue(JsonKey.EKSTEP_AUTHORIZATION);
@@ -196,9 +196,6 @@ public final class CourseBatchSchedulerUtil {
     if (!StringUtils.isBlank(courseId)) {
       try {
         String query = EKSTEP_COURSE_SEARCH_QUERY.replaceAll("COURSE_ID_PLACEHOLDER", courseId);
-        ProjectLogger.log(
-                "CourseBatchSchedulerUtil :: getCourseObject :: searchQuery : " + query,
-                LoggerEnum.INFO.name());
         Map<String, Object> result = ContentUtil.searchContent(query, headers);
         if (null != result && !result.isEmpty() && result.get(JsonKey.CONTENTS) != null) {
           return ((List<Map<String, Object>>) result.get(JsonKey.CONTENTS)).get(0);

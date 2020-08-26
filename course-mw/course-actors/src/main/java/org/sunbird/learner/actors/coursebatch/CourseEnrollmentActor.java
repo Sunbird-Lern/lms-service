@@ -41,7 +41,7 @@ import scala.concurrent.Future;
 public class CourseEnrollmentActor extends BaseActor {
 
   private static String EKSTEP_COURSE_SEARCH_QUERY =
-      "{\"request\": {\"filters\":{\"contentType\": [\"Course\"], \"identifier\": \"COURSE_ID_PLACEHOLDER\", \"status\": [\"Live\", \"Unlisted\"], \"mimeType\": \"application/vnd.ekstep.content-collection\", \"trackable\": \"Yes\"},\"limit\": 1}}";
+      "{\"request\": {\"filters\":{\"contentType\": [\"Course\"], \"identifier\": \"COURSE_ID_PLACEHOLDER\", \"status\": [\"Live\", \"Unlisted\"], \"mimeType\": \"application/vnd.ekstep.content-collection\", \"trackable.enabled\": \"Yes\"},\"limit\": 1}}";
 
   private CourseBatchDao courseBatchDao = new CourseBatchDaoImpl();
   private UserCoursesDao userCourseDao = UserCoursesDaoImpl.getInstance();
@@ -238,9 +238,6 @@ public class CourseEnrollmentActor extends BaseActor {
     if (!StringUtils.isBlank(courseId)) {
       try {
         String query = EKSTEP_COURSE_SEARCH_QUERY.replaceAll("COURSE_ID_PLACEHOLDER", courseId);
-        ProjectLogger.log(
-                "CourseEnrollmentActor :: getCourseObjectFromEkStep :: searchQuery : " + query,
-                LoggerEnum.INFO.name());
         Map<String, Object> result = ContentUtil.searchContent(query, headers);
         if (null != result && !result.isEmpty() && result.get(JsonKey.CONTENTS) != null) {
           return ((List<Map<String, Object>>) result.get(JsonKey.CONTENTS)).get(0);

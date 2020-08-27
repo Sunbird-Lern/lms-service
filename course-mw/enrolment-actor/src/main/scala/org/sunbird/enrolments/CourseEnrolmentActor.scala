@@ -149,6 +149,8 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             put(JsonKey.IDENTIFIER, courseIds)
             put(JsonKey.CONTENT_TYPE, Array(JsonKey.COURSE))
             put(JsonKey.STATUS, "Live")
+            put(JsonKey.MIME_TYPE, JsonKey.COLLECTION_MIME_TYPE)
+            put(JsonKey.TRACKABLE_ENABLED, JsonKey.YES)
             putAll(request.getRequest.getOrDefault(JsonKey.FILTERS, new java.util.HashMap[String, AnyRef]).asInstanceOf[java.util.Map[String, AnyRef]])
         }}
         val searchRequest:java.util.Map[String, java.util.Map[String, AnyRef]] = new java.util.HashMap[String, java.util.Map[String, AnyRef]]() {{
@@ -267,6 +269,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             enrolment.put("progress", completedCount.asInstanceOf[AnyRef])
             enrolment.put("status", getCompletionStatus(completedCount, leafNodesCount).asInstanceOf[AnyRef])
             enrolment.put("completionPercentage", getCompletionPerc(completedCount, leafNodesCount).asInstanceOf[AnyRef])
+            enrolment.put(JsonKey.COLLECTION_ID, enrolment.get(JsonKey.COURSE_ID))
         })
         enrolmentMap.values.toList.asJava
     }

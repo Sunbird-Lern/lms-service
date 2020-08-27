@@ -178,25 +178,25 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
     }
 
     "CourseEnrolmentActor: enrol at the enrolmentEndDate and batchEndDate" should "return success on enrol" in {
-        (courseDao.readById(_: String, _: String)).expects(*,*).returns(getBatchWithValidEnrolmentEndDateAndBatchEndDate())
-        (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(null)
-        (userDao.insertV2(_: java.util.Map[String, AnyRef])).expects(*)
+        (courseDao.readById(_: String, _: String, _: RequestContext)).expects(*,*,*).returns(getBatchWithValidEnrolmentEndDateAndBatchEndDate())
+        (userDao.read(_: RequestContext,_: String,_: String,_: String)).expects(*,*,*,*).returns(null)
+        (userDao.insertV2(_: RequestContext,_: java.util.Map[String, AnyRef])).expects(*,*)
         (cacheUtil.delete(_: String)).expects(*).once()
         val response = callActor(getEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         assert("Success".equalsIgnoreCase(response.get("response").asInstanceOf[String]))
     }
 
     "CourseEnrolmentActor: enrol after batchEndDate" should "return Exception on enrol" in {
-        (courseDao.readById(_: String, _: String)).expects(*,*).returns(getBatchWithInvalidBatchEndDate())
-        (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(null)
+        (courseDao.readById(_: String, _: String,_: RequestContext)).expects(*,*,*).returns(getBatchWithInvalidBatchEndDate())
+        (userDao.read(_: RequestContext,_: String,_: String,_: String)).expects(*,*,*,*).returns(null)
         val response = callActorForFailure(getEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
         assert(response.getMessage().equals(ResponseCode.courseBatchAlreadyCompleted.getErrorMessage))
     }
 
     "CourseEnrolmentActor: enrol after enrolmentEndDate" should "return Exception on enrol" in {
-        (courseDao.readById(_: String, _: String)).expects(*,*).returns(getBatchWithInvalidEnrolmentEndDate())
-        (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(null)
+        (courseDao.readById(_: String, _: String,_: RequestContext)).expects(*,*,*).returns(getBatchWithInvalidEnrolmentEndDate())
+        (userDao.read(_: RequestContext,_: String,_: String,_: String)).expects(*,*,*,*).returns(null)
         val response = callActorForFailure(getEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         assert(response.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
         assert(response.getMessage().equals(ResponseCode.courseBatchEnrollmentDateEnded.getErrorMessage))

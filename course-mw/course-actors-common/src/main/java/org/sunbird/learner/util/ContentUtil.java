@@ -30,7 +30,7 @@ public final class ContentUtil {
 
   private static ObjectMapper mapper = new ObjectMapper();
   private static String EKSTEP_COURSE_SEARCH_QUERY =
-          "{\"request\": {\"filters\":{\"contentType\": [\"Course\"], \"objectType\": [\"Content\"], \"identifier\": \"COURSE_ID_PLACEHOLDER\", \"status\": [\"Live\", \"Unlisted\"]},\"limit\": 1}}";
+          "{\"request\": {\"filters\":{\"contentType\": [\"Course\"], \"identifier\": \"COURSE_ID_PLACEHOLDER\", \"status\": \"Live\", \"mimeType\": \"application/vnd.ekstep.content-collection\", \"trackable.enabled\": \"Yes\"},\"limit\": 1}}";
 
 
   private ContentUtil() {}

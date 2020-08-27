@@ -33,7 +33,9 @@ import org.sunbird.helper.ServiceFactory;
 import org.sunbird.kafka.client.InstructionEventGenerator;
 import org.sunbird.kafka.client.KafkaClient;
 import org.sunbird.learner.actors.coursebatch.CourseBatchManagementActor;
+import org.sunbird.learner.constants.CourseJsonKey;
 import org.sunbird.learner.util.CourseBatchUtil;
+import org.sunbird.learner.util.JsonUtil;
 import org.sunbird.learner.util.Util;
 
 @RunWith(PowerMockRunner.class)
@@ -157,7 +159,7 @@ public class CourseBatchManagementActorTest {
     return response;
   }
 
-  private Response getMockCassandraRecordByIdResponse(int batchProgressStatus) {
+  private Response getMockCassandraRecordByIdResponse(int batchProgressStatus) throws Exception {
 
     Response response = new Response();
     List<Map<String, Object>> list = new ArrayList<>();
@@ -170,6 +172,8 @@ public class CourseBatchManagementActorTest {
     courseResponseMap.put(JsonKey.COURSE_ID, "someCourseId");
     courseResponseMap.put(JsonKey.COURSE_CREATED_FOR, new ArrayList<Object>());
     courseResponseMap.put(JsonKey.STATUS, batchProgressStatus);
+    courseResponseMap.put(CourseJsonKey.CERTIFICATE_TEMPLATES_COLUMN, getCertTemplate());
+
 
     if (batchProgressStatus == ProjectUtil.ProgressStatus.STARTED.getValue()) {
 
@@ -483,5 +487,19 @@ public class CourseBatchManagementActorTest {
         ((ProjectCommonException) exception)
             .getCode()
             .equals(ResponseCode.invalidBatchStartDateError.getErrorCode()));
+  }
+
+  private Map<String, Object> getCertTemplate() throws Exception{
+    String template = " {\n" +
+            "    \"template_01_prad\": {\n" +
+            "        \"identifier\": \"template_01_prad\",\n" +
+            "        \"criteria\": \"{\\r\\n            \\\"enrollment\\\": {\\r\\n                \\\"status\\\": 2\\r\\n            }\\r\\n        }\",\n" +
+            "        \"name\": \"Course completion certificate prad\",\n" +
+            "        \"notifyTemplate\": \"{\\r\\n            \\\"emailTemplateType\\\": \\\"defaultCertTemp\\\",\\r\\n            \\\"subject\\\": \\\"Completion certificate\\\",\\r\\n            \\\"stateImgUrl\\\": \\\"https:\\/\\/sunbirddev.blob.core.windows.net\\/orgemailtemplate\\/img\\/File-0128212938260643843.png\\\",\\r\\n            \\\"regards\\\": \\\"Minister of Gujarat\\\",\\r\\n            \\\"regardsperson\\\": \\\"Chairperson\\\"\\r\\n        }\",\n" +
+            "        \"issuer\": \"{\\r\\n            \\\"name\\\": \\\"Gujarat Council of Educational Research and Training\\\",\\r\\n            \\\"publicKey\\\": [\\r\\n                \\\"7\\\",\\r\\n                \\\"8\\\"\\r\\n            ],\\r\\n            \\\"url\\\": \\\"https:\\/\\/gcert.gujarat.gov.in\\/gcert\\/\\\"\\r\\n        }\",\n" +
+            "        \"signatoryList\": \"[\\r\\n            {\\r\\n                \\\"image\\\": \\\"https:\\/\\/cdn.pixabay.com\\/photo\\/2014\\/11\\/09\\/08\\/06\\/signature-523237__340.jpg\\\",\\r\\n                \\\"name\\\": \\\"CEO Gujarat\\\",\\r\\n                \\\"id\\\": \\\"CEO\\\",\\r\\n                \\\"designation\\\": \\\"CEO\\\"\\r\\n            }\\r\\n        ]\"\n" +
+            "    }\n" +
+            "}";
+    return JsonUtil.deserialize(template, Map.class);
   }
 }

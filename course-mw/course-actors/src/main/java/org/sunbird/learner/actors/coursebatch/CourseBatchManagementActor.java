@@ -4,6 +4,7 @@ import static org.sunbird.common.models.util.JsonKey.ID;
 import static org.sunbird.common.models.util.JsonKey.PARTICIPANTS;
 
 import akka.actor.ActorRef;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.text.MessageFormat;
 import java.text.ParseException;
@@ -35,6 +36,7 @@ import org.sunbird.learner.constants.InstructionEvent;
 import org.sunbird.learner.util.ContentUtil;
 import org.sunbird.learner.util.CourseBatchSchedulerUtil;
 import org.sunbird.learner.util.CourseBatchUtil;
+import org.sunbird.learner.util.JsonUtil;
 import org.sunbird.learner.util.Util;
 import org.sunbird.models.course.batch.CourseBatch;
 import org.sunbird.telemetry.util.TelemetryUtil;
@@ -51,7 +53,8 @@ public class CourseBatchManagementActor extends BaseActor {
   private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
   private List<String> validCourseStatus = Arrays.asList("Live", "Unlisted");
   private String validContenttype = "Course";
-  //private LoggerUtil logger = new LoggerUtil(CourseBatchManagementActor.class);
+  private static final ObjectMapper mapper = new ObjectMapper();
+
 
   @Inject
   @Named("course-batch-notification-actor")
@@ -207,9 +210,10 @@ public class CourseBatchManagementActor extends BaseActor {
     Map<String, Object> courseBatchMap = new ObjectMapper().convertValue(courseBatch, Map.class);
     Response result =
         courseBatchDao.update(actorMessage.getRequestContext(), (String) request.get(JsonKey.COURSE_ID), batchId, courseBatchMap);
+    Map<String, Object> updatedCourseObject = mapESFieldsToObject(courseBatchMap);
     sender().tell(result, self());
 
-    CourseBatchUtil.syncCourseBatchForeground(actorMessage.getRequestContext(), batchId, courseBatchMap);
+    CourseBatchUtil.syncCourseBatchForeground(actorMessage.getRequestContext(), batchId, updatedCourseObject);
 
     targetObject =
         TelemetryUtil.generateTargetObject(batchId, TelemetryEnvKey.BATCH, JsonKey.UPDATE, null);
@@ -440,6 +444,7 @@ public class CourseBatchManagementActor extends BaseActor {
             (String) actorMessage.getContext().get(JsonKey.BATCH_ID));
     Map<String, Object> result =
         (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
+    result.put(JsonKey.COLLECTION_ID, result.getOrDefault(JsonKey.COURSE_ID, ""));
     Response response = new Response();
     response.put(JsonKey.RESPONSE, result);
     sender().tell(response, self());
@@ -817,5 +822,60 @@ public class CourseBatchManagementActor extends BaseActor {
     result.put(JsonKey.PARTICIPANTS, participants);
     response.put(JsonKey.BATCH, result);
     sender().tell(response, self());
+  }
+
+  private Map<String, Object> mapESFieldsToObject(Map<String, Object> courseBatch) {
+    Map<String, Map<String, Object>> certificateTemplates =
+            (Map<String, Map<String, Object>>)
+                    courseBatch.get(CourseJsonKey.CERTIFICATE_TEMPLATES_COLUMN);
+    if(MapUtils.isNotEmpty(certificateTemplates)) {
+      certificateTemplates
+              .entrySet()
+              .stream()
+              .forEach(
+                      cert_template ->
+                              certificateTemplates.put(
+                                      cert_template.getKey(), mapToObject(cert_template.getValue())));
+      courseBatch.put(CourseJsonKey.CERTIFICATE_TEMPLATES_COLUMN, certificateTemplates);
+    }
+    return courseBatch;
+  }
+
+  private Map<String, Object> mapToObject(Map<String, Object> template) {
+    try {
+      template.put(
+              JsonKey.CRITERIA,
+              mapper.readValue(
+                      (String) template.get(JsonKey.CRITERIA),
+                      new TypeReference<HashMap<String, Object>>() {}));
+      if(StringUtils.isNotEmpty((String)template.get(CourseJsonKey.SIGNATORY_LIST))) {
+        template.put(
+                CourseJsonKey.SIGNATORY_LIST,
+                mapper.readValue(
+                        (String) template.get(CourseJsonKey.SIGNATORY_LIST),
+                        new TypeReference<List<Object>>() {
+                        }));
+      }
+      if(StringUtils.isNotEmpty((String)template.get(CourseJsonKey.ISSUER))) {
+        template.put(
+                CourseJsonKey.ISSUER,
+                mapper.readValue(
+                        (String) template.get(CourseJsonKey.ISSUER),
+                        new TypeReference<HashMap<String, Object>>() {
+                        }));
+      }
+      if(StringUtils.isNotEmpty((String)template.get(CourseJsonKey.NOTIFY_TEMPLATE))) {
+        template.put(
+                CourseJsonKey.NOTIFY_TEMPLATE,
+                mapper.readValue(
+                        (String) template.get(CourseJsonKey.NOTIFY_TEMPLATE),
+                        new TypeReference<HashMap<String, Object>>() {
+                        }));
+      }
+    } catch (Exception ex) {
+      ProjectLogger.log(
+              "CourseBatchCertificateActor:mapToObject Exception occurred with error message ==", ex);
+    }
+    return template;
   }
 }

@@ -100,6 +100,8 @@ public class SearchHandlerActor extends BaseActor {
         if (result != null) {
           if (BooleanUtils.isTrue(showCreator))
             populateCreatorDetails(result);
+          if (!searchQueryMap.containsKey(JsonKey.FIELDS))
+            addCollectionId(result);
           response.put(JsonKey.RESPONSE, result);
         } else {
           result = new HashMap<>();
@@ -215,5 +217,12 @@ public class SearchHandlerActor extends BaseActor {
     map.put(JsonKey.PARAMS, params);
     map.put(JsonKey.TELEMETRY_EVENT_TYPE, "SEARCH");
     return map;
+  }
+
+  private void addCollectionId(Map<String, Object> result) {
+    List<Map<String, Object>> content = (List<Map<String, Object>>) result.getOrDefault(JsonKey.CONTENT, new ArrayList<Map<String, Object>>());
+    if (CollectionUtils.isNotEmpty(content)) {
+      content.stream().filter(map -> map.containsKey(JsonKey.COURSE_ID)).map(map -> map.put(JsonKey.COLLECTION_ID, map.get(JsonKey.COURSE_ID))).collect(Collectors.toList());
+    }
   }
 }

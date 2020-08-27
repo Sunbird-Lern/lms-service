@@ -3,7 +3,7 @@ package org.sunbird.enrolments
 import java.sql.Timestamp
 import java.text.MessageFormat
 import java.time.format.DateTimeFormatter
-import java.time.{LocalDate, LocalDateTime}
+import java.time.{LocalDate, LocalDateTime, LocalTime}
 import java.util
 import java.util.Date
 
@@ -80,6 +80,8 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         validateEnrolment(batchData, enrolmentData, true)
         val data: java.util.Map[String, AnyRef] = createUserEnrolmentMap(userId, courseId, batchId, enrolmentData, request.getContext.getOrDefault(JsonKey.REQUEST_ID, "").asInstanceOf[String])
         upsertEnrollment(userId, courseId, batchId, data, (null == enrolmentData), request.getRequestContext)
+        logger.info(request.getRequestContext, "CourseEnrolmentActor :: enroll :: Deleting redis for key " + getCacheKey(userId))
+        cacheUtil.delete(getCacheKey(userId))
         sender().tell(successResponse(), self)
         generateTelemetryAudit(userId, courseId, batchId, batchData, "user.enrol", JsonKey.CREATE, request.getContext)
         notifyUser(userId, batchData, JsonKey.ADD)
@@ -95,6 +97,8 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         validateEnrolment(batchData, enrolmentData, false)
         val data: java.util.Map[String, AnyRef] = new java.util.HashMap[String, AnyRef]() {{ put(JsonKey.ACTIVE, ProjectUtil.ActiveStatus.INACTIVE.getValue.asInstanceOf[AnyRef]) }}
         upsertEnrollment(userId,courseId, batchId, data, false, request.getRequestContext)
+        logger.info(request.getRequestContext, "CourseEnrolmentActor :: unEnroll :: Deleting redis for key " + getCacheKey(userId))
+        cacheUtil.delete(getCacheKey(userId))
         sender().tell(successResponse(), self)
         generateTelemetryAudit(userId, courseId, batchId, batchData, "user.unenrol", JsonKey.UPDATE, request.getContext)
         notifyUser(userId, batchData, JsonKey.REMOVE)
@@ -144,6 +148,8 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             put(JsonKey.IDENTIFIER, courseIds)
             put(JsonKey.CONTENT_TYPE, Array(JsonKey.COURSE))
             put(JsonKey.STATUS, "Live")
+            put(JsonKey.MIME_TYPE, JsonKey.COLLECTION_MIME_TYPE)
+            put(JsonKey.TRACKABLE_ENABLED, JsonKey.YES)
             putAll(request.getRequest.getOrDefault(JsonKey.FILTERS, new java.util.HashMap[String, AnyRef]).asInstanceOf[java.util.Map[String, AnyRef]])
         }}
         val searchRequest:java.util.Map[String, java.util.Map[String, AnyRef]] = new java.util.HashMap[String, java.util.Map[String, AnyRef]]() {{
@@ -193,10 +199,10 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         if(EnrolmentType.inviteOnly.getVal.equalsIgnoreCase(batchData.getEnrollmentType))
             ProjectCommonException.throwClientErrorException(ResponseCode.enrollmentTypeValidation, ResponseCode.enrollmentTypeValidation.getErrorMessage)
         
-        if((2 == batchData.getStatus) || (null != batchData.getEndDate && LocalDateTime.now().isAfter(LocalDate.parse(batchData.getEndDate, DateTimeFormatter.ofPattern("yyyy-MM-dd")).atStartOfDay())))
+        if((2 == batchData.getStatus) || (null != batchData.getEndDate && LocalDateTime.now().isAfter(LocalDate.parse(batchData.getEndDate, DateTimeFormatter.ofPattern("yyyy-MM-dd")).atTime(LocalTime.MAX))))
             ProjectCommonException.throwClientErrorException(ResponseCode.courseBatchAlreadyCompleted, ResponseCode.courseBatchAlreadyCompleted.getErrorMessage)
         
-        if(isEnrol && null != batchData.getEnrollmentEndDate && LocalDateTime.now().isAfter(LocalDate.parse(batchData.getEnrollmentEndDate, DateTimeFormatter.ofPattern("yyyy-MM-dd")).atStartOfDay()))
+        if(isEnrol && null != batchData.getEnrollmentEndDate && LocalDateTime.now().isAfter(LocalDate.parse(batchData.getEnrollmentEndDate, DateTimeFormatter.ofPattern("yyyy-MM-dd")).atTime(LocalTime.MAX)))
             ProjectCommonException.throwClientErrorException(ResponseCode.courseBatchEnrollmentDateEnded, ResponseCode.courseBatchEnrollmentDateEnded.getErrorMessage)
         
         if(isEnrol && null != enrolmentData && enrolmentData.isActive) ProjectCommonException.throwClientErrorException(ResponseCode.userAlreadyEnrolledCourse, ResponseCode.userAlreadyEnrolledCourse.getErrorMessage)
@@ -262,6 +268,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             enrolment.put("progress", completedCount.asInstanceOf[AnyRef])
             enrolment.put("status", getCompletionStatus(completedCount, leafNodesCount).asInstanceOf[AnyRef])
             enrolment.put("completionPercentage", getCompletionPerc(completedCount, leafNodesCount).asInstanceOf[AnyRef])
+            enrolment.put(JsonKey.COLLECTION_ID, enrolment.get(JsonKey.COURSE_ID))
         })
         enrolmentMap.values.toList.asJava
     }

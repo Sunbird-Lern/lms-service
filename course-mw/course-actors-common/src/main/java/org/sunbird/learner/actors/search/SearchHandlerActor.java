@@ -216,7 +216,7 @@ public class SearchHandlerActor extends BaseActor {
   }
 
   private void addCollectionId(Map<String, Object> result) {
-    List<Map<String, Object>> content = (List<Map<String, Object>>) result.getOrDefault("content", new ArrayList<Map<String, Object>>());
+    List<Map<String, Object>> content = (List<Map<String, Object>>) result.getOrDefault(JsonKey.CONTENT, new ArrayList<Map<String, Object>>());
     if (CollectionUtils.isNotEmpty(content)) {
       content.stream().filter(map -> map.containsKey(JsonKey.COURSE_ID)).map(map -> map.put(JsonKey.COLLECTION_ID, map.get(JsonKey.COURSE_ID))).collect(Collectors.toList());
     }

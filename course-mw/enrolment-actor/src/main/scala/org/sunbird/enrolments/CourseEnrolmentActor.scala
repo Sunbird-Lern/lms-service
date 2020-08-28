@@ -22,7 +22,7 @@ import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.learner.actors.coursebatch.dao.impl.{CourseBatchDaoImpl, UserCoursesDaoImpl}
 import org.sunbird.learner.actors.coursebatch.dao.{CourseBatchDao, UserCoursesDao}
 import org.sunbird.learner.actors.group.dao.impl.GroupDaoImpl
-import org.sunbird.learner.util.{ContentSearchUtil, JsonUtil, Util}
+import org.sunbird.learner.util.{ContentSearchUtil, ContentUtil, CourseBatchSchedulerUtil, JsonUtil, Util}
 import org.sunbird.models.course.batch.CourseBatch
 import org.sunbird.models.user.courses.UserCourses
 import org.sunbird.cache.util.RedisCacheUtil
@@ -95,6 +95,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val batchId: String = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
         val batchData: CourseBatch = courseBatchDao.readById(courseId, batchId)
         val enrolmentData: UserCourses = userCoursesDao.read(userId, courseId, batchId)
+        getUpdatedStatus(enrolmentData)
         validateEnrolment(batchData, enrolmentData, false)
         val data: java.util.Map[String, AnyRef] = new java.util.HashMap[String, AnyRef]() {{ put(JsonKey.ACTIVE, ProjectUtil.ActiveStatus.INACTIVE.getValue.asInstanceOf[AnyRef]) }}
         upsertEnrollment(userId,courseId, batchId, data, false)
@@ -321,6 +322,17 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         userCoursesDao = userDao
         this.groupDao = groupDao
         this
+    }
+
+
+    def getUpdatedStatus(enrolmentData: UserCourses) = {
+        val query = "{\"request\": {\"filters\":{\"identifier\": \"" + enrolmentData.getCourseId +"\", \"status\": \"Live\"},\"fields\": [\"leafNodesCount\"],\"limit\": 1}}"
+        val result = ContentUtil.searchContent(query, CourseBatchSchedulerUtil.headerMap)
+        val contents = result.getOrDefault(JsonKey.CONTENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
+        val leafNodesCount = {if(CollectionUtils.isNotEmpty(contents)){
+            contents.get(0).asInstanceOf[java.util.Map[String, AnyRef]].getOrDefault(JsonKey.LEAF_NODE_COUNT, 0.asInstanceOf[AnyRef]).asInstanceOf[Int]
+        } else 0}
+        enrolmentData.setStatus(getCompletionStatus(enrolmentData.getProgress, leafNodesCount))
     }
 }
 

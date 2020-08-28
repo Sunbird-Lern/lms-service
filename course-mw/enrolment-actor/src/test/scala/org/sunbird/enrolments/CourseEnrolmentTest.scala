@@ -16,7 +16,7 @@ import org.sunbird.common.request.Request
 import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.learner.actors.coursebatch.dao.impl.{CourseBatchDaoImpl, UserCoursesDaoImpl}
 import org.sunbird.learner.actors.group.dao.impl.GroupDaoImpl
-import org.sunbird.learner.util.JsonUtil
+import org.sunbird.learner.util.{ContentUtil, JsonUtil}
 import org.sunbird.models.course.batch.CourseBatch
 import org.sunbird.models.user.courses.UserCourses
 
@@ -129,6 +129,8 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         val userCourse = validUserCourse()
         userCourse.setActive(true)
         userCourse.setStatus(2)
+        userCourse.setCourseId("do_113056113694425088166")
+        userCourse.setProgress(11)
         (courseDao.readById(_: String, _: String)).expects(*,*).returns(validCourseBatch())
         (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(userCourse)
         val response = callActorForFailure(getUnEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
@@ -181,6 +183,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         (courseDao.readById(_: String, _: String)).expects(*,*).returns(getBatchWithValidEnrolmentEndDateAndBatchEndDate())
         (userDao.read(_: String,_: String,_: String)).expects(*,*,*).returns(null)
         (userDao.insertV2(_: java.util.Map[String, AnyRef])).expects(*)
+        (cacheUtil.delete(_: String)).expects(*).once()
         val response = callActor(getEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         assert("Success".equalsIgnoreCase(response.get("response").asInstanceOf[String]))
     }

@@ -76,8 +76,8 @@ public class TelemetryGeneratorTest {
     Method method = Whitebox.getMethod(TelemetryGenerator.class, "getProducer", Map.class);
     Producer producer = (Producer) method.invoke(null, nullContext);
     assertEquals("", producer.getId());
-    assertEquals("", producer.getPid());
-    assertEquals("", producer.getVer());
+    assertEquals("lms-service", producer.getPid());
+    assertEquals("1.0", producer.getVer());
   }
 
   @Test

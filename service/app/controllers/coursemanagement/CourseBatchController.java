@@ -68,7 +68,10 @@ public class CourseBatchController extends BaseController {
         ActorOperations.UPDATE_BATCH.getValue(),
         httpRequest.body().asJson(),
         (request) -> {
-          new CourseBatchRequestValidator().validateUpdateCourseBatchRequest((Request) request);
+          Request req = (Request) request;
+          String courseId = req.getRequest().containsKey(JsonKey.COURSE_ID) ? JsonKey.COURSE_ID : JsonKey.COLLECTION_ID;
+          req.getRequest().put(JsonKey.COURSE_ID, req.getRequest().get(courseId));
+          new CourseBatchRequestValidator().validateUpdateCourseBatchRequest(req);
           return null;
         },
         httpRequest);

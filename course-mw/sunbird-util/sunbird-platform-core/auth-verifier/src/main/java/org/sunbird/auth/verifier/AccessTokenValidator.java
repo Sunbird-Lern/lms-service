@@ -34,9 +34,11 @@ public class AccessTokenValidator {
         if (isValid) {
             Map<String, Object> tokenBody =
                     mapper.readValue(new String(decodeFromBase64(body)), Map.class);
-            boolean isExp = isExpired((Integer) tokenBody.get("exp"));
-            if (isExp && checkActive) {
-                return Collections.EMPTY_MAP;
+            if(checkActive) {
+                boolean isExp = isExpired((Integer) tokenBody.get("exp"));
+                if (isExp) {
+                    return Collections.EMPTY_MAP;
+                }
             }
             return tokenBody;
         }
@@ -53,7 +55,7 @@ public class AccessTokenValidator {
      * @return
      */
     public static String verifyManagedUserToken(
-            String managedEncToken, String requestedByUserId) {
+            String managedEncToken, String requestedByUserId, String requestedForUserId) {
         String managedFor = JsonKey.UNAUTHORIZED;
         try {
             Map<String, Object> payload = validateToken(managedEncToken, true);
@@ -67,12 +69,13 @@ public class AccessTokenValidator {
                                 + muaId
                                 + " requestedByUserID: "
                                 + requestedByUserId
-                                /*+ " requestedForUserId: "
-                                + requestedForUserId*/,
+                                + " requestedForUserId: "
+                                + requestedForUserId,
                         LoggerEnum.INFO.name());
                 boolean isValid =
                         parentId.equalsIgnoreCase(requestedByUserId);
-                                //&& muaId.equalsIgnoreCase(requestedForUserId);
+                if(!muaId.equalsIgnoreCase(requestedForUserId))
+                    ProjectLogger.log("RequestedFor userid : " + requestedForUserId + " is not matching with the muaId : " + muaId, LoggerEnum.INFO.name());
                 if (isValid) {
                     managedFor = muaId;
                 }

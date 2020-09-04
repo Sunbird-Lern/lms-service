@@ -85,7 +85,7 @@ public class RequestInterceptorTest {
     when(properties.getProperty(JsonKey.IS_SSO_ENABLED)).thenReturn("false");
     Http.Request req = createRequest("user", "/v1/course/batch/create");
     PowerMockito.mockStatic(AccessTokenValidator.class);
-    when(AccessTokenValidator.verifyUserToken(Mockito.anyString())).thenReturn("userId");
+    when(AccessTokenValidator.verifyUserToken(Mockito.anyString(), Mockito.anyBoolean())).thenReturn("userId");
     when(cassandraOperation.getRecordById(
             Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
         .thenReturn(getMockCassandraRecordByIdResponse(JsonKey.USER_ID, "userId"));

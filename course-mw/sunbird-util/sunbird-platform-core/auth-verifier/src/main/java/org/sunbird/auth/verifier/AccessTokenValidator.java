@@ -16,7 +16,7 @@ public class AccessTokenValidator {
 
     private static ObjectMapper mapper = new ObjectMapper();
 
-    private static Map<String, Object> validateToken(String token) throws JsonProcessingException {
+    private static Map<String, Object> validateToken(String token, boolean checkActive) throws JsonProcessingException {
         String[] tokenElements = token.split("\\.");
         String header = tokenElements[0];
         String body = tokenElements[1];
@@ -35,7 +35,7 @@ public class AccessTokenValidator {
             Map<String, Object> tokenBody =
                     mapper.readValue(new String(decodeFromBase64(body)), Map.class);
             boolean isExp = isExpired((Integer) tokenBody.get("exp"));
-            if (isExp) {
+            if (isExp && checkActive) {
                 return Collections.EMPTY_MAP;
             }
             return tokenBody;
@@ -56,7 +56,7 @@ public class AccessTokenValidator {
             String managedEncToken, String requestedByUserId) {
         String managedFor = JsonKey.UNAUTHORIZED;
         try {
-            Map<String, Object> payload = validateToken(managedEncToken);
+            Map<String, Object> payload = validateToken(managedEncToken, true);
             if (MapUtils.isNotEmpty(payload)) {
                 String parentId = (String) payload.get(JsonKey.PARENT_ID);
                 String muaId = (String) payload.get(JsonKey.SUB);
@@ -84,10 +84,10 @@ public class AccessTokenValidator {
         return managedFor;
     }
 
-    public static String verifyUserToken(String token) {
+    public static String verifyUserToken(String token, boolean checkActive) {
         String userId = JsonKey.UNAUTHORIZED;
         try {
-            Map<String, Object> payload = validateToken(token);
+            Map<String, Object> payload = validateToken(token, checkActive);
             if (MapUtils.isNotEmpty(payload) && checkIss((String) payload.get("iss"))) {
                 userId = (String) payload.get(JsonKey.SUB);
                 if (StringUtils.isNotBlank(userId)) {

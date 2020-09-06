@@ -3,7 +3,6 @@ package org.sunbird.common.request;
 import org.apache.commons.collections.CollectionUtils;
 import org.sunbird.common.models.util.JsonKey;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /** @author arvind */

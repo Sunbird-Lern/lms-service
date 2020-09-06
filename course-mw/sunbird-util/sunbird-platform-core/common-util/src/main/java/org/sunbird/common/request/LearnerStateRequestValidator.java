@@ -18,10 +18,12 @@ public class LearnerStateRequestValidator extends BaseRequestValidator {
   	if (request.getRequest().containsKey(JsonKey.COURSE_IDS)) {
         List courseIds = (List) request.getRequest().get(JsonKey.COURSE_IDS);
         request.getRequest().remove(JsonKey.COURSE_IDS);
-        if (!request.getRequest().containsKey(JsonKey.COURSE_ID) && CollectionUtils.isNotEmpty(courseIds)) {
+        if (!request.getRequest().containsKey(JsonKey.COURSE_ID) && !request.getRequest().containsKey(JsonKey.COLLECTION_ID) && CollectionUtils.isNotEmpty(courseIds)) {
             request.getRequest().put(JsonKey.COURSE_ID, courseIds.get(0));
         }
     }
+  	String courseId = request.getRequest().containsKey(JsonKey.COURSE_ID) ? JsonKey.COURSE_ID : JsonKey.COLLECTION_ID;
+  	request.getRequest().put(JsonKey.COURSE_ID, request.getRequest().get(courseId));
     checkMandatoryFieldsPresent(request.getRequest(), JsonKey.USER_ID, JsonKey.COURSE_ID, JsonKey.BATCH_ID);
   }
 }

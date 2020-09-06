@@ -5,6 +5,8 @@ import controllers.BaseController;
 import java.util.concurrent.CompletionStage;
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.request.Request;
 import org.sunbird.learner.actor.operations.CourseActorOperations;
 import play.mvc.Http;
@@ -29,6 +31,8 @@ public class CertificateController extends BaseController {
         httpRequest.body().asJson(),
         (request) -> {
           Request req = (Request) request;
+          String courseId = req.getRequest().containsKey(JsonKey.COURSE_ID) ? JsonKey.COURSE_ID : JsonKey.COLLECTION_ID;
+          req.getRequest().put(JsonKey.COURSE_ID, req.getRequest().get(courseId));
           new CertificateRequestValidator().validateIssueCertificateRequest(req);
           req.getContext().put(REISSUE, httpRequest.queryString().get(REISSUE));
           return null;

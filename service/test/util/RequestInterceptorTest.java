@@ -67,10 +67,12 @@ public class RequestInterceptorTest {
   }
 
   @Test
-  @PrepareForTest({SSOServiceFactory.class, ServiceFactory.class, PropertiesCache.class})
+  @PrepareForTest({SSOServiceFactory.class, ServiceFactory.class, PropertiesCache.class, AccessTokenValidator.class})
   public void testVerifyRequestDataWithUserAccessTokenWithPrivateRequestPath() {
     when(properties.getProperty(JsonKey.SSO_PUBLIC_KEY)).thenReturn("somePublicKey");
     when(properties.getProperty(JsonKey.IS_SSO_ENABLED)).thenReturn("false");
+      PowerMockito.mockStatic(AccessTokenValidator.class);
+      when(AccessTokenValidator.verifyUserToken(Mockito.anyString(), Mockito.anyBoolean())).thenReturn("userId");
     Http.Request req = createRequest("user", "/v1/course/batch/search");
     when(cassandraOperation.getRecordById(
             Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))

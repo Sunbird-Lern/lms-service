@@ -51,7 +51,6 @@ public class CourseBatchManagementActor extends BaseActor {
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
   private List<String> validCourseStatus = Arrays.asList("Live", "Unlisted");
-  private String validContenttype = "Course";
   private static final ObjectMapper mapper = new ObjectMapper();
 
   @Inject

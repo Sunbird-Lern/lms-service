@@ -74,6 +74,7 @@ public class CertificateActor extends BaseActor {
         JsonKey.STATUS, MessageFormat.format(ResponseMessage.SUBMITTED.getValue(), batchId));
     resultData.put(JsonKey.BATCH_ID, batchId);
     resultData.put(JsonKey.COURSE_ID, courseId);
+    resultData.put(JsonKey.COLLECTION_ID, courseId);
     response.put(JsonKey.RESULT, resultData);
     try {
       pushInstructionEvent(batchId, courseId, userIds, reIssue);

@@ -51,7 +51,6 @@ public class CourseBatchManagementActor extends BaseActor {
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
   private List<String> validCourseStatus = Arrays.asList("Live", "Unlisted");
-  private String validContenttype = "Course";
   private static final ObjectMapper mapper = new ObjectMapper();
 
   @Inject
@@ -829,7 +828,6 @@ public class CourseBatchManagementActor extends BaseActor {
             " :: content: " + ekStepContent, LoggerEnum.INFO.name());
     if (null == ekStepContent ||
             ekStepContent.size() == 0 ||
-            !StringUtils.equalsIgnoreCase(validContenttype, (String)ekStepContent.get("contentType")) ||
             !validCourseStatus.contains((String)ekStepContent.get("status"))) {
       ProjectLogger.log(
           "CourseBatchManagementActor:getEkStepContent: Not found course for ID = " + courseId,

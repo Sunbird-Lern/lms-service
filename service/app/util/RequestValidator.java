@@ -68,8 +68,9 @@ public final class RequestValidator {
                     ERROR_CODE);
           }
         }
-        if (!map.containsKey(JsonKey.COURSE_ID)
-                || StringUtils.isBlank((String) map.get(JsonKey.COURSE_ID))) {
+        String courseId = map.containsKey(JsonKey.COURSE_ID) ? JsonKey.COURSE_ID : JsonKey.COLLECTION_ID;
+        map.put(JsonKey.COURSE_ID, map.get(courseId));
+        if (StringUtils.isBlank((String) map.get(JsonKey.COURSE_ID))) {
           throw new ProjectCommonException(
                   ResponseCode.courseIdRequired.getErrorCode(),
                   ResponseCode.courseIdRequiredError.getErrorMessage(),

@@ -121,7 +121,7 @@ public final class ContentUtil {
     Map<String, Object> resMap = new HashMap<>();
     Map<String, String> headers = new HashMap<>();
     try {
-      String baseContentreadUrl = ProjectUtil.getConfigValue(JsonKey.EKSTEP_BASE_URL) + "/content/v3/read/" + courseId + "?fields=status";
+      String baseContentreadUrl = ProjectUtil.getConfigValue(JsonKey.EKSTEP_BASE_URL) + "/content/v3/read/" + courseId + "?fields=status,trackable";
       headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
       headers.put(JsonKey.AUTHORIZATION, PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_AUTHORIZATION));
 

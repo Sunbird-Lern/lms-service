@@ -828,8 +828,7 @@ public class CourseBatchManagementActor extends BaseActor {
     ProjectLogger.log("CourseBatchManagementActor:getEkStepContent: courseId: " + courseId,
             " :: content: " + ekStepContent, LoggerEnum.INFO.name());
     if (null == ekStepContent ||
-            ekStepContent.size() == 0 ||
-            !validCourseStatus.contains((String)ekStepContent.get("status"))) {
+            ekStepContent.size() == 0) {
       ProjectLogger.log(
           "CourseBatchManagementActor:getEkStepContent: Not found course for ID = " + courseId,
           LoggerEnum.INFO.name());
@@ -837,6 +836,17 @@ public class CourseBatchManagementActor extends BaseActor {
           ResponseCode.invalidCourseId.getErrorCode(),
           ResponseCode.invalidCourseId.getErrorMessage(),
           ResponseCode.CLIENT_ERROR.getResponseCode());
+    }
+    if (!validCourseStatus.contains((String) ekStepContent.get(JsonKey.STATUS)) ||
+            !ekStepContent.containsKey(JsonKey.TRACKABLE) ||
+            !(StringUtils.equalsIgnoreCase(JsonKey.YES, (String) ((Map<String, Object>) ekStepContent.get(JsonKey.TRACKABLE)).getOrDefault(JsonKey.ENABLED, "")))) {
+      ProjectLogger.log(
+              "CourseBatchManagementActor:getContentDetails: Content is not suitable for batch create = " + courseId,
+              LoggerEnum.INFO.name());
+      throw new ProjectCommonException(
+              ResponseCode.invalidCourseId.getErrorCode(),
+              ResponseCode.invalidCourseId.getErrorMessage(),
+              ResponseCode.CLIENT_ERROR.getResponseCode());
     }
     return ekStepContent;
   }

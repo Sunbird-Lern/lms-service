@@ -113,6 +113,9 @@ public class TelemetryGenerator {
         removeAttributes((Map<String, Object>) edata.get(props), JsonKey.ID);
       }
     }
+    if(params.containsKey("type")){
+      edata.put("type", params.get("type"));
+    }
     return edata;
   }
 
@@ -168,11 +171,9 @@ public class TelemetryGenerator {
       } else {
         id = (String) context.get(JsonKey.PDATA_ID);
       }
-      String pid = (String) context.get(JsonKey.PDATA_PID);
-      String ver = (String) context.get(JsonKey.PDATA_VERSION);
-      return new Producer(id, pid, ver);
+      return new Producer(id, "lms-service", "1.0");
     } else {
-      return new Producer("", "", "");
+      return new Producer("", "lms-service", "1.0");
     }
   }
 

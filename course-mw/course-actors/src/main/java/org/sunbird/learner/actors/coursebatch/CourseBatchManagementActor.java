@@ -52,7 +52,6 @@ public class CourseBatchManagementActor extends BaseActor {
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
   private List<String> validCourseStatus = Arrays.asList("Live", "Unlisted");
-  private String validContenttype = "Course";
   private static final ObjectMapper mapper = new ObjectMapper();
 
 
@@ -444,7 +443,8 @@ public class CourseBatchManagementActor extends BaseActor {
             (String) actorMessage.getContext().get(JsonKey.BATCH_ID));
     Map<String, Object> result =
         (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
-    result.put(JsonKey.COLLECTION_ID, result.getOrDefault(JsonKey.COURSE_ID, ""));
+    if (result.containsKey(JsonKey.COURSE_ID))
+      result.put(JsonKey.COLLECTION_ID, result.getOrDefault(JsonKey.COURSE_ID, ""));
     Response response = new Response();
     response.put(JsonKey.RESPONSE, result);
     sender().tell(response, self());
@@ -778,7 +778,6 @@ public class CourseBatchManagementActor extends BaseActor {
             " :: content: " + ekStepContent);
     if (null == ekStepContent ||
             ekStepContent.size() == 0 ||
-            !StringUtils.equalsIgnoreCase(validContenttype, (String)ekStepContent.get("contentType")) ||
             !validCourseStatus.contains((String)ekStepContent.get("status"))) {
       logger.info(requestContext, "CourseBatchManagementActor:getEkStepContent: Not found course for ID = " + courseId);
       throw new ProjectCommonException(

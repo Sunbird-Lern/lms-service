@@ -75,7 +75,10 @@ public class CourseEnrollmentController extends BaseController {
     return handleRequest(courseEnrolmentActor, "enrol",
         httpRequest.body().asJson(),
         (request) -> {
-          new CourseEnrollmentRequestValidator().validateEnrollCourse((Request) request);
+          Request req = (Request) request;
+          String courseId = req.getRequest().containsKey(JsonKey.COURSE_ID) ? JsonKey.COURSE_ID : JsonKey.COLLECTION_ID;
+          req.getRequest().put(JsonKey.COURSE_ID, req.getRequest().get(courseId));
+          new CourseEnrollmentRequestValidator().validateEnrollCourse(req);
           return null;
         },
         getAllRequestHeaders(httpRequest),
@@ -87,7 +90,10 @@ public class CourseEnrollmentController extends BaseController {
             courseEnrolmentActor, "unenrol",
         httpRequest.body().asJson(),
         (request) -> {
-          new CourseEnrollmentRequestValidator().validateUnenrollCourse((Request) request);
+          Request req = (Request) request;
+          String courseId = req.getRequest().containsKey(JsonKey.COURSE_ID) ? JsonKey.COURSE_ID : JsonKey.COLLECTION_ID;
+          req.getRequest().put(JsonKey.COURSE_ID, req.getRequest().get(courseId));
+          new CourseEnrollmentRequestValidator().validateUnenrollCourse(req);
           return null;
         },
         getAllRequestHeaders(httpRequest),

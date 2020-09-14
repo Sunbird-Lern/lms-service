@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang3.StringUtils;
+import org.sunbird.auth.verifier.AccessTokenValidator;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectLogger;
@@ -61,9 +62,9 @@ public class RequestInterceptor {
       if (accessToken.isPresent()) {
         // This is to handle Mobile App expired token for content state update API.
         if (StringUtils.contains(request.path(), "v1/content/state/update")) {
-          clientId = AuthenticationHelper.verifyUserAccessToken(accessToken.get(), false);
+          clientId = AccessTokenValidator.verifyUserToken(accessToken.get(), false);
         } else {
-          clientId = AuthenticationHelper.verifyUserAccessToken(accessToken.get());
+          clientId = AccessTokenValidator.verifyUserToken(accessToken.get(), true);
         }
       } else if (authClientToken.isPresent() && authClientId.isPresent()) {
         clientId =
@@ -79,9 +80,9 @@ public class RequestInterceptor {
         try {
           // This is to handle Mobile App expired token for content state update API.
           if (StringUtils.contains(request.path(), "v1/content/state/update")) {
-            clientAccessTokenId = AuthenticationHelper.verifyUserAccessToken(accessToken.get(), false);
+            clientAccessTokenId = AccessTokenValidator.verifyUserToken(accessToken.get(), false);
           } else {
-            clientAccessTokenId = AuthenticationHelper.verifyUserAccessToken(accessToken.get());
+            clientAccessTokenId = AccessTokenValidator.verifyUserToken(accessToken.get(), true);
           }
           if (JsonKey.UNAUTHORIZED.equalsIgnoreCase(clientAccessTokenId)) {
             clientAccessTokenId = null;

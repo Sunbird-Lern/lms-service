@@ -2,6 +2,7 @@ package controllers.collectionsummaryaggregate;
 
 import akka.actor.ActorRef;
 import controllers.BaseController;
+import controllers.collectionsummaryaggregate.validator.Validator;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.request.Request;
 import play.mvc.Http;
@@ -17,7 +18,6 @@ public class CollectionSummaryAggregateController extends BaseController {
     @Named("collection-summary-aggregate-actor")
     private ActorRef CollectionSummaryAggregateActor;
 
-
     public CompletionStage<Result> getCollectionSummaryAggregate(Http.Request httpRequest) {
         return handleRequest(
                 CollectionSummaryAggregateActor,
@@ -25,7 +25,8 @@ public class CollectionSummaryAggregateController extends BaseController {
                 httpRequest.body().asJson(),
                 (req) -> {
                     Request request = (Request) req;
-                    System.out.println("requestObj" + request);
+                    System.out.println("Validation Request Obj" + request);
+                    new Validator().validate(request);
                     return null;
                 },
                 getAllRequestHeaders((httpRequest)),

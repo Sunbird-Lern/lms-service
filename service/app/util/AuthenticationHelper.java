@@ -43,7 +43,7 @@ public class AuthenticationHelper {
     String userId = JsonKey.UNAUTHORIZED;
     try {
       Response authResponse =
-              cassandraOperation.getRecordById(userAuth.getKeySpace(), userAuth.getTableName(), token);
+              cassandraOperation.getRecordByIdentifier(null, userAuth.getKeySpace(), userAuth.getTableName(), token, null);
       if (authResponse != null && authResponse.get(JsonKey.RESPONSE) != null) {
         List<Map<String, Object>> authList =
                 (List<Map<String, Object>>) authResponse.get(JsonKey.RESPONSE);

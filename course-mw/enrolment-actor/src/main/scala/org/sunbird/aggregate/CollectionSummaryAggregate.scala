@@ -3,9 +3,13 @@ package org.sunbird.aggregate
 import java.util
 
 import akka.actor.ActorRef
+import com.mashape.unirest.http.Unirest
 import javax.inject.{Inject, Named}
+import javax.ws.rs.core.MediaType
 import org.apache.commons.lang3.StringUtils
+import org.apache.http.HttpHeaders
 import org.sunbird.cache.util.RedisCacheUtil
+import org.sunbird.common.models.response.Response
 import org.sunbird.common.models.util.{JsonKey, ProjectUtil, TelemetryEnvKey}
 import org.sunbird.common.request.Request
 import org.sunbird.enrolments.BaseEnrolmentActor
@@ -21,37 +25,48 @@ class CollectionSummaryAggregate @Inject()(@Named("collection-summary-aggregate-
   override def onReceive(request: Request): Unit = {
     Util.initializeContext(request, TelemetryEnvKey.BATCH)
     val filters = request.getRequest.get(JsonKey.FILTERS).asInstanceOf[util.Map[String, AnyRef]]
-    val batchId = filters.get("batchId").asInstanceOf[String]
-    val collectionId = filters.get("collectionId").asInstanceOf[String]
-    println("Request Object Data" + request)
-    val key = getCacheKey(collectionId = collectionId, batchId = batchId)
+    val batchId = filters.get(JsonKey.BATCH_ID).asInstanceOf[String]
+    val collectionId = filters.get(JsonKey.COLLECTION_ID).asInstanceOf[String]
+    val key = getCacheKey(batchId = batchId, request.getRequest.get("intervals").asInstanceOf[String])
     try {
-      val response: String = Option(cacheUtil.get(key)).map(value => if (value.isEmpty) {
+      val result: String = Option(cacheUtil.get(key)).map(value => if (value.isEmpty) {
         getResponseFromDruid(batchId = batchId, courseId = collectionId, date = "", groupByKeys = List())
       } else {
         value
       }).getOrElse(getResponseFromDruid(batchId = batchId, courseId = collectionId, date = "", groupByKeys = List()))
-
-      println("druidResponse" + response)
-
-      cacheUtil.set(key, response)
+      cacheUtil.set(key, result)
+      val response = new Response()
+      response.put(JsonKey.RESULT, result)
       sender().tell(response, self)
     } catch {
       case ex: Exception =>
         System.out.println("CollectionSummaryAggregate: Exception thrown:: " + ex)
         throw ex
     }
-
   }
+
+  private def getUpdatedHeaders(headers: util.Map[String, String]): util.Map[String, String] = {
+    headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+    headers.put("Connection", "Keep-Alive")
+    headers
+  }
+
 
   def getResponseFromDruid(batchId: String, courseId: String, date: String, groupByKeys: List[String]): String = {
-    println("InvokedDruid")
-    val query = "{\"queryType\":\"groupBy\",\"dataSource\":\"telemetry-events-syncts\",\"dimensions\":[\"edata_type\",\"collection_name\",{\"type\":\"extraction\",\"dimension\":\"derived_loc_district\",\"outputName\":\"district_slug\",\"extractionFn\":{\"type\":\"registeredLookup\",\"lookup\":\"districtLookup\",\"replaceMissingValueWith\":\"Unknown\"}},{\"type\":\"extraction\",\"dimension\":\"derived_loc_state\",\"outputName\":\"state\",\"extractionFn\":{\"type\":\"registeredLookup\",\"lookup\":\"stateSlugLookup\",\"replaceMissingValueWith\":\"Unknown\"}}],\"aggregations\":[{\"fieldName\":\"actor_id\",\"fieldNames\":[\"actor_id\"],\"type\":\"cardinality\",\"name\":\"COUNT_DISTINCT(actor_id)\"}],\"granularity\":\"all\",\"postAggregations\":[],\"intervals\":\"2020-09-07T00:00:00+00:00/2020-09-14T00:00:00+00:00\",\"filter\":{\"type\":\"and\",\"fields\":[{\"type\":\"or\",\"fields\":[{\"type\":\"selector\",\"dimension\":\"edata_type\",\"value\":\"complete\"},{\"type\":\"selector\",\"dimension\":\"edata_type\",\"value\":\"enrollment\"},{\"type\":\"selector\",\"dimension\":\"edata_type\",\"value\":\"certificate-issued\"}]},{\"type\":\"and\",\"fields\":[{\"type\":\"selector\",\"dimension\":\"context_cdata_id\",\"value\":\"0130929928739635201\"},{\"type\":\"and\",\"fields\":[{\"type\":\"selector\",\"dimension\":\"object_rollup_l1\",\"value\":\"do_31309287232935526411138\"},{\"type\":\"selector\",\"dimension\":\"eid\",\"value\":\"AUDIT\"}]}]}]},\"limitSpec\":{\"type\":\"default\",\"limit\":10000,\"columns\":[{\"dimension\":\"COUNT_DISTINCT(actor_id)\",\"direction\":\"descending\"}]}}"
-    "{\n  \"queryType\": \"groupBy\",\n  \"dataSource\": \"telemetry-events-syncts\"\n}"
+    val host = ProjectUtil.getConfigValue("druid_proxy_api_host")
+    val port = ProjectUtil.getConfigValue("druid_proxy_api_port")
+    val endPoint = ProjectUtil.getConfigValue("/druid/v2/")
+    val query = "{\"queryType\":\"timeseries\",\"dataSource\":\"summary-events\",\"aggregations\":[{\"type\":\"count\",\"name\":\"count\"}],\"granularity\":\"all\",\"postAggregations\":[],\"intervals\":\"2019-11-19T00:00:00+00:00/2019-11-19T00:00:00+00:00\"}"
+    val request = Unirest.post(s"http://11.2.4.39:8082/druid/v2/").headers(getUpdatedHeaders(new util.HashMap[String, String]())).body(query)
+    request.asString().getBody
   }
 
-  def getCacheKey(collectionId: String, batchId: String): String = {
-    batchId + ":" + collectionId + ":collection-summary-agg"
+  def getCacheKey(batchId: String, intervals: String): String = {
+    val date = intervals.split("/")
+    val startDate = date.lift(0).getOrElse("2020901")
+    val endDate = date.lift(1).getOrElse("20200901")
+    s"bmetircs$batchId:$startDate:$endDate"
   }
+
 
 }

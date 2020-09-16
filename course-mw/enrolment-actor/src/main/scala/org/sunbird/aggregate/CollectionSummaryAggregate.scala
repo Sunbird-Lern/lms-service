@@ -43,10 +43,12 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
       } else {
         value
       }).getOrElse(getResponseFromDruid(batchId = batchId, courseId = collectionId, date = defaultDate, groupByKeys = groupByKeys))
-      cacheUtil.set(key, result, ttl)
       val response = new Response()
       val gson = new Gson
       val parsedResult = gson.fromJson(result, classOf[Any])
+      if (isValidResponse(parsedResult)) {
+        cacheUtil.set(key, result, ttl)
+      }
       response.put(JsonKey.RESPONSE, parsedResult)
       sender().tell(response, self)
     } catch {
@@ -61,7 +63,6 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     headers.put("Connection", "Keep-Alive")
     headers
   }
-
 
   def getResponseFromDruid(batchId: String, courseId: String, date: String, groupByKeys: List[String]): String = {
     val druidQuery =
@@ -163,5 +164,12 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     s"bmetircs$batchId:${date(0)}:${date(1)}"
   }
 
+  def isValidResponse(response: Any): Boolean = {
+    response match {
+      case res: List[_] => true
+      case res: Map[_, _] => false
+      case _ => false
+    }
+  }
 
 }

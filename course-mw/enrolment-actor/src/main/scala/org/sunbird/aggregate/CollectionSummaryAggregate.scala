@@ -2,6 +2,7 @@ package org.sunbird.aggregate
 
 import java.util
 
+import com.google.gson.Gson
 import com.mashape.unirest.http.Unirest
 import javax.inject.Inject
 import javax.ws.rs.core.MediaType
@@ -19,10 +20,9 @@ import org.sunbird.learner.util.Util
 import scala.collection.JavaConverters.iterableAsScalaIterableConverter
 
 
-
 class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUtil) extends BaseActor {
   val ttl: Int = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("collection_summary_agg_cache_ttl"))) ProjectUtil.getConfigValue("collection_summary_agg_cache_ttl").toInt else 60
-  val dataSource: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("collection_summary_agg_data_source"))) ProjectUtil.getConfigValue("collection_summary_agg_data_source") else "telemetry-events"
+  val dataSource: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("collection_summary_agg_data_source"))) ProjectUtil.getConfigValue("collection_summary_agg_data_source") else "telemetry-events-syncts"
   val stateLookUpQuery = "{\"type\":\"extraction\",\"dimension\":\"derived_loc_state\",\"outputName\":\"state\",\"extractionFn\":{\"type\":\"registeredLookup\",\"lookup\":\"stateSlugLookup\",\"replaceMissingValueWith\":\"Unknown\"}}"
   val districtLookUpQuery = "{\"type\":\"extraction\",\"dimension\":\"derived_loc_state\",\"outputName\":\"state\",\"extractionFn\":{\"type\":\"registeredLookup\",\"lookup\":\"stateSlugLookup\",\"replaceMissingValueWith\":\"Unknown\"}}"
 
@@ -45,7 +45,9 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
       }).getOrElse(getResponseFromDruid(batchId = batchId, courseId = collectionId, date = defaultDate, groupByKeys = groupByKeys))
       cacheUtil.set(key, result, ttl)
       val response = new Response()
-      response.put(JsonKey.RESPONSE, result)
+      val gson = new Gson
+      val parsedResult = gson.fromJson(result, classOf[Any])
+      response.put(JsonKey.RESPONSE, parsedResult)
       sender().tell(response, self)
     } catch {
       case ex: Exception =>
@@ -153,7 +155,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     val port = ProjectUtil.getConfigValue("druid_proxy_api_port")
     val endPoint = ProjectUtil.getConfigValue("druid_proxy_api_endpoint")
     val request = Unirest.post(s"http://$host:$port$endPoint").headers(getUpdatedHeaders(new util.HashMap[String, String]())).body(druidQuery)
-    request.asString().getBody
+    request.asJson().getBody.toString
   }
 
   def getCacheKey(batchId: String, intervals: String): String = {

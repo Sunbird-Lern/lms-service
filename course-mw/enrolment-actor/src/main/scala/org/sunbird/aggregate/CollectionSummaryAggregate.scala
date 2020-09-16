@@ -19,6 +19,8 @@ import org.sunbird.learner.util.Util
 class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUtil) extends BaseActor {
   val ttl: Int = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("collection_summary_agg_cache_ttl"))) ProjectUtil.getConfigValue("collection_summary_agg_cache_ttl").toInt else 60
   val dataSource: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("collection_summary_agg_data_source"))) ProjectUtil.getConfigValue("collection_summary_agg_data_source") else "telemetry-events"
+  val stateLookUpQuery = "{\"type\":\"extraction\",\"dimension\":\"derived_loc_state\",\"outputName\":\"state\",\"extractionFn\":{\"type\":\"registeredLookup\",\"lookup\":\"stateSlugLookup\",\"replaceMissingValueWith\":\"Unknown\"}}"
+  val districtLookUpQuery = "{\"type\":\"extraction\",\"dimension\":\"derived_loc_state\",\"outputName\":\"state\",\"extractionFn\":{\"type\":\"registeredLookup\",\"lookup\":\"stateSlugLookup\",\"replaceMissingValueWith\":\"Unknown\"}}"
 
   override def onReceive(request: Request): Unit = {
     Util.initializeContext(request, TelemetryEnvKey.BATCH)
@@ -55,46 +57,16 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
 
 
   def getResponseFromDruid(batchId: String, courseId: String, date: String, groupByKeys: List[String]): String = {
-    val stateQuery =
-      """
-        |{
-        |      "type": "extraction",
-        |      "dimension": "derived_loc_state",
-        |      "outputName": "state",
-        |      "extractionFn": {
-        |        "type": "registeredLookup",
-        |        "lookup": "stateSlugLookup",
-        |        "replaceMissingValueWith": "Unknown"
-        |      }
-        | }
-        |""".stripMargin
-
-    val districtQuery =
-      s"""
-         |
-         |{
-         |      "type": "extraction",
-         |      "dimension": "derived_loc_state",
-         |      "outputName": "state",
-         |      "extractionFn": {
-         |        "type": "registeredLookup",
-         |        "lookup": "stateSlugLookup",
-         |        "replaceMissingValueWith": "Unknown"
-         |      }
-         | }
-         |
-         |
-         |""".stripMargin
-
     val druidQuery =
       s"""{
          |  "queryType": "groupBy",
          |  "dataSource": "$dataSource",
          |  "dimensions": [
-         |    "edata_type",
-         |    ${if (groupByKeys.contains("dist")) districtQuery else null}
+         |    "edata_type"
+         |    ${if (groupByKeys.contains("dist") && groupByKeys.contains("state")) "," else null}
+         |    ${if (groupByKeys.contains("dist")) districtLookUpQuery else null}
          |    ${if (groupByKeys.contains("dist")) "," else null}
-         |    ${if (groupByKeys.contains("state")) stateQuery else null}
+         |    ${if (groupByKeys.contains("state")) stateLookUpQuery else null}
          |  ],
          |  "aggregations": [
          |    {

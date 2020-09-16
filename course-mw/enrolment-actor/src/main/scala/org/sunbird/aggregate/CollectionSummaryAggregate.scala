@@ -25,6 +25,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
   override def onReceive(request: Request): Unit = {
     Util.initializeContext(request, TelemetryEnvKey.BATCH)
     val filters = request.getRequest.get(JsonKey.FILTERS).asInstanceOf[util.Map[String, AnyRef]]
+    val groupByKeys = request.getRequest.getOrDefault(JsonKey.GROUPBY, List()).asInstanceOf[List[String]]
     val batchId = filters.get(JsonKey.BATCH_ID).asInstanceOf[String]
     val collectionId = filters.get(JsonKey.COLLECTION_ID).asInstanceOf[String]
     val dateTimeFormate = DateTimeFormat.forPattern("yyyy-MM-dd")
@@ -34,10 +35,10 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     val key = getCacheKey(batchId = batchId, request.getRequest.getOrDefault("intervals", defaultDate).asInstanceOf[String])
     try {
       val result: String = Option(cacheUtil.get(key)).map(value => if (value.isEmpty) {
-        getResponseFromDruid(batchId = batchId, courseId = collectionId, date = defaultDate, groupByKeys = List("dist", "state"))
+        getResponseFromDruid(batchId = batchId, courseId = collectionId, date = defaultDate, groupByKeys = groupByKeys)
       } else {
         value
-      }).getOrElse(getResponseFromDruid(batchId = batchId, courseId = collectionId, date = defaultDate, groupByKeys = List("dist", "state")))
+      }).getOrElse(getResponseFromDruid(batchId = batchId, courseId = collectionId, date = defaultDate, groupByKeys = groupByKeys))
       cacheUtil.set(key, result, ttl)
       val response = new Response()
       response.put(JsonKey.RESPONSE, result)

@@ -11,8 +11,6 @@ import java.util.Map;
 
 public class Validator extends BaseRequestValidator {
     public void validate(Request request) {
-        System.out.println("requestsss" + request.getRequest());
-        System.out.println("req" + request);
         Map<String, Object> filters = null;
         filters = (Map<String, Object>) request.getRequest().get(JsonKey.FILTERS);
         validateParam(

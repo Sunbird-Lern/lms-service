@@ -16,6 +16,10 @@ import org.sunbird.common.models.util.{JsonKey, ProjectUtil, TelemetryEnvKey}
 import org.sunbird.common.request.Request
 import org.sunbird.learner.util.Util
 
+import scala.collection.JavaConverters.iterableAsScalaIterableConverter
+
+
+
 class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUtil) extends BaseActor {
   val ttl: Int = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("collection_summary_agg_cache_ttl"))) ProjectUtil.getConfigValue("collection_summary_agg_cache_ttl").toInt else 60
   val dataSource: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("collection_summary_agg_data_source"))) ProjectUtil.getConfigValue("collection_summary_agg_data_source") else "telemetry-events"
@@ -25,7 +29,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
   override def onReceive(request: Request): Unit = {
     Util.initializeContext(request, TelemetryEnvKey.BATCH)
     val filters = request.getRequest.get(JsonKey.FILTERS).asInstanceOf[util.Map[String, AnyRef]]
-    val groupByKeys = request.getRequest.getOrDefault(JsonKey.GROUPBY, List()).asInstanceOf[List[String]]
+    val groupByKeys = request.getRequest.getOrDefault(JsonKey.GROUPBY, new util.ArrayList[String]()).asInstanceOf[util.ArrayList[String]].asScala.toList
     val batchId = filters.get(JsonKey.BATCH_ID).asInstanceOf[String]
     val collectionId = filters.get(JsonKey.COLLECTION_ID).asInstanceOf[String]
     val dateTimeFormate = DateTimeFormat.forPattern("yyyy-MM-dd")
@@ -148,7 +152,6 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     val host = ProjectUtil.getConfigValue("druid_proxy_api_host")
     val port = ProjectUtil.getConfigValue("druid_proxy_api_port")
     val endPoint = ProjectUtil.getConfigValue("druid_proxy_api_endpoint")
-    println("hosthost" + host)
     val request = Unirest.post(s"http://$host:$port$endPoint").headers(getUpdatedHeaders(new util.HashMap[String, String]())).body(druidQuery)
     request.asString().getBody
   }

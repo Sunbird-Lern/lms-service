@@ -16,6 +16,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.sunbird.auth.verifier.AccessTokenValidator;
 import org.sunbird.cassandraimpl.CassandraOperationImpl;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
@@ -66,10 +67,12 @@ public class RequestInterceptorTest {
   }
 
   @Test
-  @PrepareForTest({SSOServiceFactory.class, ServiceFactory.class, PropertiesCache.class})
+  @PrepareForTest({SSOServiceFactory.class, ServiceFactory.class, PropertiesCache.class, AccessTokenValidator.class})
   public void testVerifyRequestDataWithUserAccessTokenWithPrivateRequestPath() {
     when(properties.getProperty(JsonKey.SSO_PUBLIC_KEY)).thenReturn("somePublicKey");
     when(properties.getProperty(JsonKey.IS_SSO_ENABLED)).thenReturn("false");
+      PowerMockito.mockStatic(AccessTokenValidator.class);
+      when(AccessTokenValidator.verifyUserToken(Mockito.anyString(), Mockito.anyBoolean())).thenReturn("userId");
     Http.Request req = createRequest("user", "/v1/course/batch/search");
     when(cassandraOperation.getRecordById(
             Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
@@ -78,11 +81,13 @@ public class RequestInterceptorTest {
   }
 
   @Test
-  @PrepareForTest({SSOServiceFactory.class, ServiceFactory.class, PropertiesCache.class})
+  @PrepareForTest({SSOServiceFactory.class, ServiceFactory.class, PropertiesCache.class, AccessTokenValidator.class})
   public void testVerifyRequestDataWithUserAccessTokenWithPublicRequestPath() {
     when(properties.getProperty(JsonKey.SSO_PUBLIC_KEY)).thenReturn("somePublicKey");
     when(properties.getProperty(JsonKey.IS_SSO_ENABLED)).thenReturn("false");
     Http.Request req = createRequest("user", "/v1/course/batch/create");
+    PowerMockito.mockStatic(AccessTokenValidator.class);
+    when(AccessTokenValidator.verifyUserToken(Mockito.anyString(), Mockito.anyBoolean())).thenReturn("userId");
     when(cassandraOperation.getRecordById(
             Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
         .thenReturn(getMockCassandraRecordByIdResponse(JsonKey.USER_ID, "userId"));

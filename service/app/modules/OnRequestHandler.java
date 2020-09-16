@@ -1,26 +1,18 @@
 package modules;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import controllers.BaseController;
-import java.lang.reflect.Method;
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang3.StringUtils;
+import org.sunbird.auth.verifier.AccessTokenValidator;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.HeaderParam;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.keys.SunbirdKey;
-import org.sunbird.telemetry.util.TelemetryUtil;
-import org.sunbird.auth.verifier.ManagedTokenValidator;
 import play.http.ActionCreator;
 import play.libs.Json;
 import play.mvc.Action;
@@ -28,6 +20,18 @@ import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Results;
 import util.RequestInterceptor;
+
+import java.lang.reflect.Method;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.WeakHashMap;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 public class OnRequestHandler implements ActionCreator {
     
@@ -60,7 +64,8 @@ public class OnRequestHandler implements ActionCreator {
         Optional<String> forAuth = request.header(HeaderParam.X_Authenticated_For.getName());
         String childId = null;
         if (StringUtils.isNotBlank(message) && forAuth.isPresent() && StringUtils.isNotBlank(forAuth.orElse(""))) {
-          childId = ManagedTokenValidator.verify(forAuth.get(), message);
+            String requestedForId = getRequestedForId(request);
+          childId = AccessTokenValidator.verifyManagedUserToken(forAuth.get(), message, requestedForId);
           if (StringUtils.isNotBlank(childId) && !USER_UNAUTH_STATES.contains(childId)) {
             request.flash().put(SunbirdKey.REQUESTED_FOR, childId);
           }
@@ -89,7 +94,30 @@ public class OnRequestHandler implements ActionCreator {
     };
   }
 
-  /**
+    private String getRequestedForId(Http.Request request) {
+      String requestedForUserID = null;
+      JsonNode jsonBody = request.body().asJson();
+      if(null != jsonBody && jsonBody.has(JsonKey.REQUEST) && jsonBody.get(JsonKey.REQUEST).has(JsonKey.USER_ID)) {
+          requestedForUserID = jsonBody.get(JsonKey.REQUEST).get(JsonKey.USER_ID).asText();
+      } else { // for read-api
+          String uuidSegment = null;
+          Path path = Paths.get(request.uri());
+          if (request.queryString().isEmpty()) {
+              uuidSegment = path.getFileName().toString();
+          } else {
+              String[] queryPath = path.getFileName().toString().split("\\?");
+              uuidSegment = queryPath[0];
+          }
+          try {
+              requestedForUserID = UUID.fromString(uuidSegment).toString();
+          } catch (IllegalArgumentException iae) {
+              ProjectLogger.log("Perhaps this is another API, like search that doesn't carry user id.");
+          }
+      }
+      return requestedForUserID;
+    }
+
+    /**
    * This method will do request data validation for GET method only. As a GET request user must
    * send some key in header.
    *

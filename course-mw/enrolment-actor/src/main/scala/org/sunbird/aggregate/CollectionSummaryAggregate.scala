@@ -18,8 +18,7 @@ import org.sunbird.learner.util.Util
 
 class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUtil) extends BaseActor {
   val ttl: Int = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("collection_summary_agg_cache_ttl"))) ProjectUtil.getConfigValue("collection_summary_agg_cache_ttl").toInt else 60
-  val isCacheEnabled: Boolean = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("collection_summary_agg_cache_enable"))) ProjectUtil.getConfigValue("collection_summary_agg_cache_enable").toBoolean else false
-  val dataSource: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("collection_summary_agg_data_source"))) ProjectUtil.getConfigValue("collection_summary_agg_data_source") else "telemetry-events-syncts"
+  val dataSource: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("collection_summary_agg_data_source"))) ProjectUtil.getConfigValue("collection_summary_agg_data_source") else "telemetry-events"
 
   override def onReceive(request: Request): Unit = {
     Util.initializeContext(request, TelemetryEnvKey.BATCH)
@@ -33,11 +32,11 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     val key = getCacheKey(batchId = batchId, request.getRequest.getOrDefault("intervals", defaultDate).asInstanceOf[String])
     try {
       val result: String = Option(cacheUtil.get(key)).map(value => if (value.isEmpty) {
-        getResponseFromDruid(batchId = batchId, courseId = collectionId, date = defaultDate, groupByKeys = List("districts", "state"))
+        getResponseFromDruid(batchId = batchId, courseId = collectionId, date = defaultDate, groupByKeys = List("dist", "state"))
       } else {
         value
-      }).getOrElse(getResponseFromDruid(batchId = batchId, courseId = collectionId, date = defaultDate, groupByKeys = List("districts", "state")))
-      cacheUtil.set(key, result)
+      }).getOrElse(getResponseFromDruid(batchId = batchId, courseId = collectionId, date = defaultDate, groupByKeys = List("dist", "state")))
+      cacheUtil.set(key, result, ttl)
       val response = new Response()
       response.put(JsonKey.RESPONSE, result)
       sender().tell(response, self)
@@ -90,11 +89,11 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     val druidQuery =
       s"""{
          |  "queryType": "groupBy",
-         |  "dataSource": s"$dataSource",
+         |  "dataSource": "$dataSource",
          |  "dimensions": [
          |    "edata_type",
-         |    ${if (groupByKeys.contains("district")) districtQuery}
-         |    ${if (groupByKeys.contains("district")) "," else null}
+         |    ${if (groupByKeys.contains("dist")) districtQuery else null}
+         |    ${if (groupByKeys.contains("dist")) "," else null}
          |    ${if (groupByKeys.contains("state")) stateQuery else null}
          |  ],
          |  "aggregations": [
@@ -183,7 +182,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
 
   def getCacheKey(batchId: String, intervals: String): String = {
     val date = intervals.split("/")
-    s"bmetircs$batchId:${date.indexOf(0)}:${date.indexOf(1)}"
+    s"bmetircs$batchId:${date(0)}:${date(1)}"
   }
 
 

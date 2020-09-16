@@ -2,22 +2,21 @@ package org.sunbird.aggregate
 
 import java.util
 
-import akka.actor.ActorRef
 import com.mashape.unirest.http.Unirest
-import javax.inject.{Inject, Named}
+import javax.inject.Inject
 import javax.ws.rs.core.MediaType
 import org.apache.commons.lang3.StringUtils
 import org.apache.http.HttpHeaders
+import org.joda.time.format.DateTimeFormat
+import org.joda.time.{DateTime, DateTimeZone}
+import org.sunbird.actor.base.BaseActor
 import org.sunbird.cache.util.RedisCacheUtil
 import org.sunbird.common.models.response.Response
 import org.sunbird.common.models.util.{JsonKey, ProjectUtil, TelemetryEnvKey}
 import org.sunbird.common.request.Request
-import org.sunbird.enrolments.BaseEnrolmentActor
 import org.sunbird.learner.util.Util
 
-class CollectionSummaryAggregate @Inject()(@Named("collection-summary-aggregate-actor") courseBatchNotificationActorRef: ActorRef
-                                          )(implicit val cacheUtil: RedisCacheUtil) extends BaseEnrolmentActor {
-
+class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUtil) extends BaseActor {
   val ttl: Int = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("collection_summary_agg_cache_ttl"))) ProjectUtil.getConfigValue("collection_summary_agg_cache_ttl").toInt else 60
   val isCacheEnabled: Boolean = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("collection_summary_agg_cache_enable"))) ProjectUtil.getConfigValue("collection_summary_agg_cache_enable").toBoolean else false
   val dataSource: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("collection_summary_agg_data_source"))) ProjectUtil.getConfigValue("collection_summary_agg_data_source") else "telemetry-events-syncts"
@@ -27,16 +26,20 @@ class CollectionSummaryAggregate @Inject()(@Named("collection-summary-aggregate-
     val filters = request.getRequest.get(JsonKey.FILTERS).asInstanceOf[util.Map[String, AnyRef]]
     val batchId = filters.get(JsonKey.BATCH_ID).asInstanceOf[String]
     val collectionId = filters.get(JsonKey.COLLECTION_ID).asInstanceOf[String]
-    val key = getCacheKey(batchId = batchId, request.getRequest.get("intervals").asInstanceOf[String])
+    val dateTimeFormate = DateTimeFormat.forPattern("yyyy-MM-dd")
+    val presentDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC))
+    val fromDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(7))
+    val defaultDate = s"$fromDate/$presentDate"
+    val key = getCacheKey(batchId = batchId, request.getRequest.getOrDefault("intervals", defaultDate).asInstanceOf[String])
     try {
       val result: String = Option(cacheUtil.get(key)).map(value => if (value.isEmpty) {
-        getResponseFromDruid(batchId = batchId, courseId = collectionId, date = "", groupByKeys = List())
+        getResponseFromDruid(batchId = batchId, courseId = collectionId, date = defaultDate, groupByKeys = List("districts", "state"))
       } else {
         value
-      }).getOrElse(getResponseFromDruid(batchId = batchId, courseId = collectionId, date = "", groupByKeys = List()))
+      }).getOrElse(getResponseFromDruid(batchId = batchId, courseId = collectionId, date = defaultDate, groupByKeys = List("districts", "state")))
       cacheUtil.set(key, result)
       val response = new Response()
-      response.put(JsonKey.RESULT, result)
+      response.put(JsonKey.RESPONSE, result)
       sender().tell(response, self)
     } catch {
       case ex: Exception =>
@@ -53,19 +56,134 @@ class CollectionSummaryAggregate @Inject()(@Named("collection-summary-aggregate-
 
 
   def getResponseFromDruid(batchId: String, courseId: String, date: String, groupByKeys: List[String]): String = {
+    val stateQuery =
+      """
+        |{
+        |      "type": "extraction",
+        |      "dimension": "derived_loc_state",
+        |      "outputName": "state",
+        |      "extractionFn": {
+        |        "type": "registeredLookup",
+        |        "lookup": "stateSlugLookup",
+        |        "replaceMissingValueWith": "Unknown"
+        |      }
+        | }
+        |""".stripMargin
+
+    val districtQuery =
+      s"""
+         |
+         |{
+         |      "type": "extraction",
+         |      "dimension": "derived_loc_state",
+         |      "outputName": "state",
+         |      "extractionFn": {
+         |        "type": "registeredLookup",
+         |        "lookup": "stateSlugLookup",
+         |        "replaceMissingValueWith": "Unknown"
+         |      }
+         | }
+         |
+         |
+         |""".stripMargin
+
+    val druidQuery =
+      s"""{
+         |  "queryType": "groupBy",
+         |  "dataSource": s"$dataSource",
+         |  "dimensions": [
+         |    "edata_type",
+         |    ${if (groupByKeys.contains("district")) districtQuery}
+         |    ${if (groupByKeys.contains("district")) "," else null}
+         |    ${if (groupByKeys.contains("state")) stateQuery else null}
+         |  ],
+         |  "aggregations": [
+         |    {
+         |      "fieldName": "actor_id",
+         |      "fieldNames": [
+         |        "actor_id"
+         |      ],
+         |      "type": "cardinality",
+         |      "name": "COUNT_DISTINCT(actor_id)"
+         |    }
+         |  ],
+         |  "granularity": "all",
+         |  "postAggregations": [],
+         |  "intervals": "$date",
+         |  "filter": {
+         |    "type": "and",
+         |    "fields": [
+         |      {
+         |        "type": "or",
+         |        "fields": [
+         |          {
+         |            "type": "selector",
+         |            "dimension": "edata_type",
+         |            "value": "complete"
+         |          },
+         |          {
+         |            "type": "selector",
+         |            "dimension": "edata_type",
+         |            "value": "enrollment"
+         |          },
+         |          {
+         |            "type": "selector",
+         |            "dimension": "edata_type",
+         |            "value": "certificate-issued"
+         |          }
+         |        ]
+         |      },
+         |      {
+         |        "type": "and",
+         |        "fields": [
+         |          {
+         |            "type": "selector",
+         |            "dimension": "context_cdata_id",
+         |            "value": "$batchId"
+         |          },
+         |          {
+         |            "type": "and",
+         |            "fields": [
+         |              {
+         |                "type": "selector",
+         |                "dimension": "object_rollup_l1",
+         |                "value": "$courseId"
+         |              },
+         |              {
+         |                "type": "selector",
+         |                "dimension": "eid",
+         |                "value": "AUDIT"
+         |              }
+         |            ]
+         |          }
+         |        ]
+         |      }
+         |    ]
+         |  },
+         |  "limitSpec": {
+         |    "type": "default",
+         |    "limit": 10000,
+         |    "columns": [
+         |      {
+         |        "dimension": "COUNT_DISTINCT(actor_id)",
+         |        "direction": "descending"
+         |      }
+         |    ]
+         |  }
+         |}""".stripMargin.replaceAll("null", " ")
+
+    println("DruidQu" + druidQuery)
     val host = ProjectUtil.getConfigValue("druid_proxy_api_host")
     val port = ProjectUtil.getConfigValue("druid_proxy_api_port")
-    val endPoint = ProjectUtil.getConfigValue("/druid/v2/")
-    val query = "{\"queryType\":\"timeseries\",\"dataSource\":\"summary-events\",\"aggregations\":[{\"type\":\"count\",\"name\":\"count\"}],\"granularity\":\"all\",\"postAggregations\":[],\"intervals\":\"2019-11-19T00:00:00+00:00/2019-11-19T00:00:00+00:00\"}"
-    val request = Unirest.post(s"http://11.2.4.39:8082/druid/v2/").headers(getUpdatedHeaders(new util.HashMap[String, String]())).body(query)
+    val endPoint = ProjectUtil.getConfigValue("druid_proxy_api_endpoint")
+    println("hosthost" + host)
+    val request = Unirest.post(s"http://$host:$port$endPoint").headers(getUpdatedHeaders(new util.HashMap[String, String]())).body(druidQuery)
     request.asString().getBody
   }
 
   def getCacheKey(batchId: String, intervals: String): String = {
     val date = intervals.split("/")
-    val startDate = date.lift(0).getOrElse("2020901")
-    val endDate = date.lift(1).getOrElse("20200901")
-    s"bmetircs$batchId:$startDate:$endDate"
+    s"bmetircs$batchId:${date.indexOf(0)}:${date.indexOf(1)}"
   }
 
 

@@ -10,6 +10,7 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.base.BaseActor;
 import org.sunbird.cassandra.CassandraOperation;
+import org.sunbird.common.Constants;
 import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
@@ -164,10 +165,22 @@ public class LearnerStateUpdateActor extends BaseActor {
                           return processContent(inputContent, existingContent, userId);
                         }).collect(Collectors.toList());
                 cassandraOperation.batchInsert(consumptionDBInfo.getKeySpace(), consumptionDBInfo.getTableName(), contents);
-                Map<String, Object> updatedBatch = getBatchCurrentStatus(batchId, userId, contents);
-                cassandraOperation.upsertRecord(userCourseDBInfo.getKeySpace(), userCourseDBInfo.getTableName(), updatedBatch);
-                // Generate Instruction event. Send userId, batchId, courseId, contents.
-                pushInstructionEvent(userId, batchId, courseId, contents);
+                Map<String, Object> compKey = new HashMap<String, Object>() {{
+                    put("userid", userId);
+                    put("courseid", courseId);
+                    put("batchid", batchId);
+                }};
+                Response enrolmentResponse = cassandraOperation.getRecordsByCompositeKey(userCourseDBInfo.getKeySpace(), userCourseDBInfo.getTableName(), compKey);
+                List enrolmentData = (List) enrolmentResponse.get(Constants.RESPONSE);
+                if (CollectionUtils.isNotEmpty(enrolmentData)) {
+                    Map<String, Object> updatedBatch = getBatchCurrentStatus(batchId, userId, contents);
+                    cassandraOperation.upsertRecord(userCourseDBInfo.getKeySpace(), userCourseDBInfo.getTableName(), updatedBatch);
+                    // Generate Instruction event. Send userId, batchId, courseId, contents.
+                    pushInstructionEvent(userId, batchId, courseId, contents);
+                } else {
+                    ProjectLogger.log("Enrolment not exists for: " + JsonUtil.serialize(compKey), LoggerEnum.WARN);
+                }
+
                 contentIds.forEach(contentId -> updateMessages(respMessages, contentId, JsonKey.SUCCESS));
               } else {
                 invalidContents.addAll(entry.getValue());

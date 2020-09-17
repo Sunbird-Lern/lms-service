@@ -13,7 +13,7 @@ import org.joda.time.{DateTime, DateTimeZone}
 import org.sunbird.actor.base.BaseActor
 import org.sunbird.cache.util.RedisCacheUtil
 import org.sunbird.common.models.response.Response
-import org.sunbird.common.models.util.{JsonKey, ProjectUtil, TelemetryEnvKey}
+import org.sunbird.common.models.util.{JsonKey, ProjectLogger, ProjectUtil, TelemetryEnvKey}
 import org.sunbird.common.request.Request
 import org.sunbird.learner.util.Util
 
@@ -25,6 +25,8 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
   val dataSource: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("collection_summary_agg_data_source"))) ProjectUtil.getConfigValue("collection_summary_agg_data_source") else "telemetry-events-syncts"
   val stateLookUpQuery = "{\"type\":\"extraction\",\"dimension\":\"derived_loc_state\",\"outputName\":\"state\",\"extractionFn\":{\"type\":\"registeredLookup\",\"lookup\":\"stateLookup\",\"replaceMissingValueWith\":\"Unknown\"}}"
   val districtLookUpQuery = "{\"type\":\"extraction\",\"dimension\":\"derived_loc_district\",\"outputName\":\"district_slug\",\"extractionFn\":{\"type\":\"registeredLookup\",\"lookup\":\"districtLookup\",\"replaceMissingValueWith\":\"Unknown\"}}"
+  val response = new Response()
+  val gson = new Gson
 
   override def onReceive(request: Request): Unit = {
     Util.initializeContext(request, TelemetryEnvKey.BATCH)
@@ -38,13 +40,12 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     val defaultDate = s"$fromDate/$presentDate"
     val key = getCacheKey(batchId = batchId, request.getRequest.getOrDefault("intervals", defaultDate).asInstanceOf[String])
     try {
-      val result: String = Option(cacheUtil.get(key)).map(value => if (value.isEmpty) {
+      val redisData = cacheUtil.get(key)
+      val result: String = Option(redisData).map(value => if (value.isEmpty) {
         getResponseFromDruid(batchId = batchId, courseId = collectionId, date = defaultDate, groupByKeys = groupByKeys)
       } else {
         value
       }).getOrElse(getResponseFromDruid(batchId = batchId, courseId = collectionId, date = defaultDate, groupByKeys = groupByKeys))
-      val response = new Response()
-      val gson = new Gson
       val parsedResult = gson.fromJson(result, classOf[Any])
       if (isValidResponse(parsedResult)) {
         cacheUtil.set(key, result, ttl)
@@ -53,7 +54,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
       sender().tell(response, self)
     } catch {
       case ex: Exception =>
-        System.out.println("CollectionSummaryAggregate: Exception thrown:: " + ex)
+        ProjectLogger.log("CollectionSummaryAggregate: Exception thrown = " + ex)
         throw ex
     }
   }

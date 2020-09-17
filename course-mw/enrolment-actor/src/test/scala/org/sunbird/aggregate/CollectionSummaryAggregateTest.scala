@@ -29,11 +29,15 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
 
   var redisServer: RedisServer = _
   redisServer = new RedisServer(6379)
-  redisServer.start()
+  var server = new MockWebServer()
+  server.start(8082)
+  if (!redisServer.isActive) {
+    redisServer.start()
+  }
 
   var jedis: Jedis = _
-  var server = new MockWebServer
-  server.start(8000)
+  val redisConnect = new RedisCacheUtil()
+
   override def afterAll() {
     super.afterAll()
     redisServer.stop();
@@ -48,9 +52,7 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
 
   def getCacheKey(batchId: String, intervals: String): String = {
     val date = intervals.split("/")
-    val startDate = date.lift(0).getOrElse("2020901")
-    val endDate = date.lift(1).getOrElse("20200901")
-    s"bmetircs:$batchId:$startDate:$endDate"
+    s"bmetircs$batchId:${date(0)}:${date(1)}"
   }
 
   private def getUpdatedHeaders(headers: util.Map[String, String]): util.Map[String, String] = {
@@ -60,18 +62,27 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
   }
 
   "CollectionSummaryActivityAgg" should "return success response from redis" in {
-    val redisConnect = new RedisCacheUtil()
-    redisConnect.set(getCacheKey("0130929928739635202", "2019-09-21/2019-09-21"), "\"{\\\"error\\\":\\\"FORBIDDEN\\\",\\\"errorMessage\\\":\\\"Date Range(intervals) can not be more than \\\\\\\"30\\\\\\\" day's\\\\\\\"\\\",\\\"isValid\\\":false}\"")
-    val response = callActor(getRequest("0130929928739635202", "do_31309287232935526411138", "2019-09-23/2019-09-24"), Props(new CollectionSummaryAggregate()(new RedisCacheUtil())))
+    redisConnect.set(getCacheKey("0130929928739635202", "2019-09-21/2019-09-21"), "[{\"event\":{\"edata_type\":\"complete\",\"userCount\":13777.246841795362},\"version\":\"v1\",\"timestamp\":\"2020-09-09T00:00:00.000Z\"},{\"event\":{\"edata_type\":\"enrollment\",\"userCount\":8754.453098640937},\"version\":\"v1\",\"timestamp\":\"2020-09-09T00:00:00.000Z\"}]")
+    val response = callActor(getRequest("0130929928739635202", "do_31309287232935526411138", "2019-09-21/2019-09-21"), Props(new CollectionSummaryAggregate()(new RedisCacheUtil())))
     assert(response.getResponseCode == ResponseCode.OK)
   }
 
   "CollectionSummaryActivityAgg" should "return success response from druid" in {
-    startServer("[{\"timestamp\":\"2019-11-19T00:00:00.000Z\",\"result\":{\"count\":0}}]")
-    val query = "{\"queryType\":\"timeseries\",\"dataSource\":\"summary-events\",\"aggregations\":[{\"type\":\"count\",\"name\":\"count\"}],\"granularity\":\"all\",\"postAggregations\":[],\"intervals\":\"2019-11-19T00:00:00+00:00/2019-11-19T00:00:00+00:00\"}"
+    mockDruid("[{\"event\":{\"edata_type\":\"complete\",\"userCount\":13777.246841795362},\"version\":\"v1\",\"timestamp\":\"2020-09-09T00:00:00.000Z\"},{\"event\":{\"edata_type\":\"enrollment\",\"userCount\":8754.453098640937},\"version\":\"v1\",\"timestamp\":\"2020-09-09T00:00:00.000Z\"}]")
+    val query = "{\"request\":{\"filters\":{\"collectionId\":\"do_31309287232935526411138\",\"batchId\":\"0130929928739635201\"},\"groupBy\":[],\"intervals\":\"20120-01-23/2020-09-24\"}}"
     Unirest.post(s"http://localhost:8082/druid/v2/").headers(getUpdatedHeaders(new util.HashMap[String, String]())).body(query)
-    val response = callActor(getRequest("batch-001", "course-001", "1993-08-24/1993-08-25"), Props(new CollectionSummaryAggregate()(new RedisCacheUtil())))
+    val response = callActor(getRequest("0130929928739635201", "do_31309287232935526411138", "1993-08-24/1993-08-25"), Props(new CollectionSummaryAggregate()(new RedisCacheUtil())))
     assert(response.getResponseCode == ResponseCode.OK)
+  }
+
+  "CollectionSummaryActivityAgg" should "should not store the data into redis" in {
+    mockDruid("{}")
+    val query = "{\"request\":{\"filters\":{\"collectionId\":\"course-01\",\"batchId\":\"batch-01\"},\"groupBy\":[],\"intervals\":\"20120-01-23/2020-09-24\"}}"
+    Unirest.post(s"http://localhost:8082/druid/v2/").headers(getUpdatedHeaders(new util.HashMap[String, String]())).body(query)
+    val response = callActor(getRequest("batch-01", "course-01", "1993-08-24/1993-08-25"), Props(new CollectionSummaryAggregate()(new RedisCacheUtil())))
+    assert(response.getResponseCode == ResponseCode.OK)
+    val redisResp = redisConnect.get(getCacheKey("batch-01", "1993-08-24/1993-08-25"))
+    redisResp.isEmpty should be(true)
   }
 
   def blankRestResponse(): Response = {
@@ -105,28 +116,18 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
     request
   }
 
-  def getInvalidRequest(): Request = {
-    val request = new Request()
-    request.setOperation("groupActivity")
-    request.put("groupId", "groupid")
-    request.put("activityId", "activityid")
-    request.put("activityType", "activitytype")
-    request
-  }
-
   def defaultStringHandler(name: String): String = {
     ""
   }
 
   @throws[IOException]
-  def startServer(response: String): Unit = {
+  def mockDruid(response: String): Unit = {
     server.enqueue(new MockResponse().setBody(response))
     server.enqueue(new MockResponse().setHeader("Authorization", ""))
     server.url("http://localhost:8082/druid/v2/")
     val headers = new util.HashMap[String, String]()
     headers.put("Authorization", "")
   }
-
 
 }
 

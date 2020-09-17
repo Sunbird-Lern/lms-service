@@ -33,7 +33,7 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
 
   var jedis: Jedis = _
   var server = new MockWebServer
-  server.start(3000)
+  server.start(8000)
   override def afterAll() {
     super.afterAll()
     redisServer.stop();
@@ -60,10 +60,6 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
   }
 
   "CollectionSummaryActivityAgg" should "return success response from redis" in {
-    startServer("[{\"timestamp\":\"2019-11-19T00:00:00.000Z\",\"result\":{\"count\":0}}]")
-    val query = "{\"queryType\":\"timeseries\",\"dataSource\":\"summary-events\",\"aggregations\":[{\"type\":\"count\",\"name\":\"count\"}],\"granularity\":\"all\",\"postAggregations\":[],\"intervals\":\"2019-11-19T00:00:00+00:00/2019-11-19T00:00:00+00:00\"}"
-    Unirest.post(s"http://localhost:8082/druid/v2/").headers(getUpdatedHeaders(new util.HashMap[String, String]())).body(query)
-
     val redisConnect = new RedisCacheUtil()
     redisConnect.set(getCacheKey("0130929928739635202", "2019-09-21/2019-09-21"), "\"{\\\"error\\\":\\\"FORBIDDEN\\\",\\\"errorMessage\\\":\\\"Date Range(intervals) can not be more than \\\\\\\"30\\\\\\\" day's\\\\\\\"\\\",\\\"isValid\\\":false}\"")
     val response = callActor(getRequest("0130929928739635202", "do_31309287232935526411138", "2019-09-23/2019-09-24"), Props(new CollectionSummaryAggregate()(new RedisCacheUtil())))

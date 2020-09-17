@@ -23,7 +23,7 @@ import scala.collection.JavaConverters.iterableAsScalaIterableConverter
 class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUtil) extends BaseActor {
   val ttl: Int = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("collection_summary_agg_cache_ttl"))) ProjectUtil.getConfigValue("collection_summary_agg_cache_ttl").toInt else 60
   val dataSource: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("collection_summary_agg_data_source"))) ProjectUtil.getConfigValue("collection_summary_agg_data_source") else "telemetry-events-syncts"
-  val stateLookUpQuery = "{\"type\":\"extraction\",\"dimension\":\"derived_loc_state\",\"outputName\":\"state\",\"extractionFn\":{\"type\":\"registeredLookup\",\"lookup\":\"stateSlugLookup\",\"replaceMissingValueWith\":\"Unknown\"}}"
+  val stateLookUpQuery = "{\"type\":\"extraction\",\"dimension\":\"derived_loc_state\",\"outputName\":\"state\",\"extractionFn\":{\"type\":\"registeredLookup\",\"lookup\":\"stateLookup\",\"replaceMissingValueWith\":\"Unknown\"}}"
   val districtLookUpQuery = "{\"type\":\"extraction\",\"dimension\":\"derived_loc_district\",\"outputName\":\"district_slug\",\"extractionFn\":{\"type\":\"registeredLookup\",\"lookup\":\"districtLookup\",\"replaceMissingValueWith\":\"Unknown\"}}"
 
   override def onReceive(request: Request): Unit = {
@@ -151,7 +151,6 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
          |  }
          |}""".stripMargin.replaceAll("null", " ")
 
-    println("DruidQu" + druidQuery)
     val host = ProjectUtil.getConfigValue("druid_proxy_api_host")
     val port = ProjectUtil.getConfigValue("druid_proxy_api_port")
     val endPoint = ProjectUtil.getConfigValue("druid_proxy_api_endpoint")

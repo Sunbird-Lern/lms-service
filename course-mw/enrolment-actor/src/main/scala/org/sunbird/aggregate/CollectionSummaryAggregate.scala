@@ -74,7 +74,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
          |    "edata_type"
          |    ${if (groupByKeys.contains("dist") || groupByKeys.contains("state")) "," else null}
          |    ${if (groupByKeys.contains("dist")) districtLookUpQuery else null}
-         |    ${if (groupByKeys.contains("state")) "," else null}
+         |    ${if (groupByKeys.contains("dist") && groupByKeys.contains("state") ) "," else null}
          |    ${if (groupByKeys.contains("state")) stateLookUpQuery else null}
          |  ],
          |  "aggregations": [

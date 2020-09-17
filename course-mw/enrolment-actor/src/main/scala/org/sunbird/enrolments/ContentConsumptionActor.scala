@@ -1,9 +1,5 @@
 package org.sunbird.enrolments
 
-
-import java.util
-import java.util.{HashMap, Map}
-
 import com.fasterxml.jackson.databind.ObjectMapper
 import javax.inject.Inject
 import org.apache.commons.collections4.{CollectionUtils, MapUtils}

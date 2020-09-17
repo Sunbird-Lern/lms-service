@@ -38,7 +38,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     val presentDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC))
     val fromDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(7))
     val defaultDate = s"$fromDate/$presentDate"
-    val key = getCacheKey(batchId = batchId, request.getRequest.getOrDefault("intervals", defaultDate).asInstanceOf[String])
+    val key = getCacheKey(batchId = batchId, request.getRequest.getOrDefault("intervals", defaultDate).asInstanceOf[String], groupByKeys)
     try {
       val redisData = cacheUtil.get(key)
       val result: String = Option(redisData).map(value => if (value.isEmpty) {
@@ -159,9 +159,10 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     request.asJson().getBody.toString
   }
 
-  def getCacheKey(batchId: String, intervals: String): String = {
+  def getCacheKey(batchId: String, intervals: String, groupByKeys: List[String]): String = {
+    val regex = "[^a-zA-Z0-9]"
     val date = intervals.split("/")
-    s"bmetircs$batchId:${date(0)}:${date(1)}"
+    s"bmetircs:$batchId:${date(0).replaceAll(regex, "")}:${date(1).replaceAll(regex, "")}:${groupByKeys.mkString(" ")}"
   }
 
   def isValidResponse(response: Any): Boolean = {

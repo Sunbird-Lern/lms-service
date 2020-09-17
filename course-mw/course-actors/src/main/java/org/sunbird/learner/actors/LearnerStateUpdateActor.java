@@ -171,6 +171,7 @@ public class LearnerStateUpdateActor extends BaseActor {
                     put("batchid", batchId);
                 }};
                 Response enrolmentResponse = cassandraOperation.getRecordsByCompositeKey(userCourseDBInfo.getKeySpace(), userCourseDBInfo.getTableName(), compKey);
+                ProjectLogger.log("Enrolment details.", enrolmentResponse, LoggerEnum.INFO.name());
                 List enrolmentData = (List) enrolmentResponse.get(Constants.RESPONSE);
                 if (CollectionUtils.isNotEmpty(enrolmentData)) {
                     Map<String, Object> updatedBatch = getBatchCurrentStatus(batchId, userId, contents);
@@ -178,7 +179,7 @@ public class LearnerStateUpdateActor extends BaseActor {
                     // Generate Instruction event. Send userId, batchId, courseId, contents.
                     pushInstructionEvent(userId, batchId, courseId, contents);
                 } else {
-                    ProjectLogger.log("Enrolment not exists for: " + JsonUtil.serialize(compKey), LoggerEnum.WARN);
+                    ProjectLogger.log("Enrolment not exists for: " + JsonUtil.serialize(compKey), LoggerEnum.INFO);
                 }
 
                 contentIds.forEach(contentId -> updateMessages(respMessages, contentId, JsonKey.SUCCESS));

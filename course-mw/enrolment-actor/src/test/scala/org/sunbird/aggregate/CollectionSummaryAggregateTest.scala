@@ -63,7 +63,7 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
   }
 
   "CollectionSummaryActivityAgg" should "return success response from redis" in {
-    redisConnect.set(getCacheKey("0130929928739635202", "2019-09-21/2019-09-21", List()), "[{\"event\":{\"edata_type\":\"complete\",\"userCount\":13777.246841795362},\"version\":\"v1\",\"timestamp\":\"2020-09-09T00:00:00.000Z\"},{\"event\":{\"edata_type\":\"enrollment\",\"userCount\":8754.453098640937},\"version\":\"v1\",\"timestamp\":\"2020-09-09T00:00:00.000Z\"}]")
+    redisConnect.set(getCacheKey("0130929928739635202", "2019-09-21/2019-09-21", List("state")), "[{\"event\":{\"edata_type\":\"complete\",\"userCount\":13777.246841795362},\"version\":\"v1\",\"timestamp\":\"2020-09-09T00:00:00.000Z\"},{\"event\":{\"edata_type\":\"enrollment\",\"userCount\":8754.453098640937},\"version\":\"v1\",\"timestamp\":\"2020-09-09T00:00:00.000Z\"}]")
     val groupByKeys = new util.ArrayList[String]
     groupByKeys.add("state")
     val response = callActor(getRequest("0130929928739635202", "do_31309287232935526411138", "2019-09-21/2019-09-21", groupByKeys), Props(new CollectionSummaryAggregate()(new RedisCacheUtil())))

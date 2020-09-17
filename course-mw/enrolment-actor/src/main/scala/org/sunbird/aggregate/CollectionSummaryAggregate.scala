@@ -151,9 +151,9 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
          |  }
          |}""".stripMargin.replaceAll("null", " ")
 
-    val host = ProjectUtil.getConfigValue("druid_proxy_api_host")
-    val port = ProjectUtil.getConfigValue("druid_proxy_api_port")
-    val endPoint = ProjectUtil.getConfigValue("druid_proxy_api_endpoint")
+    val host: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("druid_proxy_api_host"))) ProjectUtil.getConfigValue("druid_proxy_api_host") else "localhost"
+    val port: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("druid_proxy_api_port"))) ProjectUtil.getConfigValue("druid_proxy_api_port") else "8081"
+    val endPoint: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("druid_proxy_api_endpoint"))) ProjectUtil.getConfigValue("druid_proxy_api_endpoint") else "/druid/v2/"
     val request = Unirest.post(s"http://$host:$port$endPoint").headers(getUpdatedHeaders(new util.HashMap[String, String]())).body(druidQuery)
     request.asJson().getBody.toString
   }
@@ -165,7 +165,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
 
   def isValidResponse(response: Any): Boolean = {
     response match {
-      case res: List[_] => true
+      case res: List[_] => if (res.nonEmpty) true else false
       case res: Map[_, _] => false
       case _ => false
     }

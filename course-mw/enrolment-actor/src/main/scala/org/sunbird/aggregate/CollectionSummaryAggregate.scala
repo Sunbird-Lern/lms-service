@@ -72,9 +72,9 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
          |  "dataSource": "$dataSource",
          |  "dimensions": [
          |    "edata_type"
-         |    ${if (groupByKeys.contains("dist") && groupByKeys.contains("state")) "," else null}
+         |    ${if (groupByKeys.contains("dist") || groupByKeys.contains("state")) "," else null}
          |    ${if (groupByKeys.contains("dist")) districtLookUpQuery else null}
-         |    ${if (groupByKeys.contains("dist")) "," else null}
+         |    ${if (groupByKeys.contains("state")) "," else null}
          |    ${if (groupByKeys.contains("state")) stateLookUpQuery else null}
          |  ],
          |  "aggregations": [
@@ -157,10 +157,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     val port: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("druid_proxy_api_port"))) ProjectUtil.getConfigValue("druid_proxy_api_port") else "8081"
     val endPoint: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("druid_proxy_api_endpoint"))) ProjectUtil.getConfigValue("druid_proxy_api_endpoint") else "/druid/v2/"
     val request = Unirest.post(s"http://$host:$port$endPoint").headers(getUpdatedHeaders(new util.HashMap[String, String]())).body(druidQuery)
-    val data = request.asString()
-    println("request.asString()" + data)
-    println("request.asString().body" + data.getBody)
-    data.getBody
+    request.asString().getBody
   }
 
   def getCacheKey(batchId: String, intervals: String, groupByKeys: List[String]): String = {

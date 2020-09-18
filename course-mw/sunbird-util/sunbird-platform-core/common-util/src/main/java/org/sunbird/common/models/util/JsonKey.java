@@ -1039,6 +1039,7 @@ public final class JsonKey {
   public static final String GROUP_MEMBERS_METADATA ="group.members.metadata";
   public static final String COLLECTION_ID = "collectionId";
   public static final String TRACKABLE_ENABLED = "trackable.enabled";
+  public static final String GROUPBY = "groupBy";
 
   private JsonKey() {}
 }

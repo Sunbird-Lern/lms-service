@@ -116,19 +116,11 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                                 val existingContent = existingContents.getOrElse(inputContent.get("contentId").asInstanceOf[String], new java.util.HashMap[String, AnyRef])
                                 processContentConsumption(inputContent, existingContent, userId)
                             })
-                            val compKey = JavaConversions.mapAsJavaMap(Map("userid" -> userId, "courseid" -> courseId, "batchid" -> batchId.asInstanceOf[AnyRef]))
-                            val enrolmentResponse = cassandraOperation.getRecordsByCompositeKey("sunbird_courses", "user_enrolments", compKey)
-                            val enrolData = enrolmentResponse.get(Constants.RESPONSE).asInstanceOf[java.util.List[AnyRef]]
-                            if (CollectionUtils.isNotEmpty(enrolData)) {
-                              cassandraOperation.batchInsert(consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, contents)
-                              val updatedEnrolment = getLatestReadDetails(userId, batchId, contents)
-                              cassandraOperation.upsertRecord("sunbird_courses", "user_enrolments", updatedEnrolment)
-                              pushInstructionEvent(userId, batchId, courseId, contents.asJava)
-                              contentIds.map(id => responseMessage.put(id,JsonKey.SUCCESS))
-                            } else {
-                              ProjectLogger.log("ContentConsumptionActor: Enrolment not exists for userId: " + userId + " and batchId: " + batchId, LoggerEnum.INFO)
-                              contentIds.map(id => responseMessage.put(id,"NOT_ENROLLED"))
-                            }
+                            cassandraOperation.batchInsert(consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, contents)
+                            val updatedEnrolment = getLatestReadDetails(userId, batchId, contents)
+                            cassandraOperation.upsertRecord("sunbird_courses", "user_enrolments", updatedEnrolment)
+                            pushInstructionEvent(userId, batchId, courseId, contents.asJava)
+                            contentIds.map(id => responseMessage.put(id,JsonKey.SUCCESS))
 
                         } else {
                             ProjectLogger.log("ContentConsumptionActor: addContent : User Id is invalid : " + userId, LoggerEnum.INFO)

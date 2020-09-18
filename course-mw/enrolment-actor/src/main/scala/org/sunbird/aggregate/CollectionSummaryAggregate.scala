@@ -15,10 +15,11 @@ import org.sunbird.cache.util.RedisCacheUtil
 import org.sunbird.common.models.response.Response
 import org.sunbird.common.models.util.{JsonKey, ProjectLogger, ProjectUtil, TelemetryEnvKey}
 import org.sunbird.common.request.Request
-import org.sunbird.learner.util.Util
+import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao
+import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl
+import org.sunbird.learner.util.{JsonUtil, Util}
 
 import scala.collection.JavaConverters.iterableAsScalaIterableConverter
-
 
 class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUtil) extends BaseActor {
   val ttl: Int = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("collection_summary_agg_cache_ttl"))) ProjectUtil.getConfigValue("collection_summary_agg_cache_ttl").toInt else 60
@@ -27,6 +28,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
   val districtLookUpQuery = "{\"type\":\"extraction\",\"dimension\":\"derived_loc_district\",\"outputName\":\"district\",\"extractionFn\":{\"type\":\"registeredLookup\",\"lookup\":\"districtLookup\",\"replaceMissingValueWith\":\"Unknown\"}}"
   val response = new Response()
   val gson = new Gson
+  var courseBatchDao: CourseBatchDao = new CourseBatchDaoImpl()
 
   override def onReceive(request: Request): Unit = {
     Util.initializeContext(request, TelemetryEnvKey.BATCH)
@@ -34,23 +36,38 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     val groupByKeys = request.getRequest.getOrDefault(JsonKey.GROUPBY, new util.ArrayList[String]()).asInstanceOf[util.ArrayList[String]].asScala.toList
     val batchId = filters.get(JsonKey.BATCH_ID).asInstanceOf[String]
     val collectionId = filters.get(JsonKey.COLLECTION_ID).asInstanceOf[String]
-    val dateTimeFormate = DateTimeFormat.forPattern("yyyy-MM-dd")
-    val presentDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC))
-    val fromDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(7))
-    val defaultDate = s"$fromDate/$presentDate"
-    val key = getCacheKey(batchId = batchId, request.getRequest.getOrDefault("intervals", defaultDate).asInstanceOf[String], groupByKeys)
+    val granularity = getDate(request.getRequest.getOrDefault("granularity", "ALL").asInstanceOf[String], collectionId, batchId)
+    val key = getCacheKey(batchId = batchId, granularity, groupByKeys)
     try {
       val redisData = cacheUtil.get(key)
       val result: String = Option(redisData).map(value => if (value.isEmpty) {
-        getResponseFromDruid(batchId = batchId, courseId = collectionId, date = defaultDate, groupByKeys = groupByKeys)
+        getResponseFromDruid(batchId = batchId, courseId = collectionId, granularity, groupByKeys = groupByKeys)
       } else {
         value
-      }).getOrElse(getResponseFromDruid(batchId = batchId, courseId = collectionId, date = defaultDate, groupByKeys = groupByKeys))
-      val parsedResult = gson.fromJson(result, classOf[Any])
-      if (isValidResponse(parsedResult)) {
+      }).getOrElse(getResponseFromDruid(batchId = batchId, courseId = collectionId, granularity, groupByKeys = groupByKeys))
+      import scala.collection.JavaConversions._
+      val parsedResult: AnyRef = JsonUtil.deserialize(result, classOf[AnyRef])
+      if (isArray(result)) {
         cacheUtil.set(key, result, ttl)
+        val metricsList = new util.ArrayList[util.HashMap[String, AnyRef]]()
+        val groupByMetricsList = new util.ArrayList[util.HashMap[String, AnyRef]]()
+        parsedResult.asInstanceOf[util.ArrayList[util.Map[String, AnyRef]]].map(metric => {
+          val valuesMap = new util.HashMap[String, AnyRef]()
+          val metricsMap = new util.HashMap[String, AnyRef]()
+          val metricsObj = metric.get("event").asInstanceOf[util.Map[String, AnyRef]]
+          valuesMap.put("type", metricsObj.get("edata_type"))
+          valuesMap.put("count", metricsObj.get("userCount"))
+          metricsMap.put("district", metricsObj.get("district"))
+          metricsMap.put("state", metricsObj.get("state"))
+          metricsMap.put("values", valuesMap)
+          groupByMetricsList.add(metricsMap)
+          metricsList.add(valuesMap)
+        })
+        response.put("metrics", metricsList)
+        if (groupByKeys.nonEmpty) response.put("groupBy", groupByMetricsList)
+      } else {
+        response.put("metrics", parsedResult)
       }
-      response.put(JsonKey.RESPONSE, parsedResult)
       sender().tell(response, self)
     } catch {
       case ex: Exception =>
@@ -74,7 +91,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
          |    "edata_type"
          |    ${if (groupByKeys.contains("dist") || groupByKeys.contains("state")) "," else null}
          |    ${if (groupByKeys.contains("dist")) districtLookUpQuery else null}
-         |    ${if (groupByKeys.contains("dist") && groupByKeys.contains("state") ) "," else null}
+         |    ${if (groupByKeys.contains("dist") && groupByKeys.contains("state")) "," else null}
          |    ${if (groupByKeys.contains("state")) stateLookUpQuery else null}
          |  ],
          |  "aggregations": [
@@ -166,12 +183,20 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     s"bmetircs:$batchId:${date(0).replaceAll(regex, "")}:${date(1).replaceAll(regex, "")}:${groupByKeys.mkString(" ")}"
   }
 
-  def isValidResponse(response: Any): Boolean = {
-    response match {
-      case res: List[_] => if (res.nonEmpty) true else false
-      case res: Map[_, _] => false
-      case _ => false
-    }
+  def isArray(value: String): Boolean = {
+    val redisValue = value.trim
+    redisValue.length > 0 && redisValue.startsWith("[")
   }
 
+  def getDate(date: String, courseId: String, batchId: String): String = {
+    val dateTimeFormate = DateTimeFormat.forPattern("yyyy-MM-dd")
+    val nofDates = date.replaceAll("[^0-9]", "")
+    val endDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC))
+    val startDate = if (!StringUtils.equalsIgnoreCase(date, "ALL")) {
+      dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(nofDates.toInt))
+    } else {
+      courseBatchDao.readById(courseId, batchId).getEndDate
+    }
+    s"$startDate/$endDate"
+  }
 }

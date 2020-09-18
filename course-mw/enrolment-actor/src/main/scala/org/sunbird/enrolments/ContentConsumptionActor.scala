@@ -5,7 +5,6 @@ import javax.inject.Inject
 import org.apache.commons.collections4.{CollectionUtils, MapUtils}
 import org.apache.commons.lang3.StringUtils
 import org.sunbird.cassandra.CassandraOperation
-import org.sunbird.common.Constants
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
 import org.sunbird.common.models.util._
@@ -16,7 +15,6 @@ import org.sunbird.kafka.client.{InstructionEventGenerator, KafkaClient}
 import org.sunbird.learner.constants.{CourseJsonKey, InstructionEvent}
 import org.sunbird.learner.util.Util
 
-import scala.collection.JavaConversions
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 

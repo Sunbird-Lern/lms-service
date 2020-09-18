@@ -165,22 +165,10 @@ public class LearnerStateUpdateActor extends BaseActor {
                           return processContent(inputContent, existingContent, userId);
                         }).collect(Collectors.toList());
                 cassandraOperation.batchInsert(consumptionDBInfo.getKeySpace(), consumptionDBInfo.getTableName(), contents);
-                Map<String, Object> compKey = new HashMap<String, Object>() {{
-                    put("userid", userId);
-                    put("courseid", courseId);
-                    put("batchid", batchId);
-                }};
-                Response enrolmentResponse = cassandraOperation.getRecordsByCompositeKey(userCourseDBInfo.getKeySpace(), userCourseDBInfo.getTableName(), compKey);
-                ProjectLogger.log("Enrolment details.", enrolmentResponse, LoggerEnum.INFO.name());
-                List enrolmentData = (List) enrolmentResponse.get(Constants.RESPONSE);
-                if (CollectionUtils.isNotEmpty(enrolmentData)) {
-                    Map<String, Object> updatedBatch = getBatchCurrentStatus(batchId, userId, contents);
-                    cassandraOperation.upsertRecord(userCourseDBInfo.getKeySpace(), userCourseDBInfo.getTableName(), updatedBatch);
-                    // Generate Instruction event. Send userId, batchId, courseId, contents.
-                    pushInstructionEvent(userId, batchId, courseId, contents);
-                } else {
-                    ProjectLogger.log("Enrolment not exists for: " + JsonUtil.serialize(compKey), LoggerEnum.INFO);
-                }
+                Map<String, Object> updatedBatch = getBatchCurrentStatus(batchId, userId, contents);
+                cassandraOperation.upsertRecord(userCourseDBInfo.getKeySpace(), userCourseDBInfo.getTableName(), updatedBatch);
+                // Generate Instruction event. Send userId, batchId, courseId, contents.
+                pushInstructionEvent(userId, batchId, courseId, contents);
 
                 contentIds.forEach(contentId -> updateMessages(respMessages, contentId, JsonKey.SUCCESS));
               } else {

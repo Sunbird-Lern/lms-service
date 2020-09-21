@@ -18,9 +18,8 @@ import org.sunbird.common.request.Request
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao
 import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl
 import org.sunbird.learner.util.{JsonUtil, Util}
-import scala.collection.JavaConverters._
 
-import scala.collection.JavaConverters.iterableAsScalaIterableConverter
+import scala.collection.JavaConverters._
 
 class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUtil) extends BaseActor {
   val ttl: Int = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("collection_summary_agg_cache_ttl"))) ProjectUtil.getConfigValue("collection_summary_agg_cache_ttl").toInt else 60
@@ -181,7 +180,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     val host: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("druid_proxy_api_host"))) ProjectUtil.getConfigValue("druid_proxy_api_host") else "localhost"
     val port: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("druid_proxy_api_port"))) ProjectUtil.getConfigValue("druid_proxy_api_port") else "8081"
     val endPoint: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("druid_proxy_api_endpoint"))) ProjectUtil.getConfigValue("druid_proxy_api_endpoint") else "/druid/v2/"
-    val request = Unirest.post(s"http://11.2.1.20:8082/druid/v2/").headers(getUpdatedHeaders(new util.HashMap[String, String]())).body(druidQuery)
+    val request = Unirest.post(s"http://$host:$port$endPoint").headers(getUpdatedHeaders(new util.HashMap[String, String]())).body(druidQuery)
     request.asString().getBody
   }
 
@@ -207,7 +206,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     } else {
       val batchEndDate = courseBatchDao.readById(courseId, batchId).getEndDate
       ProjectLogger.log(s"BatchId: $batchId, CourseId: $courseId, EndDate" + batchEndDate)
-      Option(batchEndDate).map(d => if (d.isEmpty) defaultEndDate else batchEndDate).getOrElse(defaultEndDate)
+      Option(batchEndDate).map(date => if (date.isEmpty) defaultEndDate else date).getOrElse(defaultEndDate)
     }
     s"$startDate/$endDate"
   }

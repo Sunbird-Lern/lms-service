@@ -18,6 +18,7 @@ import org.sunbird.common.request.Request
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao
 import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl
 import org.sunbird.learner.util.{JsonUtil, Util}
+import scala.collection.JavaConverters._
 
 import scala.collection.JavaConverters.iterableAsScalaIterableConverter
 
@@ -49,25 +50,29 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
       val parsedResult: AnyRef = JsonUtil.deserialize(result, classOf[AnyRef])
       if (isArray(result) && parsedResult.asInstanceOf[util.ArrayList[util.Map[String, AnyRef]]].nonEmpty) {
         cacheUtil.set(key, result, ttl)
-        val metricsList = new util.ArrayList[util.HashMap[String, AnyRef]]()
-        val groupByMetricsList = new util.ArrayList[util.HashMap[String, AnyRef]]()
-        parsedResult.asInstanceOf[util.ArrayList[util.Map[String, AnyRef]]].map(metric => {
+        val groupingObj = parsedResult.asInstanceOf[util.ArrayList[util.Map[String, AnyRef]]].map(x => {
+          val eventObj = x.get("event").asInstanceOf[util.Map[String, AnyRef]]
+          (eventObj.get("state"), eventObj.get("district")) -> Map("type" -> eventObj.get("edata_type"), "count" -> eventObj.get("userCount"))
+        }).groupBy(x => x._1)
+        val groupingResult = groupingObj.map(obj => {
+          val groupByMap = new util.HashMap[String, AnyRef]()
           val valuesList = new util.ArrayList[util.HashMap[String, AnyRef]]()
-          val valuesMap = new util.HashMap[String, AnyRef]()
-          val metricsMap = new util.HashMap[String, AnyRef]()
-          val metricsObj = metric.get("event").asInstanceOf[util.Map[String, AnyRef]]
-          valuesMap.put("type", metricsObj.get("edata_type"))
-          valuesMap.put("count", metricsObj.get("userCount"))
-          metricsMap.put("district", metricsObj.get("district"))
-          metricsMap.put("state", metricsObj.get("state"))
-          metricsMap.put("values", valuesList.add(valuesMap))
-          groupByMetricsList.add(metricsMap)
-          metricsList.add(valuesMap)
-        })
-        response.put("metrics", metricsList)
-        if (groupByKeys.nonEmpty) response.put("groupBy", groupByMetricsList)
-      } else {
-        response.put("metrics", parsedResult)
+          obj._2.map(x => {
+            val valuesMap = new util.HashMap[String, AnyRef]()
+            valuesMap.put("type", x._2("type"))
+            valuesMap.put("count", x._2("count"))
+            valuesList.add(valuesMap)
+          })
+          groupByMap.put("district", obj._1._1)
+          groupByMap.put("state", obj._1._2)
+          groupByMap.put("values", valuesList)
+          groupByMap
+        }).asJava
+        val metrics = groupingResult.flatMap(metrics => metrics.get("values").asInstanceOf[util.ArrayList[util.HashMap[String, AnyRef]]])
+          .groupBy(x => x.get("type").asInstanceOf[String])
+          .mapValues(_.map(_ ("count").asInstanceOf[Double]).sum.longValue()).asJava
+        response.put("metrics", metrics)
+        if (groupByKeys.nonEmpty) response.put("groupBy", groupingResult)
       }
       sender().tell(response, self)
     } catch {

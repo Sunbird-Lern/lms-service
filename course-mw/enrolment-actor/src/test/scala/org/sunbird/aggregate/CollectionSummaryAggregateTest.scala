@@ -102,7 +102,6 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
     val groupByKeys = new util.ArrayList[String]
     groupByKeys.add("state")
     val response = callActor(getRequest("0130929928739635202", "do_31309287232935526411138", "LAST_30DAYS", groupByKeys), Props(new CollectionSummaryAggregate()(new RedisCacheUtil())))
-    println("response111" + new Gson().toJson(response))
     assert(response.getResponseCode == ResponseCode.OK)
   }
 

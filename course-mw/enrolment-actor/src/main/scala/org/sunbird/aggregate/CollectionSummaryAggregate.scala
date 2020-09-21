@@ -62,8 +62,8 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
             valuesMap.put("count", x._2("count").asInstanceOf[Double].longValue())
             valuesList.add(valuesMap)
           })
-          groupByMap.put("district", obj._1._2)
-          groupByMap.put("state", obj._1._1)
+          if (groupByKeys.contains("dist")) groupByMap.put("district", obj._1._2)
+          if (groupByKeys.contains("state")) groupByMap.put("state", obj._1._1)
           groupByMap.put("values", valuesList)
           groupByMap
         }).asJava

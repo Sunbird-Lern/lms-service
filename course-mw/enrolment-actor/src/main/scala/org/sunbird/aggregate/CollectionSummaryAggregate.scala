@@ -47,7 +47,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
       }).getOrElse(getResponseFromDruid(batchId = batchId, courseId = collectionId, granularity, groupByKeys = groupByKeys))
       import scala.collection.JavaConversions._
       val parsedResult: AnyRef = JsonUtil.deserialize(result, classOf[AnyRef])
-      if (isArray(result)) {
+      if (isArray(result) && parsedResult.asInstanceOf[util.ArrayList[util.Map[String, AnyRef]]].nonEmpty) {
         cacheUtil.set(key, result, ttl)
         val metricsList = new util.ArrayList[util.HashMap[String, AnyRef]]()
         val groupByMetricsList = new util.ArrayList[util.HashMap[String, AnyRef]]()
@@ -190,11 +190,16 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
 
   def getDate(date: String, courseId: String, batchId: String): String = {
     val dateTimeFormate = DateTimeFormat.forPattern("yyyy-MM-dd")
+    // When endate is null in the table considering default date as 7
+    val defaultEndDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(7))
     val nofDates = date.replaceAll("[^0-9]", "")
     val endDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC))
-    var startDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(nofDates.toInt))
-    if (StringUtils.equalsIgnoreCase(date, "ALL")) {
-      startDate = courseBatchDao.readById(courseId, batchId).getEndDate
+    val startDate: String = if (!StringUtils.equalsIgnoreCase(date, "ALL")) {
+      dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(nofDates.toInt))
+    } else {
+      val batchEndDate = courseBatchDao.readById(courseId, batchId).getEndDate
+      ProjectLogger.log(s"BatchId: $batchId, CourseId: $courseId, EndDate" + batchEndDate)
+      Option(batchEndDate).map(d => if (d.isEmpty) defaultEndDate else batchEndDate).getOrElse(defaultEndDate)
     }
     s"$startDate/$endDate"
   }

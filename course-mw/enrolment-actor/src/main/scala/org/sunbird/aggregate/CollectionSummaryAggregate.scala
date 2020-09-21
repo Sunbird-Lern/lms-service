@@ -52,6 +52,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
         val metricsList = new util.ArrayList[util.HashMap[String, AnyRef]]()
         val groupByMetricsList = new util.ArrayList[util.HashMap[String, AnyRef]]()
         parsedResult.asInstanceOf[util.ArrayList[util.Map[String, AnyRef]]].map(metric => {
+          val valuesList = new util.ArrayList[util.HashMap[String, AnyRef]]()
           val valuesMap = new util.HashMap[String, AnyRef]()
           val metricsMap = new util.HashMap[String, AnyRef]()
           val metricsObj = metric.get("event").asInstanceOf[util.Map[String, AnyRef]]
@@ -59,7 +60,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
           valuesMap.put("count", metricsObj.get("userCount"))
           metricsMap.put("district", metricsObj.get("district"))
           metricsMap.put("state", metricsObj.get("state"))
-          metricsMap.put("values", valuesMap)
+          metricsMap.put("values", valuesList.add(valuesMap))
           groupByMetricsList.add(metricsMap)
           metricsList.add(valuesMap)
         })

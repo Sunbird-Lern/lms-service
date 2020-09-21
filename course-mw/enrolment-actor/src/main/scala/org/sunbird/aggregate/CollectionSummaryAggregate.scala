@@ -38,8 +38,10 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     val collectionId = filters.get(JsonKey.COLLECTION_ID).asInstanceOf[String]
     val granularity = getDate(request.getRequest.getOrDefault("granularity", "ALL").asInstanceOf[String], collectionId, batchId)
     val key = getCacheKey(batchId = batchId, granularity, groupByKeys)
+    JsonUtil.serialize("BeforeRespnse" + JsonUtil.serialize(response))
     try {
       val redisData = cacheUtil.get(key)
+      println("redisDataaa" + redisData)
       val result: String = Option(redisData).map(value => if (value.isEmpty) {
         getResponseFromDruid(batchId = batchId, courseId = collectionId, granularity, groupByKeys = groupByKeys)
       } else {
@@ -73,7 +75,10 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
           Map("type" -> value._1, "count" -> value._2).asJava
         }).asJava
         response.put("metrics", metrics)
-        if (groupByKeys.nonEmpty) response.put("groupBy", groupingResult)
+        if (groupByKeys.nonEmpty) {
+          println("groupByKeys are empty" + groupByKeys)
+          response.put("groupBy", groupingResult)
+        }
       }
       sender().tell(response, self)
     } catch {

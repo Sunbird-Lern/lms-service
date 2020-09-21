@@ -56,11 +56,11 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
         }).groupBy(x => x._1)
         val groupingResult = groupingObj.map(obj => {
           val groupByMap = new util.HashMap[String, AnyRef]()
-          val valuesList = new util.ArrayList[util.HashMap[String, AnyRef]]()
+          val valuesList = new util.ArrayList[util.HashMap[String, Any]]()
           obj._2.map(x => {
-            val valuesMap = new util.HashMap[String, AnyRef]()
+            val valuesMap = new util.HashMap[String, Any]()
             valuesMap.put("type", x._2("type"))
-            valuesMap.put("count", x._2("count"))
+            valuesMap.put("count", x._2("count").asInstanceOf[Double].longValue())
             valuesList.add(valuesMap)
           })
           groupByMap.put("district", obj._1._1)
@@ -70,7 +70,9 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
         }).asJava
         val metrics = groupingResult.flatMap(metrics => metrics.get("values").asInstanceOf[util.ArrayList[util.HashMap[String, AnyRef]]])
           .groupBy(x => x.get("type").asInstanceOf[String])
-          .mapValues(_.map(_ ("count").asInstanceOf[Double]).sum.longValue()).asJava
+          .mapValues(_.map(_ ("count").asInstanceOf[Long]).sum.longValue()).map(value => {
+          Map("type" -> value._1, "count" -> value._2).asJava
+        }).asJava
         response.put("metrics", metrics)
         if (groupByKeys.nonEmpty) response.put("groupBy", groupingResult)
       }

@@ -19,7 +19,7 @@ import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao
 import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl
 import org.sunbird.learner.util.{JsonUtil, Util}
 
-import scala.collection.JavaConverters.iterableAsScalaIterableConverter
+import scala.collection.JavaConverters._
 
 class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUtil) extends BaseActor {
   val ttl: Int = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("collection_summary_agg_cache_ttl"))) ProjectUtil.getConfigValue("collection_summary_agg_cache_ttl").toInt else 60
@@ -47,26 +47,35 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
       }).getOrElse(getResponseFromDruid(batchId = batchId, courseId = collectionId, granularity, groupByKeys = groupByKeys))
       import scala.collection.JavaConversions._
       val parsedResult: AnyRef = JsonUtil.deserialize(result, classOf[AnyRef])
-      if (isArray(result)) {
+      if (isArray(result) && parsedResult.asInstanceOf[util.ArrayList[util.Map[String, AnyRef]]].nonEmpty) {
         cacheUtil.set(key, result, ttl)
-        val metricsList = new util.ArrayList[util.HashMap[String, AnyRef]]()
-        val groupByMetricsList = new util.ArrayList[util.HashMap[String, AnyRef]]()
-        parsedResult.asInstanceOf[util.ArrayList[util.Map[String, AnyRef]]].map(metric => {
-          val valuesMap = new util.HashMap[String, AnyRef]()
-          val metricsMap = new util.HashMap[String, AnyRef]()
-          val metricsObj = metric.get("event").asInstanceOf[util.Map[String, AnyRef]]
-          valuesMap.put("type", metricsObj.get("edata_type"))
-          valuesMap.put("count", metricsObj.get("userCount"))
-          metricsMap.put("district", metricsObj.get("district"))
-          metricsMap.put("state", metricsObj.get("state"))
-          metricsMap.put("values", valuesMap)
-          groupByMetricsList.add(metricsMap)
-          metricsList.add(valuesMap)
-        })
-        response.put("metrics", metricsList)
-        if (groupByKeys.nonEmpty) response.put("groupBy", groupByMetricsList)
-      } else {
-        response.put("metrics", parsedResult)
+        val groupingObj = parsedResult.asInstanceOf[util.ArrayList[util.Map[String, AnyRef]]].map(x => {
+          val eventObj = x.get("event").asInstanceOf[util.Map[String, AnyRef]]
+          (eventObj.get("state"), eventObj.get("district")) -> Map("type" -> eventObj.get("edata_type"), "count" -> eventObj.get("userCount"))
+        }).groupBy(x => x._1)
+        val groupingResult = groupingObj.map(obj => {
+          val groupByMap = new util.HashMap[String, AnyRef]()
+          val valuesList = new util.ArrayList[util.HashMap[String, Any]]()
+          obj._2.map(x => {
+            val valuesMap = new util.HashMap[String, Any]()
+            valuesMap.put("type", x._2("type"))
+            valuesMap.put("count", x._2("count").asInstanceOf[Double].longValue())
+            valuesList.add(valuesMap)
+          })
+          if (groupByKeys.contains("dist")) groupByMap.put("district", obj._1._2)
+          if (groupByKeys.contains("state")) groupByMap.put("state", obj._1._1)
+          groupByMap.put("values", valuesList)
+          groupByMap
+        }).asJava
+        val metrics = groupingResult.flatMap(metrics => metrics.get("values").asInstanceOf[util.ArrayList[util.HashMap[String, AnyRef]]])
+          .groupBy(x => x.get("type").asInstanceOf[String])
+          .mapValues(_.map(_ ("count").asInstanceOf[Long]).sum.longValue()).map(value => {
+          Map("type" -> value._1, "count" -> value._2).asJava
+        }).asJava
+        response.put("metrics", metrics)
+        if (groupByKeys.nonEmpty) {
+          response.put("groupBy", groupingResult)
+        }
       }
       sender().tell(response, self)
     } catch {
@@ -190,12 +199,16 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
 
   def getDate(date: String, courseId: String, batchId: String): String = {
     val dateTimeFormate = DateTimeFormat.forPattern("yyyy-MM-dd")
+    // When endate is null in the table considering default date as 7
+    val defaultEndDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(7))
     val nofDates = date.replaceAll("[^0-9]", "")
     val endDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC))
-    val startDate = if (!StringUtils.equalsIgnoreCase(date, "ALL")) {
+    val startDate: String = if (!StringUtils.equalsIgnoreCase(date, "ALL")) {
       dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(nofDates.toInt))
     } else {
-      courseBatchDao.readById(courseId, batchId).getEndDate
+      val batchEndDate = courseBatchDao.readById(courseId, batchId).getEndDate
+      ProjectLogger.log(s"BatchId: $batchId, CourseId: $courseId, EndDate" + batchEndDate)
+      Option(batchEndDate).map(date => if (date.isEmpty) defaultEndDate else date).getOrElse(defaultEndDate)
     }
     s"$startDate/$endDate"
   }

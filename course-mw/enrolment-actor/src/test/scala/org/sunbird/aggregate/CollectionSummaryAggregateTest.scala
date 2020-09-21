@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.TestKit
 import com.datastax.driver.core.Cluster
+import com.google.gson.Gson
 import com.mashape.unirest.http.Unirest
 import javax.ws.rs.core.MediaType
 import okhttp3.mockwebserver.{MockResponse, MockWebServer}
@@ -22,6 +23,7 @@ import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
 import org.sunbird.common.request.Request
 import org.sunbird.common.responsecode.ResponseCode
+import org.sunbird.learner.util.JsonUtil
 import redis.clients.jedis.Jedis
 import redis.embedded.RedisServer
 
@@ -96,7 +98,7 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
 
 
   "CollectionSummaryActivityAgg" should "return success response from redis" in {
-    redisConnect.set(getCacheKey("0130929928739635202", getDate("LAST_30DAYS"), List("state")), "[{\"event\":{\"edata_type\":\"complete\",\"userCount\":13777.246841795362},\"version\":\"v1\",\"timestamp\":\"2020-09-09T00:00:00.000Z\"},{\"event\":{\"edata_type\":\"enrollment\",\"userCount\":8754.453098640937},\"version\":\"v1\",\"timestamp\":\"2020-09-09T00:00:00.000Z\"}]")
+    redisConnect.set(getCacheKey("0130929928739635202", getDate("LAST_30DAYS"), List("state")), "[{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":482.6580757318888,\"district\":\"Tumkur\",\"edata_type\":\"complete\",\"state\":\"Karnatka\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":473.81686557810804,\"district\":\"Tumkur\",\"edata_type\":\"certificated_issued\",\"state\":\"Karnataka\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":458.7487411983637,\"district\":\"Tumkur\",\"edata_type\":\"enrolled\",\"state\":\"Karnataka\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":433.87897596484714,\"district\":\"Kolar\",\"edata_type\":\"complete\",\"state\":\"karnatka\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":411.75150981167434,\"district\":\"Mysore\",\"edata_type\":\"enrollement\",\"state\":\"Karnataka\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":408.0867310228416,\"district\":\"Mysore\",\"edata_type\":\"complete\",\"state\":\"Karnataka\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":400.7767886993949,\"district\":\"Banglore\",\"edata_type\":\"complete\",\"state\":\"Karnataka\"}}]")
     val groupByKeys = new util.ArrayList[String]
     groupByKeys.add("state")
     val response = callActor(getRequest("0130929928739635202", "do_31309287232935526411138", "LAST_30DAYS", groupByKeys), Props(new CollectionSummaryAggregate()(new RedisCacheUtil())))
@@ -106,7 +108,8 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
   "CollectionSummaryActivityAgg" should "return success response from druid" in {
     val groupByKeys = new util.ArrayList[String]
     groupByKeys.add("dist")
-    mockDruid("[{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":482.6580757318888,\"district\":\"Sagar\",\"edata_type\":\"complete\",\"state\":\"Madhya Pradesh\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":433.87897596484714,\"district\":\"Chhindwara\",\"edata_type\":\"complete\",\"state\":\"Madhya Pradesh\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":411.75150981167434,\"district\":\"Morena\",\"edata_type\":\"complete\",\"state\":\"Madhya Pradesh\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":408.0867310228416,\"district\":\"Seoni\",\"edata_type\":\"complete\",\"state\":\"Madhya Pradesh\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":400.7767886993949,\"district\":\"Shivpuri\",\"edata_type\":\"complete\",\"state\":\"Madhya Pradesh\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":395.9179489351599,\"district\":\"Balaghat\",\"edata_type\":\"complete\",\"state\":\"Madhya Pradesh\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":372.99458737143357,\"district\":\"Chhatarpur\",\"edata_type\":\"complete\",\"state\":\"Madhya Pradesh\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":355.07671279968724,\"district\":\"Rewa\",\"edata_type\":\"complete\",\"state\":\"Madhya Pradesh\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":345.58422767119123,\"district\":\"Bhind\",\"edata_type\":\"complete\",\"state\":\"Madhya Pradesh\"}}]")
+    groupByKeys.add("state")
+    mockDruid("[{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":482.6580757318888,\"district\":\"Tumkur\",\"edata_type\":\"complete\",\"state\":\"Karnatka\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":473.81686557810804,\"district\":\"Tumkur\",\"edata_type\":\"certificated_issued\",\"state\":\"Karnataka\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":458.7487411983637,\"district\":\"Tumkur\",\"edata_type\":\"enrolled\",\"state\":\"Karnataka\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":433.87897596484714,\"district\":\"Kolar\",\"edata_type\":\"complete\",\"state\":\"karnatka\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":411.75150981167434,\"district\":\"Mysore\",\"edata_type\":\"enrollement\",\"state\":\"Karnataka\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":408.0867310228416,\"district\":\"Mysore\",\"edata_type\":\"complete\",\"state\":\"Karnataka\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":400.7767886993949,\"district\":\"Banglore\",\"edata_type\":\"complete\",\"state\":\"Karnataka\"}}]")
     val query = "{\"request\":{\"filters\":{\"collectionId\":\"do_31309287232935526411138\",\"batchId\":\"0130929928739635201\"},\"groupBy\":[],\"intervals\":\"20120-01-23/2020-09-24\"}}"
     Unirest.post(s"http://localhost:8082/druid/v2/").headers(getUpdatedHeaders(new util.HashMap[String, String]())).body(query)
     val response = callActor(getRequest("0130929928739635201", "do_31309287232935526411138", "LAST_7DAYS", groupByKeys), Props(new CollectionSummaryAggregate()(new RedisCacheUtil())))

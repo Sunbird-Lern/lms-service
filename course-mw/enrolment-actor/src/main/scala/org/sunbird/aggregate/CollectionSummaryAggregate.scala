@@ -192,10 +192,9 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     val dateTimeFormate = DateTimeFormat.forPattern("yyyy-MM-dd")
     val nofDates = date.replaceAll("[^0-9]", "")
     val endDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC))
-    val startDate = if (!StringUtils.equalsIgnoreCase(date, "ALL")) {
-      dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(nofDates.toInt))
-    } else {
-      courseBatchDao.readById(courseId, batchId).getEndDate
+    var startDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(nofDates.toInt))
+    if (StringUtils.equalsIgnoreCase(date, "ALL")) {
+      startDate = courseBatchDao.readById(courseId, batchId).getEndDate
     }
     s"$startDate/$endDate"
   }

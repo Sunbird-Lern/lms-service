@@ -10,6 +10,7 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.base.BaseActor;
 import org.sunbird.cassandra.CassandraOperation;
+import org.sunbird.common.Constants;
 import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
@@ -168,6 +169,7 @@ public class LearnerStateUpdateActor extends BaseActor {
                 cassandraOperation.upsertRecord(userCourseDBInfo.getKeySpace(), userCourseDBInfo.getTableName(), updatedBatch);
                 // Generate Instruction event. Send userId, batchId, courseId, contents.
                 pushInstructionEvent(userId, batchId, courseId, contents);
+
                 contentIds.forEach(contentId -> updateMessages(respMessages, contentId, JsonKey.SUCCESS));
               } else {
                 invalidContents.addAll(entry.getValue());

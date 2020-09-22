@@ -7,6 +7,7 @@ import akka.testkit.TestKit
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FlatSpec, Matchers}
 import org.sunbird.cassandra.CassandraOperation
+import org.sunbird.common.Constants
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.inf.ElasticSearchService
 import org.sunbird.common.models.response.Response
@@ -75,7 +76,7 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
         (esService.search(_: SearchDTO, _: String)).expects(*,*).returns(concurrent.Future{validBatchData()})
         (cassandraOperation.getRecords(_: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.List[String])).expects(*,*,*,*).returns(response)
         (cassandraOperation.batchInsert(_: String, _: String, _: java.util.List[java.util.Map[String, AnyRef]])).expects(*,*,*)
-        (cassandraOperation.upsertRecord(_: String, _: String, _: java.util.Map[String, AnyRef])).expects(*,*,*)
+        (cassandraOperation.updateRecordV2(_: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.Map[String, AnyRef], _: Boolean)).expects("sunbird_courses", "user_enrolments",*,*,true)
         val result = callActor(getStateUpdateRequest(), Props(new ContentConsumptionActor().setCassandraOperation(cassandraOperation, false).setEsService(esService)))
         assert(null!= result)
     }

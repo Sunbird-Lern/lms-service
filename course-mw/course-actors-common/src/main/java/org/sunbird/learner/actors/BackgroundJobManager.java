@@ -74,7 +74,6 @@ public class BackgroundJobManager extends BaseActor {
     for (Map<String, Object> map : listOfMap) {
       Map<String, Object> innermap = new HashMap<>();
       innermap.put(JsonKey.ID, map.get(JsonKey.ID));
-      innermap.put(JsonKey.BADGE_TYPE_ID, map.get(JsonKey.BADGE_TYPE_ID));
       innermap.put(JsonKey.RECEIVER_ID, map.get(JsonKey.RECEIVER_ID));
       innermap.put(JsonKey.CREATED_DATE, map.get(JsonKey.CREATED_DATE));
       innermap.put(JsonKey.CREATED_BY, map.get(JsonKey.CREATED_BY));

@@ -82,9 +82,6 @@ public final class JsonKey {
   public static final String AUTHORIZATION = "Authorization";
   public static final String BACKGROUND_ACTOR_PROVIDER = "background_actor_provider";
   public static final String BAD_REQUEST = "badRequest";
-  public static final String BADGE_TYPE_ID = "badgeTypeId";
-  public static final String BADGES = "badges";
-  public static final String BADGES_DB = "badge";
   public static final String BATCH = "batch";
   public static final String BATCH_ID = "batchId";
   public static final String BATCH_RELATIONS = "batch_relations";
@@ -610,7 +607,6 @@ public final class JsonKey {
   public static final String USER = "user";
   public static final String USER_ACTION_ROLE = "user_action_role";
   public static final String USER_AUTH_DB = "userAuth_db";
-  public static final String USER_BADGES_DB = "user_badge";
   public static final String USER_COUNT = "userCount";
   public static final String USER_COUNT_TTL = "userCountTTL";
   public static final String USER_COURSE = "user_course";
@@ -654,8 +650,6 @@ public final class JsonKey {
   public static final String SUNBIRD_AUTHORIZATION = "sunbird_authorization";
   public static final String SUNBIRD_CS_BASE_URL = "sunbird_cs_base_url";
   public static final String SUNBIRD_CS_SEARCH_PATH = "sunbird_cs_search_path";
-  public static final String SUNBIRD_CONTENT_BADGE_ASSIGN_URL = "sunbird.content.badge.assign.url";
-  public static final String SUNBIRD_CONTENT_BADGE_REVOKE_URL = "sunbird.content.badge.revoke.url";
   public static final String SUNBIRD_LMS_BASE_URL = "sunbird_lms_base_url";
   public static final String SUNBIRD_TELEMETRY_API_PATH = "sunbird_telemetry_api_path";
   public static final String SUNBIRD_LMS_TELEMETRY = "Sunbird_LMS_Telemetry";
@@ -664,8 +658,6 @@ public final class JsonKey {
   public static final String CONTENT_ENCODING = "Content-Encoding";
   public static final String EK_STEP = "EK-STEP";
   public static final String RESOURCE_NAME = "resourceName";
-  public static final String BADGE_ASSERTIONS = "badgeAssertions";
-  public static final String USER_BADGE_ASSERTION_DB = "user_badge_assertion";
   public static final String DURATION = "duration";
   public static final String OBJECT_STORE = "object-store";
   public static final String IMAGE_URL = "imgUrl";

@@ -75,3 +75,6 @@ POST /v1/course/create              @controllers.coursemanagement.CourseControll
 
 #Group APIs
 POST /v1/group/activity/agg                     @controllers.group.GroupAggController.getGroupActivityAggregates(request: play.mvc.Http.Request)
+
+#Summary Aggregate
+POST /v1/collection/summary                     @controllers.collectionsummaryaggregate.CollectionSummaryAggregateController.getCollectionSummaryAggregate(request: play.mvc.Http.Request)

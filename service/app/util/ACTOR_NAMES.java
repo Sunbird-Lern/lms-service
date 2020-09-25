@@ -1,5 +1,6 @@
 package util;
 
+import org.sunbird.aggregate.CollectionSummaryAggregate;
 import org.sunbird.enrolments.CourseEnrolmentActor;
 import org.sunbird.badge.actors.BadgeAssociationActor;
 import org.sunbird.enrolments.ContentConsumptionActor;
@@ -26,6 +27,7 @@ import org.sunbird.group.GroupAggregatesActor;
 public enum ACTOR_NAMES {
   COURSE_BATCH_MANAGEMENT_ACTOR(CourseBatchManagementActor.class, "course-batch-management-actor"),
   COURSE_ENROLLEMENT_ACTOR(CourseEnrollmentActor.class, "course-enrollment-actor"),
+  COLLECTION_AGGREGATE_SUMMARY_ACTOR(CollectionSummaryAggregate.class, "collection-summary-aggregate-actor"),
   CACHE_MANAGEMENT_ACTOR(CacheManagementActor.class, "cache-management-actor"),
   PAGE_MANAGEMENT_ACTOR(PageManagementActor.class, "page-management-actor"),
   SEARCH_HANDLER_ACTOR(SearchHandlerActor.class, "search-handler-actor"),

@@ -7,6 +7,7 @@ import akka.testkit.TestKit
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FlatSpec, Matchers}
 import org.sunbird.cassandra.CassandraOperation
+import org.sunbird.common.Constants
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.inf.ElasticSearchService
 import org.sunbird.common.models.response.Response
@@ -72,10 +73,10 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
                 put("contentId", "do_789")
             }})
         }})
-        ((requestContext: RequestContext, searchDTO: _root_.org.sunbird.dto.SearchDTO, index: _root_.scala.Predef.String) => esService.search(requestContext, searchDTO, index)).expects(*,*,*).returns(concurrent.Future{validBatchData()})
-        ((requestContext: RequestContext, keyspace: _root_.scala.Predef.String, table: _root_.scala.Predef.String, filters: _root_.java.util.Map[_root_.scala.Predef.String, AnyRef], fields: _root_.java.util.List[_root_.scala.Predef.String]) => cassandraOperation.getRecords(requestContext, keyspace, table, filters, fields)).expects(*,*,*,*,*).returns(response)
-        ((requestContext: RequestContext,keyspaceName: _root_.scala.Predef.String, tableName: _root_.scala.Predef.String, records: _root_.java.util.List[_root_.java.util.Map[_root_.scala.Predef.String, AnyRef]]) => cassandraOperation.batchInsert(requestContext, keyspaceName, tableName, records)).expects(*,*,*,*)
-        ((keyspaceName: _root_.scala.Predef.String, tableName: _root_.scala.Predef.String, request: _root_.java.util.Map[_root_.scala.Predef.String, AnyRef], requestContext: RequestContext) => cassandraOperation.upsertRecord(keyspaceName, tableName, request, requestContext)).expects(*,*,*,*)
+        (esService.search(_:RequestContext, _: SearchDTO, _: String)).expects(*,*,*).returns(concurrent.Future{validBatchData()})
+        (cassandraOperation.getRecords(_:RequestContext, _: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.List[String])).expects(*,*,*,*,*).returns(response)
+        (cassandraOperation.batchInsert(_:RequestContext, _: String, _: String, _: java.util.List[java.util.Map[String, AnyRef]])).expects(*,*,*,*)
+        (cassandraOperation.updateRecordV2(_:RequestContext, _: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.Map[String, AnyRef], _: Boolean)).expects(*,"sunbird_courses", "user_enrolments",*,*,true)
         val result = callActor(getStateUpdateRequest(), Props(new ContentConsumptionActor().setCassandraOperation(cassandraOperation, false).setEsService(esService)))
         assert(null!= result)
     }

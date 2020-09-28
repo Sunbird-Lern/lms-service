@@ -1,5 +1,6 @@
 package org.sunbird.enrolments
 
+import java.util
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import javax.inject.Inject
@@ -117,10 +118,11 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                                 processContentConsumption(inputContent, existingContent, userId)
                             })
                             cassandraOperation.batchInsert(request.getRequestContext, consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, contents)
-                            val updatedEnrolment = getLatestReadDetails(userId, batchId, contents)
-                            cassandraOperation.upsertRecord("sunbird_courses", "user_enrolments", updatedEnrolment, request.getRequestContext)
+                            val updateData = getLatestReadDetails(userId, batchId, contents)
+                            cassandraOperation.updateRecordV2(request.getRequestContext, "sunbird_courses", "user_enrolments", updateData._1, updateData._2, true)
                             pushInstructionEvent(request.getRequestContext, userId, batchId, courseId, contents.asJava)
                             contentIds.map(id => responseMessage.put(id,JsonKey.SUCCESS))
+
                         } else {
                             logger.info(request.getRequestContext, "ContentConsumptionActor: addContent : User Id is invalid : " + userId)
                             invalidContents.addAll(entry._2.asJava)
@@ -241,16 +243,17 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     }
 
     def getLatestReadDetails(userId: String, batchId: String, contents: List[java.util.Map[String, AnyRef]]) = {
-       // contents.groupBy(x => parseDate(x.getOrDefault(JsonKey.LAST_ACCESS_TIME, "").asInstanceOf[String])).max._2.get(0)
        val lastAccessContent: java.util.Map[String, AnyRef] = contents.groupBy(x => x.getOrDefault(JsonKey.LAST_ACCESS_TIME, "").asInstanceOf[String]).maxBy(_._1)._2.get(0)
-       // val lastAccessContent: java.util.Map[String, AnyRef] = contents.groupBy(x => java.util.Date.from(parseDate(x.getOrDefault(JsonKey.LAST_ACCESS_TIME, "").asInstanceOf[String]).toInstant(ZoneOffset.UTC))).max._2.get(0)
-        new java.util.HashMap[String, AnyRef] () {{
-            put("batchId", batchId)
-            put("userId", userId)
-            put("courseId", lastAccessContent.get("courseId"))
+       val updateMap = new java.util.HashMap[String, AnyRef] () {{
             put("lastreadcontentid", lastAccessContent.get("contentId"))
             put("lastreadcontentstatus", lastAccessContent.get("status"))
         }}
+      val selectMap = new util.HashMap[String, AnyRef]() {{
+        put("batchId", batchId)
+        put("userId", userId)
+        put("courseId", lastAccessContent.get("courseId"))
+      }}
+      (selectMap, updateMap)
     }
 
     @throws[Exception]

@@ -27,11 +27,6 @@ PATCH    /v1/content/state/update     	@controllers.LearnerController.updateCont
 GET  /v1/upload/status/:pid             @controllers.bulkapimanagement.BulkUploadController.getUploadStatus(pid:String, request: play.mvc.Http.Request)
 GET  /v1/upload/statusDownloadLink/:pid @controllers.bulkapimanagement.BulkUploadController.getStatusDownloadLink(pid:String, request: play.mvc.Http.Request)
 
-# Badging Content - Should move to content-service - TODO
-POST   /v1/content/link                       @controllers.badging.BadgeAssociationController.createAssociation(request: play.mvc.Http.Request)
-POST   /v1/content/unlink                     @controllers.badging.BadgeAssociationController.removeAssociation(request: play.mvc.Http.Request)
-POST   /v1/content/link/search 		              @controllers.badging.BadgeAssociationController.searchAssociation(request: play.mvc.Http.Request)
-
 # Page Management APIs
 POST	/v1/page/create				  @controllers.pagemanagement.PageController.createPage(request: play.mvc.Http.Request)
 PATCH	/v1/page/update				  @controllers.pagemanagement.PageController.updatePage(request: play.mvc.Http.Request)
@@ -74,3 +69,6 @@ POST /v1/course/create              @controllers.coursemanagement.CourseControll
 
 #Group APIs
 POST /v1/group/activity/agg                     @controllers.group.GroupAggController.getGroupActivityAggregates(request: play.mvc.Http.Request)
+
+#Summary Aggregate
+POST /v1/collection/summary                     @controllers.collectionsummaryaggregate.CollectionSummaryAggregateController.getCollectionSummaryAggregate(request: play.mvc.Http.Request)

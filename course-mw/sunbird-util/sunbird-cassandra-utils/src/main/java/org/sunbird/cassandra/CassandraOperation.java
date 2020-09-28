@@ -264,4 +264,15 @@ public interface CassandraOperation {
    */
   public Response updateRemoveMapRecord(
           RequestContext requestContext, String keySpace, String table, Map<String, Object> primaryKey, String column, String key);
+
+    /**
+     * Using QueryBuilder to update the records for seletion and using ifNotExists.
+     * @param keyspace
+     * @param table
+     * @param selectMap
+     * @param updateMap
+     * @param ifExists
+     * @return
+     */
+  public Response updateRecordV2(RequestContext requestContext, String keyspace, String table, Map<String, Object> selectMap, Map<String, Object> updateMap, boolean ifExists);
 }

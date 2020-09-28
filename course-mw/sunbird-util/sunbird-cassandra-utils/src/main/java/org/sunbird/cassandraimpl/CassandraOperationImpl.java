@@ -1,7 +1,5 @@
 package org.sunbird.cassandraimpl;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-
 import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
@@ -36,6 +34,8 @@ import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.helper.CassandraConnectionManager;
 import org.sunbird.helper.CassandraConnectionMngrFactory;
+
+import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
 
 /**
  * @author Amit Kumar
@@ -301,6 +301,41 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
   }
 
   @Override
+  public Response updateRecordV2(RequestContext requestContext, String keyspace, String table, Map<String, Object> selectMap, Map<String, Object> updateMap, boolean ifExists) {
+      long startTime = System.currentTimeMillis();
+      logger.info(requestContext,"Cassandra Service updateRecordV2 method started at ==" + startTime);
+      Response response = new Response();
+      try {
+        Update updateQuery = QueryBuilder.update(keyspace, table);
+        Update.Assignments assignments = updateQuery.with();
+        for (Map.Entry<String, Object> entry : updateMap.entrySet())
+          assignments.and(set(entry.getKey(),entry.getValue()));
+        Update.Where where = updateQuery.where();
+        for (Map.Entry<String, Object> entry: selectMap.entrySet())
+          where.and(eq(entry.getKey(), entry.getValue()));
+        if (ifExists) where.ifExists();
+        logger.debug(requestContext, updateQuery.getQueryString());
+        connectionManager.getSession(keyspace).execute(updateQuery);
+        response.put(Constants.RESPONSE, Constants.SUCCESS);
+      } catch (Exception e) {
+        if (e.getMessage().contains(JsonKey.UNKNOWN_IDENTIFIER)) {
+            logger.error(requestContext,Constants.EXCEPTION_MSG_UPSERT + table + " : " + e.getMessage(), e);
+            throw new ProjectCommonException(
+                    ResponseCode.invalidPropertyError.getErrorCode(),
+                    CassandraUtil.processExceptionForUnknownIdentifier(e),
+                    ResponseCode.CLIENT_ERROR.getResponseCode());
+        }
+        logger.error(requestContext,Constants.EXCEPTION_MSG_UPSERT + table + " : " + e.getMessage(), e);
+        throw new ProjectCommonException(
+                ResponseCode.SERVER_ERROR.getErrorCode(),
+                ResponseCode.SERVER_ERROR.getErrorMessage(),
+                ResponseCode.SERVER_ERROR.getResponseCode());
+    }
+    logQueryElapseTime("upsertRecord", startTime);
+    return response;
+  }
+
+  @Override
   public Response upsertRecord(String keyspaceName, String tableName, Map<String, Object> request, RequestContext requestContext) {
     long startTime = System.currentTimeMillis();
     logger.info(requestContext, 
@@ -317,6 +352,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
       while (iterator.hasNext()) {
         array[i++] = iterator.next();
       }
+
       connectionManager.getSession(keyspaceName).execute(boundStatement.bind(array));
       response.put(Constants.RESPONSE, Constants.SUCCESS);
 

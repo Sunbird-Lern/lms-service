@@ -106,7 +106,6 @@ public class DefaultEncryptionServivceImpl implements EncryptionService {
    * this method is used to encrypt the password.
    *
    * @param value String password
-   * @param encryption_key
    * @return encrypted password.
    * @throws NoSuchPaddingException
    * @throws NoSuchAlgorithmException

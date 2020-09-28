@@ -1,7 +1,6 @@
 package org.sunbird.learner.util;
 
 import org.apache.commons.lang3.StringUtils;
-import org.sunbird.common.models.util.BadgingJsonKey;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.request.Request;
@@ -63,9 +62,6 @@ public final class Util {
     dbInfoMap.put(JsonKey.COURSE_BATCH_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "course_batch"));
     dbInfoMap.put(JsonKey.CLIENT_INFO_DB, getDbInfoObject(KEY_SPACE_NAME, "client_info"));
     dbInfoMap.put(JsonKey.USER_AUTH_DB, getDbInfoObject(KEY_SPACE_NAME, "user_auth"));
-    dbInfoMap.put(
-        BadgingJsonKey.CONTENT_BADGE_ASSOCIATION_DB,
-        getDbInfoObject(KEY_SPACE_NAME, "content_badge_association"));
     dbInfoMap.put(
         JsonKey.SUNBIRD_COURSE_DIALCODES_DB,
         getDbInfoObject(DIALCODE_KEY_SPACE_NAME, "dialcode_images"));

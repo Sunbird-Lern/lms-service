@@ -361,7 +361,6 @@ public class ProjectUtil {
     course("cbatch"),
     courseBatch("course-batch"),
     content("content"),
-    badgeassociations("badgeassociations"),
     user("user"),
     organisation("org"),
     usercourses("user-courses"),

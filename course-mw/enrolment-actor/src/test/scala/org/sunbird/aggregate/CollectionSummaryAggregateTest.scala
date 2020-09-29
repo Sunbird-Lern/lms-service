@@ -74,13 +74,13 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
   def getCacheKey(batchId: String, intervals: String, groupByKeys: List[String]): String = {
     val regex = "[^a-zA-Z0-9]"
     val date = intervals.split("/")
-    s"bmetircs:$batchId:${date(0).replaceAll(regex, "")}:${date(1).replaceAll(regex, "")}:${groupByKeys.mkString(" ")}"
+    s"bmetircs:$batchId:${date(0).replaceAll(regex, "")}:${date(1).replaceAll(regex, "")}:${groupByKeys.mkString(" ").replaceAll(" ", "_")}"
   }
 
   def getDate(date: String): String = {
     val dateTimeFormate = DateTimeFormat.forPattern("yyyy-MM-dd")
     val nofDates = date.replaceAll("[^0-9]", "")
-    val presentDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC))
+    val presentDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).plusDays(1))
     var fromDate = ""
     if (!StringUtils.equalsIgnoreCase(date, "ALL")) {
       fromDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(nofDates.toInt))
@@ -109,13 +109,14 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
     val groupByKeys = new util.ArrayList[String]
     groupByKeys.add("dist")
     groupByKeys.add("state")
-    mockDruid("[{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":482.6580757318888,\"district\":\"Tumkur\",\"edata_type\":\"complete\",\"state\":\"Karnatka\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":473.81686557810804,\"district\":\"Tumkur\",\"edata_type\":\"certificated_issued\",\"state\":\"Karnataka\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":458.7487411983637,\"district\":\"Tumkur\",\"edata_type\":\"enrolled\",\"state\":\"Karnataka\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":433.87897596484714,\"district\":\"Kolar\",\"edata_type\":\"complete\",\"state\":\"karnatka\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":411.75150981167434,\"district\":\"Mysore\",\"edata_type\":\"enrollement\",\"state\":\"Karnataka\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":408.0867310228416,\"district\":\"Mysore\",\"edata_type\":\"complete\",\"state\":\"Karnataka\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":400.7767886993949,\"district\":\"Banglore\",\"edata_type\":\"complete\",\"state\":\"Karnataka\"}}]")
+    mockDruid("[{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":null,\"count\":2.000977198748901,\"edata_type\":\"enrol\",\"state\":null}},{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":null,\"count\":1.0002442201269182,\"edata_type\":\"complete\",\"state\":null}},{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":\"PUNE\",\"count\":1.0002442201269182,\"edata_type\":\"enrol\",\"state\":\"Maharashtra\"}},{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":\"DADRA AND NAGAR HAVELI(UT)\",\"count\":1.0002442201269182,\"edata_type\":\"enrol\",\"state\":\"Dadra & Nagar Haveli\"}},{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":\"PUNE\",\"count\":1.0002442201269182,\"edata_type\":\"complete\",\"state\":\"Maharashtra\"}},{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":\"DADRA AND NAGAR HAVELI(UT)\",\"count\":1.0002442201269182,\"edata_type\":\"complete\",\"state\":\"Dadra & Nagar Haveli\"}}]")
     val query = "{\"request\":{\"filters\":{\"collectionId\":\"do_31309287232935526411138\",\"batchId\":\"0130929928739635201\"},\"groupBy\":[],\"intervals\":\"20120-01-23/2020-09-24\"}}"
     Unirest.post(s"http://localhost:8082/druid/v2/").headers(getUpdatedHeaders(new util.HashMap[String, String]())).body(query)
     val response = callActor(getRequest("0130929928739635201", "do_31309287232935526411138", "LAST_7DAYS", groupByKeys), Props(new CollectionSummaryAggregate()(new RedisCacheUtil())))
+   // println("responseresponse" + JsonUtil.serialize(response))
     assert(response.getResponseCode == ResponseCode.OK)
   }
-  
+
   def blankRestResponse(): Response = {
     val response = new Response()
     response

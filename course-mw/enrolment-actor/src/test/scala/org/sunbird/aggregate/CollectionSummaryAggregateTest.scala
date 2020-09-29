@@ -115,18 +115,7 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
     val response = callActor(getRequest("0130929928739635201", "do_31309287232935526411138", "LAST_7DAYS", groupByKeys), Props(new CollectionSummaryAggregate()(new RedisCacheUtil())))
     assert(response.getResponseCode == ResponseCode.OK)
   }
-
-  //    "CollectionSummaryActivityAgg" should "should not store the data into redis" in {
-  //      mockDruid("{}")
-  //      val groupByKeys = new util.ArrayList[String]
-  //      val query = "{\"request\":{\"filters\":{\"collectionId\":\"course-01\",\"batchId\":\"batch-01\"},\"groupBy\":[],\"intervals\":\"20120-01-23/2020-09-24\"}}"
-  //      Unirest.post(s"http://localhost:8082/druid/v2/").headers(getUpdatedHeaders(new util.HashMap[String, String]())).body(query)
-  //      val response = callActor(getRequest("batch-01", "course-01", "LAST_30DAYS", groupByKeys), Props(new CollectionSummaryAggregate()(new RedisCacheUtil())))
-  //      assert(response.getResponseCode == ResponseCode.OK)
-  //      val redisResp = redisConnect.get(getCacheKey("batch-01", getDate("LAST_30DAYS"), List()))
-  //      redisResp.isEmpty should be(true)
-  //    }
-
+  
   def blankRestResponse(): Response = {
     val response = new Response()
     response

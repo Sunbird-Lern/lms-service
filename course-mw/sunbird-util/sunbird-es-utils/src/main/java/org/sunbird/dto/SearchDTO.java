@@ -24,7 +24,7 @@ public class SearchDTO {
   private String query;
   private List<String> queryFields;
 
-  private Integer limit = 250;
+  private Integer limit = 10;
   private Integer offset = 0;
   private boolean fuzzySearch = false;
   // additional properties will hold , filters, exist , not exist

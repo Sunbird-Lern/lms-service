@@ -194,7 +194,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
   def getCacheKey(batchId: String, intervals: String, groupByKeys: List[String]): String = {
     val regex = "[^a-zA-Z0-9]"
     val date = intervals.split("/")
-    s"bmetircs:$batchId:${date(0).replaceAll(regex, "")}:${date(1).replaceAll(regex, "")}:${groupByKeys.mkString(" ")}"
+    s"bmetircs:$batchId:${date(0).replaceAll(regex, "")}:${date(1).replaceAll(regex, "")}:${groupByKeys.mkString(" ").replaceAll(" ", "_")}"
   }
 
   def isArray(value: String): Boolean = {

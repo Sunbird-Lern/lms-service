@@ -54,7 +54,8 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
         cacheUtil.set(key, result, ttl)
         val groupingObj = parsedResult.asInstanceOf[util.ArrayList[util.Map[String, AnyRef]]].map(x => {
           val eventObj = x.get("event").asInstanceOf[util.Map[String, AnyRef]]
-          (eventObj.get("state"), eventObj.get("district")) -> Map("type" -> eventObj.get("edata_type"), "count" -> eventObj.get("userCount"))
+          val eData_type = if(StringUtils.equalsIgnoreCase(eventObj.get("edata_type").asInstanceOf[String], "enrol") || StringUtils.equalsIgnoreCase(eventObj.get("edata_type").asInstanceOf[String], "enroled")) "enrolment" else eventObj.get("edata_type").asInstanceOf[String]
+          (eventObj.get("state"), eventObj.get("district")) -> Map("type" -> eData_type, "count" -> eventObj.get("userCount"))
         }).groupBy(x => x._1)
         val groupingResult = groupingObj.map(obj => {
           val groupByMap = new util.HashMap[String, AnyRef]()
@@ -134,6 +135,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
          |            "type": "selector",
          |            "dimension": "edata_type",
          |            "value": "enrol"
+         |            "name": "enrollment"
          |          },
          |          {
          |            "type": "selector",

@@ -207,7 +207,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     // When endate is null in the table considering default date as 7
     val defaultEndDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(7))
     val nofDates = date.replaceAll("[^0-9]", "")
-    val endDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC))
+    val endDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).plusDays(1)) // Adding 1 Day extra
     val startDate: String = if (!StringUtils.equalsIgnoreCase(date, "ALL")) {
       dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(nofDates.toInt))
     } else {

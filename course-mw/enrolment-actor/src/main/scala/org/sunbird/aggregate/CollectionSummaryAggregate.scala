@@ -135,7 +135,6 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
          |            "type": "selector",
          |            "dimension": "edata_type",
          |            "value": "enrol"
-         |            "name": "enrollment"
          |          },
          |          {
          |            "type": "selector",

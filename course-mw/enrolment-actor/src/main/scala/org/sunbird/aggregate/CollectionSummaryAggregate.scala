@@ -40,6 +40,8 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     val key = getCacheKey(batchId = batchId, granularity, groupByKeys)
     try {
       val redisData = cacheUtil.get(key)
+      println("======redisData=====" + redisData)
+      println("======redis key=====" + key)
       val result: String = Option(redisData).map(value => if (value.isEmpty) {
         getResponseFromDruid(batchId = batchId, courseId = collectionId, granularity, groupByKeys = groupByKeys)
       } else {
@@ -48,6 +50,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
       import scala.collection.JavaConversions._
       val parsedResult: AnyRef = JsonUtil.deserialize(result, classOf[AnyRef])
       if (isArray(result) && parsedResult.asInstanceOf[util.ArrayList[util.Map[String, AnyRef]]].nonEmpty) {
+        println(s"======Adding result to redis========Key: $key, ttl: $ttl, result: $result")
         cacheUtil.set(key, result, ttl)
         val groupingObj = parsedResult.asInstanceOf[util.ArrayList[util.Map[String, AnyRef]]].map(x => {
           val eventObj = x.get("event").asInstanceOf[util.Map[String, AnyRef]]
@@ -183,7 +186,9 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     val port: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("druid_proxy_api_port"))) ProjectUtil.getConfigValue("druid_proxy_api_port") else "8081"
     val endPoint: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("druid_proxy_api_endpoint"))) ProjectUtil.getConfigValue("druid_proxy_api_endpoint") else "/druid/v2/"
     val request = Unirest.post(s"http://$host:$port$endPoint").headers(getUpdatedHeaders(new util.HashMap[String, String]())).body(druidQuery)
-    request.asString().getBody
+    val response = request.asString().getBody
+    println("=====Druid Response======" + response)
+    response
   }
 
   def getCacheKey(batchId: String, intervals: String, groupByKeys: List[String]): String = {

@@ -10,7 +10,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import org.sunbird.cache.util.RedisCacheUtil
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
-import org.sunbird.common.request.Request
+import org.sunbird.common.request.{Request, RequestContext}
 import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.learner.actors.group.dao.impl.GroupDaoImpl
 
@@ -25,7 +25,7 @@ class GroupAggregatesActorTest extends FlatSpec with Matchers with MockFactory {
 
   "GroupAggregatesActor" should "return sucess" in {
     (groupAggregateUtil.getGroupDetails(_:String, _:Request)).expects(*,*).returns(validRestResponse())
-    (groupDao.read(_: String, _: String, _: java.util.List[String])).expects(*,*,*).returns(validDBResponse())
+    (groupDao.read(_: String, _: String, _: java.util.List[String], _: RequestContext)).expects(*,*,*,* ).returns(validDBResponse())
       (cacheUtil.set(_: String, _: String, _: Int)).expects(*, *, *).once()
     val response = callActor(getGroupActivityAggRequest(), Props(new GroupAggregatesActor()(cacheUtil).setInstanceVariable(groupAggregateUtil, groupDao)))
 
@@ -40,14 +40,14 @@ class GroupAggregatesActorTest extends FlatSpec with Matchers with MockFactory {
 
   "GroupAggregatesActor" should "return no enrolled member found" in {
     (groupAggregateUtil.getGroupDetails(_:String, _:Request)).expects(*,*).returns(validRestResponse())
-    (groupDao.read(_: String, _: String, _: java.util.List[String])).expects(*,*,*).returns(blankDBResponse())
+    (groupDao.read(_: String, _: String, _: java.util.List[String], _: RequestContext)).expects(*,*,*, *).returns(blankDBResponse())
     val response = callActor(getGroupActivityAggRequest(), Props(new GroupAggregatesActor()(cacheUtil).setInstanceVariable(groupAggregateUtil, groupDao)))
     assert(response.getResponseCode == ResponseCode.OK)
   }
 
   "GroupAggregatesActor" should "return error db response" in {
     (groupAggregateUtil.getGroupDetails(_:String, _:Request)).expects(*,*).returns(validRestResponse())
-    (groupDao.read(_: String, _: String, _: java.util.List[String])).expects(*,*,*).returns(errorDBResponse())
+    (groupDao.read(_: String, _: String, _: java.util.List[String], _: RequestContext)).expects(*,*,*,*).returns(errorDBResponse())
     val response = callActorForFailure(getGroupActivityAggRequest(), Props(new GroupAggregatesActor()(cacheUtil).setInstanceVariable(groupAggregateUtil, groupDao)))
     assert(response.getResponseCode == ResponseCode.SERVER_ERROR.getResponseCode)
   }

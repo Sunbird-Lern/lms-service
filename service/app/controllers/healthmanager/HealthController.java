@@ -17,6 +17,7 @@ import org.sunbird.common.models.util.*;
 import org.sunbird.common.request.Request;
 import play.mvc.Http;
 import play.mvc.Result;
+import util.Attrs;
 
 /** @author Manzarul */
 public class HealthController extends BaseController {
@@ -43,8 +44,8 @@ public class HealthController extends BaseController {
     try {
       Request reqObj = new Request();
       reqObj.setOperation(ActorOperations.HEALTH_CHECK.getValue());
-      reqObj.setRequestId(httpRequest.flash().get(JsonKey.REQUEST_ID));
-      reqObj.getRequest().put(JsonKey.CREATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
+      reqObj.setRequestId(httpRequest.attrs().getOptional(Attrs.REQUEST_ID).orElse(null));
+      reqObj.getRequest().put(JsonKey.CREATED_BY, httpRequest.attrs().getOptional(Attrs.USER_ID).orElse(null));
       reqObj.setEnv(getEnvironment());
       return actorResponseHandler(healthActorRef, reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
@@ -70,7 +71,7 @@ public class HealthController extends BaseController {
     response.getResult().put(JsonKey.RESPONSE, finalResponseMap);
     response.setId("learner.service.health.api");
     response.setVer(getApiVersion(httpRequest.path()));
-    response.setTs(httpRequest.flash().get(JsonKey.REQUEST_ID));
+    response.setTs(httpRequest.attrs().getOptional(Attrs.REQUEST_ID).orElse(null));
     return CompletableFuture.completedFuture(ok(play.libs.Json.toJson(response)));
   }
 

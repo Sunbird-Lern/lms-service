@@ -14,7 +14,7 @@ import org.sunbird.actor.base.BaseActor
 import org.sunbird.cache.util.RedisCacheUtil
 import org.sunbird.common.models.response.Response
 import org.sunbird.common.models.util.{JsonKey, ProjectLogger, ProjectUtil, TelemetryEnvKey}
-import org.sunbird.common.request.Request
+import org.sunbird.common.request.{Request, RequestContext}
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao
 import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl
 import org.sunbird.learner.util.{JsonUtil, Util}
@@ -36,7 +36,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     val groupByKeys = request.getRequest.getOrDefault(JsonKey.GROUPBY, new util.ArrayList[String]()).asInstanceOf[util.ArrayList[String]].asScala.toList
     val batchId = filters.get(JsonKey.BATCH_ID).asInstanceOf[String]
     val collectionId = filters.get(JsonKey.COLLECTION_ID).asInstanceOf[String]
-    val granularity = getDate(request.getRequest.getOrDefault("granularity", "ALL").asInstanceOf[String], collectionId, batchId)
+    val granularity = getDate(request.getRequestContext, request.getRequest.getOrDefault("granularity", "ALL").asInstanceOf[String], collectionId, batchId)
     val key = getCacheKey(batchId = batchId, granularity, groupByKeys)
     try {
       val redisData = cacheUtil.get(key)
@@ -197,7 +197,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     redisValue.length > 0 && redisValue.startsWith("[")
   }
 
-  def getDate(date: String, courseId: String, batchId: String): String = {
+  def getDate(requestContext: RequestContext, date: String, courseId: String, batchId: String): String = {
     val dateTimeFormate = DateTimeFormat.forPattern("yyyy-MM-dd")
     // When endate is null in the table considering default date as 7
     val defaultEndDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(7))
@@ -206,7 +206,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     val startDate: String = if (!StringUtils.equalsIgnoreCase(date, "ALL")) {
       dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(nofDates.toInt))
     } else {
-      val batchEndDate = courseBatchDao.readById(courseId, batchId).getEndDate
+      val batchEndDate = courseBatchDao.readById(courseId, batchId, requestContext).getEndDate
       ProjectLogger.log(s"BatchId: $batchId, CourseId: $courseId, EndDate" + batchEndDate)
       Option(batchEndDate).map(date => if (date.isEmpty) defaultEndDate else date).getOrElse(defaultEndDate)
     }

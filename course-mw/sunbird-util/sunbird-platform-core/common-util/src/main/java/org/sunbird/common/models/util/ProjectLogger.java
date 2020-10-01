@@ -5,14 +5,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
+import net.logstash.logback.argument.StructuredArguments;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.telemetry.util.TelemetryEvents;
+import org.sunbird.telemetry.util.TelemetryWriter;
 
 /**
  * This class will used to log the project message in any level.
@@ -62,6 +66,7 @@ public class ProjectLogger {
     params.put(JsonKey.ERROR, projectCommonException.getCode());
     params.put(JsonKey.STACKTRACE, generateStackTrace(e.getStackTrace()));
     request.setRequest(telemetryInfo);
+    TelemetryWriter.write(request);
     //		lmaxWriter.submitMessage(request);
 
   }
@@ -191,12 +196,15 @@ public class ProjectLogger {
     return jsonMessage;
   }
 
-  public static void logQuery(Map<String, Object> data) {
-    try {
-      String event = mapper.writeValueAsString(data);
-      queryLogger.debug(event);
-    } catch (Exception e) {
-      ProjectLogger.log("error while logging query", e);
+  public static void logQuery(String query, RequestContext requestContext) {
+    if(isDebugEnabled(requestContext)) {
+        queryLogger.debug(query, StructuredArguments.entries(requestContext.getContextMap()));
+    } else {
+      queryLogger.debug(query);
     }
+  }
+  
+  private static boolean isDebugEnabled(RequestContext requestContext) {
+    return (null != requestContext && StringUtils.equalsIgnoreCase("true", requestContext.getDebugEnabled()));
   }
 }

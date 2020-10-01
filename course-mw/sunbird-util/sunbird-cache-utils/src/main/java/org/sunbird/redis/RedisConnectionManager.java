@@ -8,7 +8,7 @@ import org.redisson.config.Config;
 import org.redisson.config.SingleServerConfig;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectUtil;
 
 public class RedisConnectionManager {
@@ -19,14 +19,15 @@ public class RedisConnectionManager {
   private static int poolsize =
       Integer.valueOf(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_REDIS_CONN_POOL_SIZE));
   private static RedissonClient client = null;
+  private static LoggerUtil logger = new LoggerUtil(RedisConnectionManager.class);
 
   public static RedissonClient getClient() {
     if (client == null) {
-      ProjectLogger.log(
-          "RedisConnectionManager:getClient: Redis client is null", LoggerEnum.INFO.name());
+      logger.info(null, 
+          "RedisConnectionManager:getClient: Redis client is null");
       boolean start = initialiseConnection();
-      ProjectLogger.log(
-          "RedisConnectionManager:getClient: Connection status = " + start, LoggerEnum.INFO.name());
+      logger.info(null, 
+          "RedisConnectionManager:getClient: Connection status = " + start);
     }
     return client;
   }
@@ -39,7 +40,7 @@ public class RedisConnectionManager {
         initialiseSingleServer(host, port);
       }
     } catch (Exception e) {
-      ProjectLogger.log(
+      logger.error(null, 
           "RedisConnectionManager:initialiseConnection: Error occurred = " + e.getMessage(), e);
       return false;
     }
@@ -47,8 +48,8 @@ public class RedisConnectionManager {
   }
 
   private static void initialiseSingleServer(String host, String port) {
-    ProjectLogger.log(
-        "RedisConnectionManager: initialiseSingleServer called", LoggerEnum.INFO.name());
+    logger.info(null, 
+        "RedisConnectionManager: initialiseSingleServer called");
 
     Config config = new Config();
     SingleServerConfig singleServerConfig = config.useSingleServer();
@@ -59,7 +60,7 @@ public class RedisConnectionManager {
   }
 
   private static void initialisingClusterServer(String host, String port) {
-    ProjectLogger.log(
+    logger.info(null, 
         "RedisConnectionManager: initialisingClusterServer called with host = "
             + host
             + " port = "
@@ -84,13 +85,11 @@ public class RedisConnectionManager {
 
       client = Redisson.create(config);
 
-      ProjectLogger.log(
-          "RedisConnectionManager:initialisingClusterServer: Redis client is created",
-          LoggerEnum.INFO.name());
+      logger.info(null, 
+          "RedisConnectionManager:initialisingClusterServer: Redis client is created");
     } catch (Exception e) {
-      ProjectLogger.log(
-          "RedisConnectionManager:initialisingClusterServer: Error occurred = " + e.getMessage(),
-          LoggerEnum.ERROR.name());
+      logger.error(null, 
+          "RedisConnectionManager:initialisingClusterServer: Error occurred = " + e.getMessage(), e);
     }
   }
 }

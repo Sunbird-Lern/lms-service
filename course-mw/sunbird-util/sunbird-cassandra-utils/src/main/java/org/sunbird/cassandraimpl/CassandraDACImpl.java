@@ -19,12 +19,14 @@ import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 
 public class CassandraDACImpl extends CassandraOperationImpl {
-
+    
+    @Override
   public Response getRecords(
-      String keySpace, String table, Map<String, Object> filters, List<String> fields) {
+            RequestContext requestContext, String keySpace, String table, Map<String, Object> filters, List<String> fields) {
     Response response = new Response();
     Session session = connectionManager.getSession(keySpace);
     try {
@@ -48,7 +50,7 @@ public class CassandraDACImpl extends CassandraOperationImpl {
       }
 
       ResultSet results = null;
-      logQueryData(select.getQueryString());
+      logger.debug(requestContext, select.getQueryString());
       results = session.execute(select);
       response = CassandraUtil.createResponse(results);
     } catch (Exception e) {
@@ -62,11 +64,11 @@ public class CassandraDACImpl extends CassandraOperationImpl {
   }
 
   public void applyOperationOnRecordsAsync(
-      String keySpace,
-      String table,
-      Map<String, Object> filters,
-      List<String> fields,
-      FutureCallback<ResultSet> callback) {
+          RequestContext requestContext, String keySpace,
+          String table,
+          Map<String, Object> filters,
+          List<String> fields,
+          FutureCallback<ResultSet> callback) {
     Session session = connectionManager.getSession(keySpace);
     try {
       Select select;
@@ -87,6 +89,7 @@ public class CassandraDACImpl extends CassandraOperationImpl {
           }
         }
       }
+      logger.debug(requestContext, select.getQueryString());
       ResultSetFuture future = session.executeAsync(select);
       Futures.addCallback(future, callback, Executors.newFixedThreadPool(1));
     } catch (Exception e) {
@@ -99,28 +102,28 @@ public class CassandraDACImpl extends CassandraOperationImpl {
   }
 
   public Response updateAddMapRecord(
-      String keySpace,
-      String table,
-      Map<String, Object> primaryKey,
-      String column,
-      String key,
-      Object value) {
-    return updateMapRecord(keySpace, table, primaryKey, column, key, value, true);
+          RequestContext requestContext, String keySpace,
+          String table,
+          Map<String, Object> primaryKey,
+          String column,
+          String key,
+          Object value) {
+    return updateMapRecord(requestContext, keySpace, table, primaryKey, column, key, value, true);
   }
 
   public Response updateRemoveMapRecord(
-      String keySpace, String table, Map<String, Object> primaryKey, String column, String key) {
-    return updateMapRecord(keySpace, table, primaryKey, column, key, null, false);
+          RequestContext requestContext, String keySpace, String table, Map<String, Object> primaryKey, String column, String key) {
+    return updateMapRecord(requestContext, keySpace, table, primaryKey, column, key, null, false);
   }
 
   public Response updateMapRecord(
-      String keySpace,
-      String table,
-      Map<String, Object> primaryKey,
-      String column,
-      String key,
-      Object value,
-      boolean add) {
+          RequestContext requestContext, String keySpace,
+          String table,
+          Map<String, Object> primaryKey,
+          String column,
+          String key,
+          Object value,
+          boolean add) {
     Update update = QueryBuilder.update(keySpace, table);
     if (add) {
       update.with(QueryBuilder.put(column, key, value));
@@ -148,6 +151,7 @@ public class CassandraDACImpl extends CassandraOperationImpl {
     try {
       Response response = new Response();
       ProjectLogger.log("Remove Map-Key Query: " + update.toString(), LoggerEnum.INFO);
+      logger.debug(requestContext, update.getQueryString());
       connectionManager.getSession(keySpace).execute(update);
       response.put(Constants.RESPONSE, Constants.SUCCESS);
       return response;

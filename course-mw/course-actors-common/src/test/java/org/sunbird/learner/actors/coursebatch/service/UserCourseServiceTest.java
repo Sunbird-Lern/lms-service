@@ -71,7 +71,8 @@ public class UserCourseServiceTest {
   @Test
   public void validateUserUnenrollEmptyUserCoursesTest() {
     try {
-      UserCoursesService.validateUserUnenroll(null);
+      userCoursesService = new UserCoursesService();
+      userCoursesService.validateUserUnenroll(null, null);
     } catch (ProjectCommonException e) {
       Assert.assertEquals(ResponseCode.userNotEnrolledCourse.getErrorCode(), e.getCode());
     }
@@ -82,7 +83,8 @@ public class UserCourseServiceTest {
     try {
       UserCourses userCourses = new UserCourses();
       userCourses.setActive(false);
-      UserCoursesService.validateUserUnenroll(userCourses);
+      userCoursesService = new UserCoursesService();
+      userCoursesService.validateUserUnenroll(null, userCourses);
     } catch (ProjectCommonException e) {
       Assert.assertEquals(ResponseCode.userNotEnrolledCourse.getErrorCode(), e.getCode());
     }
@@ -95,7 +97,8 @@ public class UserCourseServiceTest {
       userCourses.setActive(true);
       // userCourses.setLeafNodesCount(1);
       userCourses.setProgress(1);
-      UserCoursesService.validateUserUnenroll(userCourses);
+      userCoursesService = new UserCoursesService();
+      userCoursesService.validateUserUnenroll(null, userCourses);
     } catch (ProjectCommonException e) {
       Assert.assertEquals(ResponseCode.userAlreadyCompletedCourse.getErrorCode(), e.getCode());
     }
@@ -148,7 +151,7 @@ public class UserCourseServiceTest {
     Map<String, Object> map = new HashMap<>();
     Promise<Map<String, Object>> promise = Futures.promise();
     promise.trySuccess(map);
-    when(esUtil.search(Mockito.anyObject(), Mockito.anyString())).thenReturn(promise.future());
+    when(esUtil.search(Mockito.any(), Mockito.anyObject(), Mockito.anyString())).thenReturn(promise.future());
     Assert.assertNotEquals(null, userCoursesService.getActiveEnrollments(JsonKey.USER_ID));
   }
 
@@ -156,7 +159,7 @@ public class UserCourseServiceTest {
   public void getActiveUserCourseFailure() {
     Promise<Map<String, Object>> promise = Futures.promise();
     promise.success(null);
-    when(esUtil.search(Mockito.anyObject(), Mockito.anyString())).thenReturn(promise.future());
+    when(esUtil.search(Mockito.any(), Mockito.anyObject(), Mockito.anyString())).thenReturn(promise.future());
     Assert.assertEquals(null, userCoursesService.getActiveEnrollments(JsonKey.USER_ID));
   }
 }

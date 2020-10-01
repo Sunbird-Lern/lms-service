@@ -14,10 +14,11 @@ import org.sunbird.actor.base.BaseActor;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao;
 import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl;
@@ -53,17 +54,17 @@ public class CourseBatchCertificateActor extends BaseActor {
         (Map<String, Object>) request.getRequest().get(JsonKey.BATCH);
     final String batchId = (String) batchRequest.get(JsonKey.BATCH_ID);
     final String courseId = (String) batchRequest.get(JsonKey.COURSE_ID);
-    CourseBatchUtil.validateCourseBatch(courseId, batchId);
+    CourseBatchUtil.validateCourseBatch(request.getRequestContext(), courseId, batchId);
     Map<String, Object> template = (Map<String, Object>) batchRequest.get(CourseJsonKey.TEMPLATE);
     String templateId = (String) template.get(JsonKey.IDENTIFIER);
-    validateTemplateDetails(templateId, template);
-    ProjectLogger.log("Validated certificate template to batchID: " +  batchId, LoggerEnum.INFO);
-    courseBatchDao.addCertificateTemplateToCourseBatch(courseId, batchId, templateId, template);
-    ProjectLogger.log("Added certificate template to batchID: " +  batchId, LoggerEnum.INFO);
+    validateTemplateDetails(request.getRequestContext(), templateId, template);
+    logger.info(request.getRequestContext(), "Validated certificate template to batchID: " +  batchId);
+    courseBatchDao.addCertificateTemplateToCourseBatch(request.getRequestContext(), courseId, batchId, templateId, template);
+    logger.info(request.getRequestContext(), "Added certificate template to batchID: " +  batchId);
     Map<String, Object> courseBatch =
-        mapESFieldsToObject(courseBatchDao.getCourseBatch(courseId, batchId));
-    CourseBatchUtil.syncCourseBatchForeground(batchId, courseBatch);
-    ProjectLogger.log("Synced to es certificate template to batchID: " +  batchId, LoggerEnum.INFO);
+        mapESFieldsToObject(courseBatchDao.getCourseBatch(request.getRequestContext(), courseId, batchId));
+    CourseBatchUtil.syncCourseBatchForeground(request.getRequestContext(), batchId, courseBatch);
+    logger.info(request.getRequestContext(), "Synced to es certificate template to batchID: " +  batchId);
     Response response = new Response();
     response.put(JsonKey.RESPONSE, JsonKey.SUCCESS);
     sender().tell(response, self());
@@ -74,21 +75,21 @@ public class CourseBatchCertificateActor extends BaseActor {
         (Map<String, Object>) request.getRequest().get(JsonKey.BATCH);
     final String batchId = (String) batchRequest.get(JsonKey.BATCH_ID);
     final String courseId = (String) batchRequest.get(JsonKey.COURSE_ID);
-    CourseBatchUtil.validateCourseBatch(courseId, batchId);
+    CourseBatchUtil.validateCourseBatch(request.getRequestContext(), courseId, batchId);
     Map<String, Object> template = (Map<String, Object>) batchRequest.get(CourseJsonKey.TEMPLATE);
     String templateId = (String) template.get(JsonKey.IDENTIFIER);
-    CourseBatchUtil.validateTemplate(templateId);
-    courseBatchDao.removeCertificateTemplateFromCourseBatch(courseId, batchId, templateId);
+    CourseBatchUtil.validateTemplate(request.getRequestContext(), templateId);
+    courseBatchDao.removeCertificateTemplateFromCourseBatch(request.getRequestContext(), courseId, batchId, templateId);
     Map<String, Object> courseBatch =
-        mapESFieldsToObject(courseBatchDao.getCourseBatch(courseId, batchId));
-    CourseBatchUtil.syncCourseBatchForeground(batchId, courseBatch);
+        mapESFieldsToObject(courseBatchDao.getCourseBatch(request.getRequestContext(), courseId, batchId));
+    CourseBatchUtil.syncCourseBatchForeground(request.getRequestContext(), batchId, courseBatch);
     Response response = new Response();
     response.put(JsonKey.RESPONSE, JsonKey.SUCCESS);
     sender().tell(response, self());
   }
 
-  private void validateTemplateDetails(String templateId, Map<String, Object> template) {
-   Map<String, Object> templateDetails = CourseBatchUtil.validateTemplate(templateId);
+  private void validateTemplateDetails(RequestContext requestContext, String templateId, Map<String, Object> template) {
+   Map<String, Object> templateDetails = CourseBatchUtil.validateTemplate(requestContext, templateId);
     try {
       template.put(JsonKey.NAME, templateDetails.get(JsonKey.NAME));
       template.put(JsonKey.CRITERIA, mapper.writeValueAsString(template.get(JsonKey.CRITERIA)));
@@ -166,8 +167,7 @@ public class CourseBatchCertificateActor extends BaseActor {
                         }));
       }
     } catch (Exception ex) {
-      ProjectLogger.log(
-          "CourseBatchCertificateActor:mapToObject Exception occurred with error message ==", ex);
+      logger.error(null, "CourseBatchCertificateActor:mapToObject Exception occurred with error message ==", ex);
     }
     return template;
   }

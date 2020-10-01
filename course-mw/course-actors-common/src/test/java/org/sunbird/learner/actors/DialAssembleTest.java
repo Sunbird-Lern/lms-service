@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
 import org.junit.Test;
+import org.sunbird.common.request.RequestContext;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -30,9 +31,9 @@ public class DialAssembleTest {
         Map<String, Object> userProfile = new HashMap<String, Object>(){{
             put("board", "KA");
         }};
-        Method method = PageManagementActor.class.getDeclaredMethod("getUserProfileData", List.class, Map.class);
+        Method method = PageManagementActor.class.getDeclaredMethod("getUserProfileData", RequestContext.class, List.class, Map.class);
         method.setAccessible(true);
-        List<Map<String, Object>> response = (List<Map<String, Object>>) method.invoke(actorRef.underlyingActor(), sectionList, userProfile);
+        List<Map<String, Object>> response = (List<Map<String, Object>>) method.invoke(actorRef.underlyingActor(), null, sectionList, userProfile);
         Assert.assertEquals(1, response.get(0).get("collectionsCount"));
         Assert.assertEquals("KA", ((List<Map<String, Object>>)response.get(0).get("collections")).get(0).get("board"));
     }
@@ -43,9 +44,9 @@ public class DialAssembleTest {
         Map<String, Object> userProfile = new HashMap<String, Object>(){{
             put("board", Arrays.asList("KA", "MH"));
         }};
-        Method method = PageManagementActor.class.getDeclaredMethod("getUserProfileData", List.class, Map.class);
+        Method method = PageManagementActor.class.getDeclaredMethod("getUserProfileData", RequestContext.class, List.class, Map.class);
         method.setAccessible(true);
-        List<Map<String, Object>> response = (List<Map<String, Object>>) method.invoke(actorRef.underlyingActor(), sectionList, userProfile);
+        List<Map<String, Object>> response = (List<Map<String, Object>>) method.invoke(actorRef.underlyingActor(), null, sectionList, userProfile);
         Assert.assertEquals(2, response.get(0).get("collectionsCount"));
         Assert.assertEquals("KA", ((List<Map<String, Object>>)response.get(0).get("collections")).get(0).get("board"));
         Assert.assertEquals("MH", ((List<Map<String, Object>>)response.get(0).get("collections")).get(1).get("board"));
@@ -57,9 +58,9 @@ public class DialAssembleTest {
         Map<String, Object> userProfile = new HashMap<String, Object>(){{
             put("board", "JK");
         }};
-        Method method = PageManagementActor.class.getDeclaredMethod("getUserProfileData", List.class, Map.class);
+        Method method = PageManagementActor.class.getDeclaredMethod("getUserProfileData", RequestContext.class, List.class, Map.class);
         method.setAccessible(true);
-        List<Map<String, Object>> response = (List<Map<String, Object>>) method.invoke(actorRef.underlyingActor(), sectionList, userProfile);
+        List<Map<String, Object>> response = (List<Map<String, Object>>) method.invoke(actorRef.underlyingActor(), null, sectionList, userProfile);
         Assert.assertNotEquals(0, response.get(0).get("collectionsCount"));
         ((List<Map<String, Object>>)response.get(0).get("collections")).forEach(content -> {
             Assert.assertNotEquals("JK", content.get("board"));
@@ -70,9 +71,9 @@ public class DialAssembleTest {
     public void testWithoutUserProfile() throws Exception {
         List<Map<String, Object>> sectionList = mapper.readValue(sectionsStr, new TypeReference<List<Map<String, Object>>>(){});
         Map<String, Object> userProfile = new HashMap<String, Object>();
-        Method method = PageManagementActor.class.getDeclaredMethod("getUserProfileData", List.class, Map.class);
+        Method method = PageManagementActor.class.getDeclaredMethod("getUserProfileData", RequestContext.class, List.class, Map.class);
         method.setAccessible(true);
-        List<Map<String, Object>> response = (List<Map<String, Object>>) method.invoke(actorRef.underlyingActor(), sectionList, userProfile);
+        List<Map<String, Object>> response = (List<Map<String, Object>>) method.invoke(actorRef.underlyingActor(), null, sectionList, userProfile);
         Assert.assertNotEquals(0, response.get(0).get("collectionsCount"));
         ((List<Map<String, Object>>)response.get(0).get("collections")).forEach(content -> {
             Assert.assertTrue(!content.containsKey("originData") || !((String)content.getOrDefault("originData", "")).contains("shallow"));
@@ -83,9 +84,9 @@ public class DialAssembleTest {
     public void testWithoutUserProfileWithContents() throws Exception {
         List<Map<String, Object>> sectionList = mapper.readValue(contentSectionsStr, new TypeReference<List<Map<String, Object>>>(){});
         Map<String, Object> userProfile = new HashMap<String, Object>();
-        Method method = PageManagementActor.class.getDeclaredMethod("getUserProfileData", List.class, Map.class);
+        Method method = PageManagementActor.class.getDeclaredMethod("getUserProfileData", RequestContext.class, List.class, Map.class);
         method.setAccessible(true);
-        List<Map<String, Object>> response = (List<Map<String, Object>>) method.invoke(actorRef.underlyingActor(), sectionList, userProfile);
+        List<Map<String, Object>> response = (List<Map<String, Object>>) method.invoke(actorRef.underlyingActor(), null, sectionList, userProfile);
         Assert.assertNotEquals(0, response.get(0).get("count"));
         ((List<Map<String, Object>>)response.get(0).get("contents")).forEach(content -> {
             Assert.assertTrue(!content.containsKey("originData") || !((String)content.getOrDefault("originData", "")).contains("shallow"));
@@ -98,9 +99,9 @@ public class DialAssembleTest {
         Map<String, Object> userProfile = new HashMap<String, Object>(){{
             put("board", "KA");
         }};
-        Method method = PageManagementActor.class.getDeclaredMethod("getUserProfileData", List.class, Map.class);
+        Method method = PageManagementActor.class.getDeclaredMethod("getUserProfileData", RequestContext.class, List.class, Map.class);
         method.setAccessible(true);
-        List<Map<String, Object>> response = (List<Map<String, Object>>) method.invoke(actorRef.underlyingActor(), sectionList, userProfile);
+        List<Map<String, Object>> response = (List<Map<String, Object>>) method.invoke(actorRef.underlyingActor(), null, sectionList, userProfile);
         Assert.assertNotEquals(0, response.get(0).get("count"));
         Assert.assertEquals("KA", ((List<Map<String, Object>>)response.get(0).get("contents")).get(0).get("board"));
     }
@@ -110,9 +111,9 @@ public class DialAssembleTest {
         Map<String, Object> userProfile = new HashMap<String, Object>(){{
             put("board", Arrays.asList("KA", "MH"));
         }};
-        Method method = PageManagementActor.class.getDeclaredMethod("getUserProfileData", List.class, Map.class);
+        Method method = PageManagementActor.class.getDeclaredMethod("getUserProfileData", RequestContext.class, List.class, Map.class);
         method.setAccessible(true);
-        List<Map<String, Object>> response = (List<Map<String, Object>>) method.invoke(actorRef.underlyingActor(), sectionList, userProfile);
+        List<Map<String, Object>> response = (List<Map<String, Object>>) method.invoke(actorRef.underlyingActor(), null, sectionList, userProfile);
         Assert.assertEquals(2, response.get(0).get("count"));
         Assert.assertEquals("KA", ((List<Map<String, Object>>)response.get(0).get("contents")).get(0).get("board"));
         Assert.assertEquals("MH", ((List<Map<String, Object>>)response.get(0).get("contents")).get(1).get("board"));
@@ -124,9 +125,9 @@ public class DialAssembleTest {
         Map<String, Object> userProfile = new HashMap<String, Object>(){{
             put("board", "JK");
         }};
-        Method method = PageManagementActor.class.getDeclaredMethod("getUserProfileData", List.class, Map.class);
+        Method method = PageManagementActor.class.getDeclaredMethod("getUserProfileData", RequestContext.class, List.class, Map.class);
         method.setAccessible(true);
-        List<Map<String, Object>> response = (List<Map<String, Object>>) method.invoke(actorRef.underlyingActor(), sectionList, userProfile);
+        List<Map<String, Object>> response = (List<Map<String, Object>>) method.invoke(actorRef.underlyingActor(), null, sectionList, userProfile);
         ((List<Map<String, Object>>)response.get(0).get("contents")).forEach(content -> {
             Assert.assertNotEquals("JK", content.get("board"));
         });

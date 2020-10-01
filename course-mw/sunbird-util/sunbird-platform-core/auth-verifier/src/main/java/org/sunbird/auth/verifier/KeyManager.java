@@ -1,6 +1,9 @@
 package org.sunbird.auth.verifier;
 
 import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.LoggerEnum;
+import org.sunbird.common.models.util.LoggerUtil;
+
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.PropertiesCache;
 
@@ -22,6 +25,7 @@ public class KeyManager {
     private static PropertiesCache propertiesCache = PropertiesCache.getInstance();
 
     private static Map<String, KeyData> keyMap = new HashMap<String, KeyData>();
+    private static LoggerUtil logger = new LoggerUtil(KeyManager.class);
 
     public static void init() {
         String basePath = propertiesCache.getProperty(JsonKey.ACCESS_TOKEN_PUBLICKEY_BASEPATH);
@@ -43,11 +47,11 @@ public class KeyManager {
                                             path.getFileName().toString(), loadPublicKey(contentBuilder.toString()));
                             keyMap.put(path.getFileName().toString(), keyData);
                         } catch (Exception e) {
-                            ProjectLogger.log("KeyManager:init: exception in reading public keys ", e);
+                            logger.error(null,"KeyManager:init: exception in reading public keys ", e);
                         }
                     });
         } catch (Exception e) {
-            ProjectLogger.log("KeyManager:init: exception in loading publickeys ", e);
+            logger.error(null,"KeyManager:init: exception in loading publickeys ", e);
         }
     }
 

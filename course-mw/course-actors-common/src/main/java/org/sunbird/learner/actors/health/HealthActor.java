@@ -1,10 +1,6 @@
 /** */
 package org.sunbird.learner.actors.health;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.base.BaseActor;
 import org.sunbird.cassandra.CassandraOperation;
@@ -13,12 +9,23 @@ import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.*;
+import org.sunbird.common.models.util.ActorOperations;
+import org.sunbird.common.models.util.HttpUtil;
+import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.LoggerUtil;
+import org.sunbird.common.models.util.ProjectUtil;
+import org.sunbird.common.models.util.PropertiesCache;
+import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.util.Util;
 import scala.concurrent.Future;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /** @author Manzarul */
 public class HealthActor extends BaseActor {
@@ -32,7 +39,6 @@ public class HealthActor extends BaseActor {
   public void onReceive(Request message) throws Throwable {
     if (message instanceof Request) {
       try {
-        ProjectLogger.log("AssessmentItemActor onReceive called");
         Request actorMessage = message;
         Util.initializeContext(actorMessage, TelemetryEnvKey.USER);
         // set request id fto thread loacl...
@@ -47,7 +53,6 @@ public class HealthActor extends BaseActor {
             .equalsIgnoreCase(ActorOperations.CASSANDRA.getValue())) {
           cassandraHealthCheck();
         } else {
-          ProjectLogger.log("UNSUPPORTED OPERATION");
           ProjectCommonException exception =
               new ProjectCommonException(
                   ResponseCode.invalidOperationName.getErrorCode(),
@@ -56,12 +61,11 @@ public class HealthActor extends BaseActor {
           sender().tell(exception, self());
         }
       } catch (Exception ex) {
-        ProjectLogger.log(ex.getMessage(), ex);
+        logger.error(null, ex.getMessage(), ex);
         sender().tell(ex, self());
       }
     } else {
       // Throw exception as message body
-      ProjectLogger.log("UNSUPPORTED MESSAGE");
       ProjectCommonException exception =
           new ProjectCommonException(
               ResponseCode.invalidRequestData.getErrorCode(),
@@ -87,7 +91,7 @@ public class HealthActor extends BaseActor {
     } catch (Exception e) {
       responseList.add(ProjectUtil.createCheckResponse(JsonKey.ES_SERVICE, true, e));
       isallHealthy = false;
-      ProjectLogger.log("Elastic search health Error == ", e);
+      logger.error(null, "Elastic search health Error == ", e);
     }
     finalResponseMap.put(JsonKey.CHECKS, responseList);
     finalResponseMap.put(JsonKey.NAME, "ES health check api");
@@ -109,7 +113,7 @@ public class HealthActor extends BaseActor {
     responseList.add(ProjectUtil.createCheckResponse(LMS_SERVICE, false, null));
     responseList.add(ProjectUtil.createCheckResponse(JsonKey.ACTOR_SERVICE, false, null));
     try {
-      cassandraOperation.getAllRecords(pagesDbInfo.getKeySpace(), pagesDbInfo.getTableName());
+      cassandraOperation.getAllRecords(null, pagesDbInfo.getKeySpace(), pagesDbInfo.getTableName());
       responseList.add(ProjectUtil.createCheckResponse(JsonKey.CASSANDRA_SERVICE, false, null));
     } catch (Exception e) {
       responseList.add(ProjectUtil.createCheckResponse(JsonKey.CASSANDRA_SERVICE, true, e));
@@ -149,7 +153,7 @@ public class HealthActor extends BaseActor {
     responseList.add(ProjectUtil.createCheckResponse(LMS_SERVICE, false, null));
     responseList.add(ProjectUtil.createCheckResponse(JsonKey.ACTOR_SERVICE, false, null));
     try {
-      cassandraOperation.getAllRecords(pagesDbInfo.getKeySpace(), pagesDbInfo.getTableName());
+      cassandraOperation.getAllRecords(null, pagesDbInfo.getKeySpace(), pagesDbInfo.getTableName());
       responseList.add(ProjectUtil.createCheckResponse(JsonKey.CASSANDRA_SERVICE, false, null));
     } catch (Exception e) {
       responseList.add(ProjectUtil.createCheckResponse(JsonKey.CASSANDRA_SERVICE, true, e));

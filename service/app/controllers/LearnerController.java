@@ -13,6 +13,7 @@ import org.sunbird.keys.SunbirdKey;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Results;
+import util.Attrs;
 import util.RequestValidator;
 
 import javax.inject.Inject;
@@ -31,16 +32,9 @@ public class LearnerController extends BaseController {
   private LearnerStateRequestValidator validator = new LearnerStateRequestValidator();
 
   @Inject
-  @Named("learner-state-update-actor")
-  private ActorRef learnerStateUpdateActorRef;
-
-  @Inject
   @Named("content-consumption-actor")
   private ActorRef contentConsumptionActor;
 
-  @Inject
-  @Named("learner-state-actor")
-  private ActorRef learnerStateActorRef;
   /**
    * This method will provide list of user content state. Content refer user activity {started,half
    * completed ,completed} against TOC (table of content).
@@ -74,13 +68,13 @@ public class LearnerController extends BaseController {
       RequestValidator.validateUpdateContent(reqObj);
       reqObj = transformUserId(reqObj);
       reqObj.setOperation("updateConsumption");
-      reqObj.setRequestId(httpRequest.flash().get(JsonKey.REQUEST_ID));
+      reqObj.setRequestId(httpRequest.attrs().getOptional(Attrs.REQUEST_ID).orElse(null));
       reqObj.setEnv(getEnvironment());
       HashMap<String, Object> innerMap = new HashMap<>();
       innerMap.put(JsonKey.CONTENTS, reqObj.getRequest().get(JsonKey.CONTENTS));
-      innerMap.put(JsonKey.REQUESTED_BY, httpRequest.flash().get(JsonKey.USER_ID));
-      if (StringUtils.isNotBlank(httpRequest.flash().get(SunbirdKey.REQUESTED_FOR)))
-        innerMap.put(SunbirdKey.REQUESTED_FOR, httpRequest.flash().get(SunbirdKey.REQUESTED_FOR));
+      innerMap.put(JsonKey.REQUESTED_BY, httpRequest.attrs().getOptional(Attrs.USER_ID).orElse(null));
+      if (StringUtils.isNotBlank(httpRequest.attrs().getOptional(Attrs.REQUEST_ID).orElse(null)))
+        innerMap.put(SunbirdKey.REQUESTED_FOR, httpRequest.attrs().getOptional(Attrs.REQUEST_ID).orElse(null));
       innerMap.put(JsonKey.ASSESSMENT_EVENTS, reqObj.getRequest().get(JsonKey.ASSESSMENT_EVENTS));
       innerMap.put(JsonKey.USER_ID, reqObj.getRequest().get(JsonKey.USER_ID));
       reqObj.setRequest(innerMap);

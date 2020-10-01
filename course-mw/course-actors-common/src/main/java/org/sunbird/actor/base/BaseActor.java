@@ -3,25 +3,25 @@ package org.sunbird.actor.base;
 import akka.actor.UntypedAbstractActor;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 
 public abstract class BaseActor extends UntypedAbstractActor {
 
   public abstract void onReceive(Request request) throws Throwable;
+  public LoggerUtil logger = new LoggerUtil(this.getClass());
 
   @Override
   public void onReceive(Object message) throws Throwable {
     if (message instanceof Request) {
       Request request = (Request) message;
       String operation = request.getOperation();
-      ProjectLogger.log("BaseActor: onReceive called for operation: " + operation, LoggerEnum.INFO);
+      logger.info(request.getRequestContext(), "onReceive called for operation: " + operation);
       try {
         onReceive(request);
       } catch (Exception e) {
-        ProjectLogger.log("Error while processing the message :" + operation, e);
+        logger.error(request.getRequestContext(), "Error while processing the message : " + operation, e);
         onReceiveException(operation, e);
       }
     } else {
@@ -30,12 +30,6 @@ public abstract class BaseActor extends UntypedAbstractActor {
   }
 
   protected void onReceiveException(String callerName, Exception exception) throws Exception {
-    ProjectLogger.log(
-        "Exception in message processing for: "
-            + callerName
-            + " :: message: "
-            + exception.getMessage(),
-        exception);
     sender().tell(exception, self());
   }
 
@@ -49,7 +43,6 @@ public abstract class BaseActor extends UntypedAbstractActor {
   }
 
   public void onReceiveUnsupportedOperation(String callerName) throws Exception {
-    ProjectLogger.log(callerName + ": unsupported message");
     unSupportedMessage();
   }
 

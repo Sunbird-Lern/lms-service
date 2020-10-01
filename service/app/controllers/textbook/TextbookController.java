@@ -30,6 +30,7 @@ import org.sunbird.learner.actors.textbook.TextbookActorOperation;
 import play.libs.Files;
 import play.mvc.Http;
 import play.mvc.Result;
+import util.Attrs;
 
 /**
  * Handles Textbook TOC APIs.
@@ -121,10 +122,10 @@ public class TextbookController extends BaseController {
           "TextbookController:createAndInitUploadRequest : Exception occurred while closing stream");
     }
     reqObj.setOperation(operation);
-    reqObj.setRequestId(httpRequest.flash().get(JsonKey.REQUEST_ID));
+    reqObj.setRequestId(httpRequest.attrs().getOptional(Attrs.REQUEST_ID).orElse(null));
     reqObj.setEnv(getEnvironment());
     map.put(JsonKey.OBJECT_TYPE, objectType);
-    map.put(JsonKey.CREATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
+    map.put(JsonKey.CREATED_BY, httpRequest.attrs().getOptional(Attrs.USER_ID).orElse(null));
     map.put(JsonKey.DATA, byteArray);
     reqObj.setRequest(map);
     return reqObj;

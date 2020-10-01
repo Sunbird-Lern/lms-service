@@ -1,15 +1,15 @@
 /** */
 package org.sunbird.learner.util;
 
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.helper.ServiceFactory;
+
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This class will handle the data cache.
@@ -26,19 +26,20 @@ public class DataCacheHandler implements Runnable {
   private static Map<String, Map<String, Object>> sectionMap = new ConcurrentHashMap<>();
   private CassandraOperation cassandraOperation = ServiceFactory.getInstance();
   private static final String KEY_SPACE_NAME = "sunbird";
-
+  private LoggerUtil logger = new LoggerUtil(DataCacheHandler.class);
+  
   @Override
   public void run() {
-    ProjectLogger.log("DataCacheHandler:run: Cache refresh started.", LoggerEnum.INFO.name());
+    logger.info(null, "DataCacheHandler:run: Cache refresh started.");
     cache(pageMap, "page_management");
     cache(sectionMap, "page_section");
-    ProjectLogger.log("DataCacheHandler:run: Cache refresh completed.", LoggerEnum.INFO.name());
+    logger.info(null, "DataCacheHandler:run: Cache refresh completed.");
   }
 
   @SuppressWarnings("unchecked")
   private void cache(Map<String, Map<String, Object>> map, String tableName) {
     try {
-      Response response = cassandraOperation.getAllRecords(KEY_SPACE_NAME, tableName);
+      Response response = cassandraOperation.getAllRecords(null, KEY_SPACE_NAME, tableName);
       List<Map<String, Object>> responseList =
           (List<Map<String, Object>>) response.get(JsonKey.RESPONSE);
       if (null != responseList && !responseList.isEmpty()) {
@@ -54,11 +55,10 @@ public class DataCacheHandler implements Runnable {
           }
         }
       }
-      ProjectLogger.log("pagemap keyset " + map.keySet());
-      ProjectLogger.log(tableName + " cache size: " + map.size(), LoggerEnum.INFO.name());
+      logger.debug(null, "pagemap keyset " + map.keySet());
+      logger.info(null, tableName + " cache size: " + map.size());
     } catch (Exception e) {
-      ProjectLogger.log(
-          "DataCacheHandler:cache: Exception in retrieving page section " + e.getMessage(), e);
+      logger.error(null, "DataCacheHandler:cache: Exception in retrieving page section " + e.getMessage(), e);
     }
   }
 

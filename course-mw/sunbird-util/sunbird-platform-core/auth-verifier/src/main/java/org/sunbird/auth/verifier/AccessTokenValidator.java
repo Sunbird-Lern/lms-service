@@ -2,19 +2,20 @@ package org.sunbird.auth.verifier;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Collections;
-import java.util.Map;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.keycloak.common.util.Time;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.KeyCloakConnectionProvider;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.LoggerUtil;
+
+import java.util.Collections;
+import java.util.Map;
 
 public class AccessTokenValidator {
 
     private static ObjectMapper mapper = new ObjectMapper();
+    private static LoggerUtil logger = new LoggerUtil(AccessTokenValidator.class);
 
     private static Map<String, Object> validateToken(String token, boolean checkActive) throws JsonProcessingException {
         String[] tokenElements = token.split("\\.");
@@ -62,7 +63,7 @@ public class AccessTokenValidator {
             if (MapUtils.isNotEmpty(payload)) {
                 String parentId = (String) payload.get(JsonKey.PARENT_ID);
                 String muaId = (String) payload.get(JsonKey.SUB);
-                ProjectLogger.log(
+                logger.info( null,
                         "AccessTokenValidator: parent uuid: "
                                 + parentId
                                 + " managedBy uuid: "
@@ -70,19 +71,17 @@ public class AccessTokenValidator {
                                 + " requestedByUserID: "
                                 + requestedByUserId
                                 + " requestedForUserId: "
-                                + requestedForUserId,
-                        LoggerEnum.INFO.name());
+                                + requestedForUserId);
                 boolean isValid =
                         parentId.equalsIgnoreCase(requestedByUserId);
                 if(!muaId.equalsIgnoreCase(requestedForUserId))
-                    ProjectLogger.log("RequestedFor userid : " + requestedForUserId + " is not matching with the muaId : " + muaId, LoggerEnum.INFO.name());
+                    logger.info( null,"RequestedFor userid : " + requestedForUserId + " is not matching with the muaId : " + muaId);
                 if (isValid) {
                     managedFor = muaId;
                 }
             }
         } catch (Exception ex) {
-            ProjectLogger.log("Exception in AccessTokenValidator: verify ", LoggerEnum.ERROR);
-            ex.printStackTrace();
+            logger.error(null, "Exception in AccessTokenValidator: verify ", ex);
         }
         return managedFor;
     }
@@ -99,7 +98,7 @@ public class AccessTokenValidator {
                 }
             }
         } catch (Exception ex) {
-            ProjectLogger.log("Exception in verifyUserAccessToken: verify ", ex);
+            logger.error(null, "Exception in verifyUserAccessToken: verify ", ex);
         }
         return userId;
     }

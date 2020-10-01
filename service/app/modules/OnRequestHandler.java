@@ -19,6 +19,7 @@ import play.mvc.Action;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Results;
+import util.Attrs;
 import util.RequestInterceptor;
 
 import java.lang.reflect.Method;
@@ -57,8 +58,6 @@ public class OnRequestHandler implements ActionCreator {
         CompletionStage<Result> result = checkForServiceHealth(request);
         if (result != null) return result;
         // Setting Actual userId (requestedBy) and managed userId (requestedFor) placeholders in flash memory to null before processing.
-        request.flash().put(JsonKey.USER_ID, null);
-        request.flash().put(SunbirdKey.REQUESTED_FOR, null);
         // Unauthorized, Anonymous, UserID
         String message = RequestInterceptor.verifyRequestData(request);
         Optional<String> forAuth = request.header(HeaderParam.X_Authenticated_For.getName());
@@ -67,18 +66,18 @@ public class OnRequestHandler implements ActionCreator {
             String requestedForId = getRequestedForId(request);
           childId = AccessTokenValidator.verifyManagedUserToken(forAuth.get(), message, requestedForId);
           if (StringUtils.isNotBlank(childId) && !USER_UNAUTH_STATES.contains(childId)) {
-            request.flash().put(SunbirdKey.REQUESTED_FOR, childId);
+              request = request.addAttr(Attrs.REQUESTED_FOR, childId);
           }
           
         }
         // call method to set all the required params for the telemetry event(log)...
-        intializeRequestInfo(request, message, messageId);
+        request = intializeRequestInfo(request, message, messageId);
         if ((!USER_UNAUTH_STATES.contains(message)) && (childId==null || !USER_UNAUTH_STATES.contains(childId))) {
-          request.flash().put(JsonKey.USER_ID, message);
-          request.flash().put(JsonKey.IS_AUTH_REQ, "false");
+            request = request.addAttr(Attrs.USER_ID, message);
+            request = request.addAttr(Attrs.IS_AUTH_REQ, "false");
           for (String uri : RequestInterceptor.restrictedUriList) {
             if (request.path().contains(uri)) {
-              request.flash().put(JsonKey.IS_AUTH_REQ, "true");
+                request = request.addAttr(Attrs.IS_AUTH_REQ, "true");
               break;
             }
           }
@@ -134,7 +133,7 @@ public class OnRequestHandler implements ActionCreator {
     return CompletableFuture.completedFuture(Results.status(responseCode, Json.toJson(resp)));
   }
 
-  private void intializeRequestInfo(Http.Request request, String userId, String requestId) { 
+  private Http.Request intializeRequestInfo(Http.Request request, String userId, String requestId) { 
       try {
           String actionMethod = request.method();
           String url = request.uri();
@@ -153,9 +152,9 @@ public class OnRequestHandler implements ActionCreator {
               }
           }
           Map<String, Object> reqContext = new WeakHashMap<>();
-          request.flash().put(JsonKey.SIGNUP_TYPE, signType);
+          request = request.addAttr(Attrs.SIGNUP_TYPE, signType);
           reqContext.put(JsonKey.SIGNUP_TYPE, signType);
-          request.flash().put(JsonKey.REQUEST_SOURCE, source);
+          request = request.addAttr(Attrs.REQUEST_SOURCE, source);
           reqContext.put(JsonKey.REQUEST_SOURCE, source);
 
           // set env and channel to the
@@ -171,27 +170,27 @@ public class OnRequestHandler implements ActionCreator {
                               : JsonKey.DEFAULT_ROOT_ORG_ID;
           }
           reqContext.put(JsonKey.CHANNEL, channel);
-          request.flash().put(JsonKey.CHANNEL, channel);
+          request = request.addAttr(Attrs.CHANNEL, channel);
           reqContext.put(JsonKey.ENV, getEnv(request));
           reqContext.put(JsonKey.REQUEST_ID, requestId);
           Optional<String> optionalAppId = request.header(HeaderParam.X_APP_ID.getName());
           // check if in request header X-app-id is coming then that need to
           // be pass in search telemetry.
           if (optionalAppId.isPresent()) {
-              request.flash().put(JsonKey.APP_ID, optionalAppId.get());
+              request = request.addAttr(Attrs.APP_ID, optionalAppId.get());
               reqContext.put(JsonKey.APP_ID, optionalAppId.get());
           }
           // checking device id in headers
           Optional<String> optionalDeviceId = request.header(HeaderParam.X_Device_ID.getName());
           if (optionalDeviceId.isPresent()) {
-              request.flash().put(JsonKey.DEVICE_ID, optionalDeviceId.get());
+              request = request.addAttr(Attrs.DEVICE_ID, optionalDeviceId.get());
               reqContext.put(JsonKey.DEVICE_ID, optionalDeviceId.get());
           }
           if (!USER_UNAUTH_STATES.contains(userId)) {
               reqContext.put(JsonKey.ACTOR_ID, userId);
               reqContext.put(JsonKey.ACTOR_TYPE, StringUtils.capitalize(JsonKey.USER));
-              request.flash().put(JsonKey.ACTOR_ID, userId);
-              request.flash().put(JsonKey.ACTOR_TYPE, JsonKey.USER);
+              request = request.addAttr(Attrs.ACTOR_ID, userId);
+              request = request.addAttr(Attrs.ACTOR_TYPE, JsonKey.USER);
           } else {
               Optional<String> optionalConsumerId = request.header(HeaderParam.X_Consumer_ID.getName());
               String consumerId;
@@ -202,8 +201,8 @@ public class OnRequestHandler implements ActionCreator {
               }
               reqContext.put(JsonKey.ACTOR_ID, consumerId);
               reqContext.put(JsonKey.ACTOR_TYPE, StringUtils.capitalize(JsonKey.CONSUMER));
-              request.flash().put(JsonKey.ACTOR_ID, consumerId);
-              request.flash().put(JsonKey.ACTOR_TYPE, JsonKey.CONSUMER);
+              request = request.addAttr(Attrs.ACTOR_ID, consumerId);
+              request = request.addAttr(Attrs.ACTOR_TYPE, JsonKey.CONSUMER);
           }
           Map<String, Object> map = new WeakHashMap<>();
           map.put(JsonKey.CONTEXT, reqContext);
@@ -217,11 +216,12 @@ public class OnRequestHandler implements ActionCreator {
           if (StringUtils.isBlank(requestId)) {
               requestId = JsonKey.DEFAULT_CONSUMER_ID;
           }
-          request.flash().put(JsonKey.REQUEST_ID, requestId);
-          request.flash().put(JsonKey.CONTEXT, mapper.writeValueAsString(map));
+          request = request.addAttr(Attrs.REQUEST_ID, requestId);
+          request = request.addAttr(Attrs.CONTEXT, mapper.writeValueAsString(map));
       } catch (Exception e) {
           ProjectCommonException.throwServerErrorException(ResponseCode.SERVER_ERROR, e.getMessage());
       }
+      return request;
   }
 
   private String getEnv(Http.Request request) {

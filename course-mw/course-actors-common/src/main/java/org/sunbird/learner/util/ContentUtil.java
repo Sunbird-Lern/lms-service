@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.collections4.MapUtils;
@@ -28,6 +29,9 @@ import org.sunbird.common.responsecode.ResponseCode;
 public final class ContentUtil {
 
   private static ObjectMapper mapper = new ObjectMapper();
+  private static String EKSTEP_COURSE_SEARCH_QUERY =
+          "{\"request\": {\"filters\":{\"contentType\": [\"Course\"], \"identifier\": \"COURSE_ID_PLACEHOLDER\", \"status\": \"Live\", \"mimeType\": \"application/vnd.ekstep.content-collection\", \"trackable.enabled\": \"Yes\"},\"limit\": 1}}";
+
 
   private ContentUtil() {}
 
@@ -145,5 +149,29 @@ public final class ContentUtil {
       ProjectLogger.log("Error found during content search parse==" + e.getMessage(), e);
     }
     return resMap;
+  }
+
+
+  public static Map<String, Object> getCourseObjectFromEkStep(
+          String courseId, Map<String, String> headers) {
+    ProjectLogger.log("Requested course id is ==" + courseId, LoggerEnum.INFO.name());
+    if (!StringUtils.isBlank(courseId)) {
+      try {
+        String query = EKSTEP_COURSE_SEARCH_QUERY.replaceAll("COURSE_ID_PLACEHOLDER", courseId);
+        Map<String, Object> result = ContentUtil.searchContent(query, headers);
+        if (null != result && !result.isEmpty() && result.get(JsonKey.CONTENTS) != null) {
+          return ((List<Map<String, Object>>) result.get(JsonKey.CONTENTS)).get(0);
+          // return (Map<String, Object>) contentObject;
+        } else {
+          ProjectLogger.log(
+                  "CourseEnrollmentActor:getCourseObjectFromEkStep: Content not found for requested courseId "
+                          + courseId,
+                  LoggerEnum.INFO.name());
+        }
+      } catch (Exception e) {
+        ProjectLogger.log(e.getMessage(), e);
+      }
+    }
+    return null;
   }
 }

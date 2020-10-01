@@ -1,12 +1,5 @@
 package org.sunbird.learner.actors.search;
 
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -17,9 +10,15 @@ import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.HttpUtilResponse;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.*;
+import org.sunbird.common.models.util.ActorOperations;
+import org.sunbird.common.models.util.HttpUtil;
+import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.ProjectUtil.EsType;
+import org.sunbird.common.models.util.PropertiesCache;
+import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.learner.actors.coursebatch.service.UserCoursesService;
@@ -27,6 +26,14 @@ import org.sunbird.learner.util.JsonUtil;
 import org.sunbird.learner.util.Util;
 import org.sunbird.telemetry.util.TelemetryWriter;
 import scala.concurrent.Future;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * This class will handle search operation for all different type of index and types
@@ -71,16 +78,13 @@ public class SearchHandlerActor extends BaseActor {
       SearchDTO searchDto = Util.createSearchDto(searchQueryMap);
 
       Map<String, Object> result = null;
-      ProjectLogger.log(
-          "SearchHandlerActor:onReceive  request search instant duration="
-              + (Instant.now().toEpochMilli() - instant.toEpochMilli()),
-          LoggerEnum.INFO.name());
-      Future<Map<String, Object>> resultF = esService.search(searchDto, types[0]);
+      logger.info(request.getRequestContext(), "SearchHandlerActor:onReceive  request search instant duration="
+              + (Instant.now().toEpochMilli() - instant.toEpochMilli()));
+      Future<Map<String, Object>> resultF = esService.search(request.getRequestContext(), searchDto, types[0]);
       result = (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
-      ProjectLogger.log(
+      logger.info(request.getRequestContext(), 
           "SearchHandlerActor:onReceive search complete instant duration="
-              + (Instant.now().toEpochMilli() - instant.toEpochMilli()),
-          LoggerEnum.INFO.name());
+              + (Instant.now().toEpochMilli() - instant.toEpochMilli()));
       if (EsType.courseBatch.getTypeName().equalsIgnoreCase(filterObjectType)) {
         if (JsonKey.PARTICIPANTS.equalsIgnoreCase(
             (String) request.getContext().get(JsonKey.PARTICIPANTS))) {
@@ -89,7 +93,7 @@ public class SearchHandlerActor extends BaseActor {
           for (Map<String, Object> courseBatch : courseBatchList) {
             courseBatch.put(
                 JsonKey.PARTICIPANTS,
-                getParticipantList((String) courseBatch.get(JsonKey.BATCH_ID)));
+                getParticipantList(request.getRequestContext(), (String) courseBatch.get(JsonKey.BATCH_ID)));
           }
         }
         Response response = new Response();
@@ -162,9 +166,9 @@ public class SearchHandlerActor extends BaseActor {
 		return resp;
   }
 
-  private List<String> getParticipantList(String id) {
+  private List<String> getParticipantList(RequestContext requestContext, String id) {
     UserCoursesService userCourseService = new UserCoursesService();
-    return userCourseService.getEnrolledUserFromBatch(id);
+    return userCourseService.getEnrolledUserFromBatch(requestContext, id);
   }
 
   private void generateSearchTelemetryEvent(

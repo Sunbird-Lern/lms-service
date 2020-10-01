@@ -5,8 +5,7 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.keys.SunbirdKey;
@@ -25,6 +24,7 @@ import static org.sunbird.common.responsecode.ResponseCode.CLIENT_ERROR;
 public class HierarchyGenerationHelper {
     private static List<String> metadataToBeAdded = Arrays.stream((StringUtils.isNotBlank(getConfigValue(JsonKey.CONTENT_PROPS_TO_ADD)) ? getConfigValue(JsonKey.CONTENT_PROPS_TO_ADD) : "mimeType,contentType,name,code,description,keywords,framework,copyright,topic").split(",")).map(String::trim).collect(Collectors.toList());
     private static ObjectMapper mapper = new ObjectMapper();
+    private LoggerUtil logger = new LoggerUtil(HierarchyGenerationHelper.class);
 
     public Map<String, Object> generateUpdateHierarchyRequest(Request request, String identifier) throws Exception {
         Map<String, Object> nodesModified = new HashMap<String, Object>();
@@ -38,10 +38,8 @@ public class HierarchyGenerationHelper {
                 }});
             }});
         }};
-        ProjectLogger.log(
-                "CourseManagementActor:generateUpdateHierarchyRequest : Request for course update Hierarchy : "
-                        + mapper.writeValueAsString(updateRequest),
-                LoggerEnum.INFO.name());
+        logger.info(request.getRequestContext(), "CourseManagementActor:generateUpdateHierarchyRequest : Request for course update Hierarchy : "
+                + mapper.writeValueAsString(updateRequest));
         return updateRequest;
     }
 

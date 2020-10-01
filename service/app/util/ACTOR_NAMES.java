@@ -24,7 +24,6 @@ import org.sunbird.learner.actors.textbook.TextbookTocActor;
 public enum ACTOR_NAMES {
   COURSE_BATCH_MANAGEMENT_ACTOR(CourseBatchManagementActor.class, "course-batch-management-actor"),
   COLLECTION_AGGREGATE_SUMMARY_ACTOR(CollectionSummaryAggregate.class, "collection-summary-aggregate-actor"),
-  COURSE_ENROLLEMENT_ACTOR(CourseEnrollmentActor.class, "course-enrollment-actor"),
   CACHE_MANAGEMENT_ACTOR(CacheManagementActor.class, "cache-management-actor"),
   PAGE_MANAGEMENT_ACTOR(PageManagementActor.class, "page-management-actor"),
   SEARCH_HANDLER_ACTOR(SearchHandlerActor.class, "search-handler-actor"),

@@ -32,8 +32,7 @@ public final class CourseBatchSchedulerUtil {
   public static Map<String, String> headerMap = new HashMap<>();
   private static ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private static String EKSTEP_COURSE_SEARCH_QUERY =
-      "{\"request\": {\"filters\":{\"contentType\": [\"Course\"], \"identifier\": \"COURSE_ID_PLACEHOLDER\", \"status\": \"Live\", \"mimeType\": \"application/vnd.ekstep.content-collection\", \"trackable.enabled\": \"Yes\"},\"limit\": 1}}";
-  private static LoggerUtil logger = new LoggerUtil(CourseBatchSchedulerUtil.class);
+      "{\"request\": {\"filters\":{\"identifier\": \"COURSE_ID_PLACEHOLDER\", \"status\": \"Live\", \"mimeType\": \"application/vnd.ekstep.content-collection\", \"trackable.enabled\": \"Yes\"},\"limit\": 1}}";
 
   static {
     String header = ProjectUtil.getConfigValue(JsonKey.EKSTEP_AUTHORIZATION);

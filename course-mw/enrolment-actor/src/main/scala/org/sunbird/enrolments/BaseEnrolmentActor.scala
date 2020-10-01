@@ -17,6 +17,7 @@ abstract class BaseEnrolmentActor extends BaseActor {
     
     def getBatches(requestContext: RequestContext, batchIds: java.util.List[String], requestedFields: java.util.List[String]): java.util.List[java.util.Map[String, AnyRef]] = {
         val dto = new SearchDTO
+        dto.setLimit(batchIds.size())
         dto.getAdditionalProperties().put(JsonKey.FILTERS, new java.util.HashMap[String, AnyRef](){{ put(JsonKey.BATCH_ID, batchIds)}})
         if(CollectionUtils.isNotEmpty(requestedFields))
             dto.setFields(requestedFields)

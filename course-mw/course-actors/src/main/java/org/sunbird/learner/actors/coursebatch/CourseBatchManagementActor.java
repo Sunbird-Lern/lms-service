@@ -776,16 +776,17 @@ public class CourseBatchManagementActor extends BaseActor {
     Map<String, Object> ekStepContent = ContentUtil.getContent(courseId);
     logger.info(requestContext, "CourseBatchManagementActor:getEkStepContent: courseId: " + courseId,
             " :: content: " + ekStepContent);
+    String status = (String) ((Map<String, Object>)ekStepContent.getOrDefault("content", new HashMap<>())).getOrDefault("status", "");
     if (null == ekStepContent ||
             ekStepContent.size() == 0 ||
-            !validCourseStatus.contains((String)ekStepContent.get("status"))) {
+            !validCourseStatus.contains(status)) {
       logger.info(requestContext, "CourseBatchManagementActor:getEkStepContent: Not found course for ID = " + courseId);
       throw new ProjectCommonException(
           ResponseCode.invalidCourseId.getErrorCode(),
           ResponseCode.invalidCourseId.getErrorMessage(),
           ResponseCode.CLIENT_ERROR.getResponseCode());
     }
-    return ekStepContent;
+    return (Map<String, Object>)ekStepContent.getOrDefault("content", new HashMap<>());
   }
 
   private void validateContentOrg(RequestContext requestContext, List<String> createdFor) {

@@ -105,14 +105,12 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
     val response = callActor(getRequest("0130929928739635202", "do_31309287232935526411138", "LAST_30DAYS", groupByKeys), Props(new CollectionSummaryAggregate()(new RedisCacheUtil())))
     assert(response.getResponseCode == ResponseCode.OK)
     assert(response.getResult != null)
-    val result = response.getResult.asScala
+    val result = response.getResult
     assert(result != null)
     val metricsResult = gson.fromJson(gson.toJson(result.get("metrics")), classOf[util.ArrayList[AnyRef]])
     val groupByResult = gson.fromJson(gson.toJson(result.get("groupBy")), classOf[util.ArrayList[AnyRef]])
-    metricsResult should not be(null)
-    groupByResult should not be(null)
-
-
+    metricsResult.isEmpty should be(false)
+    groupByResult.isEmpty should be(false)
   }
 
   "CollectionSummaryActivityAgg" should "return success response from druid" in {
@@ -124,12 +122,12 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
     Unirest.post(s"http://localhost:8082/druid/v2/").headers(getUpdatedHeaders(new util.HashMap[String, String]())).body(query)
     val response = callActor(getRequest("0130929928739635201", "do_31309287232935526411138", "LAST_7DAYS", groupByKeys), Props(new CollectionSummaryAggregate()(new RedisCacheUtil())))
     assert(response.getResponseCode == ResponseCode.OK)
-    val result = response.getResult.asScala
+    val result = response.getResult
     assert(result != null)
     val metricsResult = gson.fromJson(gson.toJson(result.get("metrics")), classOf[util.ArrayList[AnyRef]])
     val groupByResult = gson.fromJson(gson.toJson(result.get("groupBy")), classOf[util.ArrayList[AnyRef]])
-    metricsResult should not be(null)
-    groupByResult should not be(null)
+    metricsResult.isEmpty should be(false)
+    groupByResult.isEmpty should be(false)
   }
 
   def blankRestResponse(): Response = {

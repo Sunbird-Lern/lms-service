@@ -49,6 +49,8 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
         transformedResult
       }
       response.put("metrics", result.get("metrics"))
+      response.put("collectionId", collectionId)
+      response.put("batchId", batchId)
       if (groupByKeys.nonEmpty) {
         response.put("groupBy", result.get("groupBy"))
       }

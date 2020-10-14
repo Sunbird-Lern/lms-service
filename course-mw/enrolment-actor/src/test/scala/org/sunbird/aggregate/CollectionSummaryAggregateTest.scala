@@ -26,6 +26,7 @@ import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.learner.util.JsonUtil
 import redis.clients.jedis.Jedis
 import redis.embedded.RedisServer
+import scala.collection.JavaConverters._
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -33,7 +34,7 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
 
   val system = ActorSystem.create("system")
 
-
+  val gson = new Gson()
   var redisServer: RedisServer = _
   redisServer = new RedisServer(6379)
   EmbeddedCassandraServerHelper.startEmbeddedCassandra(80000L)
@@ -74,7 +75,7 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
   def getCacheKey(batchId: String, intervals: String, groupByKeys: List[String]): String = {
     val regex = "[^a-zA-Z0-9]"
     val date = intervals.split("/")
-    s"bmetircs:$batchId:${date(0).replaceAll(regex, "")}:${date(1).replaceAll(regex, "")}:${groupByKeys.mkString(" ").replaceAll(" ", "_")}"
+    s"bmetrics:$batchId:${date(0).replaceAll(regex, "")}:${date(1).replaceAll(regex, "")}:${groupByKeys.mkString(" ").replaceAll(" ", "_")}"
   }
 
   def getDate(date: String): String = {
@@ -98,23 +99,35 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
 
 
   "CollectionSummaryActivityAgg" should "return success response from redis" in {
-    redisConnect.set(getCacheKey("0130929928739635202", getDate("LAST_30DAYS"), List("state")), "[{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":482.6580757318888,\"district\":\"Tumkur\",\"edata_type\":\"complete\",\"state\":\"Karnatka\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":473.81686557810804,\"district\":\"Tumkur\",\"edata_type\":\"certificated_issued\",\"state\":\"Karnataka\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":458.7487411983637,\"district\":\"Tumkur\",\"edata_type\":\"enrolled\",\"state\":\"Karnataka\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":433.87897596484714,\"district\":\"Kolar\",\"edata_type\":\"complete\",\"state\":\"karnatka\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":411.75150981167434,\"district\":\"Mysore\",\"edata_type\":\"enrollement\",\"state\":\"Karnataka\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":408.0867310228416,\"district\":\"Mysore\",\"edata_type\":\"complete\",\"state\":\"Karnataka\"}},{\"version\":\"v1\",\"timestamp\":\"2020-09-07T00:00:00.000Z\",\"event\":{\"userCount\":400.7767886993949,\"district\":\"Banglore\",\"edata_type\":\"complete\",\"state\":\"Karnataka\"}}]")
+    redisConnect.set(getCacheKey("0130929928739635202", getDate("LAST_30DAYS"), List("state")), "{\"metrics\":[{\"type\":\"complete\",\"count\":10},{\"type\":\"enrolment\",\"count\":5}],\"groupBy\":[{\"district\":null,\"values\":[{\"count\":10,\"type\":\"enrolment\"},{\"count\":10,\"type\":\"complete\"}],\"state\":null},{\"district\":\"PUNE\",\"values\":[{\"count\":1,\"type\":\"enrolment\"},{\"count\":1,\"type\":\"complete\"}],\"state\":\"Maharashtra\"},{\"district\":\"DADRA AND NAGAR HAVELI(UT)\",\"values\":[{\"count\":1,\"type\":\"enrolment\"},{\"count\":1,\"type\":\"complete\"}],\"state\":\"Dadra & Nagar Haveli\"}]}")
     val groupByKeys = new util.ArrayList[String]
     groupByKeys.add("state")
     val response = callActor(getRequest("0130929928739635202", "do_31309287232935526411138", "LAST_30DAYS", groupByKeys), Props(new CollectionSummaryAggregate()(new RedisCacheUtil())))
     assert(response.getResponseCode == ResponseCode.OK)
+    assert(response.getResult != null)
+    val result = response.getResult
+    assert(result != null)
+    val metricsResult = gson.fromJson(gson.toJson(result.get("metrics")), classOf[util.ArrayList[AnyRef]])
+    val groupByResult = gson.fromJson(gson.toJson(result.get("groupBy")), classOf[util.ArrayList[AnyRef]])
+    metricsResult.isEmpty should be(false)
+    groupByResult.isEmpty should be(false)
   }
 
   "CollectionSummaryActivityAgg" should "return success response from druid" in {
     val groupByKeys = new util.ArrayList[String]
     groupByKeys.add("dist")
     groupByKeys.add("state")
-    mockDruid("[{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":null,\"count\":2.000977198748901,\"edata_type\":\"enrol\",\"state\":null}},{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":null,\"count\":1.0002442201269182,\"edata_type\":\"complete\",\"state\":null}},{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":\"PUNE\",\"count\":1.0002442201269182,\"edata_type\":\"enrol\",\"state\":\"Maharashtra\"}},{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":\"DADRA AND NAGAR HAVELI(UT)\",\"count\":1.0002442201269182,\"edata_type\":\"enrol\",\"state\":\"Dadra & Nagar Haveli\"}},{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":\"PUNE\",\"count\":1.0002442201269182,\"edata_type\":\"complete\",\"state\":\"Maharashtra\"}},{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":\"DADRA AND NAGAR HAVELI(UT)\",\"count\":1.0002442201269182,\"edata_type\":\"complete\",\"state\":\"Dadra & Nagar Haveli\"}}]")
+    mockDruid("[{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":null,\"userCount\":2.000977198748901,\"edata_type\":\"enrol\",\"state\":null}},{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":null,\"userCount\":1.0002442201269182,\"edata_type\":\"complete\",\"state\":null}},{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":\"PUNE\",\"userCount\":1.0002442201269182,\"edata_type\":\"enrol\",\"state\":\"Maharashtra\"}},{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":\"DADRA AND NAGAR HAVELI(UT)\",\"userCount\":1.0002442201269182,\"edata_type\":\"enrol\",\"state\":\"Dadra & Nagar Haveli\"}},{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":\"PUNE\",\"userCount\":1.0002442201269182,\"edata_type\":\"complete\",\"state\":\"Maharashtra\"}},{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":\"DADRA AND NAGAR HAVELI(UT)\",\"userCount\":1.0002442201269182,\"edata_type\":\"complete\",\"state\":\"Dadra & Nagar Haveli\"}}]")
     val query = "{\"request\":{\"filters\":{\"collectionId\":\"do_31309287232935526411138\",\"batchId\":\"0130929928739635201\"},\"groupBy\":[],\"intervals\":\"20120-01-23/2020-09-24\"}}"
     Unirest.post(s"http://localhost:8082/druid/v2/").headers(getUpdatedHeaders(new util.HashMap[String, String]())).body(query)
     val response = callActor(getRequest("0130929928739635201", "do_31309287232935526411138", "LAST_7DAYS", groupByKeys), Props(new CollectionSummaryAggregate()(new RedisCacheUtil())))
-   // println("responseresponse" + JsonUtil.serialize(response))
     assert(response.getResponseCode == ResponseCode.OK)
+    val result = response.getResult
+    assert(result != null)
+    val metricsResult = gson.fromJson(gson.toJson(result.get("metrics")), classOf[util.ArrayList[AnyRef]])
+    val groupByResult = gson.fromJson(gson.toJson(result.get("groupBy")), classOf[util.ArrayList[AnyRef]])
+    metricsResult.isEmpty should be(false)
+    groupByResult.isEmpty should be(false)
   }
 
   def blankRestResponse(): Response = {

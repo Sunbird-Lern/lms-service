@@ -75,7 +75,7 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
   def getCacheKey(batchId: String, intervals: String, groupByKeys: List[String]): String = {
     val regex = "[^a-zA-Z0-9]"
     val date = intervals.split("/")
-    s"bmetircs:$batchId:${date(0).replaceAll(regex, "")}:${date(1).replaceAll(regex, "")}:${groupByKeys.mkString(" ").replaceAll(" ", "_")}"
+    s"bmetrics:$batchId:${date(0).replaceAll(regex, "")}:${date(1).replaceAll(regex, "")}:${groupByKeys.mkString(" ").replaceAll(" ", "_")}"
   }
 
   def getDate(date: String): String = {

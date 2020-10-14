@@ -26,6 +26,7 @@ import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.learner.util.JsonUtil
 import redis.clients.jedis.Jedis
 import redis.embedded.RedisServer
+import scala.collection.JavaConverters._
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -33,7 +34,7 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
 
   val system = ActorSystem.create("system")
 
-
+  val gson = new Gson()
   var redisServer: RedisServer = _
   redisServer = new RedisServer(6379)
   EmbeddedCassandraServerHelper.startEmbeddedCassandra(80000L)
@@ -102,8 +103,16 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
     val groupByKeys = new util.ArrayList[String]
     groupByKeys.add("state")
     val response = callActor(getRequest("0130929928739635202", "do_31309287232935526411138", "LAST_30DAYS", groupByKeys), Props(new CollectionSummaryAggregate()(new RedisCacheUtil())))
-    println("responseresponse1" + JsonUtil.serialize(response))
     assert(response.getResponseCode == ResponseCode.OK)
+    assert(response.getResult != null)
+    val result = response.getResult.asScala
+    assert(result != null)
+    val metricsResult = gson.fromJson(gson.toJson(result.get("metrics")), classOf[util.ArrayList[AnyRef]])
+    val groupByResult = gson.fromJson(gson.toJson(result.get("groupBy")), classOf[util.ArrayList[AnyRef]])
+    metricsResult should not be(null)
+    groupByResult should not be(null)
+
+
   }
 
   "CollectionSummaryActivityAgg" should "return success response from druid" in {
@@ -114,8 +123,13 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
     val query = "{\"request\":{\"filters\":{\"collectionId\":\"do_31309287232935526411138\",\"batchId\":\"0130929928739635201\"},\"groupBy\":[],\"intervals\":\"20120-01-23/2020-09-24\"}}"
     Unirest.post(s"http://localhost:8082/druid/v2/").headers(getUpdatedHeaders(new util.HashMap[String, String]())).body(query)
     val response = callActor(getRequest("0130929928739635201", "do_31309287232935526411138", "LAST_7DAYS", groupByKeys), Props(new CollectionSummaryAggregate()(new RedisCacheUtil())))
-   println("responseresponse2" + JsonUtil.serialize(response))
     assert(response.getResponseCode == ResponseCode.OK)
+    val result = response.getResult.asScala
+    assert(result != null)
+    val metricsResult = gson.fromJson(gson.toJson(result.get("metrics")), classOf[util.ArrayList[AnyRef]])
+    val groupByResult = gson.fromJson(gson.toJson(result.get("groupBy")), classOf[util.ArrayList[AnyRef]])
+    metricsResult should not be(null)
+    groupByResult should not be(null)
   }
 
   def blankRestResponse(): Response = {

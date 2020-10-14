@@ -45,13 +45,12 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
       } else {
         val druidResponse = getResponseFromDruid(batchId = batchId, courseId = collectionId, granularity, groupByKeys = groupByKeys)
         val transformedResult = transform(druidResponse, groupByKeys)
-        if (transformedResult.nonEmpty) cacheUtil.set(key, gson.toJson(transformedResult), ttl)
-        transformedResult.asJava
+        if (!transformedResult.isEmpty) cacheUtil.set(key, gson.toJson(transformedResult), ttl)
+        transformedResult
       }
-      println("====Result===" + result)
       response.put("metrics", result.get("metrics"))
       if (groupByKeys.nonEmpty) {
-        response.put("groupBy", result.get("groupingResult"))
+        response.put("groupBy", result.get("groupBy"))
       }
       sender().tell(response, self)
     } catch {
@@ -61,7 +60,8 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     }
   }
 
-  def transform(druidResponse: String, groupByKeys: List[String]): Map[String, AnyRef] = {
+  def transform(druidResponse: String, groupByKeys: List[String]): util.HashMap[String, AnyRef] = {
+    val transformedResult = new util.HashMap[String, AnyRef]()
     import scala.collection.JavaConversions._
     val parsedResult: AnyRef = JsonUtil.deserialize(druidResponse, classOf[AnyRef])
     if (isArray(druidResponse) && parsedResult.asInstanceOf[util.ArrayList[util.Map[String, AnyRef]]].nonEmpty) {
@@ -89,10 +89,12 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
         .mapValues(_.map(_ ("count").asInstanceOf[Long]).sum.longValue()).map(value => {
         Map("type" -> value._1, "count" -> value._2).asJava
       }).asJava
-      Map("metrics" -> metrics, "aggregate" -> groupingResult)
-    } else {
-      Map()
+      transformedResult.put("metrics", metrics)
+      if (groupByKeys.nonEmpty) {
+        transformedResult.put("groupBy", groupingResult)
+      }
     }
+    transformedResult
   }
 
 

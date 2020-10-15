@@ -2,7 +2,6 @@ package org.sunbird.aggregate
 
 import java.util
 
-import com.google.gson.Gson
 import com.mashape.unirest.http.Unirest
 import javax.inject.Inject
 import javax.ws.rs.core.MediaType
@@ -26,7 +25,6 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
   val dataSource: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("collection_summary_agg_data_source"))) ProjectUtil.getConfigValue("collection_summary_agg_data_source") else "telemetry-events-syncts"
   val stateLookUpQuery = "{\"type\":\"extraction\",\"dimension\":\"derived_loc_state\",\"outputName\":\"state\",\"extractionFn\":{\"type\":\"registeredLookup\",\"lookup\":\"stateLookup\",\"retainMissingValue\":true}}"
   val districtLookUpQuery = "{\"type\":\"extraction\",\"dimension\":\"derived_loc_district\",\"outputName\":\"district\",\"extractionFn\":{\"type\":\"registeredLookup\",\"lookup\":\"districtLookup\",\"retainMissingValue\":true}}"
-  val gson = new Gson
   var courseBatchDao: CourseBatchDao = new CourseBatchDaoImpl()
 
   override def onReceive(request: Request): Unit = {
@@ -41,16 +39,14 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     try {
       val redisData = cacheUtil.get(key)
       val result: util.Map[String, AnyRef] = if (null != redisData && !redisData.isEmpty) {
-        gson.fromJson(redisData, classOf[util.Map[String, AnyRef]])
+        JsonUtil.deserialize(redisData, new util.HashMap[String, AnyRef]().getClass)
       } else {
         val druidResponse = getResponseFromDruid(batchId = batchId, courseId = collectionId, granularity, groupByKeys = groupByKeys)
         val transformedResult = transform(druidResponse, groupByKeys)
-        if (!transformedResult.isEmpty) cacheUtil.set(key, gson.toJson(transformedResult), ttl)
+        if (!transformedResult.isEmpty) cacheUtil.set(key, JsonUtil.serialize(transformedResult), ttl)
         transformedResult
       }
       response.put("metrics", result.get("metrics"))
-      response.put("collectionId", collectionId)
-      response.put("batchId", batchId)
       if (groupByKeys.nonEmpty) {
         response.put("groupBy", result.get("groupBy"))
       }

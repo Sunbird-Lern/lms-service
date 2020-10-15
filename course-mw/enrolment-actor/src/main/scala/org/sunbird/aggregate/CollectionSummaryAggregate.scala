@@ -17,7 +17,6 @@ import org.sunbird.common.request.Request
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao
 import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl
 import org.sunbird.learner.util.{JsonUtil, Util}
-
 import scala.collection.JavaConverters._
 
 class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUtil) extends BaseActor {

@@ -70,6 +70,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
         val eData_type = if (StringUtils.equalsIgnoreCase(eventObj.get("edata_type").asInstanceOf[String], "enrol") || StringUtils.equalsIgnoreCase(eventObj.get("edata_type").asInstanceOf[String], "enroled")) "enrolment" else eventObj.get("edata_type").asInstanceOf[String]
         (eventObj.get("state"), eventObj.get("district")) -> Map("type" -> eData_type, "count" -> eventObj.get("userCount"))
       }).groupBy(x => x._1)
+        .filter(location => location._1._2 != null && location._1._1 != null) // Code to remove the null district and state
       val groupingResult = groupingObj.map(obj => {
         val groupByMap = new util.HashMap[String, AnyRef]()
         val valuesList = new util.ArrayList[util.HashMap[String, Any]]()
@@ -135,11 +136,6 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
          |      {
          |        "type": "or",
          |        "fields": [
-         |          {
-         |            "type": "selector",
-         |            "dimension": "edata_type",
-         |            "value": "complete"
-         |          },
          |          {
          |            "type": "selector",
          |            "dimension": "edata_type",

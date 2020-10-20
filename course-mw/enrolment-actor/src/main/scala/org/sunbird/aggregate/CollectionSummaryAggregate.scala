@@ -18,6 +18,7 @@ import org.sunbird.common.request.{Request, RequestContext}
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao
 import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl
 import org.sunbird.learner.util.{JsonUtil, Util}
+import java.math.BigDecimal
 
 import scala.collection.JavaConverters._
 
@@ -51,7 +52,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
       response.put("metrics", result.get("metrics"))
       response.put("collectionId", collectionId)
       response.put("batchId", batchId)
-      response.put("lastUpdatedOn", result.get("lastUpdatedOn"))
+      response.put("lastUpdatedOn", new BigDecimal(result.get("lastUpdatedOn").toString).toBigInteger()) // Converting scientific notation number bigInteger(Long)
       if (groupByKeys.nonEmpty) {
         response.put("groupBy", result.get("groupBy"))
       }

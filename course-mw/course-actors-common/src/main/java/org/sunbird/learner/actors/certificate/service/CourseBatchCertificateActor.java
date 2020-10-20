@@ -95,7 +95,7 @@ public class CourseBatchCertificateActor extends BaseActor {
         ProjectCommonException.throwClientErrorException(
                 ResponseCode.CLIENT_ERROR, "Issuer or signatoryList is emplty. Invalid template Id: " + templateId);
       }
-      String certName = (String) templateDetails.getOrDefault(JsonKey.DATA, templateDetails.getOrDefault(JsonKey.NAME, ""));
+      String certName = (String) ((Map<String, Object>) templateDetails.getOrDefault(JsonKey.DATA, new HashMap<>())).getOrDefault(JsonKey.TITLE , templateDetails.getOrDefault(JsonKey.NAME, ""));
       
       template.put(JsonKey.NAME, certName);
       template.put(JsonKey.CRITERIA, mapper.writeValueAsString(template.get(JsonKey.CRITERIA)));

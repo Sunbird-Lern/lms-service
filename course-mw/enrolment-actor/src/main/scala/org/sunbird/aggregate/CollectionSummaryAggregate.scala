@@ -42,11 +42,11 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     try {
       val redisData = cacheUtil.get(key)
       val result: util.Map[String, AnyRef] = if (null != redisData && !redisData.isEmpty) {
-        gson.fromJson(redisData, classOf[util.Map[String, AnyRef]])
+        JsonUtil.deserialize(redisData, new util.HashMap[String, AnyRef]().getClass)
       } else {
         val druidResponse = getResponseFromDruid(batchId = batchId, courseId = collectionId, granularity, groupByKeys = groupByKeys)
         val transformedResult = transform(druidResponse, groupByKeys)
-        if (!transformedResult.isEmpty) cacheUtil.set(key, gson.toJson(transformedResult), ttl)
+        if (!transformedResult.isEmpty) cacheUtil.set(key, JsonUtil.serialize(transformedResult), ttl)
         transformedResult
       }
       response.put("metrics", result.get("metrics"))

@@ -49,6 +49,9 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
         transformedResult
       }
       response.put("metrics", result.get("metrics"))
+      response.put("collectionId", collectionId)
+      response.put("batchId", batchId)
+      response.put("lastUpdatedOn", result.get("lastUpdatedOn"))
       if (groupByKeys.nonEmpty) {
         response.put("groupBy", result.get("groupBy"))
       }
@@ -91,6 +94,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
         Map("type" -> value._1, "count" -> value._2).asJava
       }).asJava
       transformedResult.put("metrics", metrics)
+      transformedResult.put("lastUpdatedOn", DateTime.now(DateTimeZone.UTC).getMillis().asInstanceOf[AnyRef])
       if (groupByKeys.nonEmpty) {
         transformedResult.put("groupBy", groupingResult)
       }

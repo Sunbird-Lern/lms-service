@@ -55,7 +55,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
       if (result.get("lastUpdatedOn") != null) {
         response.put("lastUpdatedOn", new BigDecimal(result.get("lastUpdatedOn").toString).toBigInteger()) // Converting scientific notation number bigInteger(Long)
       } else {
-        response.put("lastUpdatedOn", DateTime.now(DateTimeZone.UTC).getMillis().asInstanceOf[AnyRef]) // This scenarios won't occurre, for the safer side adding this condition
+        response.put("lastUpdatedOn", System.currentTimeMillis().asInstanceOf[AnyRef]) // This scenarios won't occurre, for the safer side adding this condition
       }
       if (groupByKeys.nonEmpty) {
         response.put("groupBy", result.get("groupBy"))
@@ -98,7 +98,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
         Map("type" -> value._1, "count" -> value._2).asJava
       }).asJava
       transformedResult.put("metrics", metrics)
-      transformedResult.put("lastUpdatedOn", DateTime.now(DateTimeZone.UTC).getMillis().asInstanceOf[AnyRef])
+      transformedResult.put("lastUpdatedOn", System.currentTimeMillis().asInstanceOf[AnyRef])
       if (groupByKeys.nonEmpty) {
         transformedResult.put("groupBy", groupingResult)
       }

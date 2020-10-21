@@ -52,8 +52,10 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
       response.put("metrics", result.get("metrics"))
       response.put("collectionId", collectionId)
       response.put("batchId", batchId)
-      if(result.get("lastUpdatedOn") != null){
+      if (result.get("lastUpdatedOn") != null) {
         response.put("lastUpdatedOn", new BigDecimal(result.get("lastUpdatedOn").toString).toBigInteger()) // Converting scientific notation number bigInteger(Long)
+      } else {
+        response.put("lastUpdatedOn", DateTime.now(DateTimeZone.UTC).getMillis().asInstanceOf[AnyRef]) // This scenarios won't occurre, for the safer side adding this condition
       }
       if (groupByKeys.nonEmpty) {
         response.put("groupBy", result.get("groupBy"))

@@ -55,7 +55,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
       if (result.get("lastUpdatedOn") != null) {
         response.put("lastUpdatedOn", new BigDecimal(result.get("lastUpdatedOn").toString).toBigInteger()) // Converting scientific notation number bigInteger(Long)
       } else {
-        response.put("lastUpdatedOn", DateTime.now(DateTimeZone.UTC).getMillis().asInstanceOf[AnyRef]) // This scenarios won't occurre, for the safer side adding this condition
+        response.put("lastUpdatedOn", System.currentTimeMillis().asInstanceOf[AnyRef]) // This scenarios won't occurre, for the safer side adding this condition
       }
       if (groupByKeys.nonEmpty) {
         response.put("groupBy", result.get("groupBy"))
@@ -78,7 +78,6 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
         val eData_type = if (StringUtils.equalsIgnoreCase(eventObj.get("edata_type").asInstanceOf[String], "enrol") || StringUtils.equalsIgnoreCase(eventObj.get("edata_type").asInstanceOf[String], "enroled")) "enrolment" else eventObj.get("edata_type").asInstanceOf[String]
         (eventObj.get("state"), eventObj.get("district")) -> Map("type" -> eData_type, "count" -> eventObj.get("userCount"))
       }).groupBy(x => x._1)
-        .filter(location => location._1._2 != null && location._1._1 != null) // Code to remove the null district and state
       val groupingResult = groupingObj.map(obj => {
         val groupByMap = new util.HashMap[String, AnyRef]()
         val valuesList = new util.ArrayList[util.HashMap[String, Any]]()
@@ -99,7 +98,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
         Map("type" -> value._1, "count" -> value._2).asJava
       }).asJava
       transformedResult.put("metrics", metrics)
-      transformedResult.put("lastUpdatedOn", DateTime.now(DateTimeZone.UTC).getMillis().asInstanceOf[AnyRef])
+      transformedResult.put("lastUpdatedOn", System.currentTimeMillis().asInstanceOf[AnyRef])
       if (groupByKeys.nonEmpty) {
         transformedResult.put("groupBy", groupingResult)
       }

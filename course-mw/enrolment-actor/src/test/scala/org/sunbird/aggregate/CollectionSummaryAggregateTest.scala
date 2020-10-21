@@ -139,13 +139,8 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
     val groupByResult = gson.fromJson(gson.toJson(result.get("groupBy")), classOf[util.ArrayList[util.Map[String, AnyRef]]])
     metricsResult.isEmpty should be(false)
     groupByResult.isEmpty should be(false)
-    groupByResult.size() should be(3)
+    groupByResult.size() should be(4)
     metricsResult.size() should be(2)
-    groupByResult.asScala.map(x => {
-      x.get("district") should not be (null)
-      x.get("state") should not be (null)
-      x.get("values") should not be (null)
-    })
   }
   def blankRestResponse(): Response = {
     val response = new Response()

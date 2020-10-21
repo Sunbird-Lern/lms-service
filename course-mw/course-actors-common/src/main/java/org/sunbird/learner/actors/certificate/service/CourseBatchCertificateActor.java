@@ -91,13 +91,15 @@ public class CourseBatchCertificateActor extends BaseActor {
   private void validateTemplateDetails(RequestContext requestContext, String templateId, Map<String, Object> template) {
    Map<String, Object> templateDetails = CourseBatchUtil.validateTemplate(requestContext, templateId);
     try {
-      if(!templateDetails.containsKey(CourseJsonKey.ISSUER) || !templateDetails.containsKey(CourseJsonKey.SIGNATORY_LIST)){
+      if((!templateDetails.containsKey(CourseJsonKey.ISSUER) || !templateDetails.containsKey(CourseJsonKey.SIGNATORY_LIST)) 
+        && (!template.containsKey(CourseJsonKey.ISSUER) || !template.containsKey(CourseJsonKey.SIGNATORY_LIST))){
         ProjectCommonException.throwClientErrorException(
                 ResponseCode.CLIENT_ERROR, "Issuer or signatoryList is emplty. Invalid template Id: " + templateId);
       }
       String certName = (String) ((Map<String, Object>) templateDetails.getOrDefault(JsonKey.DATA, new HashMap<>())).getOrDefault(JsonKey.TITLE , templateDetails.getOrDefault(JsonKey.NAME, ""));
       
       template.put(JsonKey.NAME, certName);
+      template.put(JsonKey.URL, templateDetails.getOrDefault("artifactUrl", ""));
       template.put(JsonKey.CRITERIA, mapper.writeValueAsString(template.get(JsonKey.CRITERIA)));
       if (null != template.get(CourseJsonKey.ISSUER)) {
         template.put(

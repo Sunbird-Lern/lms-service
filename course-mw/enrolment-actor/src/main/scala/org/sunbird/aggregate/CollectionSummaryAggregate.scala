@@ -18,6 +18,7 @@ import org.sunbird.common.request.{Request, RequestContext}
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao
 import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl
 import org.sunbird.learner.util.{JsonUtil, Util}
+import java.math.BigDecimal
 
 import scala.collection.JavaConverters._
 
@@ -41,14 +42,21 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     try {
       val redisData = cacheUtil.get(key)
       val result: util.Map[String, AnyRef] = if (null != redisData && !redisData.isEmpty) {
-        gson.fromJson(redisData, classOf[util.Map[String, AnyRef]])
+        JsonUtil.deserialize(redisData, new util.HashMap[String, AnyRef]().getClass)
       } else {
         val druidResponse = getResponseFromDruid(batchId = batchId, courseId = collectionId, granularity, groupByKeys = groupByKeys)
         val transformedResult = transform(druidResponse, groupByKeys)
-        if (!transformedResult.isEmpty) cacheUtil.set(key, gson.toJson(transformedResult), ttl)
+        if (!transformedResult.isEmpty) cacheUtil.set(key, JsonUtil.serialize(transformedResult), ttl)
         transformedResult
       }
       response.put("metrics", result.get("metrics"))
+      response.put("collectionId", collectionId)
+      response.put("batchId", batchId)
+      if (result.get("lastUpdatedOn") != null) {
+        response.put("lastUpdatedOn", new BigDecimal(result.get("lastUpdatedOn").toString).toBigInteger()) // Converting scientific notation number bigInteger(Long)
+      } else {
+        response.put("lastUpdatedOn", DateTime.now(DateTimeZone.UTC).getMillis().asInstanceOf[AnyRef]) // This scenarios won't occurre, for the safer side adding this condition
+      }
       if (groupByKeys.nonEmpty) {
         response.put("groupBy", result.get("groupBy"))
       }
@@ -91,6 +99,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
         Map("type" -> value._1, "count" -> value._2).asJava
       }).asJava
       transformedResult.put("metrics", metrics)
+      transformedResult.put("lastUpdatedOn", DateTime.now(DateTimeZone.UTC).getMillis().asInstanceOf[AnyRef])
       if (groupByKeys.nonEmpty) {
         transformedResult.put("groupBy", groupingResult)
       }

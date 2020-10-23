@@ -18,6 +18,7 @@ import org.sunbird.common.request.{Request, RequestContext}
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao
 import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl
 import org.sunbird.learner.util.{JsonUtil, Util}
+import java.math.BigDecimal
 
 import scala.collection.JavaConverters._
 
@@ -41,14 +42,21 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     try {
       val redisData = cacheUtil.get(key)
       val result: util.Map[String, AnyRef] = if (null != redisData && !redisData.isEmpty) {
-        gson.fromJson(redisData, classOf[util.Map[String, AnyRef]])
+        JsonUtil.deserialize(redisData, new util.HashMap[String, AnyRef]().getClass)
       } else {
         val druidResponse = getResponseFromDruid(batchId = batchId, courseId = collectionId, granularity, groupByKeys = groupByKeys)
         val transformedResult = transform(druidResponse, groupByKeys)
-        if (!transformedResult.isEmpty) cacheUtil.set(key, gson.toJson(transformedResult), ttl)
+        if (!transformedResult.isEmpty) cacheUtil.set(key, JsonUtil.serialize(transformedResult), ttl)
         transformedResult
       }
       response.put("metrics", result.get("metrics"))
+      response.put("collectionId", collectionId)
+      response.put("batchId", batchId)
+      if (result.get("lastUpdatedOn") != null) {
+        response.put("lastUpdatedOn", new BigDecimal(result.get("lastUpdatedOn").toString).toBigInteger()) // Converting scientific notation number bigInteger(Long)
+      } else {
+        response.put("lastUpdatedOn", System.currentTimeMillis().asInstanceOf[AnyRef]) // This scenarios won't occurre, for the safer side adding this condition
+      }
       if (groupByKeys.nonEmpty) {
         response.put("groupBy", result.get("groupBy"))
       }
@@ -70,7 +78,6 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
         val eData_type = if (StringUtils.equalsIgnoreCase(eventObj.get("edata_type").asInstanceOf[String], "enrol") || StringUtils.equalsIgnoreCase(eventObj.get("edata_type").asInstanceOf[String], "enroled")) "enrolment" else eventObj.get("edata_type").asInstanceOf[String]
         (eventObj.get("state"), eventObj.get("district")) -> Map("type" -> eData_type, "count" -> eventObj.get("userCount"))
       }).groupBy(x => x._1)
-        .filter(location => location._1._2 != null && location._1._1 != null) // Code to remove the null district and state
       val groupingResult = groupingObj.map(obj => {
         val groupByMap = new util.HashMap[String, AnyRef]()
         val valuesList = new util.ArrayList[util.HashMap[String, Any]]()
@@ -91,6 +98,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
         Map("type" -> value._1, "count" -> value._2).asJava
       }).asJava
       transformedResult.put("metrics", metrics)
+      transformedResult.put("lastUpdatedOn", System.currentTimeMillis().asInstanceOf[AnyRef])
       if (groupByKeys.nonEmpty) {
         transformedResult.put("groupBy", groupingResult)
       }

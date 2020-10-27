@@ -94,9 +94,10 @@ public class CourseBatchCertificateActor extends BaseActor {
       if((!templateDetails.containsKey(CourseJsonKey.ISSUER) || !templateDetails.containsKey(CourseJsonKey.SIGNATORY_LIST)) 
         && (!template.containsKey(CourseJsonKey.ISSUER) || !template.containsKey(CourseJsonKey.SIGNATORY_LIST))){
         ProjectCommonException.throwClientErrorException(
-                ResponseCode.CLIENT_ERROR, "Issuer or signatoryList is emplty. Invalid template Id: " + templateId);
+                ResponseCode.CLIENT_ERROR, "Issuer or signatoryList is empty. Invalid template Id: " + templateId);
       }
-      String certName = (String) ((Map<String, Object>) templateDetails.getOrDefault(JsonKey.DATA, new HashMap<>())).getOrDefault(JsonKey.TITLE , templateDetails.getOrDefault(JsonKey.NAME, ""));
+      Map<String, Object> templateData = (Map<String, Object>) templateDetails.getOrDefault(JsonKey.DATA, new HashMap<>());
+      String certName = (String) templateData.getOrDefault(JsonKey.TITLE , (String)templateDetails.getOrDefault(JsonKey.NAME, ""));
       
       template.put(JsonKey.NAME, certName);
       template.put(JsonKey.URL, templateDetails.getOrDefault("artifactUrl", ""));

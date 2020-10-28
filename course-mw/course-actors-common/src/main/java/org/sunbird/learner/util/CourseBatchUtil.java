@@ -72,29 +72,27 @@ public class CourseBatchUtil {
     Response templateResponse = getTemplate(requestContext, templateId);
     if (templateResponse == null
         || MapUtils.isEmpty(templateResponse.getResult())
-        || !templateResponse.getResult().containsKey(CourseJsonKey.CERTIFICATE)) {
+        || !templateResponse.getResult().containsKey(JsonKey.CONTENT)) {
       ProjectCommonException.throwClientErrorException(
           ResponseCode.CLIENT_ERROR, "Invalid template Id: " + templateId);
     }
     Map<String, Object> template =
-        (Map<String, Object>)
-            ((Map<String, Object>) templateResponse.getResult().get(CourseJsonKey.CERTIFICATE))
-                .get("template");
+            ((Map<String, Object>) templateResponse.getResult().getOrDefault(JsonKey.CONTENT, new HashMap<>()));
     if (MapUtils.isEmpty(template) || !templateId.equals(template.get(JsonKey.IDENTIFIER))) {
       ProjectCommonException.throwClientErrorException(
-          ResponseCode.CLIENT_ERROR, "Invalid template Id: " + templateId);
+              ResponseCode.CLIENT_ERROR, "Invalid template Id: " + templateId);
     }
     return template;
   }
 
   private static Response getTemplate(RequestContext requestContext, String templateId) {
-    String certServiceBaseUrl = ProjectUtil.getConfigValue("sunbird_cert_service_base_url");
+    String certServiceBaseUrl = ProjectUtil.getConfigValue("ekstep_api_base_url");
     String templateRelativeUrl = ProjectUtil.getConfigValue("sunbird_cert_template_url");
     Response response = null;
     HttpResponse<String> httpResponse = null;
     String responseBody = null;
     try {
-      String certTempUrl = certServiceBaseUrl + templateRelativeUrl + "/" + templateId;
+      String certTempUrl = certServiceBaseUrl + templateRelativeUrl + "/" + templateId + "?fields=certType,artifactUrl,issuer,signatoryList,name,data";
       logger.info(requestContext,"CourseBatchUtil:getTemplate certTempUrl : " + certTempUrl);
       httpResponse = Unirest.get(certTempUrl).headers(getdefaultHeaders()).asString();
       logger.info(requestContext,"CourseBatchUtil:getResponse Response Status : " + httpResponse.getStatus());

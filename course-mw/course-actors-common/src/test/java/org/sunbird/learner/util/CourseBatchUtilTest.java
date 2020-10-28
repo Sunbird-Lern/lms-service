@@ -45,7 +45,7 @@ public class CourseBatchUtilTest {
   public void validateTemplateSuccessTest() throws UnirestException {
     mockResponseForTemplate(
         200,
-        "{\"result\":{\"certificate\":{\"template\":{\"identifier\":\"randomTemplateId\",\"name\":\"randomTemplate\"}}}}");
+        "{\"result\":{\"content\":{\"identifier\":\"randomTemplateId\",\"name\":\"randomTemplate\"}}}");
     Map<String, Object> certificate = CourseBatchUtil.validateTemplate(null, "randomTemplateId");
     Assert.assertNotNull(certificate);
     Assert.assertTrue(certificate.containsKey("name"));
@@ -78,7 +78,7 @@ public class CourseBatchUtilTest {
   public void validateTemplateFailureIdTest() throws UnirestException {
     mockResponseForTemplate(
         200,
-        "{\"result\":{\"certificate\":{\"template\":{\"identifier\":\"randomTemplateId\",\"name\":\"randomTemplate\"}}}}");
+        "{\"result\":{\"content\":{\"identifier\":\"randomTemplateId\",\"name\":\"randomTemplate\"}}}}");
     try {
       Map<String, Object> certificate = CourseBatchUtil.validateTemplate(null, "templateId");
     } catch (ProjectCommonException ex) {
@@ -91,7 +91,7 @@ public class CourseBatchUtilTest {
   public void validateTemplateFailureTemplateTest() throws UnirestException {
     mockResponseForTemplate(
         200,
-        "{\"result\":{\"certificate\":{\"identifier\":\"randomTemplateId\",\"name\":\"randomTemplate\"}}}");
+        "{\"result\":{\"content\":{}}}");
     try {
       Map<String, Object> certificate = CourseBatchUtil.validateTemplate(null, "randomTemplateId");
     } catch (ProjectCommonException ex) {

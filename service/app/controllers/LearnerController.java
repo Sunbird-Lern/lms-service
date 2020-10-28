@@ -73,8 +73,8 @@ public class LearnerController extends BaseController {
       HashMap<String, Object> innerMap = new HashMap<>();
       innerMap.put(JsonKey.CONTENTS, reqObj.getRequest().get(JsonKey.CONTENTS));
       innerMap.put(JsonKey.REQUESTED_BY, httpRequest.attrs().getOptional(Attrs.USER_ID).orElse(null));
-      if (StringUtils.isNotBlank(httpRequest.attrs().getOptional(Attrs.REQUEST_ID).orElse(null)))
-        innerMap.put(SunbirdKey.REQUESTED_FOR, httpRequest.attrs().getOptional(Attrs.REQUEST_ID).orElse(null));
+      if (StringUtils.isNotBlank(httpRequest.attrs().getOptional(Attrs.REQUESTED_FOR).orElse(null)))
+        innerMap.put(SunbirdKey.REQUESTED_FOR, httpRequest.attrs().getOptional(Attrs.REQUESTED_FOR).orElse(null));
       innerMap.put(JsonKey.ASSESSMENT_EVENTS, reqObj.getRequest().get(JsonKey.ASSESSMENT_EVENTS));
       innerMap.put(JsonKey.USER_ID, reqObj.getRequest().get(JsonKey.USER_ID));
       reqObj.setRequest(innerMap);

@@ -138,8 +138,10 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
 
   private void mockCourseEnrollmentActor(){
     Map<String, Object> courseMap = new HashMap<String, Object>() {{
-      put("contentType", "Course");
-      put("status", "Live");
+      put("content", new HashMap<String, Object>() {{
+        put("contentType", "Course");
+        put("status", "Live");
+      }});
     }};
     when(ContentUtil.getContent(
             Mockito.anyString())).thenReturn(courseMap);

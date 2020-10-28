@@ -18,64 +18,47 @@ import org.sunbird.common.request.{Request, RequestContext}
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao
 import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl
 import org.sunbird.learner.util.{JsonUtil, Util}
+import java.math.BigDecimal
 
 import scala.collection.JavaConverters._
 
 class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUtil) extends BaseActor {
   val ttl: Int = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("collection_summary_agg_cache_ttl"))) ProjectUtil.getConfigValue("collection_summary_agg_cache_ttl").toInt else 60
   val dataSource: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("collection_summary_agg_data_source"))) ProjectUtil.getConfigValue("collection_summary_agg_data_source") else "telemetry-events-syncts"
-  val stateLookUpQuery = "{\"type\":\"extraction\",\"dimension\":\"derived_loc_state\",\"outputName\":\"state\",\"extractionFn\":{\"type\":\"registeredLookup\",\"lookup\":\"stateLookup\",\"replaceMissingValueWith\":\"Unknown\"}}"
-  val districtLookUpQuery = "{\"type\":\"extraction\",\"dimension\":\"derived_loc_district\",\"outputName\":\"district\",\"extractionFn\":{\"type\":\"registeredLookup\",\"lookup\":\"districtLookup\",\"replaceMissingValueWith\":\"Unknown\"}}"
-  val response = new Response()
+  val stateLookUpQuery = "{\"type\":\"extraction\",\"dimension\":\"derived_loc_state\",\"outputName\":\"state\",\"extractionFn\":{\"type\":\"registeredLookup\",\"lookup\":\"stateLookup\",\"retainMissingValue\":true}}"
+  val districtLookUpQuery = "{\"type\":\"extraction\",\"dimension\":\"derived_loc_district\",\"outputName\":\"district\",\"extractionFn\":{\"type\":\"registeredLookup\",\"lookup\":\"districtLookup\",\"retainMissingValue\":true}}"
   val gson = new Gson
   var courseBatchDao: CourseBatchDao = new CourseBatchDaoImpl()
 
   override def onReceive(request: Request): Unit = {
     Util.initializeContext(request, TelemetryEnvKey.BATCH)
+    val response = new Response()
     val filters = request.getRequest.get(JsonKey.FILTERS).asInstanceOf[util.Map[String, AnyRef]]
     val groupByKeys = request.getRequest.getOrDefault(JsonKey.GROUPBY, new util.ArrayList[String]()).asInstanceOf[util.ArrayList[String]].asScala.toList
     val batchId = filters.get(JsonKey.BATCH_ID).asInstanceOf[String]
     val collectionId = filters.get(JsonKey.COLLECTION_ID).asInstanceOf[String]
-    val granularity = getDate(request.getRequestContext, request.getRequest.getOrDefault("granularity", "ALL").asInstanceOf[String], collectionId, batchId)
+    val granularity = getDate(request.getRequestContext,request.getRequest.getOrDefault("granularity", "ALL").asInstanceOf[String], collectionId, batchId)
     val key = getCacheKey(batchId = batchId, granularity, groupByKeys)
     try {
       val redisData = cacheUtil.get(key)
-      val result: String = Option(redisData).map(value => if (value.isEmpty) {
-        getResponseFromDruid(batchId = batchId, courseId = collectionId, granularity, groupByKeys = groupByKeys)
+      val result: util.Map[String, AnyRef] = if (null != redisData && !redisData.isEmpty) {
+        JsonUtil.deserialize(redisData, new util.HashMap[String, AnyRef]().getClass)
       } else {
-        value
-      }).getOrElse(getResponseFromDruid(batchId = batchId, courseId = collectionId, granularity, groupByKeys = groupByKeys))
-      import scala.collection.JavaConversions._
-      val parsedResult: AnyRef = JsonUtil.deserialize(result, classOf[AnyRef])
-      if (isArray(result) && parsedResult.asInstanceOf[util.ArrayList[util.Map[String, AnyRef]]].nonEmpty) {
-        cacheUtil.set(key, result, ttl)
-        val groupingObj = parsedResult.asInstanceOf[util.ArrayList[util.Map[String, AnyRef]]].map(x => {
-          val eventObj = x.get("event").asInstanceOf[util.Map[String, AnyRef]]
-          (eventObj.get("state"), eventObj.get("district")) -> Map("type" -> eventObj.get("edata_type"), "count" -> eventObj.get("userCount"))
-        }).groupBy(x => x._1)
-        val groupingResult = groupingObj.map(obj => {
-          val groupByMap = new util.HashMap[String, AnyRef]()
-          val valuesList = new util.ArrayList[util.HashMap[String, Any]]()
-          obj._2.map(x => {
-            val valuesMap = new util.HashMap[String, Any]()
-            valuesMap.put("type", x._2("type"))
-            valuesMap.put("count", x._2("count").asInstanceOf[Double].longValue())
-            valuesList.add(valuesMap)
-          })
-          if (groupByKeys.contains("dist")) groupByMap.put("district", obj._1._2)
-          if (groupByKeys.contains("state")) groupByMap.put("state", obj._1._1)
-          groupByMap.put("values", valuesList)
-          groupByMap
-        }).asJava
-        val metrics = groupingResult.flatMap(metrics => metrics.get("values").asInstanceOf[util.ArrayList[util.HashMap[String, AnyRef]]])
-          .groupBy(x => x.get("type").asInstanceOf[String])
-          .mapValues(_.map(_ ("count").asInstanceOf[Long]).sum.longValue()).map(value => {
-          Map("type" -> value._1, "count" -> value._2).asJava
-        }).asJava
-        response.put("metrics", metrics)
-        if (groupByKeys.nonEmpty) {
-          response.put("groupBy", groupingResult)
-        }
+        val druidResponse = getResponseFromDruid(batchId = batchId, courseId = collectionId, granularity, groupByKeys = groupByKeys)
+        val transformedResult = transform(druidResponse, groupByKeys)
+        if (!transformedResult.isEmpty) cacheUtil.set(key, JsonUtil.serialize(transformedResult), ttl)
+        transformedResult
+      }
+      response.put("metrics", result.get("metrics"))
+      response.put("collectionId", collectionId)
+      response.put("batchId", batchId)
+      if (result.get("lastUpdatedOn") != null) {
+        response.put("lastUpdatedOn", new BigDecimal(result.get("lastUpdatedOn").toString).toBigInteger()) // Converting scientific notation number bigInteger(Long)
+      } else {
+        response.put("lastUpdatedOn", System.currentTimeMillis().asInstanceOf[AnyRef]) // This scenarios won't occurre, for the safer side adding this condition
+      }
+      if (groupByKeys.nonEmpty) {
+        response.put("groupBy", result.get("groupBy"))
       }
       sender().tell(response, self)
     } catch {
@@ -84,6 +67,45 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
         throw ex
     }
   }
+
+  def transform(druidResponse: String, groupByKeys: List[String]): util.HashMap[String, AnyRef] = {
+    val transformedResult = new util.HashMap[String, AnyRef]()
+    import scala.collection.JavaConversions._
+    val parsedResult: AnyRef = JsonUtil.deserialize(druidResponse, classOf[AnyRef])
+    if (isArray(druidResponse) && parsedResult.asInstanceOf[util.ArrayList[util.Map[String, AnyRef]]].nonEmpty) {
+      val groupingObj = parsedResult.asInstanceOf[util.ArrayList[util.Map[String, AnyRef]]].map(x => {
+        val eventObj = x.get("event").asInstanceOf[util.Map[String, AnyRef]]
+        val eData_type = if (StringUtils.equalsIgnoreCase(eventObj.get("edata_type").asInstanceOf[String], "enrol") || StringUtils.equalsIgnoreCase(eventObj.get("edata_type").asInstanceOf[String], "enroled")) "enrolment" else eventObj.get("edata_type").asInstanceOf[String]
+        (eventObj.get("state"), eventObj.get("district")) -> Map("type" -> eData_type, "count" -> eventObj.get("userCount"))
+      }).groupBy(x => x._1)
+      val groupingResult = groupingObj.map(obj => {
+        val groupByMap = new util.HashMap[String, AnyRef]()
+        val valuesList = new util.ArrayList[util.HashMap[String, Any]]()
+        obj._2.map(x => {
+          val valuesMap = new util.HashMap[String, Any]()
+          valuesMap.put("type", x._2("type"))
+          valuesMap.put("count", x._2("count").asInstanceOf[Double].longValue())
+          valuesList.add(valuesMap)
+        })
+        if (groupByKeys.contains("dist")) groupByMap.put("district", obj._1._2)
+        if (groupByKeys.contains("state")) groupByMap.put("state", obj._1._1)
+        groupByMap.put("values", valuesList)
+        groupByMap
+      }).asJava
+      val metrics = groupingResult.flatMap(metrics => metrics.get("values").asInstanceOf[util.ArrayList[util.HashMap[String, AnyRef]]])
+        .groupBy(x => x.get("type").asInstanceOf[String])
+        .mapValues(_.map(_ ("count").asInstanceOf[Long]).sum.longValue()).map(value => {
+        Map("type" -> value._1, "count" -> value._2).asJava
+      }).asJava
+      transformedResult.put("metrics", metrics)
+      transformedResult.put("lastUpdatedOn", System.currentTimeMillis().asInstanceOf[AnyRef])
+      if (groupByKeys.nonEmpty) {
+        transformedResult.put("groupBy", groupingResult)
+      }
+    }
+    transformedResult
+  }
+
 
   private def getUpdatedHeaders(headers: util.Map[String, String]): util.Map[String, String] = {
     headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
@@ -125,12 +147,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
          |          {
          |            "type": "selector",
          |            "dimension": "edata_type",
-         |            "value": "complete"
-         |          },
-         |          {
-         |            "type": "selector",
-         |            "dimension": "edata_type",
-         |            "value": "enrollment"
+         |            "value": "enrol"
          |          },
          |          {
          |            "type": "selector",
@@ -183,13 +200,15 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     val port: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("druid_proxy_api_port"))) ProjectUtil.getConfigValue("druid_proxy_api_port") else "8081"
     val endPoint: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("druid_proxy_api_endpoint"))) ProjectUtil.getConfigValue("druid_proxy_api_endpoint") else "/druid/v2/"
     val request = Unirest.post(s"http://$host:$port$endPoint").headers(getUpdatedHeaders(new util.HashMap[String, String]())).body(druidQuery)
-    request.asString().getBody
+    val response = request.asString().getBody
+    println("=====Druid Response======" + response)
+    response
   }
 
   def getCacheKey(batchId: String, intervals: String, groupByKeys: List[String]): String = {
     val regex = "[^a-zA-Z0-9]"
     val date = intervals.split("/")
-    s"bmetircs:$batchId:${date(0).replaceAll(regex, "")}:${date(1).replaceAll(regex, "")}:${groupByKeys.mkString(" ")}"
+    s"bmetrics:$batchId:${date(0).replaceAll(regex, "")}:${date(1).replaceAll(regex, "")}:${groupByKeys.mkString(" ").replaceAll(" ", "_")}"
   }
 
   def isArray(value: String): Boolean = {
@@ -202,12 +221,12 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     // When endate is null in the table considering default date as 7
     val defaultEndDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(7))
     val nofDates = date.replaceAll("[^0-9]", "")
-    val endDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC))
+    val endDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).plusDays(1)) // Adding 1 Day extra
     val startDate: String = if (!StringUtils.equalsIgnoreCase(date, "ALL")) {
       dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(nofDates.toInt))
     } else {
       val batchEndDate = courseBatchDao.readById(courseId, batchId, requestContext).getEndDate
-      ProjectLogger.log(s"BatchId: $batchId, CourseId: $courseId, EndDate" + batchEndDate)
+      logger.debug(requestContext, s"BatchId: $batchId, CourseId: $courseId, EndDate" + batchEndDate)
       Option(batchEndDate).map(date => if (date.isEmpty) defaultEndDate else date).getOrElse(defaultEndDate)
     }
     s"$startDate/$endDate"

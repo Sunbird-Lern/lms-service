@@ -91,16 +91,31 @@ public class CourseBatchCertificateActor extends BaseActor {
   private void validateTemplateDetails(RequestContext requestContext, String templateId, Map<String, Object> template) {
    Map<String, Object> templateDetails = CourseBatchUtil.validateTemplate(requestContext, templateId);
     try {
-      template.put(JsonKey.NAME, templateDetails.get(JsonKey.NAME));
+      if((!templateDetails.containsKey(CourseJsonKey.ISSUER) || !templateDetails.containsKey(CourseJsonKey.SIGNATORY_LIST)) 
+        && (!template.containsKey(CourseJsonKey.ISSUER) || !template.containsKey(CourseJsonKey.SIGNATORY_LIST))){
+        ProjectCommonException.throwClientErrorException(
+                ResponseCode.CLIENT_ERROR, "Issuer or signatoryList is empty. Invalid template Id: " + templateId);
+      }
+      Map<String, Object> templateData = (Map<String, Object>) templateDetails.getOrDefault(JsonKey.DATA, new HashMap<>());
+      String certName = (String) templateData.getOrDefault(JsonKey.TITLE , (String)templateDetails.getOrDefault(JsonKey.NAME, ""));
+      
+      template.put(JsonKey.NAME, certName);
+      template.put(JsonKey.URL, templateDetails.getOrDefault("artifactUrl", ""));
       template.put(JsonKey.CRITERIA, mapper.writeValueAsString(template.get(JsonKey.CRITERIA)));
-      if (template.get(CourseJsonKey.ISSUER) != null) {
+      if (null != template.get(CourseJsonKey.ISSUER)) {
         template.put(
             CourseJsonKey.ISSUER, mapper.writeValueAsString(template.get(CourseJsonKey.ISSUER)));
+      } else {
+        template.put(
+                CourseJsonKey.ISSUER, mapper.writeValueAsString(templateDetails.get(CourseJsonKey.ISSUER)));
       }
-      if (template.get(CourseJsonKey.SIGNATORY_LIST) != null) {
+      if (null != template.get(CourseJsonKey.SIGNATORY_LIST)) {
         template.put(
             CourseJsonKey.SIGNATORY_LIST,
             mapper.writeValueAsString(template.get(CourseJsonKey.SIGNATORY_LIST)));
+      } else {
+        template.put(
+                CourseJsonKey.ISSUER, mapper.writeValueAsString(templateDetails.get(CourseJsonKey.SIGNATORY_LIST)));
       }
       if (MapUtils.isNotEmpty((Map<String,Object>)template.get(CourseJsonKey.NOTIFY_TEMPLATE))) {
         template.put(

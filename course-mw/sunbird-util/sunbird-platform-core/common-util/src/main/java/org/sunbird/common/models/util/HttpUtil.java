@@ -828,9 +828,6 @@ public class HttpUtil {
     return new HashMap<String, String>() {
       {
         put("Content-Type", "application/json");
-        put(
-            JsonKey.X_AUTHENTICATED_USER_TOKEN,
-            KeycloakRequiredActionLinkUtil.getAdminAccessToken());
         if (MapUtils.isNotEmpty(input)) putAll(input);
       }
     };

@@ -45,7 +45,7 @@ public class SearchHandlerActor extends BaseActor {
   private String topn = PropertiesCache.getInstance().getProperty(JsonKey.SEARCH_TOP_N);
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private static final String CREATED_BY = "createdBy";
-
+  
   @SuppressWarnings({"unchecked", "rawtypes"})
   @Override
   public void onReceive(Request request) throws Throwable {

@@ -90,7 +90,7 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
     PowerMockito.doNothing()
             .when(KafkaClient.class, "send", Mockito.anyString(), Mockito.anyString());
     String orgId = ((List<String>) courseBatch.get(JsonKey.COURSE_CREATED_FOR)).get(0);
-    when(group.getUserOrgMockerService().getUsersByIds(Mockito.anyList()))
+    when(group.getUserOrgMockerService().getUsersByIds(Mockito.anyList(), Mockito.anyString()))
         .then(
             new Answer<List<Map<String, Object>>>() {
               @Override
@@ -100,7 +100,7 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
                 return CustomObjectBuilder.getRandomUsersWithIds(userList, orgId).get();
               }
             });
-    when(group.getUserOrgMockerService().getUserById(Mockito.anyString()))
+    when(group.getUserOrgMockerService().getUserById(Mockito.anyString(), Mockito.anyString()))
         .then(
             new Answer<Map<String, Object>>() {
 

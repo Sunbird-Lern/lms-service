@@ -1032,6 +1032,7 @@ public final class JsonKey {
   public static final String COLLECTION_ID = "collectionId";
   public static final String TRACKABLE_ENABLED = "trackable.enabled";
   public static final String GROUPBY = "groupBy";
+  public static final String X_AUTH_TOKEN = "X_AUTH_TOKEN";
 
   private JsonKey() {}
 }

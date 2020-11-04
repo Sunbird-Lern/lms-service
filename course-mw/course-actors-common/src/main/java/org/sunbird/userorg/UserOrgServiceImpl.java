@@ -159,12 +159,12 @@ public class UserOrgServiceImpl implements UserOrgService {
   }
 
   @Override
-  public Map<String, Object> getUserById(String id) {
+  public Map<String, Object> getUserById(String id, String authToken) {
     Map<String, Object> filterlist = new HashMap<>();
     filterlist.put(ID, id);
     Map<String, Object> requestMap = getRequestMap(filterlist);
     Map<String, String> headers = getdefaultHeaders();
-    headers.put(X_AUTHENTICATED_USER_TOKEN, getAuthenticatedUserToken());
+    headers.put(X_AUTHENTICATED_USER_TOKEN, getAuthenticatedUserToken(authToken));
     String relativeUrl = getConfigValue(SUNBIRD_GET_SINGLE_USER_API) + FORWARD_SLASH + id;
     Response response = getUserOrgResponse(relativeUrl, HttpMethod.GET, requestMap, headers);
     if (response != null) {
@@ -174,17 +174,17 @@ public class UserOrgServiceImpl implements UserOrgService {
   }
 
   @Override
-  public List<Map<String, Object>> getUsersByIds(List<String> ids) {
+  public List<Map<String, Object>> getUsersByIds(List<String> ids, String authToken) {
     Map<String, Object> filterlist = new HashMap<>();
     filterlist.put(ID, ids);
     Map<String, Object> requestMap = getRequestMap(filterlist);
-    return getUsersResponse(requestMap);
+    return getUsersResponse(requestMap, authToken);
   }
 
   @Override
-  public void sendEmailNotification(Map<String, Object> request) {
+  public void sendEmailNotification(Map<String, Object> request, String authToken) {
     Map<String, String> headers = getdefaultHeaders();
-    headers.put(X_AUTHENTICATED_USER_TOKEN, getAuthenticatedUserToken());
+    headers.put(X_AUTHENTICATED_USER_TOKEN, getAuthenticatedUserToken(authToken));
     Response response =
         getUserOrgResponse(
             getConfigValue(SUNBIRD_SEND_EMAIL_NOTIFICATION_API), HttpMethod.POST, request, headers);
@@ -195,15 +195,15 @@ public class UserOrgServiceImpl implements UserOrgService {
   }
 
   @Override
-  public List<Map<String, Object>> getUsers(Map<String, Object> request) {
+  public List<Map<String, Object>> getUsers(Map<String, Object> request, String authToken) {
     Map<String, Object> requestMap = new HashMap<>();
     requestMap.put(JsonKey.REQUEST, request);
-    return getUsersResponse(requestMap);
+    return getUsersResponse(requestMap, authToken);
   }
 
-  private List<Map<String, Object>> getUsersResponse(Map<String, Object> requestMap) {
+  private List<Map<String, Object>> getUsersResponse(Map<String, Object> requestMap, String authToken) {
     Map<String, String> headers = getdefaultHeaders();
-    headers.put(X_AUTHENTICATED_USER_TOKEN, getAuthenticatedUserToken());
+    headers.put(X_AUTHENTICATED_USER_TOKEN, getAuthenticatedUserToken(authToken));
     Response response =
         getUserOrgResponse(
             getConfigValue(SUNBIRD_GET_MULTIPLE_USER_API), HttpMethod.POST, requestMap, headers);
@@ -216,13 +216,16 @@ public class UserOrgServiceImpl implements UserOrgService {
     return null;
   }
 
-  private String getAuthenticatedUserToken() {
-    String accessToken = "";
+  private String getAuthenticatedUserToken(String authToken) {
     try {
-      accessToken = KeycloakRequiredActionLinkUtil.getAdminAccessToken();
+      if(StringUtils.isBlank(authToken)) {
+        return KeycloakRequiredActionLinkUtil.getAdminAccessToken();  
+      } else {
+          return authToken;
+      }
     } catch (Exception e) {
       logger.error(null, e.getMessage(), e);
     }
-    return accessToken;
+    return "";
   }
 }

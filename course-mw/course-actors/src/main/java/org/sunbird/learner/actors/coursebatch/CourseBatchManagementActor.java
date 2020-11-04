@@ -36,7 +36,6 @@ import org.sunbird.learner.constants.InstructionEvent;
 import org.sunbird.learner.util.ContentUtil;
 import org.sunbird.learner.util.CourseBatchSchedulerUtil;
 import org.sunbird.learner.util.CourseBatchUtil;
-import org.sunbird.learner.util.JsonUtil;
 import org.sunbird.learner.util.Util;
 import org.sunbird.models.course.batch.CourseBatch;
 import org.sunbird.telemetry.util.TelemetryUtil;
@@ -118,7 +117,7 @@ public class CourseBatchManagementActor extends BaseActor {
     if(StringUtils.isBlank(courseBatch.getCreatedBy()))
     	courseBatch.setCreatedBy(requestedBy);
     validateContentOrg(actorMessage.getRequestContext(), courseBatch.getCreatedFor());
-    validateMentors(courseBatch);
+    validateMentors(courseBatch, (String) actorMessage.getContext().getOrDefault(JsonKey.X_AUTH_TOKEN, ""));
     courseBatch.setBatchId(courseBatchId);
     Response result = courseBatchDao.create(actorMessage.getRequestContext(), courseBatch);
     result.put(JsonKey.BATCH_ID, courseBatchId);
@@ -142,7 +141,7 @@ public class CourseBatchManagementActor extends BaseActor {
       //Generate Instruction event. Send courseId for batch
       pushInstructionEvent(actorMessage.getRequestContext(), courseId,courseBatchId);
     if (courseNotificationActive()) {
-      batchOperationNotifier(actorMessage.getRequestContext(), courseBatch, null);
+      batchOperationNotifier(actorMessage, courseBatch, null);
     }
   }
 
@@ -152,10 +151,10 @@ public class CourseBatchManagementActor extends BaseActor {
             .getProperty(JsonKey.SUNBIRD_COURSE_BATCH_NOTIFICATIONS_ENABLED));
   }
 
-  private void batchOperationNotifier(
-          RequestContext requestContext, CourseBatch courseBatch, Map<String, Object> participantMentorMap) {
-    logger.debug(requestContext, "CourseBatchManagementActor: batchoperationNotifier called");
-    Request batchNotification = new Request(requestContext);
+  private void batchOperationNotifier(Request actorMessage, CourseBatch courseBatch, Map<String, Object> participantMentorMap) {
+    logger.debug(actorMessage.getRequestContext(), "CourseBatchManagementActor: batchoperationNotifier called");
+    Request batchNotification = new Request(actorMessage.getRequestContext());
+    batchNotification.getContext().putAll(actorMessage.getContext());
     batchNotification.setOperation(ActorOperations.COURSE_BATCH_NOTIFICATION.getValue());
     Map<String, Object> batchNotificationMap = new HashMap<>();
     if (participantMentorMap != null) {
@@ -204,7 +203,7 @@ public class CourseBatchManagementActor extends BaseActor {
     checkBatchStatus(courseBatch);
     validateUserPermission(courseBatch, requestedBy);
     validateContentOrg(actorMessage.getRequestContext(), courseBatch.getCreatedFor());
-    validateMentors(courseBatch);
+    validateMentors(courseBatch, (String) actorMessage.getContext().getOrDefault(JsonKey.X_AUTH_TOKEN, ""));
     participantsMap = getMentorLists(participantsMap, oldBatch, courseBatch);
     Map<String, Object> courseBatchMap = new ObjectMapper().convertValue(courseBatch, Map.class);
     Response result =
@@ -223,7 +222,7 @@ public class CourseBatchManagementActor extends BaseActor {
     TelemetryUtil.telemetryProcessingCall(courseBatchMap, targetObject, correlatedObject, actorMessage.getContext());
     pushInstructionEvent(actorMessage.getRequestContext(), (String) request.get(JsonKey.COURSE_ID),batchId);
     if (courseNotificationActive()) {
-      batchOperationNotifier(actorMessage.getRequestContext(), courseBatch, participantsMap);
+      batchOperationNotifier(actorMessage, courseBatch, participantsMap);
     }
   }
 
@@ -304,7 +303,7 @@ public class CourseBatchManagementActor extends BaseActor {
     TelemetryUtil.generateCorrelatedObject(batchId, TelemetryEnvKey.BATCH, null, correlatedObject);
     Map<String, Object> courseBatchObject = getValidatedCourseBatch(actorMessage.getRequestContext(), batchId);
     String batchCreator = (String) courseBatchObject.get(JsonKey.CREATED_BY);
-    String batchCreatorRootOrgId = getRootOrg(batchCreator);
+    String batchCreatorRootOrgId = getRootOrg(batchCreator, (String) actorMessage.getContext().getOrDefault(JsonKey.X_AUTH_TOKEN, ""));
     List<String> participants =
         userCoursesService.getEnrolledUserFromBatch(
                 actorMessage.getRequestContext(), (String) courseBatchObject.get(JsonKey.BATCH_ID));
@@ -313,7 +312,7 @@ public class CourseBatchManagementActor extends BaseActor {
     if (participants == null) {
       participants = new ArrayList<>();
     }
-    Map<String, String> participantWithRootOrgIds = getRootOrgForMultipleUsers(userIds);
+    Map<String, String> participantWithRootOrgIds = getRootOrgForMultipleUsers(userIds, (String) actorMessage.getContext().getOrDefault(JsonKey.X_AUTH_TOKEN, ""));
     List<String> addedParticipants = new ArrayList<>();
     for (String userId : userIds) {
       if (!(participants.contains(userId))) {
@@ -349,7 +348,7 @@ public class CourseBatchManagementActor extends BaseActor {
     if (courseNotificationActive()) {
       Map<String, Object> participantMentorMap = new HashMap<>();
       participantMentorMap.put(JsonKey.ADDED_PARTICIPANTS, addedParticipants);
-      batchOperationNotifier(actorMessage.getRequestContext(), courseBatch, participantMentorMap);
+      batchOperationNotifier(actorMessage, courseBatch, participantMentorMap);
     }
   }
 
@@ -402,7 +401,7 @@ public class CourseBatchManagementActor extends BaseActor {
     if (courseNotificationActive()) {
       Map<String, Object> participantMentorMap = new HashMap<>();
       participantMentorMap.put(JsonKey.REMOVED_PARTICIPANTS, removedParticipants);
-      batchOperationNotifier(actorMessage.getRequestContext(), courseBatch, participantMentorMap);
+      batchOperationNotifier(actorMessage, courseBatch, participantMentorMap);
     }
   }
 
@@ -507,11 +506,11 @@ public class CourseBatchManagementActor extends BaseActor {
     return ProgressStatus.NOT_STARTED.getValue();
   }
 
-  private void validateMentors(CourseBatch courseBatch) {
+  private void validateMentors(CourseBatch courseBatch, String authToken) {
     List<String> mentors = courseBatch.getMentors();
     if (CollectionUtils.isNotEmpty(mentors)) {
-      String batchCreatorRootOrgId = getRootOrg(courseBatch.getCreatedBy());
-      List<Map<String, Object>> mentorDetailList = userOrgService.getUsersByIds(mentors);
+      String batchCreatorRootOrgId = getRootOrg(courseBatch.getCreatedBy(), authToken);
+      List<Map<String, Object>> mentorDetailList = userOrgService.getUsersByIds(mentors, authToken);
       Map<String, Map<String, Object>> mentorDetails =
           mentorDetailList
               .stream()
@@ -606,9 +605,9 @@ public class CourseBatchManagementActor extends BaseActor {
   }
 
   @SuppressWarnings("unchecked")
-  private Map<String, String> getRootOrgForMultipleUsers(List<String> userIds) {
+  private Map<String, String> getRootOrgForMultipleUsers(List<String> userIds, String authToken) {
 
-    List<Map<String, Object>> userlist = userOrgService.getUsersByIds(userIds);
+    List<Map<String, Object>> userlist = userOrgService.getUsersByIds(userIds, authToken);
     Map<String, String> userWithRootOrgs = new HashMap<>();
     if (CollectionUtils.isNotEmpty(userlist)) {
       userlist.forEach(
@@ -620,9 +619,9 @@ public class CourseBatchManagementActor extends BaseActor {
     return userWithRootOrgs;
   }
 
-  private String getRootOrg(String batchCreator) {
+  private String getRootOrg(String batchCreator, String authToken) {
 
-    Map<String, Object> userInfo = userOrgService.getUserById(batchCreator);
+    Map<String, Object> userInfo = userOrgService.getUserById(batchCreator, authToken);
     return getRootOrgFromUserMap(userInfo);
   }
 

@@ -148,7 +148,7 @@ public class TextbookTocActor extends BaseActor {
         "Timed:TextbookTocActor:upload duration for get hirearchy data: "
             + (Instant.now().toEpochMilli() - startTime.toEpochMilli()));
     validateTopics(topics, (String) hierarchy.get(JsonKey.FRAMEWORK));
-    validateDialCodesWithReservedDialCodes(dialCodes, hierarchy);
+    validateDialCodesWithReservedDialCodes(dialCodes, hierarchy, (String) request.getContext().getOrDefault(JsonKey.X_AUTH_TOKEN, ""));
     checkDialCodeUniquenessInTextBookHierarchy(reqDialCodeIdentifierMap, hierarchy);
     request.getRequest().put(JsonKey.DATA, resultMap);
     String mode = ((Map<String, Object>) request.get(JsonKey.DATA)).get(JsonKey.MODE).toString();
@@ -445,11 +445,11 @@ public class TextbookTocActor extends BaseActor {
   }
 
   private void validateDialCodesWithReservedDialCodes(
-      Set<String> dialCodes, Map<String, Object> textbookData) {
+      Set<String> dialCodes, Map<String, Object> textbookData, String authToken) {
     String channel = (String) textbookData.get(JsonKey.CHANNEL);
     if (CollectionUtils.isNotEmpty(dialCodes)) {
       Set<String> invalidDialCodes = new HashSet<>();
-      List<String> searchedDialcodes = callDialcodeSearchApi(dialCodes, channel);
+      List<String> searchedDialcodes = callDialcodeSearchApi(dialCodes, channel, authToken);
       if (CollectionUtils.isNotEmpty(searchedDialcodes)) {
         dialCodes.forEach(
             dialCode -> {
@@ -466,7 +466,7 @@ public class TextbookTocActor extends BaseActor {
     }
   }
 
-  private List<String> callDialcodeSearchApi(Set<String> dialCodes, String channel) {
+  private List<String> callDialcodeSearchApi(Set<String> dialCodes, String channel, String authToken) {
     Map<String, Object> requestMap = new HashMap<>();
     Map<String, Object> request = new HashMap<>();
     requestMap.put(JsonKey.REQUEST, request);
@@ -486,8 +486,7 @@ public class TextbookTocActor extends BaseActor {
       headers.putAll(getDefaultHeaders());
       headers.put("X-Channel-Id", channel);
       headers.put(
-          "x-authenticated-user-token",
-              KeycloakRequiredActionLinkUtil.getAdminAccessToken());
+          "x-authenticated-user-token", authToken);
       String reqBody = mapper.writeValueAsString(requestMap);
       logger.info(null, 
           "Sized :TextBookTocUtil:callDialcodeSearchApi: size of request "

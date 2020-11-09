@@ -134,12 +134,14 @@ public class CourseBatchUtil {
   private static String readTemplate(RequestContext requestContext, String templateId) throws Exception {
     String templateRelativeUrl = ProjectUtil.getConfigValue("sunbird_cert_template_url");
     String certTemplateReadUrl = ProjectUtil.getConfigValue("sunbird_cert_template_read_url");
+    String contentServiceBaseUrl = ProjectUtil.getConfigValue("ekstep_api_base_url");
+    String certServiceBaseUrl = ProjectUtil.getConfigValue("sunbird_cert_service_base_url");
     HttpResponse<String> httpResponse = null;
-    httpResponse = templateReadResponse(requestContext, templateRelativeUrl, templateId);
+    httpResponse = templateReadResponse(requestContext, contentServiceBaseUrl, templateRelativeUrl, templateId);
 
     if (httpResponse.getStatus() == 404) {
       //asset read is not found then read from the cert/v1/read api
-      httpResponse = templateReadResponse(requestContext, certTemplateReadUrl, templateId);
+      httpResponse = templateReadResponse(requestContext, certServiceBaseUrl, certTemplateReadUrl, templateId);
       if (httpResponse.getStatus() == 404)
         throwClientErrorException(
                 ResponseCode.RESOURCE_NOT_FOUND, "Given cert template not found: " + templateId);
@@ -151,17 +153,16 @@ public class CourseBatchUtil {
     return httpResponse.getBody();
   }
 
-  private static HttpResponse<String> templateReadResponse(RequestContext requestContext, String templateRelativeUrl, String templateId) throws Exception {
-    String certTempUrl = getTemplateUrl(requestContext, templateRelativeUrl, templateId);
+  private static HttpResponse<String> templateReadResponse(RequestContext requestContext, String baseUrl, String templateRelativeUrl, String templateId) throws Exception {
+    String certTempUrl = getTemplateUrl(requestContext, baseUrl, templateRelativeUrl, templateId);
     HttpResponse<String> httpResponse = null;
     httpResponse = Unirest.get(certTempUrl).headers(getdefaultHeaders()).asString();
     logger.info(requestContext, "CourseBatchUtil:getResponse Response Status : " + httpResponse.getStatus());
     return httpResponse;
   }
 
-  private static String getTemplateUrl(RequestContext requestContext, String templateRelativeUrl, String templateId) {
-    String certServiceBaseUrl = ProjectUtil.getConfigValue("ekstep_api_base_url");
-    String certTempUrl = certServiceBaseUrl + templateRelativeUrl + "/" + templateId + "?fields=certType,artifactUrl,issuer,signatoryList,name,data";
+  private static String getTemplateUrl(RequestContext requestContext, String baseUrl, String templateRelativeUrl, String templateId) {
+    String certTempUrl = baseUrl + templateRelativeUrl + "/" + templateId + "?fields=certType,artifactUrl,issuer,signatoryList,name,data";
     logger.info(requestContext, "CourseBatchUtil:getTemplate certTempUrl : " + certTempUrl);
     return certTempUrl;
   }

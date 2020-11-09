@@ -70,6 +70,10 @@ public class CourseBatchUtil {
 
   public static Map<String, Object> validateTemplate(RequestContext requestContext, String templateId) {
     Response templateResponse = getTemplate(requestContext, templateId);
+    logger.info(requestContext, "CourseBatchUtil:validateTemplate CONTENT : " + templateResponse.getResult().containsKey(JsonKey.CONTENT));
+    logger.info(requestContext, "CourseBatchUtil:validateTemplate CERTIFICATE : " + templateResponse.getResult().containsKey(JsonKey.CERTIFICATE));
+    logger.info(requestContext, "CourseBatchUtil:validateTemplate template : " + (Map<String, Object>) ((Map<String, Object>) templateResponse.getResult().getOrDefault(CourseJsonKey.CERTIFICATE, new HashMap<>())).getOrDefault(JsonKey.TEMPLATE, new HashMap<>()));
+
     if (templateResponse == null
         || MapUtils.isEmpty(templateResponse.getResult())
         || !(templateResponse.getResult().containsKey(JsonKey.CONTENT) || templateResponse.getResult().containsKey(JsonKey.CERTIFICATE))) {

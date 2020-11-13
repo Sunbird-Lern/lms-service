@@ -72,12 +72,15 @@ public class CourseBatchUtil {
     Response templateResponse = getTemplate(requestContext, templateId);
     if (templateResponse == null
         || MapUtils.isEmpty(templateResponse.getResult())
-        || !templateResponse.getResult().containsKey(JsonKey.CONTENT)) {
+        || !(templateResponse.getResult().containsKey(JsonKey.CONTENT) || templateResponse.getResult().containsKey("certificate"))) {
       ProjectCommonException.throwClientErrorException(
           ResponseCode.CLIENT_ERROR, "Invalid template Id: " + templateId);
     }
     Map<String, Object> template =
-            ((Map<String, Object>) templateResponse.getResult().getOrDefault(JsonKey.CONTENT, new HashMap<>()));
+            templateResponse.getResult().containsKey(JsonKey.CONTENT) ?
+                    (Map<String, Object>) templateResponse.getResult().getOrDefault(JsonKey.CONTENT, new HashMap<>()) :
+                    (Map<String, Object>) ((Map<String, Object>) templateResponse.getResult().getOrDefault("certificate", new HashMap<>())).getOrDefault(JsonKey.TEMPLATE, new HashMap<>());
+
     if (MapUtils.isEmpty(template) || !templateId.equals(template.get(JsonKey.IDENTIFIER))) {
       ProjectCommonException.throwClientErrorException(
               ResponseCode.CLIENT_ERROR, "Invalid template Id: " + templateId);
@@ -86,26 +89,10 @@ public class CourseBatchUtil {
   }
 
   private static Response getTemplate(RequestContext requestContext, String templateId) {
-    String certServiceBaseUrl = ProjectUtil.getConfigValue("ekstep_api_base_url");
-    String templateRelativeUrl = ProjectUtil.getConfigValue("sunbird_cert_template_url");
     Response response = null;
-    HttpResponse<String> httpResponse = null;
     String responseBody = null;
     try {
-      String certTempUrl = certServiceBaseUrl + templateRelativeUrl + "/" + templateId + "?fields=certType,artifactUrl,issuer,signatoryList,name,data";
-      logger.info(requestContext,"CourseBatchUtil:getTemplate certTempUrl : " + certTempUrl);
-      httpResponse = Unirest.get(certTempUrl).headers(getdefaultHeaders()).asString();
-      logger.info(requestContext,"CourseBatchUtil:getResponse Response Status : " + httpResponse.getStatus());
-
-      if (httpResponse.getStatus() == 404)
-        throwClientErrorException(
-            ResponseCode.RESOURCE_NOT_FOUND, "Given cert template not found: " + templateId);
-
-      if (StringUtils.isBlank(httpResponse.getBody())) {
-        throwServerErrorException(
-            ResponseCode.SERVER_ERROR, errorProcessingRequest.getErrorMessage());
-      }
-      responseBody = httpResponse.getBody();
+      responseBody = readTemplate(requestContext, templateId);
       response = mapper.readValue(responseBody, Response.class);
       if (!ResponseCode.OK.equals(response.getResponseCode())) {
         throw new ProjectCommonException(
@@ -142,5 +129,41 @@ public class CourseBatchUtil {
     headers.put(AUTHORIZATION, BEARER + getConfigValue(SUNBIRD_AUTHORIZATION));
     headers.put("Content-Type", "application/json");
     return headers;
+  }
+
+  private static String readTemplate(RequestContext requestContext, String templateId) throws Exception {
+    String templateRelativeUrl = ProjectUtil.getConfigValue("sunbird_cert_template_url");
+    String certTemplateReadUrl = ProjectUtil.getConfigValue("sunbird_cert_template_read_url");
+    String contentServiceBaseUrl = ProjectUtil.getConfigValue("ekstep_api_base_url");
+    String certServiceBaseUrl = ProjectUtil.getConfigValue("sunbird_cert_service_base_url");
+    HttpResponse<String> httpResponse = null;
+    httpResponse = templateReadResponse(requestContext, contentServiceBaseUrl, templateRelativeUrl, templateId);
+
+    if (httpResponse.getStatus() == 404) {
+      //asset read is not found then read from the cert/v1/read api
+      httpResponse = templateReadResponse(requestContext, certServiceBaseUrl, certTemplateReadUrl, templateId);
+      if (httpResponse.getStatus() == 404)
+        throwClientErrorException(
+                ResponseCode.RESOURCE_NOT_FOUND, "Given cert template not found: " + templateId);
+    }
+    if (StringUtils.isBlank(httpResponse.getBody())) {
+      throwServerErrorException(
+              ResponseCode.SERVER_ERROR, errorProcessingRequest.getErrorMessage());
+    }
+    return httpResponse.getBody();
+  }
+
+  private static HttpResponse<String> templateReadResponse(RequestContext requestContext, String baseUrl, String templateRelativeUrl, String templateId) throws Exception {
+    String certTempUrl = getTemplateUrl(requestContext, baseUrl, templateRelativeUrl, templateId);
+    HttpResponse<String> httpResponse = null;
+    httpResponse = Unirest.get(certTempUrl).headers(getdefaultHeaders()).asString();
+    logger.info(requestContext, "CourseBatchUtil:getResponse Response Status : " + httpResponse.getStatus());
+    return httpResponse;
+  }
+
+  private static String getTemplateUrl(RequestContext requestContext, String baseUrl, String templateRelativeUrl, String templateId) {
+    String certTempUrl = baseUrl + templateRelativeUrl + "/" + templateId + "?fields=certType,artifactUrl,issuer,signatoryList,name,data";
+    logger.info(requestContext, "CourseBatchUtil:getTemplate certTempUrl : " + certTempUrl);
+    return certTempUrl;
   }
 }

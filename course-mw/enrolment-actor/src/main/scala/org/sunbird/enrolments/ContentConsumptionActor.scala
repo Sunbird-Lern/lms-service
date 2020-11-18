@@ -327,18 +327,17 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                     put("contentid", contentIds)
             }
         }
-        val fieldsToGet = new java.util.ArrayList[String]()
-        fieldsToGet.addAll(new util.ArrayList[String]() {
-            {
-                add("attempt_id")
-                add("last_attempted_on")
-                add("total_max_score")
-                add("total_score")
-            }
-        })
+        val fieldsToGet = new java.util.ArrayList[String](){{
+            add("attempt_id")
+            add("last_attempted_on")
+            add("total_max_score")
+            add("total_score")
+        }}
         val limit = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("assessment.attempts.limit")))
             (ProjectUtil.getConfigValue("assessment.attempts.limit")).asInstanceOf[Integer] else 25.asInstanceOf[Integer]
         logger.info(requestContext, "getScore :: limit : " + limit)
+        logger.info(requestContext, "getScore :: filters : " + filters)
+        logger.info(requestContext, "getScore :: fieldsToGet : " + fieldsToGet)
         val response = cassandraOperation.getRecordsWithLimit(requestContext, assessmentAggregatorDBInfo.getKeySpace, assessmentAggregatorDBInfo.getTableName, filters, fieldsToGet, limit)
         response.getResult.getOrDefault(JsonKey.RESPONSE, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
     }

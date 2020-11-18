@@ -67,6 +67,8 @@ public final class Util {
         getDbInfoObject(DIALCODE_KEY_SPACE_NAME, "dialcode_images"));
     dbInfoMap.put(
             JsonKey.GROUP_ACTIVITY_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "user_activity_agg"));
+    dbInfoMap.put(
+            JsonKey.ASSESSMENT_AGGREGATOR_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "assessment_aggregator"));
   }
 
   /**

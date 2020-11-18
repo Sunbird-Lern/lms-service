@@ -177,6 +177,7 @@ public class CassandraDACImpl extends CassandraOperationImpl {
       } else {
         select = QueryBuilder.select().all().from(keySpace, table);
       }
+
       if (MapUtils.isNotEmpty(filters)) {
         Select.Where where = select.where();
         for (Map.Entry<String, Object> filter : filters.entrySet()) {
@@ -191,11 +192,8 @@ public class CassandraDACImpl extends CassandraOperationImpl {
       select.limit(limit);
       ResultSet results = null;
       logger.debug(requestContext, select.getQueryString());
-      logger.info(requestContext, "query to get assessmentList : " + select.getQueryString());
       results = session.execute(select);
-      logger.info(requestContext, "assessmentList db results : " + results);
       response = CassandraUtil.createResponse(results);
-      logger.info(requestContext, "assessmentList response : " + response);
     } catch (Exception e) {
       ProjectLogger.log(Constants.EXCEPTION_MSG_FETCH + table + " : " + e.getMessage(), e);
       throw new ProjectCommonException(

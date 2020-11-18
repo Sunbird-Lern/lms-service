@@ -320,11 +320,11 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     def getScore(userId: String, courseId: String, contentIds: java.util.List[String], batchId: String, requestContext: RequestContext): util.List[util.Map[String, AnyRef]] = {
         val filters = new java.util.HashMap[String, AnyRef]() {
             {
-                put("userid", userId)
-                put("courseid", courseId)
-                put("batchid", batchId)
+                put("user_id", userId)
+                put("course_id", courseId)
+                put("batch_id", batchId)
                 if (CollectionUtils.isNotEmpty(contentIds))
-                    put("contentid", contentIds)
+                    put("content_id", contentIds)
             }
         }
         val fieldsToGet = new java.util.ArrayList[String](){{

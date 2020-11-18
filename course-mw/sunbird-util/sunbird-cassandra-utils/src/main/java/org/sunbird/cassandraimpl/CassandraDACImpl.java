@@ -172,14 +172,11 @@ public class CassandraDACImpl extends CassandraOperationImpl {
     Session session = connectionManager.getSession(keySpace);
     try {
       Select select;
-      logger.info(requestContext, "getRecordsWithLimit called");
       if (CollectionUtils.isNotEmpty(fields)) {
         select = QueryBuilder.select(fields.toArray()).from(keySpace, table);
       } else {
         select = QueryBuilder.select().all().from(keySpace, table);
       }
-      logger.info(requestContext, "select : " + select);
-
       if (MapUtils.isNotEmpty(filters)) {
         Select.Where where = select.where();
         for (Map.Entry<String, Object> filter : filters.entrySet()) {
@@ -191,9 +188,7 @@ public class CassandraDACImpl extends CassandraOperationImpl {
           }
         }
       }
-      logger.info(requestContext, "select before limit : " + select);
       select.limit(limit);
-      logger.info(requestContext, "select after limit : " + select);
       ResultSet results = null;
       logger.debug(requestContext, select.getQueryString());
       logger.info(requestContext, "query to get assessmentList : " + select.getQueryString());

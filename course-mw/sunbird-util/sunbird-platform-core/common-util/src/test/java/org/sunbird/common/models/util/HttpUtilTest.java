@@ -104,8 +104,6 @@ public class HttpUtilTest extends BaseHttpTest {
 
   @Test
   public void testGetHeaderWithInput() throws Exception {
-    PowerMockito.mockStatic(KeycloakRequiredActionLinkUtil.class);
-    when(KeycloakRequiredActionLinkUtil.getAdminAccessToken()).thenReturn("testAuthToken");
     Map<String, String> input = new HashMap<String, String>(){{
       put("x-channel-id", "test-channel");
       put("x-device-id", "test-device");
@@ -120,8 +118,6 @@ public class HttpUtilTest extends BaseHttpTest {
 
   @Test
   public void testGetHeaderWithoutInput() throws Exception {
-    PowerMockito.mockStatic(KeycloakRequiredActionLinkUtil.class);
-    when(KeycloakRequiredActionLinkUtil.getAdminAccessToken()).thenReturn("testAuthToken");
     Map<String, String> headers = HttpUtil.getHeader(null);
     assertTrue(!headers.isEmpty());
     assertTrue(headers.size()==1);

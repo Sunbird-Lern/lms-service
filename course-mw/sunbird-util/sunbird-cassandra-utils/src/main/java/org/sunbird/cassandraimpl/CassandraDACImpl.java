@@ -164,4 +164,43 @@ public class CassandraDACImpl extends CassandraOperationImpl {
           ResponseCode.SERVER_ERROR.getResponseCode());
     }
   }
+
+  @Override
+  public Response getRecordsWithLimit(
+          RequestContext requestContext, String keySpace, String table, Map<String, Object> filters, List<String> fields, Integer limit) {
+    Response response = new Response();
+    Session session = connectionManager.getSession(keySpace);
+    try {
+      Select select;
+      if (CollectionUtils.isNotEmpty(fields)) {
+        select = QueryBuilder.select(fields.toArray()).from(keySpace, table);
+      } else {
+        select = QueryBuilder.select().all().from(keySpace, table);
+      }
+
+      if (MapUtils.isNotEmpty(filters)) {
+        Select.Where where = select.where();
+        for (Map.Entry<String, Object> filter : filters.entrySet()) {
+          Object value = filter.getValue();
+          if (value instanceof List) {
+            where = where.and(QueryBuilder.in(filter.getKey(), ((List) filter.getValue())));
+          } else {
+            where = where.and(QueryBuilder.eq(filter.getKey(), filter.getValue()));
+          }
+        }
+      }
+      select.limit(limit);
+      ResultSet results = null;
+      logger.debug(requestContext, select.getQueryString());
+      results = session.execute(select);
+      response = CassandraUtil.createResponse(results);
+    } catch (Exception e) {
+      ProjectLogger.log(Constants.EXCEPTION_MSG_FETCH + table + " : " + e.getMessage(), e);
+      throw new ProjectCommonException(
+              ResponseCode.SERVER_ERROR.getErrorCode(),
+              ResponseCode.SERVER_ERROR.getErrorMessage(),
+              ResponseCode.SERVER_ERROR.getResponseCode());
+    }
+    return response;
+  }
 }

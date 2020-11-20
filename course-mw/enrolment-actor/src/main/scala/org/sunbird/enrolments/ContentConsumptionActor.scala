@@ -25,6 +25,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     private var cassandraOperation = ServiceFactory.getInstance
     private var pushTokafkaEnabled: Boolean = true //TODO: to be removed once all are in scala
     private val consumptionDBInfo = Util.dbInfoMap.get(JsonKey.LEARNER_CONTENT_DB)
+    private val assessmentAggregatorDBInfo = Util.dbInfoMap.get(JsonKey.ASSESSMENT_AGGREGATOR_DB)
     val dateFormatter = ProjectUtil.getDateFormatter
 
     override def onReceive(request: Request): Unit = {
@@ -291,12 +292,15 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         val batchId = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
         val courseId = request.get(JsonKey.COURSE_ID).asInstanceOf[String]
         val contentIds = request.getRequest.getOrDefault(JsonKey.CONTENT_IDS, new java.util.ArrayList[String]()).asInstanceOf[java.util.List[String]]
+        val fields = request.getRequest.getOrDefault(JsonKey.FIELDS, new java.util.ArrayList[String](){{ add(JsonKey.PROGRESS) }}).asInstanceOf[java.util.List[String]]
         val contentsConsumed = getContentsConsumption(userId, courseId, contentIds, batchId, request.getRequestContext)
         val response = new Response
         if(CollectionUtils.isNotEmpty(contentsConsumed)) {
             val filteredContents = contentsConsumed.map(m => {
                 ProjectUtil.removeUnwantedFields(m, JsonKey.DATE_TIME, JsonKey.USER_ID, JsonKey.ADDED_BY, JsonKey.LAST_UPDATED_TIME)
                 m.put(JsonKey.COLLECTION_ID, m.getOrDefault(JsonKey.COURSE_ID, ""))
+                if (fields.contains(JsonKey.ASSESSMENT_SCORE))
+                    m.putAll(mapAsJavaMap(Map(JsonKey.ASSESSMENT_SCORE -> getScore(userId, courseId, contentIds, batchId, request.getRequestContext))))
                 m
             }).asJava
             response.put(JsonKey.RESPONSE, filteredContents)
@@ -311,5 +315,27 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         pushTokafkaEnabled = kafkaEnabled
         cassandraOperation = cassandraOps
         this
+    }
+
+    def getScore(userId: String, courseId: String, contentIds: java.util.List[String], batchId: String, requestContext: RequestContext): util.List[util.Map[String, AnyRef]] = {
+        val filters = new java.util.HashMap[String, AnyRef]() {
+            {
+                put("user_id", userId)
+                put("course_id", courseId)
+                put("batch_id", batchId)
+                if (CollectionUtils.isNotEmpty(contentIds))
+                    put("content_id", contentIds)
+            }
+        }
+        val fieldsToGet = new java.util.ArrayList[String](){{
+            add("attempt_id")
+            add("last_attempted_on")
+            add("total_max_score")
+            add("total_score")
+        }}
+        val limit = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("assessment.attempts.limit")))
+            (ProjectUtil.getConfigValue("assessment.attempts.limit")).asInstanceOf[Integer] else 25.asInstanceOf[Integer]
+        val response = cassandraOperation.getRecordsWithLimit(requestContext, assessmentAggregatorDBInfo.getKeySpace, assessmentAggregatorDBInfo.getTableName, filters, fieldsToGet, limit)
+        response.getResult.getOrDefault(JsonKey.RESPONSE, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
     }
 }

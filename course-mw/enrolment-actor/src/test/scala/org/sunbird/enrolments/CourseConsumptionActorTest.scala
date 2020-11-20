@@ -170,4 +170,46 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
         request
     }
 
+    "get Consumption with fields" should "return success" in {
+        val cassandraOperation = mock[CassandraOperation]
+        val response = new Response()
+        response.put("response", new java.util.ArrayList[java.util.Map[String, AnyRef]] {{
+            add(new java.util.HashMap[String, AnyRef] {{
+                put("userId", "user1")
+                put("courseId", "do_123")
+                put("batchId", "0123")
+                put("contentId", "do_456")
+                put("score", new java.util.ArrayList[java.util.Map[String, Object]](){{
+                    add(new java.util.HashMap[String, AnyRef](){{
+                        put("totalMaxScore", 1.asInstanceOf[AnyRef])
+                        put("lastAttemptedOn", "2019-05-13 16:08:45:125+0530")
+                        put("totalScore", 1.asInstanceOf[AnyRef])
+                        put("attemptId", "do_123")
+                    }})
+                }})
+            }})
+            add(new java.util.HashMap[String, AnyRef] {{
+                put("userId", "user1")
+                put("courseId", "do_123")
+                put("batchId", "0123")
+                put("contentId", "do_789")
+            }})
+        }})
+        (cassandraOperation.getRecords(_:RequestContext, _: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.List[String])).expects(*,*,*,*,*).returns(response)
+        (cassandraOperation.getRecordsWithLimit(_: RequestContext, _: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.List[String], _: Int)).expects(*, *, *, *, *, *).returns(response).anyNumberOfTimes()
+        val result = callActor(getStateReadRequestWithFields(), Props(new ContentConsumptionActor().setCassandraOperation(cassandraOperation, false)))
+        println("result : " + result)
+        assert(null!= result)
+    }
+
+    def getStateReadRequestWithFields(): Request = {
+        val request = new Request
+        request.setOperation("getConsumption")
+        request.put("userId", "user1")
+        request.put("courseId", "do_123")
+        request.put("batchId", "0123")
+        request.put("fields", new java.util.ArrayList[String](){{ add("score")}})
+        request
+    }
+
 }

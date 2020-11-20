@@ -275,4 +275,7 @@ public interface CassandraOperation {
      * @return
      */
   public Response updateRecordV2(RequestContext requestContext, String keyspace, String table, Map<String, Object> selectMap, Map<String, Object> updateMap, boolean ifExists);
+
+  public Response getRecordsWithLimit(
+          RequestContext requestContext, String keyspace, String table, Map<String, Object> filters, List<String> fields, Integer limit);
 }

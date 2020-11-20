@@ -45,7 +45,8 @@ public class SearchHandlerActor extends BaseActor {
   private String topn = PropertiesCache.getInstance().getProperty(JsonKey.SEARCH_TOP_N);
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private static final String CREATED_BY = "createdBy";
-
+  
+  
   @SuppressWarnings({"unchecked", "rawtypes"})
   @Override
   public void onReceive(Request request) throws Throwable {
@@ -128,7 +129,7 @@ public class SearchHandlerActor extends BaseActor {
   }
 
   private Map<String, Object> getCreatorDetails(List<String> creatorIds) throws Exception {
-    String userSearchUrl = ProjectUtil.getConfigValue(JsonKey.USER_SEARCH_BASE_URL) + "/v1/user/search";
+    String userSearchUrl = ProjectUtil.getConfigValue(JsonKey.USER_SEARCH_BASE_URL) + "/private/user/v1/search";
     List<String> fields = Arrays.asList(ProjectUtil.getConfigValue(JsonKey.CREATOR_DETAILS_FIELDS).split(","));
     String reqStr = getUserSearchRequest(creatorIds, fields);
 	  List<Map<String, Object>> tempResult = makePostRequest(userSearchUrl, reqStr);

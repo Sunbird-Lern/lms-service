@@ -31,6 +31,7 @@ import static org.sunbird.common.models.util.JsonKey.SUNBIRD_GET_SINGLE_USER_API
 import static org.sunbird.common.models.util.JsonKey.SUNBIRD_USER_ORG_API_BASE_URL;
 import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
 import static org.sunbird.common.responsecode.ResponseCode.errorProcessingRequest;
+import static org.sunbird.common.responsecode.ResponseCode.resourceNotFound;
 import static org.sunbird.learner.constants.CourseJsonKey.SUNBIRD_SEND_EMAIL_NOTIFICATION_API;
 
 public class UserOrgServiceImpl implements UserOrgService {
@@ -159,12 +160,16 @@ public class UserOrgServiceImpl implements UserOrgService {
   }
 
   @Override
-  public Map<String, Object> getUserById(String id) {
+  public Map<String, Object> getUserById(String id, String authToken) {
     Map<String, Object> filterlist = new HashMap<>();
     filterlist.put(ID, id);
     Map<String, Object> requestMap = getRequestMap(filterlist);
     Map<String, String> headers = getdefaultHeaders();
-    headers.put(X_AUTHENTICATED_USER_TOKEN, getAuthenticatedUserToken());
+    if(StringUtils.isNotBlank(authToken)) {
+      headers.put(X_AUTHENTICATED_USER_TOKEN, authToken);
+    } else {
+      logger.error(null, "authToken is empty for gerUserById for ID: " + id, null);
+    }
     String relativeUrl = getConfigValue(SUNBIRD_GET_SINGLE_USER_API) + FORWARD_SLASH + id;
     Response response = getUserOrgResponse(relativeUrl, HttpMethod.GET, requestMap, headers);
     if (response != null) {
@@ -174,17 +179,21 @@ public class UserOrgServiceImpl implements UserOrgService {
   }
 
   @Override
-  public List<Map<String, Object>> getUsersByIds(List<String> ids) {
+  public List<Map<String, Object>> getUsersByIds(List<String> ids, String authToken) {
     Map<String, Object> filterlist = new HashMap<>();
     filterlist.put(ID, ids);
     Map<String, Object> requestMap = getRequestMap(filterlist);
-    return getUsersResponse(requestMap);
+    return getUsersResponse(requestMap, authToken);
   }
 
   @Override
-  public void sendEmailNotification(Map<String, Object> request) {
+  public void sendEmailNotification(Map<String, Object> request, String authToken) {
     Map<String, String> headers = getdefaultHeaders();
-    headers.put(X_AUTHENTICATED_USER_TOKEN, getAuthenticatedUserToken());
+    if(StringUtils.isNotBlank(authToken)) {
+      headers.put(X_AUTHENTICATED_USER_TOKEN, authToken);
+    } else {
+      logger.error(null, "authToken is empty for sendEmailNotification", null);
+    }
     Response response =
         getUserOrgResponse(
             getConfigValue(SUNBIRD_SEND_EMAIL_NOTIFICATION_API), HttpMethod.POST, request, headers);
@@ -195,15 +204,19 @@ public class UserOrgServiceImpl implements UserOrgService {
   }
 
   @Override
-  public List<Map<String, Object>> getUsers(Map<String, Object> request) {
+  public List<Map<String, Object>> getUsers(Map<String, Object> request, String authToken) {
     Map<String, Object> requestMap = new HashMap<>();
     requestMap.put(JsonKey.REQUEST, request);
-    return getUsersResponse(requestMap);
+    return getUsersResponse(requestMap, authToken);
   }
 
-  private List<Map<String, Object>> getUsersResponse(Map<String, Object> requestMap) {
+  private List<Map<String, Object>> getUsersResponse(Map<String, Object> requestMap, String authToken) {
     Map<String, String> headers = getdefaultHeaders();
-    headers.put(X_AUTHENTICATED_USER_TOKEN, getAuthenticatedUserToken());
+    if(StringUtils.isNotBlank(authToken)) {
+      headers.put(X_AUTHENTICATED_USER_TOKEN, authToken);
+    } else {
+      logger.error(null, "authToken is empty for getUsersResponse() for request : " + requestMap, null);
+    }
     Response response =
         getUserOrgResponse(
             getConfigValue(SUNBIRD_GET_MULTIPLE_USER_API), HttpMethod.POST, requestMap, headers);
@@ -214,15 +227,5 @@ public class UserOrgServiceImpl implements UserOrgService {
       }
     }
     return null;
-  }
-
-  private String getAuthenticatedUserToken() {
-    String accessToken = "";
-    try {
-      accessToken = KeycloakRequiredActionLinkUtil.getAdminAccessToken();
-    } catch (Exception e) {
-      logger.error(null, e.getMessage(), e);
-    }
-    return accessToken;
   }
 }

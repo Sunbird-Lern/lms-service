@@ -50,6 +50,7 @@ public class CourseBatchNotificationActor extends BaseActor {
     Map<String, Object> requestMap = request.getRequest();
 
     CourseBatch courseBatch = (CourseBatch) requestMap.get(JsonKey.COURSE_BATCH);
+    String authToken = (String) request.getContext().getOrDefault(JsonKey.X_AUTH_TOKEN, "");
 
     String userId = (String) requestMap.get(JsonKey.USER_ID);
     logger.info(request.getRequestContext(), "CourseBatchNotificationActor:courseBatchNotification: userId = " + userId);
@@ -73,7 +74,7 @@ public class CourseBatchNotificationActor extends BaseActor {
       }
 
       triggerEmailNotification( request.getRequestContext(), 
-          Arrays.asList(userId), courseBatch, subject, template, contentDetails);
+          Arrays.asList(userId), courseBatch, subject, template, contentDetails, authToken);
 
     } else {
       logger.info(request.getRequestContext(), "CourseBatchNotificationActor:courseBatchNotification: Invite only batch");
@@ -86,13 +87,13 @@ public class CourseBatchNotificationActor extends BaseActor {
           courseBatch,
           JsonKey.COURSE_INVITATION,
           JsonKey.BATCH_MENTOR_ENROL,
-          contentDetails);
+          contentDetails, authToken);
       triggerEmailNotification(
               request.getRequestContext(), removedMentors,
           courseBatch,
           JsonKey.UNENROLL_FROM_COURSE_BATCH,
           JsonKey.BATCH_MENTOR_UNENROL,
-          contentDetails);
+          contentDetails, authToken);
 
       List<String> addedParticipants = (List<String>) requestMap.get(JsonKey.ADDED_PARTICIPANTS);
       List<String> removedParticipants =
@@ -103,13 +104,13 @@ public class CourseBatchNotificationActor extends BaseActor {
           courseBatch,
           JsonKey.COURSE_INVITATION,
           JsonKey.BATCH_LEARNER_ENROL,
-          contentDetails);
+          contentDetails, authToken);
       triggerEmailNotification(
               request.getRequestContext(), removedParticipants,
           courseBatch,
           JsonKey.UNENROLL_FROM_COURSE_BATCH,
           JsonKey.BATCH_LEARNER_UNENROL,
-          contentDetails);
+          contentDetails, authToken);
     }
   }
 
@@ -118,7 +119,7 @@ public class CourseBatchNotificationActor extends BaseActor {
           CourseBatch courseBatch,
           String subject,
           String template,
-          Map<String, Object> contentDetails) {
+          Map<String, Object> contentDetails, String authToken) {
 
     logger.debug(requestContext, "CourseBatchNotificationActor:triggerEmailNotification: userIdList = "
             + userIdList);
@@ -130,7 +131,7 @@ public class CourseBatchNotificationActor extends BaseActor {
           createEmailRequest(userId, courseBatch, contentDetails, subject, template);
 
       logger.info(requestContext, "CourseBatchNotificationActor:triggerEmailNotification: requestMap = " + requestMap);
-      sendMail(requestContext, requestMap);
+      sendMail(requestContext, requestMap, authToken);
     }
   }
 
@@ -171,10 +172,10 @@ public class CourseBatchNotificationActor extends BaseActor {
     return url;
   }
 
-  private void sendMail(RequestContext requestContext, Map<String, Object> requestMap) {
+  private void sendMail(RequestContext requestContext, Map<String, Object> requestMap, String authToken) {
     logger.info(requestContext, "CourseBatchNotificationActor:sendMail: email ready");
     try {
-      userOrgService.sendEmailNotification(requestMap);
+      userOrgService.sendEmailNotification(requestMap, authToken);
       logger.info(requestContext, "CourseBatchNotificationActor:sendMail: Email sent successfully");
     } catch (Exception e) {
       logger.error(requestContext, "CourseBatchNotificationActor:sendMail: Exception occurred with error message = "

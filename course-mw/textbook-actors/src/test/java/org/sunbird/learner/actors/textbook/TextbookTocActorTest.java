@@ -80,7 +80,6 @@ public class TextbookTocActorTest {
     PowerMockito.mockStatic(KeycloakRequiredActionLinkUtil.class);
     KeyCloakServiceImpl ssoManager = PowerMockito.mock(KeyCloakServiceImpl.class);
     when(SSOServiceFactory.getInstance()).thenReturn(ssoManager);
-    when(KeycloakRequiredActionLinkUtil.getAdminAccessToken()).thenReturn("aValidAuthToken");
     system = ActorSystem.create("system");
     when(ProjectUtil.getConfigValue(JsonKey.TEXTBOOK_TOC_MAX_CSV_ROWS)).thenReturn("5");
     when(ProjectUtil.getConfigValue(JsonKey.TEXTBOOK_TOC_MANDATORY_FIELDS))

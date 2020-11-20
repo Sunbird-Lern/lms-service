@@ -109,8 +109,8 @@ public class CourseBatchUserManagementActorTest extends SunbirdApplicationActorT
             .withESMock(new ESMocker())
             .withUserOrgMock(new UserOrgMocker());
     Map<String, Object> caller = CustomObjectBuilder.getRandomUser().get();
-    when(group.getUserOrgMockerService().getUserById(Mockito.anyString())).thenReturn(caller);
-    when(group.getUserOrgMockerService().getUsersByIds(Mockito.anyList()))
+    when(group.getUserOrgMockerService().getUserById(Mockito.anyString(), Mockito.anyString())).thenReturn(caller);
+    when(group.getUserOrgMockerService().getUsersByIds(Mockito.anyList(), Mockito.anyString()))
         .then(
             new Answer<List<Map<String, Object>>>() {
 

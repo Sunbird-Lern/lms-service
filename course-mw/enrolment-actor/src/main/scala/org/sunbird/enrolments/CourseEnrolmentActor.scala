@@ -260,36 +260,11 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         TelemetryUtil.telemetryProcessingCall(request, targetedObject, correlationObject, contextMap, "enrol")
     }
 
-    /*def updateProgressData(enrolments: java.util.List[java.util.Map[String, AnyRef]], userId: String, requestContext: RequestContext): util.List[java.util.Map[String, AnyRef]] = {
-        val enrolmentMap: Map[String, java.util.Map[String, AnyRef]] = enrolments.map(enrolment => enrolment.get("courseId").asInstanceOf[String] -> enrolment).toMap
-        val response: Response = groupDao.readEntries("Course", java.util.Arrays.asList(userId), enrolmentMap.keys.toList.asJava, requestContext)
-        if (response.getResponseCode != ResponseCode.OK)
-            ProjectCommonException.throwServerErrorException(ResponseCode.erroCallGrooupAPI, MessageFormat.format(ResponseCode.erroCallGrooupAPI.getErrorMessage()))
-        val userActivityList: util.List[util.Map[String, AnyRef]] = response.getResult.getOrDefault("response", new util.ArrayList()).asInstanceOf[util.List[util.Map[String, AnyRef]]]
-        userActivityList.map(activity => {
-            val completedCount: Int = activity.getOrDefault("agg", new util.HashMap[String, AnyRef]())
-                .asInstanceOf[util.Map[String, AnyRef]].getOrDefault("completedCount", 0.asInstanceOf[AnyRef]).asInstanceOf[Int]
-            val enrolment = enrolmentMap.getOrDefault(activity.getOrDefault("activity_id", "").asInstanceOf[String], new util.HashMap[String, AnyRef]())
-            val leafNodesCount: Int = enrolment.get("leafNodesCount").asInstanceOf[Int]
-            enrolment.put("progress", completedCount.asInstanceOf[AnyRef])
-            enrolment.put("status", getCompletionStatus(completedCount, leafNodesCount).asInstanceOf[AnyRef])
-            enrolment.put("completionPercentage", getCompletionPerc(completedCount, leafNodesCount).asInstanceOf[AnyRef])
-        })
-        enrolmentMap.values.toList.asJava
-    }*/
-
     def getCompletionStatus(completedCount: Int, leafNodesCount: Int): Int = completedCount match {
         case 0 => 0
         case it if 1 until leafNodesCount contains it => 1
         case `leafNodesCount` => 2
         case _ => 2
-    }
-
-    def getCompletionPerc(completedCount: Int, leafNodesCount: Int): Int = completedCount match {
-        case 0 => 0
-        case it if 1 until leafNodesCount contains it => (completedCount * 100) / leafNodesCount
-        case `leafNodesCount` => 100
-        case _ => 100
     }
 
     def getCacheKey(userId: String) = s"$userId:user-enrolments"
@@ -314,7 +289,6 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val enrolments: java.util.List[java.util.Map[String, AnyRef]] = {
             if (CollectionUtils.isNotEmpty(activeEnrolments)) {
                 val enrolmentList: java.util.List[java.util.Map[String, AnyRef]] = addCourseDetails(activeEnrolments, request)
-                //val updatedEnrolmentList = updateProgressData(enrolmentList, userId, request.getRequestContext)
                 addBatchDetails(enrolmentList, request)
             } else new java.util.ArrayList[java.util.Map[String, AnyRef]]()
         }

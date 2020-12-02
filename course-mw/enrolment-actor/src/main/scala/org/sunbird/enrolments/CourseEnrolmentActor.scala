@@ -267,6 +267,13 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         case _ => 2
     }
 
+    def getCompletionPerc(completedCount: Int, leafNodesCount: Int): Int = completedCount match {
+        case 0 => 0
+        case it if 1 until leafNodesCount contains it => (completedCount * 100) / leafNodesCount
+        case `leafNodesCount` => 100
+        case _ => 100
+    }
+
     def getCacheKey(userId: String) = s"$userId:user-enrolments"
 
     def getCachedEnrolmentList(userId: String, handleEmptyCache: () => Response): Response = {
@@ -289,7 +296,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val enrolments: java.util.List[java.util.Map[String, AnyRef]] = {
             if (CollectionUtils.isNotEmpty(activeEnrolments)) {
                 val enrolmentList: java.util.List[java.util.Map[String, AnyRef]] = addCourseDetails(activeEnrolments, request)
-                addBatchDetails(enrolmentList, request)
+                addBatchDetails(updateCompletionPerc(enrolmentList), request)
             } else new java.util.ArrayList[java.util.Map[String, AnyRef]]()
         }
         val resp: Response = new Response()
@@ -313,6 +320,14 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             contents.get(0).asInstanceOf[java.util.Map[String, AnyRef]].getOrDefault(JsonKey.LEAF_NODE_COUNT, 0.asInstanceOf[AnyRef]).asInstanceOf[Int]
         } else 0}
         enrolmentData.setStatus(getCompletionStatus(enrolmentData.getProgress, leafNodesCount))
+    }
+
+    def updateCompletionPerc(enrolmentList: java.util.List[java.util.Map[String, AnyRef]]): java.util.List[java.util.Map[String, AnyRef]] = {
+        enrolmentList.map(enrolment => {
+            val leafNodesCount = enrolment.getOrDefault(JsonKey.LEAF_NODE_COUNT, 0.asInstanceOf[AnyRef]).asInstanceOf[Int]
+            enrolment.put("completionPercentage", getCompletionPerc(enrolment.getOrDefault("progress", 0.asInstanceOf[AnyRef]).asInstanceOf[Int], leafNodesCount).asInstanceOf[AnyRef])
+            enrolment
+        }).asJava
     }
 }
 

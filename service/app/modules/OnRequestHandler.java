@@ -86,7 +86,7 @@ public class OnRequestHandler implements ActionCreator {
           String errorCode = JsonKey.UNAUTHORIZED.equals(message) ? message : childId;
           result = onDataValidationError(request, errorCode, ResponseCode.UNAUTHORIZED.getResponseCode());
         } else {
-            request = request.addAttr(Attrs.X_AUTH_TOKEN, request.header(HeaderParam.X_Authenticated_Client_Token.getName()).orElse(""));
+            request = request.addAttr(Attrs.X_AUTH_TOKEN, request.header(HeaderParam.X_Authenticated_User_Token.getName()).orElse(""));
           result = delegate.call(request);
         }
         return result.thenApply(res -> res.withHeader("Access-Control-Allow-Origin", "*"));

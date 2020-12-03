@@ -72,6 +72,7 @@ public class OnRequestHandler implements ActionCreator {
         }
         // call method to set all the required params for the telemetry event(log)...
         request = intializeRequestInfo(request, message, messageId);
+        request = request.addAttr(Attrs.X_AUTH_TOKEN, request.header(HeaderParam.X_Authenticated_User_Token.getName()).orElse(""));
         if ((!USER_UNAUTH_STATES.contains(message)) && (childId==null || !USER_UNAUTH_STATES.contains(childId))) {
             request = request.addAttr(Attrs.USER_ID, message);
             request = request.addAttr(Attrs.IS_AUTH_REQ, "false");
@@ -86,7 +87,6 @@ public class OnRequestHandler implements ActionCreator {
           String errorCode = JsonKey.UNAUTHORIZED.equals(message) ? message : childId;
           result = onDataValidationError(request, errorCode, ResponseCode.UNAUTHORIZED.getResponseCode());
         } else {
-            request = request.addAttr(Attrs.X_AUTH_TOKEN, request.header(HeaderParam.X_Authenticated_User_Token.getName()).orElse(""));
           result = delegate.call(request);
         }
         return result.thenApply(res -> res.withHeader("Access-Control-Allow-Origin", "*"));

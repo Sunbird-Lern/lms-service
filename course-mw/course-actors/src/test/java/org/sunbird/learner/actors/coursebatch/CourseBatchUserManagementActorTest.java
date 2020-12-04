@@ -50,8 +50,8 @@ public class CourseBatchUserManagementActorTest extends SunbirdApplicationActorT
     group = MockerBuilder.getFreshMockerGroup().withCassandraMock(new CassandraMocker());
     when(group
             .getCassandraMockerService()
-            .getRecords(
-                    Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList()))
+            .getRecordsByIndexedProperty(
+                    Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.any()))
         .thenReturn(CustomObjectBuilder.getRandomUserCoursesList(5).asCassandraResponse());
     Request req = new Request();
     HashMap<String, Object> innerMap = new HashMap<>();
@@ -78,8 +78,8 @@ public class CourseBatchUserManagementActorTest extends SunbirdApplicationActorT
     group = MockerBuilder.getFreshMockerGroup().withCassandraMock(new CassandraMocker());
     when(group
             .getCassandraMockerService()
-            .getRecords(
-                    Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList()))
+            .getRecordsByIndexedProperty(
+                    Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.any()))
         .thenReturn(CustomObjectBuilder.getUserCoursesBuilder().buildList().asCassandraResponse());
     Request req = new Request();
     HashMap<String, Object> innerMap = new HashMap<>();
@@ -146,8 +146,8 @@ public class CourseBatchUserManagementActorTest extends SunbirdApplicationActorT
             .collect(Collectors.toList());
     when(group
             .getCassandraMockerService()
-            .getRecords(
-                    Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList()))
+            .getRecordsByIndexedProperty(
+                    Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.any()))
         .thenReturn(userCoursesWrapper.asCassandraResponse());
     when(group
             .getESMockerService()

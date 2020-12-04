@@ -54,7 +54,7 @@ public class CassandraDACImpl extends CassandraOperationImpl {
       results = session.execute(select);
       response = CassandraUtil.createResponse(results);
     } catch (Exception e) {
-      ProjectLogger.log(Constants.EXCEPTION_MSG_FETCH + table + " : " + e.getMessage(), e);
+      logger.error(requestContext,Constants.EXCEPTION_MSG_FETCH + table + " : " + e.getMessage(), e);
       throw new ProjectCommonException(
           ResponseCode.SERVER_ERROR.getErrorCode(),
           ResponseCode.SERVER_ERROR.getErrorMessage(),
@@ -93,7 +93,7 @@ public class CassandraDACImpl extends CassandraOperationImpl {
       ResultSetFuture future = session.executeAsync(select);
       Futures.addCallback(future, callback, Executors.newFixedThreadPool(1));
     } catch (Exception e) {
-      ProjectLogger.log(Constants.EXCEPTION_MSG_FETCH + table + " : " + e.getMessage(), e);
+      logger.error(requestContext,Constants.EXCEPTION_MSG_FETCH + table + " : " + e.getMessage(), e);
       throw new ProjectCommonException(
           ResponseCode.SERVER_ERROR.getErrorCode(),
           ResponseCode.SERVER_ERROR.getErrorMessage(),
@@ -131,9 +131,8 @@ public class CassandraDACImpl extends CassandraOperationImpl {
       update.with(QueryBuilder.remove(column, key));
     }
     if (MapUtils.isEmpty(primaryKey)) {
-      ProjectLogger.log(
-          Constants.EXCEPTION_MSG_FETCH + table + " : primary key is a must for update call",
-          LoggerEnum.ERROR.name());
+      logger.error(requestContext, 
+          Constants.EXCEPTION_MSG_FETCH + table + " : primary key is a must for update call", null);
       throw new ProjectCommonException(
           ResponseCode.SERVER_ERROR.getErrorCode(),
           ResponseCode.SERVER_ERROR.getErrorMessage(),
@@ -150,7 +149,7 @@ public class CassandraDACImpl extends CassandraOperationImpl {
     }
     try {
       Response response = new Response();
-      ProjectLogger.log("Remove Map-Key Query: " + update.toString(), LoggerEnum.INFO);
+      logger.info(requestContext, "Remove Map-Key Query: " + update.toString());
       logger.debug(requestContext, update.getQueryString());
       connectionManager.getSession(keySpace).execute(update);
       response.put(Constants.RESPONSE, Constants.SUCCESS);
@@ -195,7 +194,7 @@ public class CassandraDACImpl extends CassandraOperationImpl {
       results = session.execute(select);
       response = CassandraUtil.createResponse(results);
     } catch (Exception e) {
-      ProjectLogger.log(Constants.EXCEPTION_MSG_FETCH + table + " : " + e.getMessage(), e);
+      logger.error(requestContext,Constants.EXCEPTION_MSG_FETCH + table + " : " + e.getMessage(), e);
       throw new ProjectCommonException(
               ResponseCode.SERVER_ERROR.getErrorCode(),
               ResponseCode.SERVER_ERROR.getErrorMessage(),

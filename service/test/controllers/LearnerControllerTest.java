@@ -34,7 +34,7 @@ public class LearnerControllerTest extends BaseApplicationTest {
 
   @Before
   public void before() {
-    setup(Arrays.asList(ACTOR_NAMES.LEARNER_STATE_UPDATE_ACTOR,ACTOR_NAMES.LEARNER_STATE_ACTOR), DummyActor.class);
+    setup(Arrays.asList(ACTOR_NAMES.COURSE_ENROLMENT_ACTOR,ACTOR_NAMES.CONTENT_CONSUMPTION_ACTOR), DummyActor.class);
   }
 
   @Test
@@ -168,10 +168,12 @@ public class LearnerControllerTest extends BaseApplicationTest {
     List<Object> list = new ArrayList<>();
     Map<String, Object> map = new HashMap<>();
     map.put(JsonKey.CONTENT_ID, contentId);
+    map.put(JsonKey.COURSE_ID, courseId);
     map.put(JsonKey.STATUS, status);
     map.put(JsonKey.LAST_UPDATED_TIME, lastUpdatedTime);
     list.add(map);
     innerMap.put("contents", list);
+    innerMap.put("userId", USER_ID);
     innerMap.put("courseId", courseId);
     requestMap.put(JsonKey.REQUEST, innerMap);
     String data = mapToJson(requestMap);

@@ -39,6 +39,7 @@ import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.common.util.CloudStorageUtil;
+import org.sunbird.common.util.KeycloakRequiredActionLinkUtil;
 import org.sunbird.content.util.TextBookTocUtil;
 import org.sunbird.services.sso.SSOServiceFactory;
 import org.sunbird.services.sso.impl.KeyCloakServiceImpl;
@@ -49,7 +50,7 @@ import org.sunbird.services.sso.impl.KeyCloakServiceImpl;
   ProjectUtil.class,
   Unirest.class,
   SSOServiceFactory.class,
-  CloudStorageUtil.class
+  CloudStorageUtil.class, KeycloakRequiredActionLinkUtil.class
 })
 @PowerMockIgnore({"javax.management.*", "javax.net.ssl.*"})
 public class TextbookTocActorTest {
@@ -70,15 +71,15 @@ public class TextbookTocActorTest {
   private static final String UNIT_NAME = "unit1";
 
   @Before
-  public void setUp() {
+  public void setUp() throws Exception {
     PowerMockito.mockStatic(TextBookTocUtil.class);
     PowerMockito.mockStatic(ProjectUtil.class);
     PowerMockito.mockStatic(Unirest.class);
     PowerMockito.mockStatic(SSOServiceFactory.class);
     PowerMockito.mockStatic(CloudStorageUtil.class);
+    PowerMockito.mockStatic(KeycloakRequiredActionLinkUtil.class);
     KeyCloakServiceImpl ssoManager = PowerMockito.mock(KeyCloakServiceImpl.class);
     when(SSOServiceFactory.getInstance()).thenReturn(ssoManager);
-    when(ssoManager.login(Mockito.anyString(), Mockito.anyString())).thenReturn("aValidAuthToken");
     system = ActorSystem.create("system");
     when(ProjectUtil.getConfigValue(JsonKey.TEXTBOOK_TOC_MAX_CSV_ROWS)).thenReturn("5");
     when(ProjectUtil.getConfigValue(JsonKey.TEXTBOOK_TOC_MANDATORY_FIELDS))

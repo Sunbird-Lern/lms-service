@@ -28,7 +28,7 @@ public class HealthActorTest {
   @BeforeClass
   public static void setUp() {
     system = ActorSystem.create("system");
-    Util.checkCassandraDbConnections(JsonKey.SUNBIRD);
+    Util.checkCassandraDbConnections();
   }
 
   @Test

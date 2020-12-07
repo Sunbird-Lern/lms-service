@@ -11,12 +11,11 @@
 		<play2.plugin.version>1.0.0-beta5</play2.plugin.version>
 	</properties>
 	<modules>
-	    <module>sunbird-utils</module>
+		<module>sunbird-util</module>
 		<module>course-actors-common</module>
 		<module>course-actors</module>
-		<module>dashboard-actors</module>
 		<module>textbook-actors</module>
-		<module>badge-actors</module>
+		<module>enrolment-actor</module>
 	</modules>
 	
 	<build>

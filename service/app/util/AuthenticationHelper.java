@@ -3,6 +3,8 @@ package util;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.sunbird.auth.verifier.Base64Util;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
@@ -25,16 +27,8 @@ import org.sunbird.services.sso.SSOServiceFactory;
  */
 public class AuthenticationHelper {
 
-  private static boolean ssoEnabled =
-      ((PropertiesCache.getInstance().getProperty(JsonKey.SSO_PUBLIC_KEY) != null)
-          && (Boolean.parseBoolean(
-              PropertiesCache.getInstance().getProperty(JsonKey.IS_SSO_ENABLED))));
   private static CassandraOperation cassandraOperation = ServiceFactory.getInstance();
   private static DbInfo userAuth = Util.dbInfoMap.get(JsonKey.USER_AUTH_DB);
-  public static final String KEY_SPACE_NAME = "sunbird";
-  private static EncryptionService encryptionService =
-      org.sunbird.common.models.util.datasecurity.impl.ServiceFactory.getEncryptionServiceInstance(
-          null);
 
   /**
    * This method will verify the incoming user access token against store data base /cache. If token
@@ -45,23 +39,17 @@ public class AuthenticationHelper {
    * @return String
    */
   @SuppressWarnings("unchecked")
-  public static String verifyUserAccesToken(String token) {
-    SSOManager ssoManager = SSOServiceFactory.getInstance();
+  public static String verifyUserAccessToken(String token) {
     String userId = JsonKey.UNAUTHORIZED;
     try {
-      if (ssoEnabled) {
-        userId = ssoManager.verifyToken(token);
-      } else {
-        Response authResponse =
-            cassandraOperation.getRecordById(
-                userAuth.getKeySpace(), userAuth.getTableName(), token);
-        if (authResponse != null && authResponse.get(JsonKey.RESPONSE) != null) {
-          List<Map<String, Object>> authList =
-              (List<Map<String, Object>>) authResponse.get(JsonKey.RESPONSE);
-          if (authList != null && !authList.isEmpty()) {
-            Map<String, Object> authMap = authList.get(0);
-            userId = (String) authMap.get(JsonKey.USER_ID);
-          }
+      Response authResponse =
+              cassandraOperation.getRecordByIdentifier(null, userAuth.getKeySpace(), userAuth.getTableName(), token, null);
+      if (authResponse != null && authResponse.get(JsonKey.RESPONSE) != null) {
+        List<Map<String, Object>> authList =
+                (List<Map<String, Object>>) authResponse.get(JsonKey.RESPONSE);
+        if (authList != null && !authList.isEmpty()) {
+          Map<String, Object> authMap = authList.get(0);
+          userId = (String) authMap.get(JsonKey.USER_ID);
         }
       }
     } catch (Exception e) {
@@ -80,7 +68,7 @@ public class AuthenticationHelper {
     try {
       Response clientResponse =
           cassandraOperation.getRecordsByProperties(
-              clientDbInfo.getKeySpace(), clientDbInfo.getTableName(), propertyMap);
+                  null, clientDbInfo.getKeySpace(), clientDbInfo.getTableName(), propertyMap);
       if (null != clientResponse && !clientResponse.getResult().isEmpty()) {
         List<Map<String, Object>> dataList =
             (List<Map<String, Object>>) clientResponse.getResult().get(JsonKey.RESPONSE);
@@ -92,37 +80,7 @@ public class AuthenticationHelper {
     return validClientId;
   }
 
-  /**
-   * This method will save the user access token in side data base.
-   *
-   * @param token String
-   * @param userId String
-   * @return boolean
-   */
-  public static boolean saveUserAccessToken(String token, String userId) {
-
-    return false;
-  }
-
-  /**
-   * This method will invalidate the user access token.
-   *
-   * @param token String
-   * @return boolean
-   */
-  public static boolean invalidateToken(String token) {
-
-    return false;
-  }
-
-  public static String getEncryptedData(String value) {
-    try {
-      return encryptionService.encryptData(value);
-    } catch (Exception e) {
-      throw new ProjectCommonException(
-          ResponseCode.userDataEncryptionError.getErrorCode(),
-          ResponseCode.userDataEncryptionError.getErrorMessage(),
-          ResponseCode.SERVER_ERROR.getResponseCode());
-    }
+  private static byte[] decodeFromBase64(String data) {
+    return Base64Util.decode(data, 11);
   }
 }

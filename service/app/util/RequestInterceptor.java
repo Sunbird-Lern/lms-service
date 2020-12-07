@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang3.StringUtils;
+import org.sunbird.auth.verifier.AccessTokenValidator;
 import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.request.HeaderParam;
 import play.mvc.Http;
@@ -19,6 +21,7 @@ public class RequestInterceptor {
 
   public static List<String> restrictedUriList = null;
   private static ConcurrentHashMap<String, Short> apiHeaderIgnoreMap = new ConcurrentHashMap<>();
+  private static LoggerUtil logger =  new LoggerUtil(RequestInterceptor.class);
 
   private RequestInterceptor() {}
 
@@ -29,6 +32,7 @@ public class RequestInterceptor {
     short var = 1;
     apiHeaderIgnoreMap.put("/service/health", var);
     apiHeaderIgnoreMap.put("/v1/page/assemble", var);
+    apiHeaderIgnoreMap.put("/v1/dial/assemble", var);
     apiHeaderIgnoreMap.put("/health", var);
     apiHeaderIgnoreMap.put("/v1/data/sync", var);
     apiHeaderIgnoreMap.put("/v1/content/link", var);
@@ -36,6 +40,10 @@ public class RequestInterceptor {
     apiHeaderIgnoreMap.put("/v1/content/link/search", var);
     apiHeaderIgnoreMap.put("/v1/course/batch/search", var);
     apiHeaderIgnoreMap.put("/v1/cache/clear", var);
+    apiHeaderIgnoreMap.put("/private/v1/course/batch/create", var);
+    apiHeaderIgnoreMap.put("/v1/course/create", var);
+    apiHeaderIgnoreMap.put("/v2/user/courses/list", var);
+    apiHeaderIgnoreMap.put("/v1/collection/summary", var);
   }
 
   /**
@@ -53,12 +61,17 @@ public class RequestInterceptor {
     Optional<String> authClientId = request.header(HeaderParam.X_Authenticated_Client_Id.getName());
     if (!isRequestInExcludeList(request.path()) && !isRequestPrivate(request.path())) {
       if (accessToken.isPresent()) {
-        clientId = AuthenticationHelper.verifyUserAccesToken(accessToken.get());
+        // This is to handle Mobile App expired token for content state update API.
+        if (StringUtils.contains(request.path(), "v1/content/state/update")) {
+          clientId = AccessTokenValidator.verifyUserToken(accessToken.get(), false);
+        } else {
+          clientId = AccessTokenValidator.verifyUserToken(accessToken.get(), true);
+        }
       } else if (authClientToken.isPresent() && authClientId.isPresent()) {
         clientId =
             AuthenticationHelper.verifyClientAccessToken(authClientId.get(), authClientToken.get());
         if (!JsonKey.UNAUTHORIZED.equals(clientId)) {
-          request.flash().put(JsonKey.AUTH_WITH_MASTER_KEY, Boolean.toString(true));
+          request = request.addAttr(Attrs.AUTH_WITH_MASTER_KEY, Boolean.toString(true));
         }
       }
       return clientId;
@@ -66,12 +79,17 @@ public class RequestInterceptor {
       if (accessToken.isPresent()) {
         String clientAccessTokenId = null;
         try {
-          clientAccessTokenId = AuthenticationHelper.verifyUserAccesToken(accessToken.get());
+          // This is to handle Mobile App expired token for content state update API.
+          if (StringUtils.contains(request.path(), "v1/content/state/update")) {
+            clientAccessTokenId = AccessTokenValidator.verifyUserToken(accessToken.get(), false);
+          } else {
+            clientAccessTokenId = AccessTokenValidator.verifyUserToken(accessToken.get(), true);
+          }
           if (JsonKey.UNAUTHORIZED.equalsIgnoreCase(clientAccessTokenId)) {
             clientAccessTokenId = null;
           }
         } catch (Exception ex) {
-          ProjectLogger.log(ex.getMessage(), ex);
+          logger.error(null, ex.getMessage(), ex);
           clientAccessTokenId = null;
         }
         return StringUtils.isNotBlank(clientAccessTokenId)

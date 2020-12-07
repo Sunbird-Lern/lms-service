@@ -4,6 +4,7 @@ import controllers.BaseApplicationTest;
 import actors.DummyErrorActor;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
@@ -23,6 +24,7 @@ public class CacheControllerErrorTest extends BaseApplicationTest {
         setup(ACTOR_NAMES.CACHE_MANAGEMENT_ACTOR,DummyErrorActor.class);
     }
 
+    @Ignore
     @Test
     public void ClearCacheErrorTest() {
         Http.RequestBuilder req =

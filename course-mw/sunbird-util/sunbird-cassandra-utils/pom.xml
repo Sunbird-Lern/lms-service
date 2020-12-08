@@ -43,6 +43,12 @@
 			<groupId>com.datastax.cassandra</groupId>
 			<artifactId>cassandra-driver-mapping</artifactId>
 			<version>${cassandra.driver.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>io.netty</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
@@ -64,6 +70,12 @@
 			<artifactId>cassandra-unit</artifactId>
 			<version>3.11.2.0</version>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>io.netty</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 	</dependencies>
 

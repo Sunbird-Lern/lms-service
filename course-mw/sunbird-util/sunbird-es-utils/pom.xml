@@ -31,6 +31,12 @@
 			<groupId>org.elasticsearch.client</groupId>
 			<artifactId>transport</artifactId>
 			<version>6.3.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>io.netty</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
@@ -46,6 +52,12 @@
 			<groupId>org.sunbird</groupId>
 			<artifactId>common-util</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
+			<exclusions>
+				<exclusion>
+					<groupId>io.netty</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>

@@ -336,7 +336,7 @@ public class HttpUtil {
     try {
       body = getResponse(httpURLConnection);
     } catch (Exception ex) {
-      ProjectLogger.log("Exception occurred while reading body" + ex);
+      ProjectLogger.log("Exception occurred while reading body of POST call response : " , ex);
     }
     response = new HttpUtilResponse(body, httpURLConnection.getResponseCode());
     long stopTime = System.currentTimeMillis();
@@ -348,7 +348,7 @@ public class HttpUtil {
             + requestURL
             + " ,Total time elapsed = "
             + elapsedTime,
-        LoggerEnum.PERF_LOG);
+        LoggerEnum.INFO);
     return response;
   }
 

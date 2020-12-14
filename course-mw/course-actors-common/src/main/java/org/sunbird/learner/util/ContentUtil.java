@@ -8,6 +8,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
+
+import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
@@ -89,7 +91,7 @@ public final class ContentUtil {
       } else {
         ProjectLogger.log("EkStepRequestUtil:searchContent No data found", LoggerEnum.INFO.name());
       }
-    } catch (IOException e) {
+    } catch (Exception e) {
       ProjectLogger.log("Error found during contnet search parse==" + e.getMessage(), e);
     }
     return resMap;
@@ -146,6 +148,8 @@ public final class ContentUtil {
         ProjectLogger.log("EkStepRequestUtil:searchContent No data found", LoggerEnum.INFO.name());
       }
     } catch (IOException e) {
+      ProjectLogger.log("Error found during content search parse==" + e.getMessage(), e);
+    } catch (UnirestException e) {
       ProjectLogger.log("Error found during content search parse==" + e.getMessage(), e);
     }
     return resMap;

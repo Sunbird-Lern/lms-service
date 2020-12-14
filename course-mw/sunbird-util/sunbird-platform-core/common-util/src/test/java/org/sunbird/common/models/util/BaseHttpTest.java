@@ -12,6 +12,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
+import com.mashape.unirest.http.Unirest;
 import org.apache.http.impl.client.HttpClients;
 import org.junit.Assert;
 import org.junit.Before;
@@ -32,7 +34,7 @@ import org.sunbird.services.sso.impl.KeyCloakServiceImpl;
   HttpUtil.class,
   HttpClients.class,
   KeyCloakConnectionProvider.class,
-  KeyCloakServiceImpl.class, KeycloakRequiredActionLinkUtil.class
+  KeyCloakServiceImpl.class, KeycloakRequiredActionLinkUtil.class, Unirest.class
 })
 public abstract class BaseHttpTest {
 

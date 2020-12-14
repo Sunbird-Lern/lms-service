@@ -37,7 +37,7 @@ public class URLShortnerImpl implements URLShortner {
       String response = "";
       try {
         response = HttpUtil.sendGetRequest(requestURL, null);
-      } catch (IOException e) {
+      } catch (Exception e) {
         ProjectLogger.log("Exception occurred while sending request for URL shortening", e);
       }
       ObjectMapper mapper = new ObjectMapper();

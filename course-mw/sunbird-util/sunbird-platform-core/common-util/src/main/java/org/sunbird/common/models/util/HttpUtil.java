@@ -61,14 +61,13 @@ public class HttpUtil {
     String str = httpResponse.getBody();
     long stopTime = System.currentTimeMillis();
     long elapsedTime = stopTime - startTime;
-    ProjectLogger.log(
+    logger.info( null,
         "HttpUtil sendPostRequest method end at =="
             + stopTime
             + " for requestURL "
             + requestURL
             + " ,Total time elapsed = "
-            + elapsedTime,
-        LoggerEnum.PERF_LOG);
+            + elapsedTime);
     return str;
   }
 
@@ -88,14 +87,13 @@ public class HttpUtil {
     String str = httpResponse.getBody();
     long stopTime = System.currentTimeMillis();
     long elapsedTime = stopTime - startTime;
-    ProjectLogger.log(
+    logger.info( null,
         "HttpUtil sendPostRequest method end at =="
             + stopTime
             + " for requestURL "
             + requestURL
             + " ,Total time elapsed = "
-            + elapsedTime,
-        LoggerEnum.PERF_LOG);
+            + elapsedTime);
     return str;
   }
 
@@ -112,23 +110,22 @@ public class HttpUtil {
   public static HttpUtilResponse doPostRequest(
       String requestURL, String params, Map<String, String> headers) throws IOException {
     long startTime = System.currentTimeMillis();
-    HttpUtilResponse response = null;
+    HttpUtilResponse response = new HttpUtilResponse();
     try {
       HttpResponse<String> httpResponse = Unirest.post(requestURL).headers(headers).body(params).asString();
       response = new HttpUtilResponse(httpResponse.getBody(), httpResponse.getStatus());
     } catch (Exception ex) {
-      ProjectLogger.log("Exception occurred while reading body of POST call response : " , ex);
+      logger.error(null, "Exception occurred while reading body of POST call response : " , ex);
     }
     long stopTime = System.currentTimeMillis();
     long elapsedTime = stopTime - startTime;
-    ProjectLogger.log(
+    logger.info(null, 
         "HttpUtil doPostRequest method end at =="
             + stopTime
             + " for requestURL "
             + requestURL
             + " ,Total time elapsed = "
-            + elapsedTime,
-        LoggerEnum.INFO);
+            + elapsedTime);
     return response;
   }
 
@@ -143,14 +140,13 @@ public class HttpUtil {
   public static String sendPatchRequest(
       String requestURL, String params, Map<String, String> headers) {
     long startTime = System.currentTimeMillis();
-    ProjectLogger.log(
+    logger.info(null, 
         "HttpUtil sendPatchRequest method started at =="
             + startTime
             + " for requestURL and params "
             + requestURL
             + " param=="
-            + params,
-        LoggerEnum.PERF_LOG);
+            + params);
 
     try {
       HttpResponse<String> httpResponse = Unirest.patch(requestURL).headers(headers).body(params).asString();
@@ -158,27 +154,25 @@ public class HttpUtil {
       if (ResponseCode.OK.getResponseCode() == httpResponse.getStatus()) {
         long stopTime = System.currentTimeMillis();
         long elapsedTime = stopTime - startTime;
-        ProjectLogger.log(
-            "HttpUtil sendPatchRequest method end at =="
+        logger.info(null,
+                "HttpUtil sendPatchRequest method end at =="
                 + stopTime
                 + " for requestURL "
                 + requestURL
                 + " ,Total time elapsed = "
-                + elapsedTime,
-            LoggerEnum.PERF_LOG);
+                + elapsedTime);
         return ResponseCode.success.getErrorCode();
       }
       long stopTime = System.currentTimeMillis();
       long elapsedTime = stopTime - startTime;
-      ProjectLogger.log(
-          "Patch request failure status code =="
+      logger.info(null,
+              "Patch request failure status code =="
               + httpResponse.getStatus()
               + stopTime
               + " for requestURL "
               + requestURL
               + " ,Total time elapsed = "
-              + elapsedTime,
-          LoggerEnum.PERF_LOG);
+              + elapsedTime);
       return "Failure";
     } catch (Exception e) {
       logger.error(null, "HttpUtil call fails == " + e.getMessage(), e);

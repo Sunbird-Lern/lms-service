@@ -328,14 +328,16 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         
         val response = new Response
         if(CollectionUtils.isNotEmpty(contentsConsumed)) {
-            val filteredContents = contentsConsumed.map(m => 
+            val filteredContents = contentsConsumed.map(m => {
                 ProjectUtil.removeUnwantedFields(m, JsonKey.DATE_TIME, JsonKey.USER_ID, JsonKey.ADDED_BY, JsonKey.LAST_UPDATED_TIME)
                 m.put(JsonKey.COLLECTION_ID, m.getOrDefault(JsonKey.COURSE_ID, ""))
-                //added progress....
+
+                //added progress starts....
                 val progressDetails = progressMap.get(m.get(JsonKey.CONTENT_ID)).asInstanceOf[java.util.HashMap[String, AnyRef]]
                 if(progressDetails!=null)
                     ProjectUtil.removeUnwantedFields(progressDetails, JsonKey.CONTENT_ID)
                 m.put("progressDetails", progressDetails)
+                //added progress.
                 m
             }).asJava
             response.put(JsonKey.RESPONSE, filteredContents)

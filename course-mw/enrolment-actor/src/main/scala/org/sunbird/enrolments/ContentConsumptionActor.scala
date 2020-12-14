@@ -334,8 +334,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                 //added progress....
                 val progressDetails = progressMap.get(m.get(JsonKey.CONTENT_ID)).asInstanceOf[java.util.HashMap[String, AnyRef]]
                 if(progressDetails!=null)
-                       ProjectUtil.removeUnwantedFields(progressDetails, JsonKey.CONTENT_ID)
-                
+                    ProjectUtil.removeUnwantedFields(progressDetails, JsonKey.CONTENT_ID)
                 m.put("progressDetails", progressDetails)
                 m
             }).asJava

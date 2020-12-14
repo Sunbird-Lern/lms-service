@@ -210,7 +210,8 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         val data = new java.util.ArrayList[java.util.Map[String, AnyRef]](){{
             contents.map(obj => {
                 val m = obj.get("progressDetails").asInstanceOf[java.util.Map[String, AnyRef]]
-                add(Map("userId"->obj.get("userId"), "courseId"->obj.get("courseId"),"contentId"->obj.get("contentId"),"batchId"->obj.get("batchId"),
+                if(m!=null)
+                    add(Map("userId"->obj.get("userId"), "courseId"->obj.get("courseId"),"contentId"->obj.get("contentId"),"batchId"->obj.get("batchId"),
                     "current"->m.get("current"),"max_size"->m.get("max_size"), "mimeType"->m.get("mimeType")))
             })
         }}
@@ -327,12 +328,13 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         
         val response = new Response
         if(CollectionUtils.isNotEmpty(contentsConsumed)) {
-            val filteredContents = contentsConsumed.map(m => {
+            val filteredContents = contentsConsumed.map(m => 
                 ProjectUtil.removeUnwantedFields(m, JsonKey.DATE_TIME, JsonKey.USER_ID, JsonKey.ADDED_BY, JsonKey.LAST_UPDATED_TIME)
                 m.put(JsonKey.COLLECTION_ID, m.getOrDefault(JsonKey.COURSE_ID, ""))
                 //added progress....
                 val progressDetails = progressMap.get(m.get(JsonKey.CONTENT_ID)).asInstanceOf[java.util.HashMap[String, AnyRef]]
-                ProjectUtil.removeUnwantedFields(progressDetails, JsonKey.CONTENT_ID)
+                if(progressDetails!=null)
+                       ProjectUtil.removeUnwantedFields(progressDetails, JsonKey.CONTENT_ID)
                 
                 m.put("progressDetails", progressDetails)
                 m

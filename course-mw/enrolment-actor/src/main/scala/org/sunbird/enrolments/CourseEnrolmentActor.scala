@@ -260,7 +260,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         TelemetryUtil.telemetryProcessingCall(request, targetedObject, correlationObject, contextMap, "enrol")
     }
 
-    /*def updateProgressData(enrolments: java.util.List[java.util.Map[String, AnyRef]], userId: String, requestContext: RequestContext): util.List[java.util.Map[String, AnyRef]] = {
+    def updateProgressData(enrolments: java.util.List[java.util.Map[String, AnyRef]], userId: String, requestContext: RequestContext): util.List[java.util.Map[String, AnyRef]] = {
         val enrolmentMap: Map[String, java.util.Map[String, AnyRef]] = enrolments.map(enrolment => enrolment.get("courseId").asInstanceOf[String] -> enrolment).toMap
         val response: Response = groupDao.readEntries("Course", java.util.Arrays.asList(userId), enrolmentMap.keys.toList.asJava, requestContext)
         if (response.getResponseCode != ResponseCode.OK)
@@ -276,7 +276,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             enrolment.put("completionPercentage", getCompletionPerc(completedCount, leafNodesCount).asInstanceOf[AnyRef])
         })
         enrolmentMap.values.toList.asJava
-    }*/
+    }
 
     def getCompletionStatus(completedCount: Int, leafNodesCount: Int): Int = completedCount match {
         case 0 => 0
@@ -314,8 +314,8 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val enrolments: java.util.List[java.util.Map[String, AnyRef]] = {
             if (CollectionUtils.isNotEmpty(activeEnrolments)) {
                 val enrolmentList: java.util.List[java.util.Map[String, AnyRef]] = addCourseDetails(activeEnrolments, request)
-                //val updatedEnrolmentList = updateProgressData(enrolmentList, userId, request.getRequestContext)
-                addBatchDetails(enrolmentList, request)
+                val updatedEnrolmentList = updateProgressData(enrolmentList, userId, request.getRequestContext)
+                addBatchDetails(updatedEnrolmentList, request)
             } else new java.util.ArrayList[java.util.Map[String, AnyRef]]()
         }
         val resp: Response = new Response()

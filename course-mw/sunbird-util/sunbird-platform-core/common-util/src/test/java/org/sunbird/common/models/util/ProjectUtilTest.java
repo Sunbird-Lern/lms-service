@@ -223,7 +223,7 @@ public class ProjectUtilTest extends BaseHttpTest {
     String response = null;
     try {
       response = ProjectUtil.registertag("testTag", "{}", ProjectUtil.getEkstepHeader());
-    } catch (IOException e) {
+    } catch (Exception e) {
 
     }
     assertNotNull(response);

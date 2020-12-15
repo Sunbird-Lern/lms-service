@@ -1,5 +1,7 @@
 package org.sunbird.learner.actors.search;
 
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -153,7 +155,7 @@ public class SearchHandlerActor extends BaseActor {
     HttpUtilResponse resp = HttpUtil.doPostRequest(url, req, HttpUtil.getHeader(null));
     logger.info(requestContext, "Response from user search for creator details: " + resp.getStatusCode() + " and body: " + resp.getBody());
     Response response = getResponse(resp.getBody());
-    return (List<Map<String, Object>>) ((Map<String, Object>) response.getResult().getOrDefault("response", new HashMap<String, Object>())).getOrDefault("content", new ArrayList<Map<String, Object>>());
+    return (List<Map<String, Object>>) ((Map<String, Object>) response.getResult().getOrDefault("response", new HashMap<String, Object>())).getOrDefault("content", new ArrayList<Map<String, Object>>());    
   }
 
   private Response getResponse(String body) {

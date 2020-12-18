@@ -185,6 +185,7 @@ public interface CassandraOperation {
    */
   Response batchInsert(RequestContext requestContext, String keyspaceName, String tableName, List<Map<String, Object>> records);
 
+  Response getBlobAsText(String keySpace, String table, Map<String, Object> filters, List<String> properties);
 
   public Response getRecords(
           RequestContext requestContext, String keyspace, String table, Map<String, Object> filters, List<String> fields);

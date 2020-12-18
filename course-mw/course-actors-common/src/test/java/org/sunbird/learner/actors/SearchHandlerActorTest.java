@@ -46,6 +46,7 @@ import org.sunbird.common.models.util.HttpUtil;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.util.KeycloakRequiredActionLinkUtil;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.helper.ServiceFactory;
@@ -187,9 +188,9 @@ public class SearchHandlerActorTest {
   @Test
   public void testMakePostRequest() throws Exception {
     String req = "{\"request\":{\"filters\":{\"id\":[\"test_id1\",\"test_id2\"]},\"fields\":[\"firstName\",\"lastName\",\"id\"]}}";
-    Method method = SearchHandlerActor.class.getDeclaredMethod("makePostRequest", String.class, String.class);
+    Method method = SearchHandlerActor.class.getDeclaredMethod("makePostRequest", RequestContext.class, String.class, String.class);
     method.setAccessible(true);
-    List<Map<String, Object>> result = (List<Map<String, Object>>) method.invoke(actorRef.underlyingActor(), "test_url", req);
+    List<Map<String, Object>> result = (List<Map<String, Object>>) method.invoke(actorRef.underlyingActor(), null, "test_url", req);
     assertTrue(CollectionUtils.isNotEmpty(result));
   }
 
@@ -208,9 +209,9 @@ public class SearchHandlerActorTest {
         }});
       }});
     }};
-    Method method = SearchHandlerActor.class.getDeclaredMethod("populateCreatorDetails", Map.class);
+    Method method = SearchHandlerActor.class.getDeclaredMethod("populateCreatorDetails", RequestContext.class, Map.class);
     method.setAccessible(true);
-    method.invoke(actorRef.underlyingActor(), input);
+    method.invoke(actorRef.underlyingActor(), null, input);
     List<Map<String, Object>> content = (List<Map<String, Object>>) input.getOrDefault("content", new ArrayList<Map<String, Object>>());
     for(Map<String, Object> map : content){
       if(StringUtils.equalsIgnoreCase("95e4942d-cbe8-477d-aebd-ad8e6de4bfc8", (String) map.get("createdBy")))

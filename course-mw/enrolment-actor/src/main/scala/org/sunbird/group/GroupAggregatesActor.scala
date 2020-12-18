@@ -58,7 +58,7 @@ class GroupAggregatesActor @Inject()(implicit val cacheUtil: RedisCacheUtil) ext
           val usersAggs: java.util.List[java.util.Map[String, AnyRef]] = if (CollectionUtils.isEmpty(groupMembers)) {
             groupMembers
           } else {
-            getUserActivityAggs(activityId, activityType, groupMembers, request.getRequestContext)
+            getUserActivityAggs(activityId, "Course", groupMembers, request.getRequestContext)
           }
           logger.info(request.getRequestContext, "GroupAggregatesAction:getGroupActivityAggregates:usersAggs :: Group: " + groupId + " :: Activity : " + activityId + " :: Enrolled Member Count: " + usersAggs.size())
           populateResponse(groupId, activityId, activityType, usersAggs, groupMembers)

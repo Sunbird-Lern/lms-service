@@ -34,7 +34,7 @@ public class ContentUtilTest {
   }
 
   @Test
-  public void searchContentSuccessTest() throws IOException {
+  public void searchContentSuccessTest() throws Exception {
     PowerMockito.when(
             HttpUtil.sendPostRequest(Mockito.anyString(), Mockito.anyString(), Mockito.any()))
         .thenReturn(
@@ -48,7 +48,7 @@ public class ContentUtilTest {
   }
 
   @Test
-  public void searchContentEmptyTest() throws IOException {
+  public void searchContentEmptyTest() throws Exception {
     PowerMockito.when(
             HttpUtil.sendPostRequest(Mockito.anyString(), Mockito.anyString(), Mockito.any()))
         .thenReturn("{}");
@@ -59,7 +59,7 @@ public class ContentUtilTest {
   }
 
   @Test
-  public void contentCallSuccessTest() throws IOException {
+  public void contentCallSuccessTest() throws Exception {
     PowerMockito.when(
             HttpUtil.doPostRequest(Mockito.anyString(), Mockito.anyString(), Mockito.any()))
         .thenReturn(new HttpUtilResponse("some dummy response", 200));
@@ -85,7 +85,7 @@ public class ContentUtilTest {
   }
 
   @Test
-  public void getContentTest() throws IOException {
+  public void getContentTest() throws Exception {
     PowerMockito.when(HttpUtil.sendGetRequest(Mockito.anyString(), Mockito.any()))
             .thenReturn("{\"result\":{\"content\":{\"contentType\":\"Course\",\"identifier\":\"do_1130293726460805121168\",\"languageCode\":[\"en\"],\"status\":\"Live\"}}}");
     Map<String, Object> result = ContentUtil.getContent("do_1130293726460805121168");

@@ -26,11 +26,6 @@
 			<artifactId>akka-slf4j_2.11</artifactId>
 			<version>${learner.akka.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.typesafe.akka</groupId>
-			<artifactId>akka-remote_2.11</artifactId>
-			<version>${learner.akka.version}</version>
-		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.scala-lang/scala-library -->
 		<dependency>
 			<groupId>org.scala-lang</groupId>

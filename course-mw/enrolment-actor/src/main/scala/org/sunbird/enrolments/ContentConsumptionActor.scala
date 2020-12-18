@@ -3,6 +3,7 @@ package org.sunbird.enrolments
 import java.util
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.google.common.base.Splitter
 import javax.inject.Inject
 import org.apache.commons.collections4.{CollectionUtils, MapUtils}
 import org.apache.commons.lang3.StringUtils
@@ -189,7 +190,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             if(CollectionUtils.isNotEmpty(contentIds))
                 put("contentid", contentIds)
         }}
-        val response = cassandraOperation.getRecords(requestContext, consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, filters, null)
+        val response = cassandraOperation.getBlobAsText(consumptionDBInfo.getKeySpace, "user_content_consumption_progress", filters, util.Arrays.asList("body") )
         response.getResult.getOrDefault(JsonKey.RESPONSE, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
     }
     
@@ -212,7 +213,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                 val m = obj.get("progressDetails").asInstanceOf[java.util.Map[String, AnyRef]]
                 if(m!=null)
                     add(Map("userId"->obj.get("userId"), "courseId"->obj.get("courseId"),"contentId"->obj.get("contentId"),"batchId"->obj.get("batchId"),
-                    "current"->m.get("current"),"max_size"->m.get("max_size"), "mimeType"->m.get("mimeType")))
+                        "body"->m.toString))
             })
         }}
         data
@@ -334,9 +335,9 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
 
                 //added progress starts....
                 val progressDetails = progressMap.get(m.get(JsonKey.CONTENT_ID)).asInstanceOf[java.util.HashMap[String, AnyRef]]
-                if(progressDetails!=null)
-                    ProjectUtil.removeUnwantedFields(progressDetails, JsonKey.CONTENT_ID)
-                m.put("progressDetails", progressDetails)
+                val value = StringUtils.substringBetween(progressDetails.get("body").asInstanceOf[String], "{", "}")
+                val properties = Splitter.on(",").withKeyValueSeparator("=").split(value)
+                m.put("progressDetails",properties)
                 //added progress.
                 m
             }).asJava

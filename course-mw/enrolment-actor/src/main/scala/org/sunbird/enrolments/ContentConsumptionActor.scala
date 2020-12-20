@@ -3,7 +3,6 @@ package org.sunbird.enrolments
 import java.util
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.google.common.base.Splitter
 import javax.inject.Inject
 import org.apache.commons.collections4.{CollectionUtils, MapUtils}
 import org.apache.commons.lang3.StringUtils
@@ -190,7 +189,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             if(CollectionUtils.isNotEmpty(contentIds))
                 put("contentid", contentIds)
         }}
-        val response = cassandraOperation.getBlobAsText(consumptionDBInfo.getKeySpace, "user_content_consumption_progress", filters, util.Arrays.asList("body") )
+        val response = cassandraOperation.getBlobAsText(requestContext, consumptionDBInfo.getKeySpace, "user_content_consumption_progress", filters, util.Arrays.asList("body") )
         response.getResult.getOrDefault(JsonKey.RESPONSE, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
     }
     
@@ -213,7 +212,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                 val m = obj.get("progressDetails").asInstanceOf[java.util.Map[String, AnyRef]]
                 if(m!=null)
                     add(Map("userId"->obj.get("userId"), "courseId"->obj.get("courseId"),"contentId"->obj.get("contentId"),"batchId"->obj.get("batchId"),
-                        "body"->m.toString))
+                        "body"->mapper.writeValueAsString(m)))
             })
         }}
         data
@@ -334,10 +333,11 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                 m.put(JsonKey.COLLECTION_ID, m.getOrDefault(JsonKey.COURSE_ID, ""))
 
                 //added progress starts....
-                val progressDetails = progressMap.get(m.get(JsonKey.CONTENT_ID)).asInstanceOf[java.util.HashMap[String, AnyRef]]
-                val value = StringUtils.substringBetween(progressDetails.get("body").asInstanceOf[String], "{", "}")
-                val properties = Splitter.on(",").withKeyValueSeparator("=").split(value)
-                m.put("progressDetails",properties)
+                val progressDetails = progressMap.get(m.get(JsonKey.CONTENT_ID))
+                if(progressDetails!=null){
+                    m.put("progressDetails", mapper.readTree(progressDetails.get("body").asInstanceOf[String]))
+                }
+
                 //added progress.
                 m
             }).asJava

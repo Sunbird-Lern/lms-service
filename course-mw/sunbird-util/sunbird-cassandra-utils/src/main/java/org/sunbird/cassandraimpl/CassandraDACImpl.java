@@ -24,7 +24,7 @@ import org.sunbird.common.responsecode.ResponseCode;
 public class CassandraDACImpl extends CassandraOperationImpl {
     
       @Override
-  public Response getBlobAsText(String keySpace, String table, Map<String, Object> filters, List<String> properties) {
+  public Response getBlobAsText(RequestContext requestContext, String keySpace, String table, Map<String, Object> filters, List<String> properties) {
     Response response = new Response();
     Session session = connectionManager.getSession(keySpace);
 
@@ -58,11 +58,14 @@ public class CassandraDACImpl extends CassandraOperationImpl {
     PreparedStatement ps = session.prepare(sb.toString());
     BoundStatement bound = ps.bind(filters.values().toArray());
 
-    try {
+    logger.debug(requestContext, ps.getQueryString());
+
+        try {
       ResultSet results = session.execute(bound);
       response = CassandraUtil.createResponse(results);
 
     } catch (Exception e) {
+      ProjectLogger.log(Constants.EXCEPTION_MSG_FETCH + table + " : " + e.getMessage(), e);
       throw new ProjectCommonException(
               ResponseCode.SERVER_ERROR.getErrorCode(),
               ResponseCode.SERVER_ERROR.getErrorMessage(),

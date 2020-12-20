@@ -189,7 +189,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             if(CollectionUtils.isNotEmpty(contentIds))
                 put("contentid", contentIds)
         }}
-        val response = cassandraOperation.getBlobAsText(requestContext, consumptionDBInfo.getKeySpace, "user_content_consumption_progress", filters, util.Arrays.asList("body") )
+        val response = cassandraOperation.getRecords(requestContext, consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, filters, null)
         response.getResult.getOrDefault(JsonKey.RESPONSE, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
     }
     
@@ -202,7 +202,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             if(CollectionUtils.isNotEmpty(contentIds))
                 put("contentid", contentIds)
         }}
-        val response = cassandraOperation.getRecords(requestContext, consumptionDBInfo.getKeySpace, "user_content_consumption_progress", filters, util.Arrays.asList("contentid","max_size","mimeType","current"))
+        val response = cassandraOperation.getBlobAsText(requestContext, consumptionDBInfo.getKeySpace, "user_content_consumption_progress", filters, util.Arrays.asList("body") )
         response.getResult.getOrDefault(JsonKey.RESPONSE, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
     }
 

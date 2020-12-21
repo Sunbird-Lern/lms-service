@@ -174,7 +174,7 @@ public final class CourseBatchSchedulerUtil {
                   + courseId,
               "{\"request\": {\"content\": {\"" + contentName + "\": " + val + "}}}",
               getBasicHeader());
-    } catch (IOException e) {
+    } catch (Exception e) {
       logger.error(requestContext, "Error while updating content value " + e.getMessage(), e);
     }
     return JsonKey.SUCCESS.equalsIgnoreCase(response);

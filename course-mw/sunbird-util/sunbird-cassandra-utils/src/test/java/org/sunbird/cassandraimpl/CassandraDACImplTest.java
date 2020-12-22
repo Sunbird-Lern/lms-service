@@ -10,6 +10,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.BaseTest;
 import org.sunbird.cassandra.CassandraOperation;
+import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
@@ -105,6 +106,25 @@ public class CassandraDACImplTest extends BaseTest {
         PowerMockito.stub(PowerMockito.method(CassandraConnectionManagerImpl.class, "getSession")).toReturn(session);
         Response response = cassandraOperation.batchInsertLogged(request.getRequestContext(), keyspace, user_consumption_table, records);
         Assert.assertEquals(response.getResponseCode(), ResponseCode.OK);
+    }
+
+    @Test(expected = ProjectCommonException.class)
+    public void testBatchInsertLoggedException() {
+        Request request = getRequest();
+        ArrayList<Map<String, Object>> records = new ArrayList<Map<String, Object>>() {
+            {
+                add(new HashMap<String, Object>() {{
+                    put("courseId", "course_001");
+                    put("batchId", "batch_001");
+                    put("contentId", new ArrayList<String>() {{
+                        add("content_001");
+                    }});
+                }});
+            }
+        };
+        PowerMockito.stub(PowerMockito.method(CassandraConnectionMngrFactory.class, "getInstance")).toReturn(connectionManager);
+        PowerMockito.stub(PowerMockito.method(CassandraConnectionManagerImpl.class, "getSession")).toReturn(session);
+        cassandraOperation.batchInsertLogged(request.getRequestContext(), keyspace, user_consumption_table, records);
     }
 
     public Request getRequest() {

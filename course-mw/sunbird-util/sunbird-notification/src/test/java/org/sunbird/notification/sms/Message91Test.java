@@ -79,7 +79,7 @@ public class Message91Test extends BaseMessageTest {
 		Assert.assertFalse(response);
 	}
 
-	@Test
+	@Ignore
 	public void testSendFailureWithInvalidPhone() {
 		ISmsProvider object = SMSFactory.getInstance("91SMS");
 		boolean response = object.send("981se12345", "some message");

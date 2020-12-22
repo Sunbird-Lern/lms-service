@@ -49,7 +49,7 @@ public class HealthControllerTest extends BaseApplicationTest {
   }
 
   @Test
-  public void testServiceHealth() throws IOException {
+  public void testServiceHealth() throws Exception {
     PowerMockito.mockStatic(HttpUtil.class);
     String response ="OK";
     when(HttpUtil.sendPostRequest(Mockito.anyString(),Mockito.anyString(),Mockito.anyMap())).thenReturn(response);

@@ -668,7 +668,7 @@ public class ProjectUtil {
    * @throws IOException
    */
   public static String registertag(String tagId, String body, Map<String, String> header)
-      throws IOException {
+      throws Exception {
     String tagStatus = "";
     try {
       ProjectLogger.log("start call for registering the tag ==" + tagId);

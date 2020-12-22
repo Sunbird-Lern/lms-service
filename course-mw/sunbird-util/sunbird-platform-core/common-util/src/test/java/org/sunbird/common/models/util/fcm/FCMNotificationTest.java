@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.mashape.unirest.http.Unirest;
 import org.apache.http.impl.client.HttpClients;
 import org.junit.Assert;
 import org.junit.Before;
@@ -43,13 +45,13 @@ import org.sunbird.common.models.util.JsonKey;
   BufferedReader.class,
   HttpUtil.class,
   System.class,
-  Notification.class
+  Notification.class, Unirest.class
 })
 @PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*"})
 public class FCMNotificationTest {
 
   @Test
-  public void testSendNotificationSuccessWithListAndStringData() {
+  public void testSendNotificationSuccessWithListAndStringData() throws Exception {
     Map<String, Object> map = new HashMap<>();
     map.put("title", "some title");
     map.put("summary", "some value");
@@ -103,22 +105,12 @@ public class FCMNotificationTest {
   @Before
   public void addMockRules() {
     PowerMockito.mockStatic(System.class);
-    URL url = mock(URL.class);
-    HttpURLConnection connection = mock(HttpURLConnection.class);
-    OutputStream outStream = mock(OutputStream.class);
-    InputStream inStream = mock(InputStream.class);
-    BufferedReader reader = mock(BufferedReader.class);
+    PowerMockito.mockStatic(HttpUtil.class);
     try {
       when(System.getenv(JsonKey.SUNBIRD_FCM_ACCOUNT_KEY)).thenReturn("FCM_KEY");
       when(System.getenv(AdditionalMatchers.not(Mockito.eq(JsonKey.SUNBIRD_FCM_ACCOUNT_KEY))))
           .thenCallRealMethod();
-
-      whenNew(URL.class).withAnyArguments().thenReturn(url);
-      when(url.openConnection()).thenReturn(connection);
-      when(connection.getOutputStream()).thenReturn(outStream);
-      when(connection.getInputStream()).thenReturn(inStream);
-      whenNew(BufferedReader.class).withAnyArguments().thenReturn(reader);
-      when(reader.readLine()).thenReturn("{\"" + JsonKey.MESSAGE_Id + "\": 123}", (String) null);
+      when(HttpUtil.sendPostRequest(Mockito.anyString(),Mockito.anyString(),Mockito.anyMap())).thenReturn("{\"" + JsonKey.MESSAGE_Id + "\": 123}");
     } catch (Exception e) {
       e.printStackTrace();
       Assert.fail("Mock rules addition failed " + e.getMessage());

@@ -49,6 +49,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
 
   protected CassandraConnectionManager connectionManager = CassandraConnectionMngrFactory.getInstance();;
   protected LoggerUtil logger = new LoggerUtil(this.getClass()); 
+  protected List<String> writeType = new ArrayList<String>(){{add(WriteType.BATCH.name());add(WriteType.SIMPLE.name());}};
 
   @Override
   public Response insertRecord(RequestContext requestContext, String keyspaceName, String tableName, Map<String, Object> request) {
@@ -740,6 +741,11 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
     return response;
   }
 
+  /**
+   * Method to handle partial cassandra write operation.
+   * This method will handle WriteTimeoutException of BATCH/SIMPLE Type
+   * Reference for Logged and UnLogged batch :- https://www.datastax.com/blog/cassandra-error-handling-done-right
+   */
   @Override
   public Response batchInsertLogged(
           RequestContext requestContext, String keyspaceName, String tableName, List<Map<String, Object>> records) {
@@ -753,7 +759,6 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
     BatchStatement batchStatement = new BatchStatement(BatchStatement.Type.LOGGED);
     batchStatement.setConsistencyLevel(ConsistencyLevel.QUORUM);
     ResultSet resultSet = null;
-    List<String> writeType = new ArrayList<String>(){{add(WriteType.BATCH.name());add(WriteType.SIMPLE.name());}};
 
     try {
       for (Map<String, Object> map : records) {

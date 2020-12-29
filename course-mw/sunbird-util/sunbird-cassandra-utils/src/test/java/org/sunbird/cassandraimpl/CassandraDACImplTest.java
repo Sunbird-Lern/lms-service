@@ -1,8 +1,14 @@
 package org.sunbird.cassandraimpl;
 
+import com.datastax.driver.core.BatchStatement;
+import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.WriteType;
+import com.datastax.driver.core.exceptions.WriteTimeoutException;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
@@ -35,6 +41,8 @@ public class CassandraDACImplTest extends BaseTest {
     static final Timestamp timestamp = new Timestamp(System.currentTimeMillis());
     @Mock
     CassandraConnectionManager connectionManager;
+    @Mock
+    Session session2;
 
     private static String createKeyspace = "CREATE KEYSPACE IF NOT EXISTS " + keyspace
             + " WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '1'}";
@@ -125,6 +133,28 @@ public class CassandraDACImplTest extends BaseTest {
         PowerMockito.stub(PowerMockito.method(CassandraConnectionMngrFactory.class, "getInstance")).toReturn(connectionManager);
         PowerMockito.stub(PowerMockito.method(CassandraConnectionManagerImpl.class, "getSession")).toReturn(session);
         cassandraOperation.batchInsertLogged(request.getRequestContext(), keyspace, user_consumption_table, records);
+    }
+
+    @Test
+    public void testBatchInsertLoggedPartialWrite() {
+        Request request = getRequest();
+        ArrayList<Map<String, Object>> records = new ArrayList<Map<String, Object>>() {
+            {
+                add(new HashMap<String, Object>() {{
+                    put("userId", "user_001");
+                    put("courseId", "course_001");
+                    put("batchId", "batch_001");
+                    put("contentId", new ArrayList<String>() {{
+                        add("content_001");
+                    }});
+                }});
+            }
+        };
+        PowerMockito.stub(PowerMockito.method(CassandraConnectionMngrFactory.class, "getInstance")).toReturn(connectionManager);
+        PowerMockito.stub(PowerMockito.method(CassandraConnectionManagerImpl.class, "getSession")).toReturn(session2);
+        PowerMockito.when(session2.execute(Mockito.any(BatchStatement.class))).thenThrow(new WriteTimeoutException(ConsistencyLevel.QUORUM, WriteType.SIMPLE, 1, 2));
+        Response response = cassandraOperation.batchInsertLogged(request.getRequestContext(), keyspace, user_consumption_table, records);
+        Assert.assertEquals(response.getResponseCode(), ResponseCode.OK);
     }
 
     public Request getRequest() {

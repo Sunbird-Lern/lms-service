@@ -4,6 +4,7 @@ import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.WriteType;
+import com.datastax.driver.core.exceptions.InvalidQueryException;
 import com.datastax.driver.core.exceptions.WriteTimeoutException;
 import org.junit.*;
 import org.junit.runner.RunWith;
@@ -16,7 +17,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.BaseTest;
 import org.sunbird.cassandra.CassandraOperation;
-import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
@@ -116,7 +116,7 @@ public class CassandraDACImplTest extends BaseTest {
         Assert.assertEquals(response.getResponseCode(), ResponseCode.OK);
     }
 
-    @Test(expected = ProjectCommonException.class)
+    @Test(expected = InvalidQueryException.class)
     public void testBatchInsertLoggedException() {
         Request request = getRequest();
         ArrayList<Map<String, Object>> records = new ArrayList<Map<String, Object>>() {

@@ -743,8 +743,8 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
 
   /**
    * Method to handle partial cassandra write operation.
-   * This method will handle WriteTimeoutException of BATCH/SIMPLE Type
-   * Reference for Logged and UnLogged batch :- https://www.datastax.com/blog/cassandra-error-handling-done-right
+   * This method will handle WriteTimeoutException of BATCH/SIMPLE WriteType
+   * Reference for handling partial writes :- https://www.datastax.com/blog/cassandra-error-handling-done-right
    */
   @Override
   public Response batchInsertLogged(
@@ -778,13 +778,11 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
             | NoHostAvailableException
             | IllegalStateException e) {
       logger.info(requestContext, "Cassandra Batch Insert Failed." + e.getMessage(), e);
-      if (e.getClass() == WriteTimeoutException.class && writeType.contains(((WriteTimeoutException) e).getWriteType().name()))
+      if (e instanceof WriteTimeoutException && writeType.contains(((WriteTimeoutException) e).getWriteType().name()))
         response.put(Constants.RESPONSE, Constants.SUCCESS);
       else {
-        throw new ProjectCommonException(
-                ResponseCode.SERVER_ERROR.getErrorCode(),
-                ResponseCode.SERVER_ERROR.getErrorMessage(),
-                ResponseCode.SERVER_ERROR.getResponseCode());
+        logger.error(requestContext, e.getMessage(), e);
+        throw e;
       }
     }
     logQueryElapseTime("batchInsertLogged", startTime);

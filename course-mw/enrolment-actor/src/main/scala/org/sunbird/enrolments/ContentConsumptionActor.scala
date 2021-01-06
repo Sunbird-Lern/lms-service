@@ -300,7 +300,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                 ProjectUtil.removeUnwantedFields(m, JsonKey.DATE_TIME, JsonKey.USER_ID, JsonKey.ADDED_BY, JsonKey.LAST_UPDATED_TIME)
                 m.put(JsonKey.COLLECTION_ID, m.getOrDefault(JsonKey.COURSE_ID, ""))
                 if (fields.contains(JsonKey.ASSESSMENT_SCORE))
-                    m.putAll(mapAsJavaMap(Map(JsonKey.ASSESSMENT_SCORE -> getScore(userId, courseId, contentIds, batchId, request.getRequestContext))))
+                    m.putAll(mapAsJavaMap(Map(JsonKey.ASSESSMENT_SCORE -> getScore(userId, courseId, m.get("contentId").asInstanceOf[String], batchId, request.getRequestContext))))
                 m
             }).asJava
             response.put(JsonKey.RESPONSE, filteredContents)
@@ -317,14 +317,13 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         this
     }
 
-    def getScore(userId: String, courseId: String, contentIds: java.util.List[String], batchId: String, requestContext: RequestContext): util.List[util.Map[String, AnyRef]] = {
+    def getScore(userId: String, courseId: String, contentId: String, batchId: String, requestContext: RequestContext): util.List[util.Map[String, AnyRef]] = {
         val filters = new java.util.HashMap[String, AnyRef]() {
             {
                 put("user_id", userId)
                 put("course_id", courseId)
                 put("batch_id", batchId)
-                if (CollectionUtils.isNotEmpty(contentIds))
-                    put("content_id", contentIds)
+                put("content_id", contentId)
             }
         }
         val fieldsToGet = new java.util.ArrayList[String](){{

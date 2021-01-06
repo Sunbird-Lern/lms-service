@@ -218,7 +218,7 @@ public class ProjectUtilTest extends BaseHttpTest {
     assertNotNull(map.get(JsonKey.AUTHORIZATION));
   }
 
-  @Test
+  @Ignore
   public void testRegisterTagSuccess() {
     String response = null;
     try {

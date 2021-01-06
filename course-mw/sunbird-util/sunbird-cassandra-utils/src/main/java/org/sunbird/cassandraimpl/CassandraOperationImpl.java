@@ -4,9 +4,12 @@ import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.WriteType;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.exceptions.NoHostAvailableException;
+import com.datastax.driver.core.exceptions.WriteTimeoutException;
 import com.datastax.driver.core.exceptions.QueryExecutionException;
 import com.datastax.driver.core.exceptions.QueryValidationException;
 import com.datastax.driver.core.querybuilder.*;
@@ -15,6 +18,7 @@ import com.datastax.driver.core.querybuilder.Select.Where;
 import com.datastax.driver.core.querybuilder.Update.Assignments;
 import com.google.common.util.concurrent.FutureCallback;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +49,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
 
   protected CassandraConnectionManager connectionManager = CassandraConnectionMngrFactory.getInstance();;
   protected LoggerUtil logger = new LoggerUtil(this.getClass()); 
+  protected List<String> writeType = new ArrayList<String>(){{add(WriteType.BATCH.name());add(WriteType.SIMPLE.name());}};
 
   @Override
   public Response insertRecord(RequestContext requestContext, String keyspaceName, String tableName, Map<String, Object> request) {
@@ -733,6 +738,54 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
     logger.debug(requestContext, selectQuery.getQueryString());
     ResultSet resultSet = connectionManager.getSession(keyspace).execute(selectQuery);
     Response response = CassandraUtil.createResponse(resultSet);
+    return response;
+  }
+
+  /**
+   * Method to handle partial cassandra write operation.
+   * This method will handle WriteTimeoutException of BATCH/SIMPLE WriteType
+   * Reference for handling partial writes :- https://www.datastax.com/blog/cassandra-error-handling-done-right
+   */
+  @Override
+  public Response batchInsertLogged(
+          RequestContext requestContext, String keyspaceName, String tableName, List<Map<String, Object>> records) {
+
+    long startTime = System.currentTimeMillis();
+    logger.info(requestContext,
+            "Cassandra Service batchInsertLogged method started at ==" + startTime);
+
+    Session session = connectionManager.getSession(keyspaceName);
+    Response response = new Response();
+    BatchStatement batchStatement = new BatchStatement(BatchStatement.Type.LOGGED);
+    batchStatement.setConsistencyLevel(ConsistencyLevel.QUORUM);
+    ResultSet resultSet = null;
+
+    try {
+      for (Map<String, Object> map : records) {
+        Insert insert = QueryBuilder.insertInto(keyspaceName, tableName);
+        map.entrySet()
+                .stream()
+                .forEach(
+                        x -> {
+                          insert.value(x.getKey(), x.getValue());
+                        });
+        batchStatement.add(insert);
+      }
+      resultSet = session.execute(batchStatement);
+      response.put(Constants.RESPONSE, Constants.SUCCESS);
+    } catch (QueryExecutionException
+            | QueryValidationException
+            | NoHostAvailableException
+            | IllegalStateException e) {
+      logger.info(requestContext, "Cassandra Batch Insert Failed." + e.getMessage(), e);
+      if (e instanceof WriteTimeoutException && writeType.contains(((WriteTimeoutException) e).getWriteType().name()))
+        response.put(Constants.RESPONSE, Constants.SUCCESS);
+      else {
+        logger.error(requestContext, e.getMessage(), e);
+        throw e;
+      }
+    }
+    logQueryElapseTime("batchInsertLogged", startTime);
     return response;
   }
 

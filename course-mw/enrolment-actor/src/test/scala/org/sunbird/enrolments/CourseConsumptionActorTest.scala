@@ -75,7 +75,7 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
         }})
         (esService.search(_:RequestContext, _: SearchDTO, _: String)).expects(*,*,*).returns(concurrent.Future{validBatchData()})
         (cassandraOperation.getRecords(_:RequestContext, _: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.List[String])).expects(*,*,*,*,*).returns(response)
-        (cassandraOperation.batchInsert(_:RequestContext, _: String, _: String, _: java.util.List[java.util.Map[String, AnyRef]])).expects(*,*,*,*)
+        (cassandraOperation.batchInsertLogged(_:RequestContext, _: String, _: String, _: java.util.List[java.util.Map[String, AnyRef]])).expects(*,*,*,*)
         (cassandraOperation.updateRecordV2(_:RequestContext, _: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.Map[String, AnyRef], _: Boolean)).expects(*,"sunbird_courses", "user_enrolments",*,*,true)
         val result = callActor(getStateUpdateRequest(), Props(new ContentConsumptionActor().setCassandraOperation(cassandraOperation, false).setEsService(esService)))
         assert(null!= result)

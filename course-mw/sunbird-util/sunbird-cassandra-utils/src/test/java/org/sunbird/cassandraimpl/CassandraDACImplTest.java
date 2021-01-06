@@ -1,8 +1,15 @@
 package org.sunbird.cassandraimpl;
 
+import com.datastax.driver.core.BatchStatement;
+import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.WriteType;
+import com.datastax.driver.core.exceptions.InvalidQueryException;
+import com.datastax.driver.core.exceptions.WriteTimeoutException;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
@@ -30,9 +37,12 @@ public class CassandraDACImplTest extends BaseTest {
 
     static final String keyspace = "sunbird_courses";
     static final String table = "assessment_aggregator";
+    static final String user_consumption_table = "user_content_consumption";
     static final Timestamp timestamp = new Timestamp(System.currentTimeMillis());
     @Mock
     CassandraConnectionManager connectionManager;
+    @Mock
+    Session session2;
 
     private static String createKeyspace = "CREATE KEYSPACE IF NOT EXISTS " + keyspace
             + " WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '1'}";
@@ -40,13 +50,15 @@ public class CassandraDACImplTest extends BaseTest {
             + " (course_id text,batch_id text,user_id text,content_id text,attempt_id text,created_on timestamp,grand_total text,last_attempted_on timestamp,total_max_score double,total_score double,updated_on timestamp,PRIMARY KEY (course_id, batch_id, user_id, content_id, attempt_id));";
     private static String insertTable = "INSERT INTO " + keyspace + "." + table
             + "(user_id, course_id, batch_id, content_id, attempt_id, total_max_score, total_score, last_attempted_on) VALUES ('user_001','course_001','batch_001', 'content_001', 'attempt_001', 1, 1, '" + timestamp + "');";
+    private static String create_user_consumption_table = "CREATE TABLE IF NOT EXISTS " + keyspace + "." + user_consumption_table
+            + " (userid text,courseid text,batchid text,contentid text,completedcount int,datetime timestamp,lastaccesstime text,lastcompletedtime text,lastupdatedtime text,progress int,status int,viewcount int,PRIMARY KEY (userid, courseid, batchid, contentid));";
 
     private CassandraOperation cassandraOperation = ServiceFactory.getInstance();
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        executeScript(createKeyspace, createTable, insertTable);
+        executeScript(createKeyspace, createTable, create_user_consumption_table, insertTable);
     }
 
     @Test
@@ -81,6 +93,68 @@ public class CassandraDACImplTest extends BaseTest {
         Response response = cassandraOperation.getRecordsWithLimit(request.getRequestContext(), keyspace, table, filters, fieldsToGet, 25);
         Assert.assertEquals(response.getResponseCode(), ResponseCode.OK);
         Assert.assertTrue(((ArrayList<Map<String, Object>>) response.getResult().get("response")).get(0).equals(result));
+    }
+
+    @Test
+    public void testBatchInsertLogged() {
+        Request request = getRequest();
+        ArrayList<Map<String, Object>> records = new ArrayList<Map<String, Object>>() {
+            {
+                add(new HashMap<String, Object>() {{
+                put("userId", "user_001");
+                put("courseId", "course_001");
+                put("batchId", "batch_001");
+                put("contentId", new ArrayList<String>() {{
+                    add("content_001");
+                }});
+            }});
+            }
+        };
+        PowerMockito.stub(PowerMockito.method(CassandraConnectionMngrFactory.class, "getInstance")).toReturn(connectionManager);
+        PowerMockito.stub(PowerMockito.method(CassandraConnectionManagerImpl.class, "getSession")).toReturn(session);
+        Response response = cassandraOperation.batchInsertLogged(request.getRequestContext(), keyspace, user_consumption_table, records);
+        Assert.assertEquals(response.getResponseCode(), ResponseCode.OK);
+    }
+
+    @Test(expected = InvalidQueryException.class)
+    public void testBatchInsertLoggedException() {
+        Request request = getRequest();
+        ArrayList<Map<String, Object>> records = new ArrayList<Map<String, Object>>() {
+            {
+                add(new HashMap<String, Object>() {{
+                    put("courseId", "course_001");
+                    put("batchId", "batch_001");
+                    put("contentId", new ArrayList<String>() {{
+                        add("content_001");
+                    }});
+                }});
+            }
+        };
+        PowerMockito.stub(PowerMockito.method(CassandraConnectionMngrFactory.class, "getInstance")).toReturn(connectionManager);
+        PowerMockito.stub(PowerMockito.method(CassandraConnectionManagerImpl.class, "getSession")).toReturn(session);
+        cassandraOperation.batchInsertLogged(request.getRequestContext(), keyspace, user_consumption_table, records);
+    }
+
+    @Test
+    public void testBatchInsertLoggedPartialWrite() {
+        Request request = getRequest();
+        ArrayList<Map<String, Object>> records = new ArrayList<Map<String, Object>>() {
+            {
+                add(new HashMap<String, Object>() {{
+                    put("userId", "user_001");
+                    put("courseId", "course_001");
+                    put("batchId", "batch_001");
+                    put("contentId", new ArrayList<String>() {{
+                        add("content_001");
+                    }});
+                }});
+            }
+        };
+        PowerMockito.stub(PowerMockito.method(CassandraConnectionMngrFactory.class, "getInstance")).toReturn(connectionManager);
+        PowerMockito.stub(PowerMockito.method(CassandraConnectionManagerImpl.class, "getSession")).toReturn(session2);
+        PowerMockito.when(session2.execute(Mockito.any(BatchStatement.class))).thenThrow(new WriteTimeoutException(ConsistencyLevel.QUORUM, WriteType.SIMPLE, 1, 2));
+        Response response = cassandraOperation.batchInsertLogged(request.getRequestContext(), keyspace, user_consumption_table, records);
+        Assert.assertEquals(response.getResponseCode(), ResponseCode.OK);
     }
 
     public Request getRequest() {

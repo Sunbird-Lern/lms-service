@@ -278,4 +278,16 @@ public interface CassandraOperation {
 
   public Response getRecordsWithLimit(
           RequestContext requestContext, String keyspace, String table, Map<String, Object> filters, List<String> fields, Integer limit);
+
+  /**
+   * Method to perform Logged batch insert operation.
+   *
+   * @param requestContext
+   * @param keyspaceName Keyspace name
+   * @param tableName Table name
+   * @param records List of records in the batch insert operation
+   * @return Response indicating status of operation
+   */
+  Response batchInsertLogged(RequestContext requestContext, String keyspaceName, String tableName, List<Map<String, Object>> records);
+
 }

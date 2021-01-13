@@ -32,8 +32,8 @@ public class CassandraDACImpl extends CassandraOperationImpl {
     Session session = connectionManager.getSession(keySpace);
 
     StringBuilder sb = new StringBuilder();
-    if (null != properties && !properties.isEmpty()) {
-      sb.append("select  ").append(fields.stream().collect(Collectors.joining(",")));
+    if (null != properties && !properties.isEmpty() && fields!=null &&!fields.isEmpty()) {
+      sb.append("select ").append(fields.stream().collect(Collectors.joining(","))).append(", ");
       StringBuilder selectFields = new StringBuilder();
       for (String property : properties) {
         selectFields.append("blobAsText(").append(property).append(") as " ).append(property);

@@ -25,6 +25,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     private var cassandraOperation = ServiceFactory.getInstance
     private var pushTokafkaEnabled: Boolean = true //TODO: to be removed once all are in scala
     private val consumptionDBInfo = Util.dbInfoMap.get(JsonKey.LEARNER_CONTENT_DB)
+    private val consumptionProgressDBInfo = Util.dbInfoMap.get(JsonKey.LEARNER_CONTENT_PROGRESS_DB)
     private val assessmentAggregatorDBInfo = Util.dbInfoMap.get(JsonKey.ASSESSMENT_AGGREGATOR_DB)
     val dateFormatter = ProjectUtil.getDateFormatter
 
@@ -116,7 +117,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                             val existingContents = getContentsConsumption(userId, courseId, contentIds, batchId, request.getRequestContext).groupBy(x => x.get("contentId").asInstanceOf[String]).map(e => e._1 -> e._2.toList.head).toMap
                             //added progress....
                             val cprogress = getProgress(entry._2)
-                            cassandraOperation.batchInsert(request.getRequestContext, consumptionDBInfo.getKeySpace, "user_content_consumption_progress", cprogress)
+                            cassandraOperation.batchInsert(request.getRequestContext, consumptionDBInfo.getKeySpace, consumptionProgressDBInfo.getTableName, cprogress)
 
                             val contents:List[java.util.Map[String, AnyRef]] = entry._2.toList.map(inputContent => {
                                 inputContent.remove("progressDetails")
@@ -203,7 +204,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             if(CollectionUtils.isNotEmpty(contentIds))
                 put("contentid", contentIds)
         }}
-        val response = cassandraOperation.getBlobAsText(requestContext, consumptionDBInfo.getKeySpace, "user_content_consumption_progress", filters, util.Arrays.asList("body") )
+        val response = cassandraOperation.getBlobAsText(requestContext, consumptionDBInfo.getKeySpace, consumptionProgressDBInfo.getTableName, filters, util.Arrays.asList("contentid"), util.Arrays.asList("body") )
         response.getResult.getOrDefault(JsonKey.RESPONSE, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
     }
 

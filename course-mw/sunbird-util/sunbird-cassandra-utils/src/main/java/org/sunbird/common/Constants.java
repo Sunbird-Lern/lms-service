@@ -52,6 +52,7 @@ public interface Constants {
   public static final String ALREADY_EXIST = "Record with this primary key already exist.";
   public static final String IF_NOT_EXISTS = " IF NOT EXISTS;";
   public static final String EXCEPTION_MSG_FETCH = "Exception occurred while fetching record from ";
+  public static final String EXCEPTION_MSG_BLOB = "Exception occurred while fetching blob records from ";
   public static final String EXCEPTION_MSG_UPSERT =
       "Exception occured while upserting record from ";
   public static final String EXCEPTION_MSG_DELETE =

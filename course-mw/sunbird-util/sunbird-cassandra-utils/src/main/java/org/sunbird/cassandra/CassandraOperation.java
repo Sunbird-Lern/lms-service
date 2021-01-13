@@ -279,6 +279,6 @@ public interface CassandraOperation {
   public Response getRecordsWithLimit(
           RequestContext requestContext, String keyspace, String table, Map<String, Object> filters, List<String> fields, Integer limit);
 
-  public Response getBlobAsText(RequestContext requestContext, String keySpace, String table, Map<String, Object> filters, List<String> properties);
+  public Response getBlobAsText(RequestContext requestContext, String keySpace, String table, Map<String, Object> filters, List<String> fields, List<String> properties);
 
 }

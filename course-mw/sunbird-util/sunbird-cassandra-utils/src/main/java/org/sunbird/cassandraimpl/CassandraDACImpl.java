@@ -9,6 +9,8 @@ import com.google.common.util.concurrent.Futures;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -25,13 +27,13 @@ public class CassandraDACImpl extends CassandraOperationImpl {
 
 
   @Override
-  public Response getBlobAsText(RequestContext requestContext, String keySpace, String table, Map<String, Object> filters, List<String> properties) {
+  public Response getBlobAsText(RequestContext requestContext, String keySpace, String table, Map<String, Object> filters,  List<String> fields,  List<String> properties) {
     Response response = new Response();
     Session session = connectionManager.getSession(keySpace);
 
     StringBuilder sb = new StringBuilder();
     if (null != properties && !properties.isEmpty()) {
-      sb.append("select contentid, ");
+      sb.append("select  ").append(fields.stream().collect(Collectors.joining(",")));
       StringBuilder selectFields = new StringBuilder();
       for (String property : properties) {
         selectFields.append("blobAsText(").append(property).append(") as " ).append(property);
@@ -66,7 +68,7 @@ public class CassandraDACImpl extends CassandraOperationImpl {
       response = CassandraUtil.createResponse(results);
 
     } catch (Exception e) {
-      ProjectLogger.log(Constants.EXCEPTION_MSG_FETCH + table + " : " + e.getMessage(), e);
+      ProjectLogger.log(Constants.EXCEPTION_MSG_BLOB + table + " : " + e.getMessage(), e);
       throw new ProjectCommonException(
               ResponseCode.SERVER_ERROR.getErrorCode(),
               ResponseCode.SERVER_ERROR.getErrorMessage(),

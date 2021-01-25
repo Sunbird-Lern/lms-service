@@ -56,7 +56,7 @@ import scala.concurrent.Future;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*"})
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*", "jdk.internal.reflect.*", "sun.security.ssl.*", "javax.net.ssl.*" , "javax.crypto.*"})
 @PrepareForTest({
   ConnectionManager.class,
   RestHighLevelClient.class,

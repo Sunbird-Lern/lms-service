@@ -52,7 +52,7 @@ import org.sunbird.services.sso.impl.KeyCloakServiceImpl;
   SSOServiceFactory.class,
   CloudStorageUtil.class, KeycloakRequiredActionLinkUtil.class
 })
-@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*"})
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "jdk.internal.reflect.*", "sun.security.ssl.*", "javax.net.ssl.*" , "javax.crypto.*"})
 public class TextbookTocActorTest {
 
   private static ActorSystem system;

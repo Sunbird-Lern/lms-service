@@ -47,7 +47,7 @@ import org.sunbird.common.models.util.JsonKey;
   System.class,
   Notification.class, Unirest.class
 })
-@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*"})
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*", "sun.security.ssl.*", "javax.net.ssl.*" , "javax.crypto.*"})
 public class FCMNotificationTest {
 
   @Test

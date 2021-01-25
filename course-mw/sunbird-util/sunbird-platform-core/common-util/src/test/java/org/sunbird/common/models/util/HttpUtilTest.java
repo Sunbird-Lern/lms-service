@@ -1,20 +1,10 @@
 package org.sunbird.common.models.util;
 
 import com.mashape.unirest.http.Unirest;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpStatus;
-import org.apache.http.HttpVersion;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicStatusLine;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,7 +21,7 @@ public class HttpUtilTest extends BaseHttpTest {
     String url = "http://localhost:8000/v1/issuer/issuers";
     try {
       PowerMockito.mockStatic(Unirest.class);
-      PowerMockito.when(Unirest.patch(url), Mockito.anyString(), Mockito.anyMap()).thenReturn("SUCCESS");
+      Mockito.doReturn("SUCCESS").when(Unirest.patch(url));
       String response = HttpUtil.sendPatchRequest(url, "{\"message\":\"success\"}", headers);
       assertTrue("SUCCESS".equals(response));
     } catch (Exception e) {

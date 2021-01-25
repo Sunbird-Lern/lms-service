@@ -36,14 +36,8 @@ import org.powermock.modules.junit4.PowerMockRunner;
   CloudBlobContainer.class,
   ListBlobItem.class
 })
-@PowerMockIgnore({
-  "javax.management.*",
-  "javax.net.ssl.*",
-  "javax.security.*",
-  "com.microsoft.azure.storage.*",
-  "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "org.w3c.dom.*",
-  "com.sun.org.apache.xalan.*", "javax.activation.*"
-})
+@PowerMockIgnore({  "javax.management.*", "javax.net.ssl.*", "javax.security.*", "com.microsoft.azure.storage.*",
+        "jdk.internal.reflect.*", "sun.security.ssl.*", "javax.crypto.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class AzureServiceFactoryTest {
 
   private static Object obj = null;

@@ -37,7 +37,9 @@ import org.sunbird.userorg.UserOrgServiceImpl;
 @RunWith(PowerMockRunner.class)
 @SuppressStaticInitializationFor("org.sunbird.kafka.client.KafkaClient")
 @PrepareForTest({ServiceFactory.class, InstructionEventGenerator.class, KafkaClient.class})
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*", "jdk.internal.reflect.*",
+        "sun.security.ssl.*", "javax.net.ssl.*", "javax.crypto.*",
+        "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest {
 
   private MockerBuilder.MockersGroup group;

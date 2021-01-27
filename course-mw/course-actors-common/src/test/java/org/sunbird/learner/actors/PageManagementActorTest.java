@@ -287,7 +287,7 @@ public class PageManagementActorTest {
     reqObj.getRequest().put(JsonKey.ID, "Test Page");
 
     when(cassandraOperation.getRecordsByProperty(
-            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyList()))
+            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.any()))
         .thenReturn(cassandraGetRecordByProperty(""));
 
     subject.tell(reqObj, probe.getRef());
@@ -313,7 +313,7 @@ public class PageManagementActorTest {
     reqObj.getRequest().put(JsonKey.ID, "Test Page");
 
     when(cassandraOperation.getRecordsByProperty(
-            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyList()))
+            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.any()))
         .thenReturn(cassandraGetRecordByProperty(JsonKey.APP_MAP));
 
     subject.tell(reqObj, probe.getRef());
@@ -338,7 +338,7 @@ public class PageManagementActorTest {
     reqObj.getRequest().put(JsonKey.ID, "Test Page");
 
     when(cassandraOperation.getRecordsByProperty(
-            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyList()))
+            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.any()))
         .thenReturn(cassandraGetRecordByProperty(JsonKey.PORTAL_MAP));
 
     subject.tell(reqObj, probe.getRef());

@@ -130,7 +130,7 @@ public class CourseBatchSchedulerUtilTest {
                 .updateRecord(Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
         .thenReturn(new Response());
     CourseBatchSchedulerUtil.updateCourseBatchDbStatus(courseBatch, true, null);
-    PowerMockito.verifyStatic();
+    PowerMockito.verifyStatic(ContentUtil.class);
     ContentUtil.searchContent(Mockito.anyString(), Mockito.anyMap());
   }
 }

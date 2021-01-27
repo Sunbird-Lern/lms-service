@@ -37,7 +37,7 @@ public abstract class BaseMessageTest {
 		PowerMockito.mockStatic(HttpClients.class);
 		try {
 			doReturn(httpClient).when(HttpClients.class, "createDefault");
-			doReturn(httpResp).when(httpClient).execute(Mockito.any(HttpPost.class));
+			doReturn(httpResp).when(httpClient).execute(Mockito.any());
 			doReturn(statusLine).when(httpResp).getStatusLine();
 			doReturn(200).when(statusLine).getStatusCode();
 		} catch (Exception e) {

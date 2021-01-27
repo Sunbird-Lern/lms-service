@@ -16,7 +16,9 @@ import util.ACTOR_NAMES;
 import java.util.Arrays;
 
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*", "jdk.internal.reflect.*",
+        "sun.security.ssl.*", "javax.net.ssl.*", "javax.crypto.*",
+        "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class GroupAggControllerTest extends BaseApplicationTest {
 
     public static String USER_ID = "userId";

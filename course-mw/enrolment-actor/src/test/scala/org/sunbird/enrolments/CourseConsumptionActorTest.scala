@@ -53,7 +53,6 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
 
         }})
         ((requestContext: RequestContext, keyspace: _root_.scala.Predef.String, table: _root_.scala.Predef.String, filters: _root_.java.util.Map[_root_.scala.Predef.String, AnyRef], fields: _root_.java.util.List[_root_.scala.Predef.String]) => cassandraOperation.getRecords(requestContext, keyspace, table, filters, fields)).expects(*,*,*,*,*).returns(response)
-        ((requestContext: RequestContext, keyspace: _root_.scala.Predef.String, table: _root_.scala.Predef.String, filters: _root_.java.util.Map[_root_.scala.Predef.String, AnyRef], fields: _root_.java.util.List[_root_.scala.Predef.String], properties: _root_.java.util.List[_root_.scala.Predef.String]) => cassandraOperation.getBlobAsText(requestContext, keyspace, table, filters, fields, properties)).expects(*,*,*,*,*,*).returns(progressResponse)
 
         val result = callActor(getStateReadRequest(), Props(new ContentConsumptionActor().setCassandraOperation(cassandraOperation, false)))
         assert(null!= result)
@@ -64,7 +63,6 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
         val response = new Response()
         response.put("response", new java.util.ArrayList[java.util.Map[String, AnyRef]])
         ((requestContext: RequestContext, keyspace: _root_.scala.Predef.String, table: _root_.scala.Predef.String, filters: _root_.java.util.Map[_root_.scala.Predef.String, AnyRef], fields: _root_.java.util.List[_root_.scala.Predef.String]) => cassandraOperation.getRecords(requestContext, keyspace, table, filters, fields)).expects(*,*,*,*,*).returns(response)
-        ((requestContext: RequestContext, keyspace: _root_.scala.Predef.String, table: _root_.scala.Predef.String, filters: _root_.java.util.Map[_root_.scala.Predef.String, AnyRef], fields: _root_.java.util.List[_root_.scala.Predef.String], props: _root_.java.util.List[_root_.scala.Predef.String]) => cassandraOperation.getBlobAsText(requestContext, keyspace, table, filters, fields, props)).expects(*,*,*,*,*,*).returns(response)
         val result = callActor(getStateReadRequest(), Props(new ContentConsumptionActor().setCassandraOperation(cassandraOperation, false)))
         assert(null!= result)
     }
@@ -90,8 +88,6 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
         }})
         (esService.search(_:RequestContext, _: SearchDTO, _: String)).expects(*,*,*).returns(concurrent.Future{validBatchData()})
         (cassandraOperation.getRecords(_:RequestContext, _: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.List[String])).expects(*,*,*,*,*).returns(response)
-        val data = new java.util.ArrayList[java.util.Map[String, AnyRef]]()
-        (cassandraOperation.batchInsert(_:RequestContext, _: String, _: String, _: java.util.List[java.util.Map[String, AnyRef]])).expects(*,*,*,data)
         (cassandraOperation.batchInsert(_:RequestContext, _: String, _: String, _: java.util.List[java.util.Map[String, AnyRef]])).expects(*,*,*,*)
         (cassandraOperation.updateRecordV2(_:RequestContext, _: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.Map[String, AnyRef], _: Boolean)).expects(*,"sunbird_courses", "user_enrolments",*,*,true)
         val result = callActor(getStateUpdateRequest(), Props(new ContentConsumptionActor().setCassandraOperation(cassandraOperation, false).setEsService(esService)))
@@ -231,7 +227,6 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
         }})
         (cassandraOperation.getRecords(_:RequestContext, _: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.List[String])).expects(*,*,*,*,*).returns(response)
         (cassandraOperation.getRecordsWithLimit(_: RequestContext, _: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.List[String], _: Int)).expects(*, *, *, *, *, *).returns(response).anyNumberOfTimes()
-        (cassandraOperation.getBlobAsText(_:RequestContext, _: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.List[String], _: java.util.List[String])).expects(*,*,*,*,*,*).returns(progressResponse)
 
         val result = callActor(getStateReadRequestWithFields(), Props(new ContentConsumptionActor().setCassandraOperation(cassandraOperation, false)))
         println("result : " + result)

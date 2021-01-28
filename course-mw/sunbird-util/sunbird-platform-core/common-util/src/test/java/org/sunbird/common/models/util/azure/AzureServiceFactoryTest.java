@@ -40,13 +40,13 @@ import org.powermock.modules.junit4.PowerMockRunner;
         "jdk.internal.reflect.*", "sun.security.ssl.*", "javax.crypto.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class AzureServiceFactoryTest {
 
-  Object obj = null;
-  CloudBlobContainer container = null;
-  CloudBlobContainer container1 = null;
+  static Object obj = null;
+  static CloudBlobContainer container = null;
+  static CloudBlobContainer container1 = null;
   String containerName = "testcontainerxyz";
 
   @BeforeClass
-  public void getObject() {
+  public static void getObject() {
     obj = CloudServiceFactory.get("Azure");
     Assert.assertTrue(obj instanceof CloudService);
     Assert.assertNotNull(obj);
@@ -164,7 +164,7 @@ public class AzureServiceFactoryTest {
   }
 
   @AfterClass
-  public void shutDown() {
+  public static void shutDown() {
     container1 = null;
     container = null;
     obj = null;

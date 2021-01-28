@@ -26,10 +26,10 @@ import org.sunbird.telemetry.util.TelemetryGenerator;
 public class TelemetryGeneratorTest {
 
   static Map<String, Object> context;
-  Map<String, Object> rollup;
+  static Map<String, Object> rollup;
 
   @Before
-  public void setUp() throws Exception {
+  public static void setUp() throws Exception {
     context = new HashMap<String, Object>();
     rollup = new HashMap<String, Object>();
     context.put("actorType", "consumer");

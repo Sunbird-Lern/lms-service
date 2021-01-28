@@ -41,14 +41,14 @@ import org.sunbird.common.models.util.KeyCloakConnectionProvider;
 public class KeyCloakRsaKeyFetcherTest {
 
   String FALSE_REALM = "false-realm";
-  HttpClientBuilder httpClientBuilder =
+  static HttpClientBuilder httpClientBuilder =
       PowerMockito.mock(HttpClientBuilder.class);
-  CloseableHttpClient client = null;
+  static CloseableHttpClient client = null;
   CloseableHttpResponse response;
-  HttpEntity httpEntity;
+  static HttpEntity httpEntity;
 
   @Before
-  public void setUp() throws Exception {
+  public static void setUp() throws Exception {
 
     client = PowerMockito.mock(CloseableHttpClient.class);
     PowerMockito.mockStatic(HttpClientBuilder.class);

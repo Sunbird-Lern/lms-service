@@ -22,10 +22,10 @@ public class ConfigUtilTest {
 
   String configType = "user";
   String validJson = "{\"key\" : \"value\"}";
-  ConfigUtil configUtilMock;
+  static ConfigUtil configUtilMock;
 
   @BeforeClass
-  public void setup() throws Exception {
+  public static void setup() throws Exception {
     configUtilMock = Mockito.mock(ConfigUtil.class);
     PowerMockito.whenNew(ConfigUtil.class).withAnyArguments().thenReturn(configUtilMock);
   }

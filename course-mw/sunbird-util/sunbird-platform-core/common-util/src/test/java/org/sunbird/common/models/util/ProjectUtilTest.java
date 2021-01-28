@@ -33,10 +33,10 @@ public class ProjectUtilTest extends BaseHttpTest {
 
   PropertiesCache propertiesCache = ProjectUtil.propertiesCache;
 
-  Map<String, String> headers = new HashMap<String, String>();
+  static Map<String, String> headers = new HashMap<String, String>();
 
   @BeforeClass
-  public void init() {
+  public static void init() {
     headers.put("content-type", "application/json");
     headers.put("accept", "application/json");
     headers.put("user-id", "mahesh");
@@ -74,8 +74,8 @@ public class ProjectUtilTest extends BaseHttpTest {
     templateMap.put(JsonKey.ACTION_URL, "googli.com");
     templateMap.put(JsonKey.NAME, "userName");
 
-    boolean envVal = !StringUtils.isBlank(System.getenv(JsonKey.EMAIL_SERVER_FROM));
-    boolean cacheVal = propertiesCache.getProperty(JsonKey.EMAIL_SERVER_FROM) != null;
+    Boolean envVal = !StringUtils.isBlank(System.getenv(JsonKey.EMAIL_SERVER_FROM));
+    Boolean cacheVal = propertiesCache.getProperty(JsonKey.EMAIL_SERVER_FROM) != null;
 
     VelocityContext context = ProjectUtil.getContext(templateMap);
     if (envVal) {

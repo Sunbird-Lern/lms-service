@@ -24,7 +24,7 @@ import static org.junit.Assert.assertTrue;
 @PowerMockIgnore({  "javax.management.*", "javax.net.ssl.*", "javax.security.*", "com.microsoft.azure.storage.*",
         "jdk.internal.reflect.*", "sun.security.ssl.*", "javax.crypto.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class HttpUtilTest extends BaseHttpTest {
-  public static final String JSON_STRING_DATA = "asdasasfasfsdfdsfdsfgsd";
+  String JSON_STRING_DATA = "asdasasfasfsdfdsfdsfgsd";
 
   @Test
   public void testSendPatchRequestSuccess() {

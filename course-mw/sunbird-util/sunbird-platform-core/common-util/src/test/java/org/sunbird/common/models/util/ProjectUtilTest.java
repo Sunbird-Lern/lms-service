@@ -31,12 +31,12 @@ import org.sunbird.common.responsecode.ResponseCode;
         "jdk.internal.reflect.*", "sun.security.ssl.*", "javax.crypto.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class ProjectUtilTest extends BaseHttpTest {
 
-  private PropertiesCache propertiesCache = ProjectUtil.propertiesCache;
+  PropertiesCache propertiesCache = ProjectUtil.propertiesCache;
 
-  private static Map<String, String> headers = new HashMap<String, String>();
+  Map<String, String> headers = new HashMap<String, String>();
 
   @BeforeClass
-  public static void init() {
+  public void init() {
     headers.put("content-type", "application/json");
     headers.put("accept", "application/json");
     headers.put("user-id", "mahesh");

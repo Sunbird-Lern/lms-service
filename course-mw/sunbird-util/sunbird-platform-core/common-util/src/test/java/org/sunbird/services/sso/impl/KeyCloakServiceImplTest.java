@@ -41,14 +41,14 @@ public class KeyCloakServiceImplTest extends BaseHttpTest {
   SSOManager keyCloakService = SSOServiceFactory.getInstance();
 
   Map<String, String> userId = new HashMap<>();
-  String userName = UUID.randomUUID().toString().replaceAll("-", "");
-  Class t = null;
-  Map<String, Object> USER_SUCCESS = new HashMap<>();
-  Map<String, Object> USER_SAME_EMAIL = new HashMap<>();
-  UsersResource usersRes = mock(UsersResource.class);
+  static String userName = UUID.randomUUID().toString().replaceAll("-", "");
+  static Class t = null;
+  static Map<String, Object> USER_SUCCESS = new HashMap<>();
+  static Map<String, Object> USER_SAME_EMAIL = new HashMap<>();
+  static UsersResource usersRes = mock(UsersResource.class);
 
   @BeforeClass
-  public void init() {
+  public static void init() {
     USER_SUCCESS.put(JsonKey.USERNAME, userName);
     USER_SUCCESS.put(JsonKey.PASSWORD, "password");
     USER_SUCCESS.put(JsonKey.FIRST_NAME, "A");

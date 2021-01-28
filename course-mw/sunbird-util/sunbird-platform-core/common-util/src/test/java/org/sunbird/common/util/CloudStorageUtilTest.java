@@ -26,8 +26,8 @@ import scala.Option;
 @PrepareForTest({StorageServiceFactory.class, CloudStorageUtil.class})
 public class CloudStorageUtilTest {
 
-  private static final String SIGNED_URL = "singedUrl";
-  private static final String UPLOAD_URL = "uploadUrl";
+  String SIGNED_URL = "singedUrl";
+  String UPLOAD_URL = "uploadUrl";
 
   @Before
   public void initTest() {

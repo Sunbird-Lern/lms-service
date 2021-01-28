@@ -20,12 +20,12 @@ import org.sunbird.common.responsecode.ResponseCode;
         "jdk.internal.reflect.*", "sun.security.ssl.*", "javax.crypto.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class ConfigUtilTest {
 
-  private String configType = "user";
-  private String validJson = "{\"key\" : \"value\"}";
-  private static ConfigUtil configUtilMock;
+  String configType = "user";
+  String validJson = "{\"key\" : \"value\"}";
+  ConfigUtil configUtilMock;
 
   @BeforeClass
-  public static void setup() throws Exception {
+  public void setup() throws Exception {
     configUtilMock = Mockito.mock(ConfigUtil.class);
     PowerMockito.whenNew(ConfigUtil.class).withAnyArguments().thenReturn(configUtilMock);
   }

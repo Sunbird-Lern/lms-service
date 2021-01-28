@@ -21,10 +21,10 @@ import org.sunbird.common.models.util.PropertiesCache;
 public class AppTest extends BaseHttpTest {
   String data =
       "{\"request\": { \"search\": {\"contentType\": [\"Story\"] }}}";
-  Map<String, String> headers = new HashMap<String, String>();
+  static Map<String, String> headers = new HashMap<String, String>();
 
   @BeforeClass
-  public void init() {
+  public static void init() {
     headers.put("content-type", "application/json");
     headers.put("accept", "application/json");
     headers.put("user-id", "mahesh");

@@ -18,6 +18,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.common.models.util.KeyCloakConnectionProvider;
@@ -35,14 +36,16 @@ import org.sunbird.common.models.util.KeyCloakConnectionProvider;
   HttpEntity.class,
   EntityUtils.class,
 })
+@PowerMockIgnore({  "javax.management.*", "javax.net.ssl.*", "javax.security.*", "com.microsoft.azure.storage.*",
+        "jdk.internal.reflect.*", "sun.security.ssl.*", "javax.crypto.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class KeyCloakRsaKeyFetcherTest {
 
-  String FALSE_REALM = "false-realm";
-  HttpClientBuilder httpClientBuilder =
+  public static final String FALSE_REALM = "false-realm";
+  private static final HttpClientBuilder httpClientBuilder =
       PowerMockito.mock(HttpClientBuilder.class);
-  CloseableHttpClient client = null;
-  CloseableHttpResponse response;
-  HttpEntity httpEntity;
+  private static CloseableHttpClient client = null;
+  private static CloseableHttpResponse response;
+  private static HttpEntity httpEntity;
 
   @Before
   public void setUp() throws Exception {

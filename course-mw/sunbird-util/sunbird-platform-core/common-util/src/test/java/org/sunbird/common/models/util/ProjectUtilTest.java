@@ -18,14 +18,20 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 
 /** Created by arvind on 6/10/17. */
+@RunWith(PowerMockRunner.class)
+@PowerMockIgnore({  "javax.management.*", "javax.net.ssl.*", "javax.security.*", "com.microsoft.azure.storage.*",
+        "jdk.internal.reflect.*", "sun.security.ssl.*", "javax.crypto.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class ProjectUtilTest extends BaseHttpTest {
 
-  PropertiesCache propertiesCache = ProjectUtil.propertiesCache;
+  private PropertiesCache propertiesCache = ProjectUtil.propertiesCache;
 
   private static Map<String, String> headers = new HashMap<String, String>();
 

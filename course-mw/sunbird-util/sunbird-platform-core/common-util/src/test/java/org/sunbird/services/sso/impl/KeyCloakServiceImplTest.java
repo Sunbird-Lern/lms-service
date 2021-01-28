@@ -14,6 +14,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UserResource;
@@ -21,6 +22,8 @@ import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.util.BaseHttpTest;
 import org.sunbird.common.models.util.JsonKey;
@@ -30,16 +33,18 @@ import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.services.sso.SSOManager;
 import org.sunbird.services.sso.SSOServiceFactory;
 
+@RunWith(PowerMockRunner.class)
+@PowerMockIgnore({  "javax.management.*", "javax.net.ssl.*", "javax.security.*", "com.microsoft.azure.storage.*",
+        "jdk.internal.reflect.*", "sun.security.ssl.*", "javax.crypto.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class KeyCloakServiceImplTest extends BaseHttpTest {
 
   private SSOManager keyCloakService = SSOServiceFactory.getInstance();
 
-  Map<String, String> userId = new HashMap<>();
-  static String userName = UUID.randomUUID().toString().replaceAll("-", "");
-  static Class t = null;
+  private static Map<String, String> userId = new HashMap<>();
+  private static final String userName = UUID.randomUUID().toString().replaceAll("-", "");
+  private static Class t = null;
 
-  static Map<String, Object> USER_SUCCESS = new HashMap<>();
-  public String userId_dev = "95e4942d-cbe8-477d-aebd-ad8e6de4bfc8";
+  private static final Map<String, Object> USER_SUCCESS = new HashMap<>();
 
   static {
     USER_SUCCESS.put(JsonKey.USERNAME, userName);
@@ -50,7 +55,7 @@ public class KeyCloakServiceImplTest extends BaseHttpTest {
     USER_SUCCESS.put(JsonKey.EMAIL, userName.substring(0, 10));
   }
 
-  static Map<String, Object> USER_SAME_EMAIL = new HashMap<>();
+  private static final Map<String, Object> USER_SAME_EMAIL = new HashMap<>();
 
   static {
     USER_SAME_EMAIL.put(JsonKey.USERNAME, userName);
@@ -61,7 +66,7 @@ public class KeyCloakServiceImplTest extends BaseHttpTest {
     USER_SAME_EMAIL.put(JsonKey.EMAIL, userName.substring(0, 10));
   }
 
-  static UsersResource usersRes = mock(UsersResource.class);
+  private static UsersResource usersRes = mock(UsersResource.class);
 
   @BeforeClass
   public static void init() {
@@ -132,8 +137,7 @@ public class KeyCloakServiceImplTest extends BaseHttpTest {
   @Test
   public void testUserUpdateTestSuccessWithAllData() {
     Map<String, Object> request = new HashMap<String, Object>();
-//    request.put(JsonKey.USER_ID, userId.get(JsonKey.USER_ID));
-    request.put(JsonKey.USER_ID, userId_dev);
+    request.put(JsonKey.USER_ID, userId.get(JsonKey.USER_ID));
     request.put(JsonKey.FIRST_NAME, userName);
     request.put(JsonKey.PHONE, "9870060000");
     request.put(JsonKey.EMAIL, userName.substring(0, 10));
@@ -146,8 +150,7 @@ public class KeyCloakServiceImplTest extends BaseHttpTest {
   @Test
   public void testUpdateUserSuccessWithoutProvider() {
     Map<String, Object> request = new HashMap<String, Object>();
-//    request.put(JsonKey.USER_ID, userId.get(JsonKey.USER_ID));
-    request.put(JsonKey.USER_ID, userId_dev);
+    request.put(JsonKey.USER_ID, userId.get(JsonKey.USER_ID));
     request.put(JsonKey.FIRST_NAME, userName);
     request.put(JsonKey.PHONE, "9870060000");
     request.put(JsonKey.COUNTRY_CODE, "+91");
@@ -160,8 +163,7 @@ public class KeyCloakServiceImplTest extends BaseHttpTest {
   @Test
   public void testUpdateUserSuccessWithoutProviderAndCountryCode() {
     Map<String, Object> request = new HashMap<String, Object>();
-//    request.put(JsonKey.USER_ID, userId.get(JsonKey.USER_ID));
-    request.put(JsonKey.USER_ID, userId_dev);
+    request.put(JsonKey.USER_ID, userId.get(JsonKey.USER_ID));
     request.put(JsonKey.FIRST_NAME, userName);
     request.put(JsonKey.PHONE, "9870060000");
     request.put(JsonKey.EMAIL, userName.substring(0, 10));
@@ -174,8 +176,7 @@ public class KeyCloakServiceImplTest extends BaseHttpTest {
   public void testUpdateUserSuccessWithoutAnyField() {
 
     Map<String, Object> request = new HashMap<String, Object>();
-//    request.put(JsonKey.USER_ID, userId.get(JsonKey.USER_ID));
-    request.put(JsonKey.USER_ID, userId_dev);
+    request.put(JsonKey.USER_ID, userId.get(JsonKey.USER_ID));
     String result = keyCloakService.updateUser(request);
     Assert.assertNotNull(result);
   }

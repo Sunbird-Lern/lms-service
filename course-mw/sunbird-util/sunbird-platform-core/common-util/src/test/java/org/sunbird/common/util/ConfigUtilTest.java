@@ -16,12 +16,13 @@ import org.sunbird.common.responsecode.ResponseCode;
 
 @PrepareForTest(ConfigUtil.class)
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*"})
+@PowerMockIgnore({  "javax.management.*", "javax.net.ssl.*", "javax.security.*", "com.microsoft.azure.storage.*",
+        "jdk.internal.reflect.*", "sun.security.ssl.*", "javax.crypto.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class ConfigUtilTest {
 
-  String configType = "user";
-  String validJson = "{\"key\" : \"value\"}";
-  static ConfigUtil configUtilMock;
+  private String configType = "user";
+  private String validJson = "{\"key\" : \"value\"}";
+  private static ConfigUtil configUtilMock;
 
   @BeforeClass
   public static void setup() throws Exception {

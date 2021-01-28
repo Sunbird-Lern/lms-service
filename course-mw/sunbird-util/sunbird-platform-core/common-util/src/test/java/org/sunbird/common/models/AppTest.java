@@ -6,16 +6,22 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.common.models.util.BaseHttpTest;
 import org.sunbird.common.models.util.HttpUtil;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.PropertiesCache;
 
+@RunWith(PowerMockRunner.class)
+@PowerMockIgnore({  "javax.management.*", "javax.net.ssl.*", "javax.security.*", "com.microsoft.azure.storage.*",
+        "jdk.internal.reflect.*", "sun.security.ssl.*", "javax.crypto.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class AppTest extends BaseHttpTest {
-  String data =
+  private static final String data =
       "{\"request\": { \"search\": {\"contentType\": [\"Story\"] }}}";
-  public static Map<String, String> headers = new HashMap<String, String>();
+  private static Map<String, String> headers = new HashMap<String, String>();
 
   @BeforeClass
   public static void init() {

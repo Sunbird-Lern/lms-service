@@ -1,17 +1,30 @@
 package org.sunbird.common.models.util;
 
 import com.mashape.unirest.http.Unirest;
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.blob.CloudBlobClient;
+import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import com.microsoft.azure.storage.blob.ListBlobItem;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertTrue;
 
+@RunWith(PowerMockRunner.class)
+@PowerMockIgnore({  "javax.management.*", "javax.net.ssl.*", "javax.security.*", "com.microsoft.azure.storage.*",
+        "jdk.internal.reflect.*", "sun.security.ssl.*", "javax.crypto.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class HttpUtilTest extends BaseHttpTest {
-  String JSON_STRING_DATA = "asdasasfasfsdfdsfdsfgsd";
+  public static final String JSON_STRING_DATA = "asdasasfasfsdfdsfdsfgsd";
 
   @Test
   public void testSendPatchRequestSuccess() {

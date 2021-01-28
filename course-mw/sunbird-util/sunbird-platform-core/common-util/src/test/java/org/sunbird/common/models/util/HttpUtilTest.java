@@ -11,7 +11,7 @@ import java.util.Map;
 import static org.junit.Assert.assertTrue;
 
 public class HttpUtilTest extends BaseHttpTest {
-  public static final String JSON_STRING_DATA = "asdasasfasfsdfdsfdsfgsd";
+  String JSON_STRING_DATA = "asdasasfasfsdfdsfdsfgsd";
 
   @Test
   public void testSendPatchRequestSuccess() {

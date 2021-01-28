@@ -22,8 +22,8 @@ import org.sunbird.telemetry.util.TelemetryGenerator;
 @PrepareForTest({TelemetryGenerator.class})
 public class TelemetryGeneratorTest {
 
-  private static Map<String, Object> context;
-  private static Map<String, Object> rollup;
+  static Map<String, Object> context;
+  Map<String, Object> rollup;
 
   @Before
   public void setUp() throws Exception {

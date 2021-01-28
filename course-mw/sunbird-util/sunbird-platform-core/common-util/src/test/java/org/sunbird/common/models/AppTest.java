@@ -13,9 +13,9 @@ import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.PropertiesCache;
 
 public class AppTest extends BaseHttpTest {
-  private static final String data =
+  String data =
       "{\"request\": { \"search\": {\"contentType\": [\"Story\"] }}}";
-  private static Map<String, String> headers = new HashMap<String, String>();
+  public static Map<String, String> headers = new HashMap<String, String>();
 
   @BeforeClass
   public static void init() {

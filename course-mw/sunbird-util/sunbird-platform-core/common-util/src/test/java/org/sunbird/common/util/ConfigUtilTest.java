@@ -19,9 +19,9 @@ import org.sunbird.common.responsecode.ResponseCode;
 @PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*"})
 public class ConfigUtilTest {
 
-  private String configType = "user";
-  private String validJson = "{\"key\" : \"value\"}";
-  private static ConfigUtil configUtilMock;
+  String configType = "user";
+  String validJson = "{\"key\" : \"value\"}";
+  static ConfigUtil configUtilMock;
 
   @BeforeClass
   public static void setup() throws Exception {

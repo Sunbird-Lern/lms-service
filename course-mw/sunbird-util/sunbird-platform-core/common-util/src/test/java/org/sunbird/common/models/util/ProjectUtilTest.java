@@ -25,7 +25,7 @@ import org.sunbird.common.responsecode.ResponseCode;
 /** Created by arvind on 6/10/17. */
 public class ProjectUtilTest extends BaseHttpTest {
 
-  private PropertiesCache propertiesCache = ProjectUtil.propertiesCache;
+  PropertiesCache propertiesCache = ProjectUtil.propertiesCache;
 
   private static Map<String, String> headers = new HashMap<String, String>();
 

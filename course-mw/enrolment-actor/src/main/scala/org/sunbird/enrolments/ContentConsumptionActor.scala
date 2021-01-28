@@ -334,7 +334,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         val contentIds = request.getRequest.getOrDefault(JsonKey.CONTENT_IDS, new java.util.ArrayList[String]()).asInstanceOf[java.util.List[String]]
         val fields = request.getRequest.getOrDefault(JsonKey.FIELDS, new java.util.ArrayList[String](){{ add(JsonKey.PROGRESS) }}).asInstanceOf[java.util.List[String]]
         //default fields added ..
-        if (fields!=null && fields.contains("progressDetails")){
+        if (fields!=null && fields.contains("progressDetails") && !defaultFields.contains("progressdetails")){
             defaultFields.add("progressdetails")
         } else if(fields!=null && !fields.contains("progressDetails")){
             defaultFields.remove("progressdetails")

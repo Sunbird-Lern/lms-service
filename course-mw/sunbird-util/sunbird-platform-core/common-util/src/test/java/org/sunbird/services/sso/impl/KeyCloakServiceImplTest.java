@@ -38,38 +38,29 @@ import org.sunbird.services.sso.SSOServiceFactory;
         "jdk.internal.reflect.*", "sun.security.ssl.*", "javax.crypto.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class KeyCloakServiceImplTest extends BaseHttpTest {
 
-  private SSOManager keyCloakService = SSOServiceFactory.getInstance();
+  SSOManager keyCloakService = SSOServiceFactory.getInstance();
 
-  private static Map<String, String> userId = new HashMap<>();
-  private static final String userName = UUID.randomUUID().toString().replaceAll("-", "");
-  private static Class t = null;
+  Map<String, String> userId = new HashMap<>();
+  String userName = UUID.randomUUID().toString().replaceAll("-", "");
+  Class t = null;
+  Map<String, Object> USER_SUCCESS = new HashMap<>();
+  Map<String, Object> USER_SAME_EMAIL = new HashMap<>();
+  UsersResource usersRes = mock(UsersResource.class);
 
-  private static final Map<String, Object> USER_SUCCESS = new HashMap<>();
-
-  static {
+  @BeforeClass
+  public void init() {
     USER_SUCCESS.put(JsonKey.USERNAME, userName);
     USER_SUCCESS.put(JsonKey.PASSWORD, "password");
     USER_SUCCESS.put(JsonKey.FIRST_NAME, "A");
     USER_SUCCESS.put(JsonKey.LAST_NAME, "B");
     USER_SUCCESS.put(JsonKey.PHONE, "9870060000");
     USER_SUCCESS.put(JsonKey.EMAIL, userName.substring(0, 10));
-  }
-
-  private static final Map<String, Object> USER_SAME_EMAIL = new HashMap<>();
-
-  static {
     USER_SAME_EMAIL.put(JsonKey.USERNAME, userName);
     USER_SAME_EMAIL.put(JsonKey.PASSWORD, "password");
     USER_SAME_EMAIL.put(JsonKey.FIRST_NAME, "A");
     USER_SAME_EMAIL.put(JsonKey.LAST_NAME, "B");
     USER_SAME_EMAIL.put(JsonKey.PHONE, "9870060000");
     USER_SAME_EMAIL.put(JsonKey.EMAIL, userName.substring(0, 10));
-  }
-
-  private static UsersResource usersRes = mock(UsersResource.class);
-
-  @BeforeClass
-  public static void init() {
     try {
       t = Class.forName("org.sunbird.services.sso.SSOServiceFactory");
     } catch (ClassNotFoundException e) {

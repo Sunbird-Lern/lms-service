@@ -40,12 +40,12 @@ import org.sunbird.common.models.util.KeyCloakConnectionProvider;
         "jdk.internal.reflect.*", "sun.security.ssl.*", "javax.crypto.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class KeyCloakRsaKeyFetcherTest {
 
-  public static final String FALSE_REALM = "false-realm";
-  private static final HttpClientBuilder httpClientBuilder =
+  String FALSE_REALM = "false-realm";
+  HttpClientBuilder httpClientBuilder =
       PowerMockito.mock(HttpClientBuilder.class);
-  private static CloseableHttpClient client = null;
-  private static CloseableHttpResponse response;
-  private static HttpEntity httpEntity;
+  CloseableHttpClient client = null;
+  CloseableHttpResponse response;
+  HttpEntity httpEntity;
 
   @Before
   public void setUp() throws Exception {

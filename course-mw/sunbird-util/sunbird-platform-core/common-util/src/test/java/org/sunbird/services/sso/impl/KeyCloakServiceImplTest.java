@@ -77,7 +77,7 @@ public class KeyCloakServiceImplTest extends BaseHttpTest {
     try {
 
       doReturn(kcp).when(KeyCloakConnectionProvider.class, "getConnection");
-      doReturn(realmRes).when(kcp).realm(Mockito.anyString());
+      doReturn(realmRes).when(kcp).realm(Mockito.any());
       doReturn(usersRes).when(realmRes).users();
       doReturn(response)
           .doThrow(

@@ -17,6 +17,7 @@ import com.mashape.unirest.request.body.RequestBodyEntity;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -263,10 +264,10 @@ public class TextbookTocActorTest {
     toc.tell(request, probe.getRef());
     if (error) {
       ProjectCommonException res =
-          probe.expectMsgClass(duration("10 second"), ProjectCommonException.class);
+          probe.expectMsgClass(Duration.ofSeconds(10), ProjectCommonException.class);
       return res;
     }
-    Response response = probe.expectMsgClass(duration("10 second"), Response.class);
+    Response response = probe.expectMsgClass(Duration.ofSeconds(10), Response.class);
     return response;
   }
 

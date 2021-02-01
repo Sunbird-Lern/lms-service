@@ -40,6 +40,8 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         add("status")
         add("viewcount")
     }}
+    val progressDetails = "progressDetails"
+    val progressdetails = "progressdetails"
 
     override def onReceive(request: Request): Unit = {
         Util.initializeContext(request, TelemetryEnvKey.BATCH)
@@ -232,8 +234,8 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         val inputStatus = inputContent.getOrDefault(JsonKey.STATUS, 0.asInstanceOf[AnyRef]).asInstanceOf[Number].intValue()
         val updatedContent = new java.util.HashMap[String, AnyRef]()
         updatedContent.putAll(inputContent)
-        if(inputContent.get("progressDetails") != null)
-            updatedContent.put("progressDetails", mapper.writeValueAsString(inputContent.get("progressDetails")))
+        if(inputContent.get(progressDetails) != null)
+            updatedContent.put(progressDetails, mapper.writeValueAsString(inputContent.get(progressDetails)))
         val inputCompletedTime = parseDate(inputContent.getOrDefault(JsonKey.LAST_COMPLETED_TIME, "").asInstanceOf[String])
         val inputAccessTime = parseDate(inputContent.getOrDefault(JsonKey.LAST_ACCESS_TIME, "").asInstanceOf[String])
         if(MapUtils.isNotEmpty(existingContent)) {
@@ -335,10 +337,10 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         val contentIds = request.getRequest.getOrDefault(JsonKey.CONTENT_IDS, new java.util.ArrayList[String]()).asInstanceOf[java.util.List[String]]
         val fields = request.getRequest.getOrDefault(JsonKey.FIELDS, new java.util.ArrayList[String](){{ add(JsonKey.PROGRESS) }}).asInstanceOf[java.util.List[String]]
         //default fields added ..
-        if (fields!=null && fields.contains("progressDetails") && !defaultFields.contains("progressdetails")){
-            defaultFields.add("progressdetails")
-        } else if(fields!=null && !fields.contains("progressDetails")){
-            defaultFields.remove("progressdetails")
+        if (fields!=null && fields.contains(progressDetails) && !defaultFields.contains(progressdetails)){
+            defaultFields.add(progressdetails)
+        } else if(fields!=null && !fields.contains(progressdetails)){
+            defaultFields.remove(progressdetails)
         }
         val contentsConsumed = getContentsConsumption(userId, courseId, contentIds, defaultFields, batchId, request.getRequestContext)
 
@@ -348,9 +350,9 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                 ProjectUtil.removeUnwantedFields(m, JsonKey.DATE_TIME, JsonKey.USER_ID, JsonKey.ADDED_BY, JsonKey.LAST_UPDATED_TIME)
                 m.put(JsonKey.COLLECTION_ID, m.getOrDefault(JsonKey.COURSE_ID, ""))
                 //added progress starts....
-                if(fields.contains("progressDetails")){
-                    m.put("progressDetails", mapper.readTree(m.get("progressdetails").asInstanceOf[String]))
-                    m.remove("progressdetails")
+                if(fields.contains(progressDetails)){
+                    m.put(progressDetails, mapper.readTree(m.get(progressdetails).asInstanceOf[String]))
+                    m.remove(progressdetails)
                 }
 
                 //added progress.

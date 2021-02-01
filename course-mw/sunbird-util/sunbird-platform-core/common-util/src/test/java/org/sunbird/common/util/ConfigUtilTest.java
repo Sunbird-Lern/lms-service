@@ -4,7 +4,6 @@ import com.typesafe.config.Config;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
@@ -14,7 +13,6 @@ import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.responsecode.ResponseCode;
 
 @PrepareForTest(ConfigUtil.class)
-@RunWith(PowerMockRunner.class)
 @PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*"})
 public class ConfigUtilTest {
 

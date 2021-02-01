@@ -2,7 +2,7 @@ package org.sunbird.common.util;
 
 import com.typesafe.config.Config;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -20,10 +20,10 @@ public class ConfigUtilTest {
 
   String configType = "user";
   String validJson = "{\"key\" : \"value\"}";
-  static ConfigUtil configUtilMock;
+  ConfigUtil configUtilMock;
 
-  @BeforeClass
-  public static void setup() throws Exception {
+  @Before
+  public void setup() throws Exception {
     configUtilMock = Mockito.mock(ConfigUtil.class);
     PowerMockito.whenNew(ConfigUtil.class).withAnyArguments().thenReturn(configUtilMock);
   }

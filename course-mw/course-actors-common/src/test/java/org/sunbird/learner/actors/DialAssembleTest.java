@@ -7,6 +7,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.common.request.RequestContext;
 
 import java.lang.reflect.Method;
@@ -15,6 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@RunWith(PowerMockRunner.class)
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*", "sun.security.ssl.*", "javax.net.ssl.*" , "javax.crypto.*"})
 public class DialAssembleTest {
     
     ActorSystem system = ActorSystem.create("system");

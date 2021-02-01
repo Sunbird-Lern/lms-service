@@ -1,8 +1,7 @@
 package org.sunbird.common.util;
 
-import static org.junit.Assert.assertTrue;
-
 import com.typesafe.config.Config;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,7 +33,7 @@ public class ConfigUtilTest {
     try {
       ConfigUtil.getConfigFromJsonString(null, configType);
     } catch (ProjectCommonException e) {
-      assertTrue(e.getCode().equals(ResponseCode.errorConfigLoadEmptyString.getErrorCode()));
+      Assert.assertTrue(e.getCode().equals(ResponseCode.errorConfigLoadEmptyString.getErrorCode()));
       throw e;
     }
   }
@@ -44,7 +43,7 @@ public class ConfigUtilTest {
     try {
       ConfigUtil.getConfigFromJsonString("", configType);
     } catch (ProjectCommonException e) {
-      assertTrue(e.getCode().equals(ResponseCode.errorConfigLoadEmptyString.getErrorCode()));
+      Assert.assertTrue(e.getCode().equals(ResponseCode.errorConfigLoadEmptyString.getErrorCode()));
       throw e;
     }
   }
@@ -54,7 +53,7 @@ public class ConfigUtilTest {
     try {
       ConfigUtil.getConfigFromJsonString("{dummy}", configType);
     } catch (ProjectCommonException e) {
-      assertTrue(e.getCode().equals(ResponseCode.errorConfigLoadParseString.getErrorCode()));
+      Assert.assertTrue(e.getCode().equals(ResponseCode.errorConfigLoadParseString.getErrorCode()));
       throw e;
     }
   }
@@ -62,6 +61,6 @@ public class ConfigUtilTest {
   @Test
   public void testGetConfigFromJsonStringSuccess() {
     Config config = ConfigUtil.getConfigFromJsonString(validJson, configType);
-    assertTrue("value".equals(config.getString("key")));
+    Assert.assertTrue("value".equals(config.getString("key")));
   }
 }

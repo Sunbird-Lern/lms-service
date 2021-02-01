@@ -153,6 +153,7 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.5</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -167,11 +168,9 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>3.0.0-M4</version>
 				<configuration>
-					<!-- <skipTests>true</skipTests> -->
-					<includes>
-						<include>**/*Spec.java</include>
-						<include>**/*Test.java</include>
-					</includes>
+					<argLine>
+						--illegal-access=warn
+					</argLine>
 				</configuration>
 			</plugin>
 		</plugins>

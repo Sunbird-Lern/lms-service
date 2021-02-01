@@ -55,20 +55,20 @@ import org.sunbird.services.sso.impl.KeyCloakServiceImpl;
 @PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "jdk.internal.reflect.*", "sun.security.ssl.*", "javax.net.ssl.*" , "javax.crypto.*"})
 public class TextbookTocActorTest {
 
-  private static ActorSystem system;
-  private static final Props props =
+  ActorSystem system;
+  Props props =
       Props.create(org.sunbird.learner.actors.textbook.TextbookTocActor.class);
 
-  private static final String VALID_HEADER =
+  String VALID_HEADER =
       "Identifier,Board,Medium,Grade,Subject,Textbook Name,Level 1 Textbook Unit,Description,QR Code Required?,QR Code,Purpose of Content to be linked,Mapped Topics,Keywords\n";
-  private static final String TEXTBOOK_TOC_INPUT_MAPPING =
+  String TEXTBOOK_TOC_INPUT_MAPPING =
       "{ \"identifier\":\"Identifier\",\"frameworkCategories\":{\"medium\":\"Medium\",\"gradeLevel\":\"Grade\",\"subject\":\"Subject\"},\"hierarchy\":{\"Textbook\":\"Textbook Name\",\"L:1\":\"Level 1 Textbook Unit\",\"L:2\":\"Level 2 Textbook Unit\",\"L:3\":\"Level 3 Textbook Unit\",\"L:4\":\"Level 4 Textbook Unit\"},\"metadata\":{\"description\":\"Description\",\"dialcodeRequired\":\"QR Code Required?\",\"dialcodes\":\"QR Code\",\"purpose\":\"Purpose of Content to be linked\",\"topic\":\"Mapped Topics\",\"keywords\":\"Keywords\"}}"; // getFileAsString("FrameworkForTextbookTocActorTest.json");
-  private static final String MANDATORY_VALUES =
+  String MANDATORY_VALUES =
       "{\"Textbook\":\"Textbook Name\",\"L:1\":\"Level 1 Textbook Unit\"}";
-  private static final String CONTENT_TYPE = "any";
-  private static final String IDENTIFIER = "do_1126788813057638401122";
-  private static final String TEXTBOOK_NAME = "test";
-  private static final String UNIT_NAME = "unit1";
+  String CONTENT_TYPE = "any";
+  String IDENTIFIER = "do_1126788813057638401122";
+  String TEXTBOOK_NAME = "test";
+  String UNIT_NAME = "unit1";
 
   @Before
   public void setUp() throws Exception {

@@ -35,8 +35,8 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
   val system = ActorSystem.create("system")
 
   val gson = new Gson()
-  var redisServer: RedisServer = _
-  redisServer = new RedisServer(6379)
+//  var redisServer: RedisServer = _
+//  redisServer = new RedisServer(6379)
   EmbeddedCassandraServerHelper.startEmbeddedCassandra(80000L)
   var server = new MockWebServer()
   server.start(8082)
@@ -49,15 +49,15 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
 
   override def afterAll() {
     super.afterAll()
-    redisServer.stop();
+//    redisServer.stop();
     EmbeddedCassandraServerHelper.cleanEmbeddedCassandra()
 
   }
 
   override def beforeAll() {
-    if (!redisServer.isActive()) {
-      redisServer.start();
-    }
+//    if (!redisServer.isActive()) {
+//      redisServer.start();
+//    }
     val cluster = {
       Cluster.builder()
         .addContactPoints("localhost")

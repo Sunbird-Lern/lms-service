@@ -53,7 +53,7 @@ public class CassandraDACImplTest extends BaseTest {
     String create_user_consumption_table = "CREATE TABLE IF NOT EXISTS " + keyspace + "." + user_consumption_table
             + " (userid text,courseid text,batchid text,contentid text,completedcount int,datetime timestamp,lastaccesstime text,lastcompletedtime text,lastupdatedtime text,progress int,status int,viewcount int,PRIMARY KEY (userid, courseid, batchid, contentid));";
 
-    private CassandraOperation cassandraOperation = ServiceFactory.getInstance();
+    CassandraOperation cassandraOperation = ServiceFactory.getInstance();
 
     @Before
     public void setUp() {

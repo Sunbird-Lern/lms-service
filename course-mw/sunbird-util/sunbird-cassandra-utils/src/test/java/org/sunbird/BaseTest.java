@@ -7,8 +7,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 public class BaseTest {
-    public static final String host = "localhost";
-    public static final int port = 9042;
+    public static String host = "localhost";
+    public static int port = 9042;
     protected static Session session = null;
 
     private static Session getSession() {

@@ -56,8 +56,8 @@ import org.sunbird.services.sso.impl.KeyCloakServiceImpl;
 @PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "jdk.internal.reflect.*", "sun.security.ssl.*", "javax.net.ssl.*" , "javax.crypto.*"})
 public class TextbookTocActorTest {
 
-  ActorSystem system;
-  Props props =
+  private static ActorSystem system;
+  private static final Props props =
       Props.create(org.sunbird.learner.actors.textbook.TextbookTocActor.class);
 
   String VALID_HEADER =
@@ -294,7 +294,7 @@ public class TextbookTocActorTest {
   }
 
   private void mockRequiredMethods(boolean error, boolean withChildren) {
-    when(TextBookTocUtil.getRelatedFrameworkById(Mockito.anyString())).thenReturn(new Response());
+    when(TextBookTocUtil.getRelatedFrameworkById(Mockito.any())).thenReturn(new Response());
     when(TextBookTocUtil.readContent(Mockito.anyString(), Mockito.anyString()))
         .thenReturn(getReadContentTextbookData(withChildren));
     when(TextBookTocUtil.getObjectFrom(Mockito.anyString(), Mockito.any())).thenCallRealMethod();

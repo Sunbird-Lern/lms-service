@@ -41,7 +41,6 @@ public class TextbookControllerTest extends BaseApplicationTest {
     Assert.assertEquals( 200, result.status());
   }
 
-  @Ignore
   @Test
   public void testGetTocUrl() {
     Http.RequestBuilder req =

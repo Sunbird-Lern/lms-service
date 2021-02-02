@@ -6,7 +6,7 @@
   <properties>
     <scala.version>2.11.12</scala.version>
     <scala.major.version>2.11</scala.major.version>
-    <scoverage.plugin.version>1.1.1</scoverage.plugin.version>
+    <scoverage.plugin.version>1.4.1</scoverage.plugin.version>
   </properties>
 
   <dependencies>

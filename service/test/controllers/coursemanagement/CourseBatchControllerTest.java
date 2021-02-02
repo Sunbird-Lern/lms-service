@@ -28,22 +28,22 @@ import java.util.*;
 @PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*", "jdk.internal.reflect.*",
         "sun.security.ssl.*", "javax.net.ssl.*", "javax.crypto.*",
         "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
-public class CourseBatchControllerTest extends BaseApplicationTest {
+class CourseBatchControllerTest extends BaseApplicationTest {
 
-  public static String COURSE_ID = "courseId";
-  public static String COURSE_NAME = "courseName";
-  public static int DAY_OF_MONTH = 2;
-  public static String INVALID_ENROLLMENT_TYPE = "invalid";
-  public static String BATCH_ID = "batchID";
-  public static List<String> MENTORS = Arrays.asList("mentors");
-  public static String INVALID_MENTORS_TYPE = "invalidMentorType";
-  private static final String CREATE_BATCH_URL = "/v1/course/batch/create";
-  private static final String UPDATE_BATCH_URL = "/v1/course/batch/update";
-  private static final String GET_BATCH_URL =  "/v1/course/batch/read/"+BATCH_ID;
-  private static final String SEARCH_BATCH_URL =  "/v1/course/batch/search";
-  private static final String BATCH_PARTICIPANTS_LIST_URL =  "/v1/batch/participants/list";
-  private static final String ADD_USERS_BATCH_URL =  "/v1/course/batch/users/add/"+BATCH_ID;
-  private static final String REMOVE_USERS_BATCH_URL =  "/v1/course/batch/users/remove/"+BATCH_ID;
+  String COURSE_ID = "courseId";
+  String COURSE_NAME = "courseName";
+  int DAY_OF_MONTH = 2;
+  String INVALID_ENROLLMENT_TYPE = "invalid";
+  String BATCH_ID = "batchID";
+  List<String> MENTORS = Arrays.asList("mentors");
+  String INVALID_MENTORS_TYPE = "invalidMentorType";
+  String CREATE_BATCH_URL = "/v1/course/batch/create";
+  String UPDATE_BATCH_URL = "/v1/course/batch/update";
+  String GET_BATCH_URL =  "/v1/course/batch/read/"+BATCH_ID;
+  String SEARCH_BATCH_URL =  "/v1/course/batch/search";
+  String BATCH_PARTICIPANTS_LIST_URL =  "/v1/batch/participants/list";
+  String ADD_USERS_BATCH_URL =  "/v1/course/batch/users/add/"+BATCH_ID;
+  String REMOVE_USERS_BATCH_URL =  "/v1/course/batch/users/remove/"+BATCH_ID;
 
 
   @Before

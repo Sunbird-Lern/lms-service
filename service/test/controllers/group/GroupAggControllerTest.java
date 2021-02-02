@@ -21,8 +21,8 @@ import java.util.Arrays;
         "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class GroupAggControllerTest extends BaseApplicationTest {
 
-    public static String USER_ID = "userId";
-    private static final String GROUP_ACTIVITY_AGGREGATE_URL = "/v1/group/activity/agg";
+    String USER_ID = "userId";
+    String GROUP_ACTIVITY_AGGREGATE_URL = "/v1/group/activity/agg";
 
     @Before
     public void before() {

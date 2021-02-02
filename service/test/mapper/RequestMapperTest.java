@@ -19,8 +19,6 @@ import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.helper.ServiceFactory;
 import play.libs.Json;
 
-import static org.powermock.api.mockito.PowerMockito.when;
-
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({Json.class})
 @PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*", "jdk.internal.reflect.*",
@@ -54,7 +52,7 @@ public class RequestMapperTest {
     ProjectCommonException exception;
     JsonNode node =
             new ObjectMapper().convertValue(createRequestMap(JsonKey.REQUEST), JsonNode.class);
-    when(Json.fromJson(node,ProjectCommonException.class)).thenThrow(e);
+    PowerMockito.when(Json.fromJson(node,ProjectCommonException.class)).thenThrow(e);
     try {
       RequestMapper.mapRequest(node, ProjectCommonException.class);
     }

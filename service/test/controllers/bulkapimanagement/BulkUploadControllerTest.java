@@ -93,7 +93,7 @@ public class BulkUploadControllerTest extends BaseApplicationTest {
     Assert.assertEquals( 200, result.status());
   }
 
-  private static String mapToJson(Map map) {
+  private String mapToJson(Map map) {
     ObjectMapper mapperObj = new ObjectMapper();
     String jsonResp = "";
     try {

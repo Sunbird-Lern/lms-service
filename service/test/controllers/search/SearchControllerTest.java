@@ -1,9 +1,5 @@
 package controllers.search;
 
-import static org.junit.Assert.assertEquals;
-import static org.powermock.api.mockito.PowerMockito.when;
-import static play.test.Helpers.route;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import controllers.BaseApplicationTest;
@@ -57,7 +53,7 @@ public class SearchControllerTest extends BaseApplicationTest {
     Assert.assertEquals( 200, result.status());
   }
 
-  private static String mapToJson(Map map) {
+  String mapToJson(Map map) {
     ObjectMapper mapperObj = new ObjectMapper();
     String jsonResp = "";
     try {

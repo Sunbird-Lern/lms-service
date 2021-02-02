@@ -29,7 +29,7 @@ import util.RequestInterceptor;
         "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class CacheControllerTest extends BaseApplicationTest {
 
-  public static String MAP_NAME = "mapName";
+  String MAP_NAME = "mapName";
 
   @Before
   public void before() {

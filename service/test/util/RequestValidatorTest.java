@@ -14,9 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 /** @author Manzarul */
 public class RequestValidatorTest {
 
@@ -40,7 +37,7 @@ public class RequestValidatorTest {
     } catch (ProjectCommonException e) {
       Assert.assertNull(e);
     }
-    assertEquals(true, response);
+    Assert.assertEquals(true, response);
   }
 
   @Test
@@ -61,7 +58,7 @@ public class RequestValidatorTest {
     } catch (ProjectCommonException e) {
       Assert.assertNotNull(e);
     }
-    assertEquals(false, response);
+    Assert.assertEquals(false, response);
   }
 
   @Test
@@ -78,8 +75,8 @@ public class RequestValidatorTest {
     try {
       RequestValidator.validateUpdateContent(request);
     } catch (ProjectCommonException e) {
-      assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
-      assertEquals(ResponseCode.courseIdRequiredError.getErrorCode(), e.getCode());
+      Assert.assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+      Assert.assertEquals(ResponseCode.courseIdRequiredError.getErrorCode(), e.getCode());
     }
   }
 
@@ -98,8 +95,8 @@ public class RequestValidatorTest {
     try {
       RequestValidator.validateUpdateContent(request);
     } catch (ProjectCommonException e) {
-      assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
-      assertEquals(ResponseCode.contentStatusRequired.getErrorCode(), e.getCode());
+      Assert.assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+      Assert.assertEquals(ResponseCode.contentStatusRequired.getErrorCode(), e.getCode());
     }
   }
 
@@ -114,8 +111,8 @@ public class RequestValidatorTest {
     try {
       RequestValidator.validateUpdateContent(request);
     } catch (ProjectCommonException e) {
-      assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
-      assertEquals(ResponseCode.contentIdRequiredError.getErrorCode(), e.getCode());
+      Assert.assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+      Assert.assertEquals(ResponseCode.contentIdRequiredError.getErrorCode(), e.getCode());
     }
   }
 
@@ -128,8 +125,8 @@ public class RequestValidatorTest {
     try {
       RequestValidator.validateRegisterClient(request);
     } catch (ProjectCommonException e) {
-      assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
-      assertEquals(ResponseCode.invalidClientName.getErrorCode(), e.getCode());
+      Assert.assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+      Assert.assertEquals(ResponseCode.invalidClientName.getErrorCode(), e.getCode());
     }
   }
 
@@ -142,8 +139,8 @@ public class RequestValidatorTest {
     try {
       RequestValidator.validateRegisterClient(request);
     } catch (ProjectCommonException e) {
-      assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
-      assertEquals(ResponseCode.invalidClientName.getErrorCode(), e.getCode());
+      Assert.assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+      Assert.assertEquals(ResponseCode.invalidClientName.getErrorCode(), e.getCode());
     }
   }
 
@@ -152,8 +149,8 @@ public class RequestValidatorTest {
     try {
       RequestValidator.validateUpdateClientKey("1234", "");
     } catch (ProjectCommonException e) {
-      assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
-      assertEquals(ResponseCode.invalidRequestData.getErrorCode(), e.getCode());
+      Assert.assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+      Assert.assertEquals(ResponseCode.invalidRequestData.getErrorCode(), e.getCode());
     }
   }
 
@@ -162,8 +159,8 @@ public class RequestValidatorTest {
     try {
       RequestValidator.validateUpdateClientKey("1234", "test123");
     } catch (ProjectCommonException e) {
-      assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
-      assertEquals(ResponseCode.invalidRequestData.getErrorCode(), e.getCode());
+      Assert.assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+      Assert.assertEquals(ResponseCode.invalidRequestData.getErrorCode(), e.getCode());
     }
   }
 
@@ -172,8 +169,8 @@ public class RequestValidatorTest {
     try {
       RequestValidator.validateClientId("");
     } catch (ProjectCommonException e) {
-      assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
-      assertEquals(ResponseCode.invalidClientId.getErrorCode(), e.getCode());
+      Assert.assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+      Assert.assertEquals(ResponseCode.invalidClientId.getErrorCode(), e.getCode());
     }
   }
 
@@ -186,8 +183,8 @@ public class RequestValidatorTest {
     try {
       RequestValidator.validateFileUpload(request);
     } catch (ProjectCommonException e) {
-      assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
-      assertEquals(ResponseCode.storageContainerNameMandatory.getErrorCode(), e.getCode());
+      Assert.assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+      Assert.assertEquals(ResponseCode.storageContainerNameMandatory.getErrorCode(), e.getCode());
     }
   }
 
@@ -209,7 +206,7 @@ public class RequestValidatorTest {
     } catch (ProjectCommonException e) {
 
     }
-    assertTrue(response);
+    Assert.assertTrue(response);
   }
 
   @Test
@@ -223,8 +220,8 @@ public class RequestValidatorTest {
     try {
       RequestValidator.validateSendMail(request);
     } catch (ProjectCommonException e) {
-      assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
-      assertEquals(ResponseCode.mandatoryParamsMissing.getErrorCode(), e.getCode());
+      Assert.assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+      Assert.assertEquals(ResponseCode.mandatoryParamsMissing.getErrorCode(), e.getCode());
     }
   }
 
@@ -238,8 +235,8 @@ public class RequestValidatorTest {
     try {
       RequestValidator.validateSendMail(request);
     } catch (ProjectCommonException e) {
-      assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
-      assertEquals(ResponseCode.emailBodyError.getErrorCode(), e.getCode());
+      Assert.assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+      Assert.assertEquals(ResponseCode.emailBodyError.getErrorCode(), e.getCode());
     }
   }
 
@@ -252,8 +249,8 @@ public class RequestValidatorTest {
     try {
       RequestValidator.validateSendMail(request);
     } catch (ProjectCommonException e) {
-      assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
-      assertEquals(ResponseCode.emailSubjectError.getErrorCode(), e.getCode());
+      Assert.assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+      Assert.assertEquals(ResponseCode.emailSubjectError.getErrorCode(), e.getCode());
     }
   }
 
@@ -262,8 +259,8 @@ public class RequestValidatorTest {
     try {
       RequestValidator.validateEnrolmentType("");
     } catch (ProjectCommonException e) {
-      assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
-      assertEquals(ResponseCode.enrolmentTypeRequired.getErrorCode(), e.getCode());
+      Assert.assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+      Assert.assertEquals(ResponseCode.enrolmentTypeRequired.getErrorCode(), e.getCode());
     }
   }
 
@@ -272,8 +269,8 @@ public class RequestValidatorTest {
     try {
       RequestValidator.validateEnrolmentType("test");
     } catch (ProjectCommonException e) {
-      assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
-      assertEquals(ResponseCode.enrolmentIncorrectValue.getErrorCode(), e.getCode());
+      Assert.assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+      Assert.assertEquals(ResponseCode.enrolmentIncorrectValue.getErrorCode(), e.getCode());
     }
   }
 
@@ -330,8 +327,8 @@ public class RequestValidatorTest {
       RequestValidator.validateSyncRequest(request);
       response = true;
     } catch (ProjectCommonException e) {
-      assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
-      assertEquals(ResponseCode.dataTypeError.getErrorCode(), e.getCode());
+      Assert.assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+      Assert.assertEquals(ResponseCode.dataTypeError.getErrorCode(), e.getCode());
     }
     Assert.assertFalse(response);
   }
@@ -350,8 +347,8 @@ public class RequestValidatorTest {
       RequestValidator.validateSyncRequest(request);
       response = true;
     } catch (ProjectCommonException e) {
-      assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
-      assertEquals(ResponseCode.invalidObjectType.getErrorCode(), e.getCode());
+      Assert.assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+      Assert.assertEquals(ResponseCode.invalidObjectType.getErrorCode(), e.getCode());
     }
     Assert.assertFalse(response);
   }
@@ -385,8 +382,8 @@ public class RequestValidatorTest {
       RequestValidator.validateUpdateOrgType(request);
       response = true;
     } catch (ProjectCommonException e) {
-      assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
-      assertEquals(ResponseCode.orgTypeMandatory.getErrorCode(), e.getCode());
+      Assert.assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+      Assert.assertEquals(ResponseCode.orgTypeMandatory.getErrorCode(), e.getCode());
     }
     Assert.assertFalse(response);
   }
@@ -403,8 +400,8 @@ public class RequestValidatorTest {
       RequestValidator.validateUpdateOrgType(request);
       response = true;
     } catch (ProjectCommonException e) {
-      assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
-      assertEquals(ResponseCode.orgTypeIdRequired.getErrorCode(), e.getCode());
+      Assert.assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+      Assert.assertEquals(ResponseCode.orgTypeIdRequired.getErrorCode(), e.getCode());
     }
     Assert.assertFalse(response);
   }
@@ -436,8 +433,8 @@ public class RequestValidatorTest {
       RequestValidator.validateCreateOrgType(request);
       response = true;
     } catch (ProjectCommonException e) {
-      assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
-      assertEquals(ResponseCode.orgTypeMandatory.getErrorCode(), e.getCode());
+      Assert.assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+      Assert.assertEquals(ResponseCode.orgTypeMandatory.getErrorCode(), e.getCode());
     }
     Assert.assertFalse(response);
   }
@@ -461,8 +458,8 @@ public class RequestValidatorTest {
       RequestValidator.validateGetClientKey("", "clientType");
       response = true;
     } catch (ProjectCommonException e) {
-      assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
-      assertEquals(ResponseCode.invalidClientId.getErrorCode(), e.getCode());
+      Assert.assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+      Assert.assertEquals(ResponseCode.invalidClientId.getErrorCode(), e.getCode());
     }
     Assert.assertFalse(response);
   }
@@ -474,8 +471,8 @@ public class RequestValidatorTest {
       RequestValidator.validateGetClientKey("clientId", "");
       response = true;
     } catch (ProjectCommonException e) {
-      assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
-      assertEquals(ResponseCode.invalidRequestData.getErrorCode(), e.getCode());
+      Assert.assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+      Assert.assertEquals(ResponseCode.invalidRequestData.getErrorCode(), e.getCode());
     }
     Assert.assertFalse(response);
   }
@@ -508,7 +505,7 @@ public class RequestValidatorTest {
       response = true;
     } catch (ProjectCommonException e) {
     }
-    assertEquals(true, response);
+    Assert.assertEquals(true, response);
   }
 
   @Test
@@ -525,9 +522,9 @@ public class RequestValidatorTest {
       RequestValidator.validateUpdateContent(request);
       response = true;
     } catch (ProjectCommonException e) {
-      assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
-      assertEquals(ResponseCode.assessmentAttemptDateRequired.getErrorCode(), e.getCode());
+      Assert.assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+      Assert.assertEquals(ResponseCode.assessmentAttemptDateRequired.getErrorCode(), e.getCode());
     }
-    assertEquals(false, response);
+    Assert.assertEquals(false, response);
   }
 }

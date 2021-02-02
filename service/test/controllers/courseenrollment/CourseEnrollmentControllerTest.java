@@ -28,14 +28,14 @@ import static util.TestUtil.mapToJson;
         "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class CourseEnrollmentControllerTest extends BaseApplicationTest {
 
-  public static String COURSE_ID = "courseId";
-  public static String BATCH_ID = "batchId";
-  public static String USER_ID = "userId";
-  private static final String ENROLL_BATCH_URL = "/v1/course/enroll";
-  private static final String UENROLL_BATCH_URL = "/v1/course/unenroll";
-  private static final String GET_ENROLLED_COURSES_URL = "/v1/user/courses/list/"+USER_ID;
-  private static final String GET_ENROLLED_COURSE_URL_V2 = "/v2/user/courses/list";
-  private static final String GET_ENROLLED_COURSE_URL_CACHE = "/v1/user/courses/list/" + USER_ID + "?cache=false";
+  String COURSE_ID = "courseId";
+  String BATCH_ID = "batchId";
+  String USER_ID = "userId";
+  String ENROLL_BATCH_URL = "/v1/course/enroll";
+  String UENROLL_BATCH_URL = "/v1/course/unenroll";
+  String GET_ENROLLED_COURSES_URL = "/v1/user/courses/list/"+USER_ID;
+  String GET_ENROLLED_COURSE_URL_V2 = "/v2/user/courses/list";
+  String GET_ENROLLED_COURSE_URL_CACHE = "/v1/user/courses/list/" + USER_ID + "?cache=false";
 
   @Before
   public void before() {

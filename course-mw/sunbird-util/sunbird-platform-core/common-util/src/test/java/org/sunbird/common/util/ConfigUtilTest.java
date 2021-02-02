@@ -1,11 +1,9 @@
 package org.sunbird.common.util;
 
-import static org.junit.Assert.assertTrue;
-
 import com.typesafe.config.Config;
-import org.junit.BeforeClass;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
@@ -15,17 +13,15 @@ import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.responsecode.ResponseCode;
 
 @PrepareForTest(ConfigUtil.class)
-@RunWith(PowerMockRunner.class)
-@PowerMockIgnore({  "javax.management.*", "javax.net.ssl.*", "javax.security.*", "com.microsoft.azure.storage.*",
-        "jdk.internal.reflect.*", "sun.security.ssl.*", "javax.crypto.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*"})
 public class ConfigUtilTest {
 
   String configType = "user";
   String validJson = "{\"key\" : \"value\"}";
-  static ConfigUtil configUtilMock;
+  ConfigUtil configUtilMock;
 
-  @BeforeClass
-  public static void setup() throws Exception {
+  @Before
+  public void setup() throws Exception {
     configUtilMock = Mockito.mock(ConfigUtil.class);
     PowerMockito.whenNew(ConfigUtil.class).withAnyArguments().thenReturn(configUtilMock);
   }
@@ -35,7 +31,7 @@ public class ConfigUtilTest {
     try {
       ConfigUtil.getConfigFromJsonString(null, configType);
     } catch (ProjectCommonException e) {
-      assertTrue(e.getCode().equals(ResponseCode.errorConfigLoadEmptyString.getErrorCode()));
+      Assert.assertTrue(e.getCode().equals(ResponseCode.errorConfigLoadEmptyString.getErrorCode()));
       throw e;
     }
   }
@@ -45,7 +41,7 @@ public class ConfigUtilTest {
     try {
       ConfigUtil.getConfigFromJsonString("", configType);
     } catch (ProjectCommonException e) {
-      assertTrue(e.getCode().equals(ResponseCode.errorConfigLoadEmptyString.getErrorCode()));
+      Assert.assertTrue(e.getCode().equals(ResponseCode.errorConfigLoadEmptyString.getErrorCode()));
       throw e;
     }
   }
@@ -55,7 +51,7 @@ public class ConfigUtilTest {
     try {
       ConfigUtil.getConfigFromJsonString("{dummy}", configType);
     } catch (ProjectCommonException e) {
-      assertTrue(e.getCode().equals(ResponseCode.errorConfigLoadParseString.getErrorCode()));
+      Assert.assertTrue(e.getCode().equals(ResponseCode.errorConfigLoadParseString.getErrorCode()));
       throw e;
     }
   }
@@ -63,6 +59,6 @@ public class ConfigUtilTest {
   @Test
   public void testGetConfigFromJsonStringSuccess() {
     Config config = ConfigUtil.getConfigFromJsonString(validJson, configType);
-    assertTrue("value".equals(config.getString("key")));
+    Assert.assertTrue("value".equals(config.getString("key")));
   }
 }

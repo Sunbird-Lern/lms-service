@@ -20,7 +20,7 @@ import util.ACTOR_NAMES;
         "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class CacheControllerErrorTest extends BaseApplicationTest {
 
-    public static String MAP_NAME="mapName";
+    String MAP_NAME="mapName";
     @Before
     public void before() {
         setup(ACTOR_NAMES.CACHE_MANAGEMENT_ACTOR,DummyErrorActor.class);

@@ -35,29 +35,29 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
   val system = ActorSystem.create("system")
 
   val gson = new Gson()
-  var redisServer: RedisServer = _
-  redisServer = new RedisServer(6379)
+//  var redisServer: RedisServer = _
+//  redisServer = new RedisServer(6379)
   EmbeddedCassandraServerHelper.startEmbeddedCassandra(80000L)
   var server = new MockWebServer()
   server.start(8082)
-  if (!redisServer.isActive) {
-    redisServer.start()
-  }
+//  if (!redisServer.isActive) {
+//    redisServer.start()
+//  }
 
   var jedis: Jedis = _
   val redisConnect = new RedisCacheUtil()
 
   override def afterAll() {
     super.afterAll()
-    redisServer.stop();
+//    redisServer.stop();
     EmbeddedCassandraServerHelper.cleanEmbeddedCassandra()
 
   }
 
   override def beforeAll() {
-    if (!redisServer.isActive()) {
-      redisServer.start();
-    }
+//    if (!redisServer.isActive()) {
+//      redisServer.start();
+//    }
     val cluster = {
       Cluster.builder()
         .addContactPoints("localhost")
@@ -131,7 +131,7 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
     assert(response.getResponseCode == ResponseCode.OK)
     val result = response.getResult
     assert(result != null)
-    
+
     result.get("batchId") should be("0130929928739635201")
     result.get("collectionId") should be("do_31309287232935526411138")
     result.get("lastUpdatedOn") should not be(null)

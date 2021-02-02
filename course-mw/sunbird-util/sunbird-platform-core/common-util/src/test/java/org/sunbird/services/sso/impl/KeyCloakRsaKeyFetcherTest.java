@@ -36,19 +36,18 @@ import org.sunbird.common.models.util.KeyCloakConnectionProvider;
   HttpEntity.class,
   EntityUtils.class,
 })
-@PowerMockIgnore({  "javax.management.*", "javax.net.ssl.*", "javax.security.*", "com.microsoft.azure.storage.*",
-        "jdk.internal.reflect.*", "sun.security.ssl.*", "javax.crypto.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*"})
 public class KeyCloakRsaKeyFetcherTest {
 
-  String FALSE_REALM = "false-realm";
-  static HttpClientBuilder httpClientBuilder =
+  public static final String FALSE_REALM = "false-realm";
+  private static final HttpClientBuilder httpClientBuilder =
       PowerMockito.mock(HttpClientBuilder.class);
-  static CloseableHttpClient client = null;
-  CloseableHttpResponse response;
-  static HttpEntity httpEntity;
+  private static CloseableHttpClient client = null;
+  private static CloseableHttpResponse response;
+  private static HttpEntity httpEntity;
 
   @Before
-  public static void setUp() throws Exception {
+  public void setUp() throws Exception {
 
     client = PowerMockito.mock(CloseableHttpClient.class);
     PowerMockito.mockStatic(HttpClientBuilder.class);

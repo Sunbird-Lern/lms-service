@@ -29,8 +29,8 @@ import java.util.Map;
         "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class PageControllerTest extends BaseApplicationTest {
 
-  public static String PAGE_ID="pageID";
-  public static String SECTION_ID="sectionId";
+  String PAGE_ID="pageID";
+  String SECTION_ID="sectionId";
   @Before
   public void before() {
     setup(ACTOR_NAMES.PAGE_MANAGEMENT_ACTOR,DummyActor.class);
@@ -360,7 +360,7 @@ public class PageControllerTest extends BaseApplicationTest {
   }
 
 
-  private static String mapToJson(Map map) {
+  private String mapToJson(Map map) {
     ObjectMapper mapperObj = new ObjectMapper();
     String jsonResp = "";
     try {

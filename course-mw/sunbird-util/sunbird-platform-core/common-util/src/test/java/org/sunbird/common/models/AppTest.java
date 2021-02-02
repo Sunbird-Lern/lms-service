@@ -4,27 +4,22 @@ import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.common.models.util.BaseHttpTest;
 import org.sunbird.common.models.util.HttpUtil;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.PropertiesCache;
 
-@RunWith(PowerMockRunner.class)
-@PowerMockIgnore({  "javax.management.*", "javax.net.ssl.*", "javax.security.*", "com.microsoft.azure.storage.*",
-        "jdk.internal.reflect.*", "sun.security.ssl.*", "javax.crypto.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class AppTest extends BaseHttpTest {
   String data =
       "{\"request\": { \"search\": {\"contentType\": [\"Story\"] }}}";
-  static Map<String, String> headers = new HashMap<String, String>();
+  Map<String, String> headers = new HashMap<String, String>();
 
-  @BeforeClass
-  public static void init() {
+  @Before
+  public void setup() {
     headers.put("content-type", "application/json");
     headers.put("accept", "application/json");
     headers.put("user-id", "mahesh");

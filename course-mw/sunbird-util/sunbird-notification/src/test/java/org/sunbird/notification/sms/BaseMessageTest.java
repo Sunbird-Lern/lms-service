@@ -43,7 +43,6 @@ public abstract class BaseMessageTest {
 		} catch (Exception e) {
 			Assert.fail("Exception while mocking static " + e.getLocalizedMessage());
 		}
-
 		PropertiesCache pc = spy(PropertiesCache.getInstance());
 		PowerMockito.mockStatic(PropertiesCache.class);
 		try {

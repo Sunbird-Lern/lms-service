@@ -25,58 +25,6 @@ import org.sunbird.common.responsecode.ResponseCode;
 
 public class CassandraDACImpl extends CassandraOperationImpl {
 
-
-  @Override
-  public Response getBlobAsText(RequestContext requestContext, String keySpace, String table, Map<String, Object> filters,  List<String> fields,  List<String> properties) {
-    Response response = new Response();
-    Session session = connectionManager.getSession(keySpace);
-
-    StringBuilder sb = new StringBuilder();
-    if (null != properties && !properties.isEmpty() && fields!=null &&!fields.isEmpty()) {
-      sb.append("select ").append(fields.stream().collect(Collectors.joining(","))).append(", ");
-      StringBuilder selectFields = new StringBuilder();
-      for (String property : properties) {
-        selectFields.append("blobAsText(").append(property).append(") as " ).append(property);
-        selectFields.append(", ");
-      }
-      sb.append(StringUtils.removeEnd(selectFields.toString(), ", "));
-      sb.append(" from " + keySpace + "." + table );
-    }
-
-    StringBuilder where = new StringBuilder();
-    if (null!= filters && !filters.isEmpty()) {
-      where.append(" where ");
-      for (Map.Entry<String, Object> filter : filters.entrySet()) {
-        Object value = filter.getValue();
-        if (value instanceof List)
-          where.append(filter.getKey()).append(" in ").append("?");
-        else
-          where.append(filter.getKey()).append(" = ").append("?");
-
-        where.append(" and ");
-      }
-      sb.append(StringUtils.removeEnd(where.toString(), " and "));
-    }
-
-    PreparedStatement ps = session.prepare(sb.toString());
-    BoundStatement bound = ps.bind(filters.values().toArray());
-
-    logger.debug(requestContext, ps.getQueryString());
-
-    try {
-      ResultSet results = session.execute(bound);
-      response = CassandraUtil.createResponse(results);
-
-    } catch (Exception e) {
-      ProjectLogger.log(Constants.EXCEPTION_MSG_BLOB + table + " : " + e.getMessage(), e);
-      throw new ProjectCommonException(
-              ResponseCode.SERVER_ERROR.getErrorCode(),
-              ResponseCode.SERVER_ERROR.getErrorMessage(),
-              ResponseCode.SERVER_ERROR.getResponseCode());
-    }
-    return response;
-  }
-
     @Override
   public Response getRecords(
             RequestContext requestContext, String keySpace, String table, Map<String, Object> filters, List<String> fields) {

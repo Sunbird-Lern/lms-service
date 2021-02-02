@@ -205,19 +205,6 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         response.getResult.getOrDefault(JsonKey.RESPONSE, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
     }
 
-    //Added content progress
-    def getContentsProgress(userId: String, courseId : String, contentIds: java.util.List[String], batchId: String, requestContext: RequestContext):java.util.List[java.util.Map[String, AnyRef]] = {
-        val filters = new java.util.HashMap[String, AnyRef]() {{
-            put("userid", userId)
-            put("courseid", courseId)
-            put("batchid", batchId)
-            if(CollectionUtils.isNotEmpty(contentIds))
-                put("contentid", contentIds)
-        }}
-        val response = cassandraOperation.getBlobAsText(requestContext, consumptionDBInfo.getKeySpace, consumptionProgressDBInfo.getTableName, filters, util.Arrays.asList("contentid"), util.Arrays.asList("body") )
-        response.getResult.getOrDefault(JsonKey.RESPONSE, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
-    }
-
     def getProgress(contents: List[java.util.Map[String, AnyRef]]) = {
         val data = new java.util.ArrayList[java.util.Map[String, AnyRef]](){{
             contents.map(obj => {

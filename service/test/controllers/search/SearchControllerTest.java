@@ -23,7 +23,7 @@ import util.ACTOR_NAMES;
 
 /** Created by arvind on 6/12/17. */
 @RunWith(PowerMockRunner.class)
-//@SuppressStaticInitializationFor({"util.AuthenticationHelper"})
+// @SuppressStaticInitializationFor({"util.AuthenticationHelper"})
 @PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*", "jdk.internal.reflect.*",
         "sun.security.ssl.*", "javax.net.ssl.*", "javax.crypto.*",
         "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})

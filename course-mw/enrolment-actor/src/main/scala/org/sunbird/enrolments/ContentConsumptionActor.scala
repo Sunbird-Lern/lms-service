@@ -25,7 +25,6 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     private var cassandraOperation = ServiceFactory.getInstance
     private var pushTokafkaEnabled: Boolean = true //TODO: to be removed once all are in scala
     private val consumptionDBInfo = Util.dbInfoMap.get(JsonKey.LEARNER_CONTENT_DB)
-    private val consumptionProgressDBInfo = Util.dbInfoMap.get(JsonKey.LEARNER_CONTENT_PROGRESS_DB)
     private val assessmentAggregatorDBInfo = Util.dbInfoMap.get(JsonKey.ASSESSMENT_AGGREGATOR_DB)
     val dateFormatter = ProjectUtil.getDateFormatter
     val defaultFields = new java.util.ArrayList[String](){{
@@ -40,8 +39,8 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         add("status")
         add("viewcount")
     }}
-    val progressDetails = "progressDetails"
-    val progressdetails = "progressdetails"
+    val progressDetails = "progressDetails" //this is related to the response/request key
+    val progressdetails = "progressdetails" //this maps to DB column
 
     override def onReceive(request: Request): Unit = {
         Util.initializeContext(request, TelemetryEnvKey.BATCH)

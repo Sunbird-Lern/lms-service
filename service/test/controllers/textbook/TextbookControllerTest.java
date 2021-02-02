@@ -21,8 +21,8 @@ import util.ACTOR_NAMES;
         "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class TextbookControllerTest extends BaseApplicationTest {
 
-  private static ObjectMapper mapper = new ObjectMapper();
-  private static String TEXTBOOK_ID = "textbookId";
+  ObjectMapper mapper = new ObjectMapper();
+  String TEXTBOOK_ID = "textbookId";
 
   @Before
   public void before() {
@@ -41,7 +41,6 @@ public class TextbookControllerTest extends BaseApplicationTest {
     Assert.assertEquals( 200, result.status());
   }
 
-  @Ignore
   @Test
   public void testGetTocUrl() {
     Http.RequestBuilder req =

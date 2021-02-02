@@ -205,18 +205,6 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         response.getResult.getOrDefault(JsonKey.RESPONSE, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
     }
 
-    def getProgress(contents: List[java.util.Map[String, AnyRef]]) = {
-        val data = new java.util.ArrayList[java.util.Map[String, AnyRef]](){{
-            contents.map(obj => {
-                val m = obj.get("progressDetails").asInstanceOf[java.util.Map[String, AnyRef]]
-                if(m!=null)
-                    add(Map("userId"->obj.get("userId"), "courseId"->obj.get("courseId"),"contentId"->obj.get("contentId"),"batchId"->obj.get("batchId"),
-                        "body"->mapper.writeValueAsString(m)))
-            })
-        }}
-        data
-    }
-
     def processContentConsumption(inputContent: java.util.Map[String, AnyRef], existingContent: java.util.Map[String, AnyRef], userId: String) = {
         val inputStatus = inputContent.getOrDefault(JsonKey.STATUS, 0.asInstanceOf[AnyRef]).asInstanceOf[Number].intValue()
         val updatedContent = new java.util.HashMap[String, AnyRef]()

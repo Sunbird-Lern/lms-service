@@ -314,7 +314,6 @@ public final class JsonKey {
   public static final String LAST_UPDATED_TIME = "lastUpdatedTime";
   public static final String LEAF_NODE_COUNT = "leafNodesCount";
   public static final String LEARNER_CONTENT_DB = "learnerContent_db";
-  public static final String LEARNER_CONTENT_PROGRESS_DB = "learnerContentProgress_db";
   public static final String LEARNER_COURSE_DB = "learnerCourse_db";
   public static final String LEARNER_SERVICE = "Learner service";
   public static final String LEVEL = "level";

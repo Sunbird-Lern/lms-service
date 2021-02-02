@@ -28,7 +28,7 @@ import java.util.*;
 @PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*", "jdk.internal.reflect.*",
         "sun.security.ssl.*", "javax.net.ssl.*", "javax.crypto.*",
         "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
-class CourseBatchControllerTest extends BaseApplicationTest {
+public class CourseBatchControllerTest extends BaseApplicationTest {
 
   String COURSE_ID = "courseId";
   String COURSE_NAME = "courseName";

@@ -360,7 +360,7 @@ public class PageControllerTest extends BaseApplicationTest {
   }
 
 
-  private static String mapToJson(Map map) {
+  private String mapToJson(Map map) {
     ObjectMapper mapperObj = new ObjectMapper();
     String jsonResp = "";
     try {

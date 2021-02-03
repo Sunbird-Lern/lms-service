@@ -27,6 +27,20 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     private val consumptionDBInfo = Util.dbInfoMap.get(JsonKey.LEARNER_CONTENT_DB)
     private val assessmentAggregatorDBInfo = Util.dbInfoMap.get(JsonKey.ASSESSMENT_AGGREGATOR_DB)
     val dateFormatter = ProjectUtil.getDateFormatter
+    val defaultFields = new java.util.ArrayList[String](){{
+        add("contentid")
+        add("userid")
+        add("batchid")
+        add("courseid")
+        add("completedcount")
+        add("completionpercentage")
+        add("lastcompletedtime")
+        add("progress")
+        add("status")
+        add("viewcount")
+    }}
+    val progressDetails = "progressDetails" //this is related to the response/request key
+    val progressdetails = "progressdetails" //this maps to DB column
 
     override def onReceive(request: Request): Unit = {
         Util.initializeContext(request, TelemetryEnvKey.BATCH)
@@ -113,7 +127,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                             val courseId = if (entry._2.head.containsKey(JsonKey.COURSE_ID)) entry._2.head.getOrDefault(JsonKey.COURSE_ID, "").asInstanceOf[String] else entry._2.head.getOrDefault(JsonKey.COLLECTION_ID, "").asInstanceOf[String]
                             if(entry._2.head.containsKey(JsonKey.COLLECTION_ID)) entry._2.head.remove(JsonKey.COLLECTION_ID)
                             val contentIds = entry._2.map(e => e.getOrDefault(JsonKey.CONTENT_ID, "").asInstanceOf[String]).asJava
-                            val existingContents = getContentsConsumption(userId, courseId, contentIds, batchId, request.getRequestContext).groupBy(x => x.get("contentId").asInstanceOf[String]).map(e => e._1 -> e._2.toList.head).toMap
+                            val existingContents = getContentsConsumption(userId, courseId, contentIds, batchId, defaultFields, request.getRequestContext).groupBy(x => x.get("contentId").asInstanceOf[String]).map(e => e._1 -> e._2.toList.head).toMap
                             val contents:List[java.util.Map[String, AnyRef]] = entry._2.toList.map(inputContent => {
                                 val existingContent = existingContents.getOrElse(inputContent.get("contentId").asInstanceOf[String], new java.util.HashMap[String, AnyRef])
                                 processContentConsumption(inputContent, existingContent, userId)
@@ -177,7 +191,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         }
     }
 
-    def getContentsConsumption(userId: String, courseId : String, contentIds: java.util.List[String], batchId: String, requestContext: RequestContext):java.util.List[java.util.Map[String, AnyRef]] = {
+    def getContentsConsumption(userId: String, courseId : String, contentIds: java.util.List[String], batchId: String, fields: java.util.List[String], requestContext: RequestContext):java.util.List[java.util.Map[String, AnyRef]] = {
         val filters = new java.util.HashMap[String, AnyRef]() {{
             put("userid", userId)
             put("courseid", courseId)
@@ -185,7 +199,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             if(CollectionUtils.isNotEmpty(contentIds))
                 put("contentid", contentIds)
         }}
-        val response = cassandraOperation.getRecords(requestContext, consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, filters, null)
+        val response = cassandraOperation.getRecords(requestContext, consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, filters, fields)
         response.getResult.getOrDefault(JsonKey.RESPONSE, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
     }
 
@@ -193,6 +207,8 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         val inputStatus = inputContent.getOrDefault(JsonKey.STATUS, 0.asInstanceOf[AnyRef]).asInstanceOf[Number].intValue()
         val updatedContent = new java.util.HashMap[String, AnyRef]()
         updatedContent.putAll(inputContent)
+        if(inputContent.get(progressDetails) != null)
+            updatedContent.put(progressDetails, mapper.writeValueAsString(inputContent.get(progressDetails)))
         val inputCompletedTime = parseDate(inputContent.getOrDefault(JsonKey.LAST_COMPLETED_TIME, "").asInstanceOf[String])
         val inputAccessTime = parseDate(inputContent.getOrDefault(JsonKey.LAST_ACCESS_TIME, "").asInstanceOf[String])
         if(MapUtils.isNotEmpty(existingContent)) {
@@ -293,12 +309,25 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         val courseId = request.get(JsonKey.COURSE_ID).asInstanceOf[String]
         val contentIds = request.getRequest.getOrDefault(JsonKey.CONTENT_IDS, new java.util.ArrayList[String]()).asInstanceOf[java.util.List[String]]
         val fields = request.getRequest.getOrDefault(JsonKey.FIELDS, new java.util.ArrayList[String](){{ add(JsonKey.PROGRESS) }}).asInstanceOf[java.util.List[String]]
-        val contentsConsumed = getContentsConsumption(userId, courseId, contentIds, batchId, request.getRequestContext)
+        //default fields added ..
+        if (fields!=null && fields.contains(progressDetails) && !defaultFields.contains(progressdetails)){
+            defaultFields.add(progressdetails)
+        } else if(fields!=null && !fields.contains(progressdetails)){
+            defaultFields.remove(progressdetails)
+        }
+
+        val contentsConsumed = getContentsConsumption(userId, courseId, contentIds, batchId, defaultFields, request.getRequestContext)
         val response = new Response
         if(CollectionUtils.isNotEmpty(contentsConsumed)) {
             val filteredContents = contentsConsumed.map(m => {
                 ProjectUtil.removeUnwantedFields(m, JsonKey.DATE_TIME, JsonKey.USER_ID, JsonKey.ADDED_BY, JsonKey.LAST_UPDATED_TIME)
                 m.put(JsonKey.COLLECTION_ID, m.getOrDefault(JsonKey.COURSE_ID, ""))
+                //added progress starts....
+                if(fields.contains(progressDetails)){
+                    m.put(progressDetails, mapper.readTree(m.get(progressdetails).asInstanceOf[String]))
+                    m.remove(progressdetails)
+                }
+
                 if (fields.contains(JsonKey.ASSESSMENT_SCORE))
                     m.putAll(mapAsJavaMap(Map(JsonKey.ASSESSMENT_SCORE -> getScore(userId, courseId, contentIds, batchId, request.getRequestContext))))
                 m

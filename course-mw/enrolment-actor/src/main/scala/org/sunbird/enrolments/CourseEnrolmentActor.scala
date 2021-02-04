@@ -10,9 +10,8 @@ import java.util.Date
 import akka.actor.ActorRef
 import com.fasterxml.jackson.databind.ObjectMapper
 import javax.inject.{Inject, Named}
-import org.apache.commons.collections4.CollectionUtils
+import org.apache.commons.collections4.{CollectionUtils, MapUtils}
 import org.apache.commons.lang3.StringUtils
-import org.slf4j.{Logger, LoggerFactory}
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
 import org.sunbird.common.models.util.ProjectUtil.EnrolmentType
@@ -121,8 +120,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             new util.ArrayList[java.util.Map[String, AnyRef]]()
     }
 
-    def addCourseDetails(activeEnrolments: java.util.List[java.util.Map[String, AnyRef]], request:Request): java.util.List[java.util.Map[String, AnyRef]] = {
-        val courseIds: java.util.List[String] = activeEnrolments.map(e => e.getOrDefault(JsonKey.COURSE_ID, "").asInstanceOf[String]).distinct.filter(id => StringUtils.isNotBlank(id)).toList.asJava
+    def addCourseDetails(activeEnrolments: java.util.List[java.util.Map[String, AnyRef]], courseIds: java.util.List[String] , request:Request): java.util.List[java.util.Map[String, AnyRef]] = {
         val requestBody: String =  prepareSearchRequest(courseIds, request)
         val searchResult:java.util.Map[String, AnyRef] = ContentSearchUtil.searchContentSync(request.getRequestContext, request.getContext.getOrDefault(JsonKey.URL_QUERY_STRING,"").asInstanceOf[String], requestBody, request.get(JsonKey.HEADER).asInstanceOf[java.util.Map[String, String]])
         val coursesList: java.util.List[java.util.Map[String, AnyRef]] = searchResult.getOrDefault(JsonKey.CONTENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
@@ -260,8 +258,8 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         TelemetryUtil.telemetryProcessingCall(request, targetedObject, correlationObject, contextMap, "enrol")
     }
 
-    def updateProgressData(enrolments: java.util.List[java.util.Map[String, AnyRef]], userId: String, requestContext: RequestContext): util.List[java.util.Map[String, AnyRef]] = {
-        val enrolmentMap: Map[String, java.util.Map[String, AnyRef]] = enrolments.map(enrolment => enrolment.get("courseId").asInstanceOf[String] -> enrolment).toMap
+    def updateProgressData(enrolments: java.util.List[java.util.Map[String, AnyRef]], userId: String, courseIds: java.util.List[String], requestContext: RequestContext): util.List[java.util.Map[String, AnyRef]] = {
+        val enrolmentMap: Map[String, java.util.Map[String, AnyRef]] = enrolments.map(enrolment => enrolment.get(JsonKey.COURSE_ID).asInstanceOf[String] + "_" + enrolment.get(JsonKey.BATCH_ID).asInstanceOf[String] -> enrolment).toMap
         val response: Response = groupDao.readEntries("Course", java.util.Arrays.asList(userId), enrolmentMap.keys.toList.asJava, requestContext)
         if (response.getResponseCode != ResponseCode.OK)
             ProjectCommonException.throwServerErrorException(ResponseCode.erroCallGrooupAPI, MessageFormat.format(ResponseCode.erroCallGrooupAPI.getErrorMessage()))
@@ -269,11 +267,14 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         userActivityList.map(activity => {
             val completedCount: Int = activity.getOrDefault("agg", new util.HashMap[String, AnyRef]())
                 .asInstanceOf[util.Map[String, AnyRef]].getOrDefault("completedCount", 0.asInstanceOf[AnyRef]).asInstanceOf[Int]
-            val enrolment = enrolmentMap.getOrDefault(activity.getOrDefault("activity_id", "").asInstanceOf[String], new util.HashMap[String, AnyRef]())
-            val leafNodesCount: Int = enrolment.get("leafNodesCount").asInstanceOf[Int]
-            enrolment.put("progress", completedCount.asInstanceOf[AnyRef])
-            enrolment.put("status", getCompletionStatus(completedCount, leafNodesCount).asInstanceOf[AnyRef])
-            enrolment.put("completionPercentage", getCompletionPerc(completedCount, leafNodesCount).asInstanceOf[AnyRef])
+            val key = activity.getOrDefault("activity_id", "").asInstanceOf[String] + "_" + activity.getOrDefault("activity_id", "").asInstanceOf[String].replaceAll("cb:", "")
+            val enrolment = enrolmentMap.getOrDefault(key, new util.HashMap[String, AnyRef]())
+            if(MapUtils.isNotEmpty(enrolment)) {
+              val leafNodesCount: Int = enrolment.get("leafNodesCount").asInstanceOf[Int]
+              enrolment.put("progress", completedCount.asInstanceOf[AnyRef])
+              enrolment.put("status", getCompletionStatus(completedCount, leafNodesCount).asInstanceOf[AnyRef])
+              enrolment.put("completionPercentage", getCompletionPerc(completedCount, leafNodesCount).asInstanceOf[AnyRef])
+            }
         })
         enrolmentMap.values.toList.asJava
     }
@@ -313,8 +314,9 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val activeEnrolments: java.util.List[java.util.Map[String, AnyRef]] = getActiveEnrollments( userId, request.getRequestContext)
         val enrolments: java.util.List[java.util.Map[String, AnyRef]] = {
             if (CollectionUtils.isNotEmpty(activeEnrolments)) {
-                val enrolmentList: java.util.List[java.util.Map[String, AnyRef]] = addCourseDetails(activeEnrolments, request)
-                val updatedEnrolmentList = updateProgressData(enrolmentList, userId, request.getRequestContext)
+              val courseIds: java.util.List[String] = activeEnrolments.map(e => e.getOrDefault(JsonKey.COURSE_ID, "").asInstanceOf[String]).distinct.filter(id => StringUtils.isNotBlank(id)).toList.asJava
+                val enrolmentList: java.util.List[java.util.Map[String, AnyRef]] = addCourseDetails(activeEnrolments, courseIds, request)
+                val updatedEnrolmentList = updateProgressData(enrolmentList, userId, courseIds, request.getRequestContext)
                 addBatchDetails(updatedEnrolmentList, request)
             } else new java.util.ArrayList[java.util.Map[String, AnyRef]]()
         }

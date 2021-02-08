@@ -1,6 +1,7 @@
 package org.sunbird.enrolments
 
 import java.util
+import java.util.stream.Collectors
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import javax.inject.Inject
@@ -27,7 +28,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     private val consumptionDBInfo = Util.dbInfoMap.get(JsonKey.LEARNER_CONTENT_DB)
     private val assessmentAggregatorDBInfo = Util.dbInfoMap.get(JsonKey.ASSESSMENT_AGGREGATOR_DB)
     val dateFormatter = ProjectUtil.getDateFormatter
-    val defaultFields = new java.util.ArrayList[String](){{
+    val defaultFields = new java.util.HashSet[String](){{
         add("contentid")
         add("userid")
         add("batchid")
@@ -39,8 +40,9 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         add("status")
         add("viewcount")
     }}
-    val progressDetails = "progressDetails" //this is related to the response/request key
-    val progressdetails = "progressdetails" //this maps to DB column
+    val jsonFields = new java.util.ArrayList[String](){{
+        add("progressdetails")
+    }}
 
     override def onReceive(request: Request): Unit = {
         Util.initializeContext(request, TelemetryEnvKey.BATCH)
@@ -191,7 +193,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         }
     }
 
-    def getContentsConsumption(userId: String, courseId : String, contentIds: java.util.List[String], batchId: String, fields: java.util.List[String], requestContext: RequestContext):java.util.List[java.util.Map[String, AnyRef]] = {
+    def getContentsConsumption(userId: String, courseId : String, contentIds: java.util.List[String], batchId: String, fields: java.util.Set[String], requestContext: RequestContext):java.util.List[java.util.Map[String, AnyRef]] = {
         val filters = new java.util.HashMap[String, AnyRef]() {{
             put("userid", userId)
             put("courseid", courseId)
@@ -199,7 +201,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             if(CollectionUtils.isNotEmpty(contentIds))
                 put("contentid", contentIds)
         }}
-        val response = cassandraOperation.getRecords(requestContext, consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, filters, fields)
+        val response = cassandraOperation.getRecords(requestContext, consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, filters, fields.stream().collect(Collectors.toList()))
         response.getResult.getOrDefault(JsonKey.RESPONSE, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
     }
 
@@ -207,8 +209,11 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         val inputStatus = inputContent.getOrDefault(JsonKey.STATUS, 0.asInstanceOf[AnyRef]).asInstanceOf[Number].intValue()
         val updatedContent = new java.util.HashMap[String, AnyRef]()
         updatedContent.putAll(inputContent)
-        if(inputContent.get(progressDetails) != null)
-            updatedContent.put(progressDetails, mapper.writeValueAsString(inputContent.get(progressDetails)))
+        jsonFields.foreach(field =>
+            if (inputContent.containsKey(field))
+                updatedContent.put(field, mapper.writeValueAsString(inputContent.get(field)))
+
+        )
         val inputCompletedTime = parseDate(inputContent.getOrDefault(JsonKey.LAST_COMPLETED_TIME, "").asInstanceOf[String])
         val inputAccessTime = parseDate(inputContent.getOrDefault(JsonKey.LAST_ACCESS_TIME, "").asInstanceOf[String])
         if(MapUtils.isNotEmpty(existingContent)) {
@@ -310,10 +315,9 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         val contentIds = request.getRequest.getOrDefault(JsonKey.CONTENT_IDS, new java.util.ArrayList[String]()).asInstanceOf[java.util.List[String]]
         val fields = request.getRequest.getOrDefault(JsonKey.FIELDS, new java.util.ArrayList[String](){{ add(JsonKey.PROGRESS) }}).asInstanceOf[java.util.List[String]]
         //default fields added ..
-        if (fields!=null && fields.contains(progressDetails) && !defaultFields.contains(progressdetails)){
-            defaultFields.add(progressdetails)
-        } else if(fields!=null && !fields.contains(progressdetails)){
-            defaultFields.remove(progressdetails)
+        //default fields added ..
+        if (fields!=null && !fields.isEmpty ){
+            defaultFields.addAll(fields)
         }
 
         val contentsConsumed = getContentsConsumption(userId, courseId, contentIds, batchId, defaultFields, request.getRequestContext)
@@ -323,10 +327,10 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                 ProjectUtil.removeUnwantedFields(m, JsonKey.DATE_TIME, JsonKey.USER_ID, JsonKey.ADDED_BY, JsonKey.LAST_UPDATED_TIME)
                 m.put(JsonKey.COLLECTION_ID, m.getOrDefault(JsonKey.COURSE_ID, ""))
                 //added progress starts....
-                if(fields.contains(progressDetails)){
-                    m.put(progressDetails, mapper.readTree(m.get(progressdetails).asInstanceOf[String]))
-                    m.remove(progressdetails)
-                }
+                jsonFields.foreach(field =>
+                    if (fields.contains(field))
+                        m.put(field, mapper.readTree(m.get(field).asInstanceOf[String]))
+                )
 
                 if (fields.contains(JsonKey.ASSESSMENT_SCORE))
                     m.putAll(mapAsJavaMap(Map(JsonKey.ASSESSMENT_SCORE -> getScore(userId, courseId, contentIds, batchId, request.getRequestContext))))

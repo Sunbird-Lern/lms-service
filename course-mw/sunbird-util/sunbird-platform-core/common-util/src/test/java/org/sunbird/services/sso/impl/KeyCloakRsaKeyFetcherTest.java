@@ -18,6 +18,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.common.models.util.KeyCloakConnectionProvider;
@@ -35,6 +36,7 @@ import org.sunbird.common.models.util.KeyCloakConnectionProvider;
   HttpEntity.class,
   EntityUtils.class,
 })
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*"})
 public class KeyCloakRsaKeyFetcherTest {
 
   public static final String FALSE_REALM = "false-realm";

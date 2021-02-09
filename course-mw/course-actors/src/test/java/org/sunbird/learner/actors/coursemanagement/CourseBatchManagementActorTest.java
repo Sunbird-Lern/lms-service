@@ -88,7 +88,7 @@ public class CourseBatchManagementActorTest {
       String endDate,
       Response mockGetRecordByIdResponse) throws Exception {
     when(mockCassandraOperation.getRecordByIdentifier(
-            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList()))
+            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
         .thenReturn(mockGetRecordByIdResponse);
    
     TestKit probe = new TestKit(system);
@@ -117,7 +117,7 @@ public class CourseBatchManagementActorTest {
       Response mockUpdateRecordResponse) throws Exception {
 
     when(mockCassandraOperation.getRecordByIdentifier(
-            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList()))
+            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
         .thenReturn(mockGetRecordByIdResponse);
 
     when(mockCassandraOperation.updateRecord(

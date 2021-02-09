@@ -14,6 +14,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UserResource;
@@ -21,6 +22,8 @@ import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.util.BaseHttpTest;
 import org.sunbird.common.models.util.JsonKey;
@@ -30,40 +33,35 @@ import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.services.sso.SSOManager;
 import org.sunbird.services.sso.SSOServiceFactory;
 
+@RunWith(PowerMockRunner.class)
+@PowerMockIgnore({  "javax.management.*", "javax.net.ssl.*", "javax.security.*", "com.microsoft.azure.storage.*",
+        "jdk.internal.reflect.*", "sun.security.ssl.*", "javax.crypto.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class KeyCloakServiceImplTest extends BaseHttpTest {
 
-  private SSOManager keyCloakService = SSOServiceFactory.getInstance();
+  SSOManager keyCloakService = SSOServiceFactory.getInstance();
 
-  private static Map<String, String> userId = new HashMap<>();
-  private static final String userName = UUID.randomUUID().toString().replaceAll("-", "");
-  private static Class t = null;
+  static Map<String, String> userId = new HashMap<>();
+  static String userName = UUID.randomUUID().toString().replaceAll("-", "");
+  static Class t = null;
+  static Map<String, Object> USER_SUCCESS = new HashMap<>();
+  static Map<String, Object> USER_SAME_EMAIL = new HashMap<>();
+  static UsersResource usersRes = mock(UsersResource.class);
 
-  private static final Map<String, Object> USER_SUCCESS = new HashMap<>();
-
-  static {
+  @BeforeClass
+  public static void init() {
+    userId.put(JsonKey.USER_ID, "95e4942d-cbe8-477d-aebd-ad8e6de4bfc8");
     USER_SUCCESS.put(JsonKey.USERNAME, userName);
     USER_SUCCESS.put(JsonKey.PASSWORD, "password");
     USER_SUCCESS.put(JsonKey.FIRST_NAME, "A");
     USER_SUCCESS.put(JsonKey.LAST_NAME, "B");
     USER_SUCCESS.put(JsonKey.PHONE, "9870060000");
     USER_SUCCESS.put(JsonKey.EMAIL, userName.substring(0, 10));
-  }
-
-  private static final Map<String, Object> USER_SAME_EMAIL = new HashMap<>();
-
-  static {
     USER_SAME_EMAIL.put(JsonKey.USERNAME, userName);
     USER_SAME_EMAIL.put(JsonKey.PASSWORD, "password");
     USER_SAME_EMAIL.put(JsonKey.FIRST_NAME, "A");
     USER_SAME_EMAIL.put(JsonKey.LAST_NAME, "B");
     USER_SAME_EMAIL.put(JsonKey.PHONE, "9870060000");
     USER_SAME_EMAIL.put(JsonKey.EMAIL, userName.substring(0, 10));
-  }
-
-  private static UsersResource usersRes = mock(UsersResource.class);
-
-  @BeforeClass
-  public static void init() {
     try {
       t = Class.forName("org.sunbird.services.sso.SSOServiceFactory");
     } catch (ClassNotFoundException e) {
@@ -77,7 +75,7 @@ public class KeyCloakServiceImplTest extends BaseHttpTest {
     try {
 
       doReturn(kcp).when(KeyCloakConnectionProvider.class, "getConnection");
-      doReturn(realmRes).when(kcp).realm(Mockito.anyString());
+      doReturn(realmRes).when(kcp).realm(Mockito.any());
       doReturn(usersRes).when(realmRes).users();
       doReturn(response)
           .doThrow(

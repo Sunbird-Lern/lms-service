@@ -21,12 +21,13 @@ import org.sunbird.common.util.CloudStorageUtil.CloudStorageType;
 import scala.Option;
 
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*"})
+@PowerMockIgnore({  "javax.management.*", "javax.net.ssl.*", "javax.security.*", "com.microsoft.azure.storage.*",
+        "jdk.internal.reflect.*", "sun.security.ssl.*", "javax.crypto.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 @PrepareForTest({StorageServiceFactory.class, CloudStorageUtil.class})
 public class CloudStorageUtilTest {
 
-  private static final String SIGNED_URL = "singedUrl";
-  private static final String UPLOAD_URL = "uploadUrl";
+  String SIGNED_URL = "singedUrl";
+  String UPLOAD_URL = "uploadUrl";
 
   @Before
   public void initTest() {

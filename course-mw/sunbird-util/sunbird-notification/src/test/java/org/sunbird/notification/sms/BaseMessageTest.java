@@ -25,7 +25,7 @@ import org.sunbird.notification.utils.PropertiesCache;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore({ "javax.management.*", "javax.net.ssl.*", "javax.security.*" })
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*", "javax.net.ssl.*", "javax.security.*", "sun.security.ssl.*", "javax.net.ssl.*" , "javax.crypto.*"})
 @PrepareForTest({ HttpClients.class, PropertiesCache.class })
 public abstract class BaseMessageTest {
 
@@ -37,13 +37,12 @@ public abstract class BaseMessageTest {
 		PowerMockito.mockStatic(HttpClients.class);
 		try {
 			doReturn(httpClient).when(HttpClients.class, "createDefault");
-			doReturn(httpResp).when(httpClient).execute(Mockito.any(HttpPost.class));
+			doReturn(httpResp).when(httpClient).execute(Mockito.any());
 			doReturn(statusLine).when(httpResp).getStatusLine();
 			doReturn(200).when(statusLine).getStatusCode();
 		} catch (Exception e) {
 			Assert.fail("Exception while mocking static " + e.getLocalizedMessage());
 		}
-
 		PropertiesCache pc = spy(PropertiesCache.getInstance());
 		PowerMockito.mockStatic(PropertiesCache.class);
 		try {

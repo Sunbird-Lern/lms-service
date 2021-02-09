@@ -10,6 +10,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
@@ -19,11 +20,13 @@ import org.sunbird.telemetry.dto.Producer;
 import org.sunbird.telemetry.util.TelemetryGenerator;
 
 @RunWith(PowerMockRunner.class)
+@PowerMockIgnore({  "javax.management.*", "javax.net.ssl.*", "javax.security.*", "com.microsoft.azure.storage.*",
+        "jdk.internal.reflect.*", "sun.security.ssl.*", "javax.crypto.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 @PrepareForTest({TelemetryGenerator.class})
 public class TelemetryGeneratorTest {
 
-  private static Map<String, Object> context;
-  private static Map<String, Object> rollup;
+  static Map<String, Object> context;
+  static Map<String, Object> rollup;
 
   @Before
   public void setUp() throws Exception {

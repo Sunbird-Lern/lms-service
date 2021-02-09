@@ -32,28 +32,28 @@ import java.util.Map;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({CassandraConnectionMngrFactory.class, CassandraConnectionManagerImpl.class})
-@PowerMockIgnore({"javax.management.*"})
+@PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*", "sun.security.ssl.*", "javax.net.ssl.*" , "javax.crypto.*"})
 public class CassandraDACImplTest extends BaseTest {
 
-    static final String keyspace = "sunbird_courses";
-    static final String table = "assessment_aggregator";
-    static final String user_consumption_table = "user_content_consumption";
-    static final Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+    String keyspace = "sunbird_courses";
+    String table = "assessment_aggregator";
+    String user_consumption_table = "user_content_consumption";
+    Timestamp timestamp = new Timestamp(System.currentTimeMillis());
     @Mock
     CassandraConnectionManager connectionManager;
     @Mock
     Session session2;
 
-    private static String createKeyspace = "CREATE KEYSPACE IF NOT EXISTS " + keyspace
+    String createKeyspace = "CREATE KEYSPACE IF NOT EXISTS " + keyspace
             + " WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '1'}";
-    private static String createTable = "CREATE TABLE IF NOT EXISTS " + keyspace + "." + table
+    String createTable = "CREATE TABLE IF NOT EXISTS " + keyspace + "." + table
             + " (course_id text,batch_id text,user_id text,content_id text,attempt_id text,created_on timestamp,grand_total text,last_attempted_on timestamp,total_max_score double,total_score double,updated_on timestamp,PRIMARY KEY (course_id, batch_id, user_id, content_id, attempt_id));";
-    private static String insertTable = "INSERT INTO " + keyspace + "." + table
+    String insertTable = "INSERT INTO " + keyspace + "." + table
             + "(user_id, course_id, batch_id, content_id, attempt_id, total_max_score, total_score, last_attempted_on) VALUES ('user_001','course_001','batch_001', 'content_001', 'attempt_001', 1, 1, '" + timestamp + "');";
-    private static String create_user_consumption_table = "CREATE TABLE IF NOT EXISTS " + keyspace + "." + user_consumption_table
+    String create_user_consumption_table = "CREATE TABLE IF NOT EXISTS " + keyspace + "." + user_consumption_table
             + " (userid text,courseid text,batchid text,contentid text,completedcount int,datetime timestamp,lastaccesstime text,lastcompletedtime text,lastupdatedtime text,progress int,status int,viewcount int,PRIMARY KEY (userid, courseid, batchid, contentid));";
 
-    private CassandraOperation cassandraOperation = ServiceFactory.getInstance();
+    CassandraOperation cassandraOperation = ServiceFactory.getInstance();
 
     @Before
     public void setUp() {

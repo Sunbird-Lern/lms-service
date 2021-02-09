@@ -49,7 +49,7 @@ public class UserCoursesDaoTest {
   public void readUserCoursesFailure() {
     Response readResponse = new Response();
     when(cassandraOperation.getRecordByIdentifier(
-            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList()))
+            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
         .thenReturn(readResponse);
     UserCourses response = userCoursesDao.read(null, JsonKey.BATCH_ID, JsonKey.USER_ID);
     Assert.assertEquals(null, response);
@@ -60,7 +60,7 @@ public class UserCoursesDaoTest {
     Response readResponse = new Response();
     readResponse.put(JsonKey.RESPONSE, Arrays.asList(new HashMap<>()));
     when(cassandraOperation.getRecordByIdentifier(
-            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList()))
+            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
         .thenReturn(readResponse);
     UserCourses response = userCoursesDao.read(null, JsonKey.BATCH_ID, JsonKey.USER_ID);
     Assert.assertNotEquals(null, response);
@@ -71,7 +71,7 @@ public class UserCoursesDaoTest {
     Response readResponse = new Response();
     readResponse.put(JsonKey.RESPONSE, Arrays.asList(new HashMap<>()));
     when(cassandraOperation.getRecordByIdentifier(
-            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList()))
+            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
             .thenReturn(readResponse);
     UserCourses response = userCoursesDao.read(null, JsonKey.USER_ID, JsonKey.COURSE_ID, JsonKey.BATCH_ID);
     Assert.assertNotEquals(null, response);
@@ -82,7 +82,7 @@ public class UserCoursesDaoTest {
     Response readResponse = new Response();
     readResponse.put(JsonKey.RESPONSE, new ArrayList<>());
     when(cassandraOperation.getRecordByIdentifier(
-            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList()))
+            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
             .thenReturn(readResponse);
     UserCourses response = userCoursesDao.read(null, JsonKey.USER_ID, JsonKey.COURSE_ID, JsonKey.BATCH_ID);
     Assert.assertEquals(null, response);
@@ -93,7 +93,7 @@ public class UserCoursesDaoTest {
     Response readResponse = new Response();
     readResponse.put(JsonKey.RESPONSE, new ArrayList<>());
     when(cassandraOperation.getRecordByIdentifier(
-            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList()))
+            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
             .thenReturn(readResponse);
     List<Map<String, Object>> response = userCoursesDao.listEnrolments(null, JsonKey.USER_ID);
     Assert.assertEquals(null, response);
@@ -106,7 +106,7 @@ public class UserCoursesDaoTest {
       put(JsonKey.USER_ID, JsonKey.USER_ID);
     }}));
     when(cassandraOperation.getRecordByIdentifier(
-            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList()))
+            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
             .thenReturn(readResponse);
     List<Map<String, Object>> response = userCoursesDao.listEnrolments(null, JsonKey.USER_ID);
     Assert.assertNotEquals(null, response);
@@ -118,7 +118,7 @@ public class UserCoursesDaoTest {
 
     readResponse.put(JsonKey.RESPONSE, Arrays.asList("data"));
     when(cassandraOperation.getRecordByIdentifier(
-            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList()))
+            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
         .thenReturn(readResponse);
     UserCourses response = userCoursesDao.read(null, JsonKey.BATCH_ID, JsonKey.USER_ID);
     Assert.assertEquals(null, response);

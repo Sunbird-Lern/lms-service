@@ -1,27 +1,30 @@
 package org.sunbird.common.models.util;
 
 import com.mashape.unirest.http.Unirest;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpStatus;
-import org.apache.http.HttpVersion;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicStatusLine;
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.blob.CloudBlobClient;
+import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import com.microsoft.azure.storage.blob.ListBlobItem;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertTrue;
 
+@RunWith(PowerMockRunner.class)
+@PowerMockIgnore({  "javax.management.*", "javax.net.ssl.*", "javax.security.*", "com.microsoft.azure.storage.*",
+        "jdk.internal.reflect.*", "sun.security.ssl.*", "javax.crypto.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class HttpUtilTest extends BaseHttpTest {
-  public static final String JSON_STRING_DATA = "asdasasfasfsdfdsfdsfgsd";
+  String JSON_STRING_DATA = "asdasasfasfsdfdsfdsfgsd";
 
   @Test
   public void testSendPatchRequestSuccess() {
@@ -31,7 +34,7 @@ public class HttpUtilTest extends BaseHttpTest {
     String url = "http://localhost:8000/v1/issuer/issuers";
     try {
       PowerMockito.mockStatic(Unirest.class);
-      PowerMockito.when(Unirest.patch(url), Mockito.anyString(), Mockito.anyMap()).thenReturn("SUCCESS");
+      Mockito.doReturn("SUCCESS").when(Unirest.patch(url));
       String response = HttpUtil.sendPatchRequest(url, "{\"message\":\"success\"}", headers);
       assertTrue("SUCCESS".equals(response));
     } catch (Exception e) {

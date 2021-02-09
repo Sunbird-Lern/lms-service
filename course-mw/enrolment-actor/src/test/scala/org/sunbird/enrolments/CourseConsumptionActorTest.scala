@@ -100,7 +100,7 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
         val probe = new TestKit(system)
         val actorRef = system.actorOf(props)
         actorRef.tell(request, probe.testActor)
-        probe.expectMsgType[ProjectCommonException](FiniteDuration.apply(10, TimeUnit.SECONDS))
+        probe.expectMsgType[ProjectCommonException](FiniteDuration.apply(60, TimeUnit.SECONDS))
     }
 
 

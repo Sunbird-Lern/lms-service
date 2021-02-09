@@ -7,7 +7,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -19,16 +18,22 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 
 /** Created by arvind on 6/10/17. */
+@RunWith(PowerMockRunner.class)
+@PowerMockIgnore({  "javax.management.*", "javax.net.ssl.*", "javax.security.*", "com.microsoft.azure.storage.*",
+        "jdk.internal.reflect.*", "sun.security.ssl.*", "javax.crypto.*", "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class ProjectUtilTest extends BaseHttpTest {
 
-  private PropertiesCache propertiesCache = ProjectUtil.propertiesCache;
+  PropertiesCache propertiesCache = ProjectUtil.propertiesCache;
 
-  private static Map<String, String> headers = new HashMap<String, String>();
+  static Map<String, String> headers = new HashMap<String, String>();
 
   @BeforeClass
   public static void init() {
@@ -69,8 +74,8 @@ public class ProjectUtilTest extends BaseHttpTest {
     templateMap.put(JsonKey.ACTION_URL, "googli.com");
     templateMap.put(JsonKey.NAME, "userName");
 
-    boolean envVal = !StringUtils.isBlank(System.getenv(JsonKey.EMAIL_SERVER_FROM));
-    boolean cacheVal = propertiesCache.getProperty(JsonKey.EMAIL_SERVER_FROM) != null;
+    Boolean envVal = !StringUtils.isBlank(System.getenv(JsonKey.EMAIL_SERVER_FROM));
+    Boolean cacheVal = propertiesCache.getProperty(JsonKey.EMAIL_SERVER_FROM) != null;
 
     VelocityContext context = ProjectUtil.getContext(templateMap);
     if (envVal) {

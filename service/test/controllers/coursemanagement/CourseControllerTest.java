@@ -20,10 +20,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*", "jdk.internal.reflect.*",
+        "sun.security.ssl.*", "javax.net.ssl.*", "javax.crypto.*"})
 public class CourseControllerTest extends BaseApplicationTest {
 
-    private static final String COURSE_CREATE_URL = "/v1/course/create";
+    String COURSE_CREATE_URL = "/v1/course/create";
 
     @Before
     public void before() {

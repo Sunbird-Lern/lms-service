@@ -26,7 +26,7 @@ import org.sunbird.common.util.KeycloakRequiredActionLinkUtil;
 import org.sunbird.services.sso.impl.KeyCloakServiceImpl;
 
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*"})
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*", "jdk.internal.reflect.*", "sun.security.ssl.*", "javax.net.ssl.*" , "javax.crypto.*"})
 @PrepareForTest({
   OutputStreamWriter.class,
   URL.class,
@@ -70,7 +70,7 @@ public abstract class BaseHttpTest {
         doThrow(new FileNotFoundException()).when(outStreamWriter).write(Mockito.anyString());
       }
       if (throwError) {
-        when(connection.getInputStream()).thenThrow(FileNotFoundException.class);
+        when(connection.getInputStream()).thenThrow(new FileNotFoundException());
       } else {
         when(connection.getInputStream()).thenReturn(inStream);
       }

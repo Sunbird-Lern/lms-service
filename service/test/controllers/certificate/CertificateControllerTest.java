@@ -27,17 +27,19 @@ import play.test.Helpers;
 import util.ACTOR_NAMES;
 
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*", "jdk.internal.reflect.*",
+        "sun.security.ssl.*", "javax.net.ssl.*", "javax.crypto.*",
+        "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class CertificateControllerTest extends BaseApplicationTest {
-  private static final String COURSE_ID = "courseId";
-  private static final String BATCH_ID = "batchId";
-  private static final String CERTIFICATE_NAME = "certificateName";
-  private static final String TEMPLATE_ID = "templateId";
-  private static final String CERTIFICATE = "certificate";
-  private static final String ISSUE_CERTIFICATE_URL = "/v1/course/batch/cert/issue";
-  private static final String ADD_CERTIFICATE_URL = "/v1/course/batch/cert/template/add";
-  private static final String DELETE_CERTIFICATE_URL = "/v1/course/batch/cert/template/remove";
-  private static final String TEST = "Test";
+  String COURSE_ID = "courseId";
+  String BATCH_ID = "batchId";
+  String CERTIFICATE_NAME = "certificateName";
+  String TEMPLATE_ID = "templateId";
+  String CERTIFICATE = "certificate";
+  String ISSUE_CERTIFICATE_URL = "/v1/course/batch/cert/issue";
+  String ADD_CERTIFICATE_URL = "/v1/course/batch/cert/template/add";
+  String DELETE_CERTIFICATE_URL = "/v1/course/batch/cert/template/remove";
+  String TEST = "Test";
   ObjectMapper mapper = new ObjectMapper();
 
   @Before

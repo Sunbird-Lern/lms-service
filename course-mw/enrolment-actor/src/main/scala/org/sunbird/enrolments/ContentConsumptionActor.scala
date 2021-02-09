@@ -29,16 +29,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     private val assessmentAggregatorDBInfo = Util.dbInfoMap.get(JsonKey.ASSESSMENT_AGGREGATOR_DB)
     val dateFormatter = ProjectUtil.getDateFormatter
     val defaultFields = new java.util.HashSet[String](){{
-        add("contentid")
-        add("userid")
-        add("batchid")
-        add("courseid")
-        add("completedcount")
-        add("completionpercentage")
-        add("lastcompletedtime")
-        add("progress")
-        add("status")
-        add("viewcount")
+        addAll(ProjectUtil.getConfigValue("content.default.fields").split(",").toList.asJava)
     }}
     val jsonFields = new java.util.ArrayList[String](){{
         add("progressdetails")

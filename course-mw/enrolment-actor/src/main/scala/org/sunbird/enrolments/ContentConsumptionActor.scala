@@ -19,6 +19,7 @@ import org.sunbird.learner.util.Util
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
+import scala.collection.immutable.HashSet
 
 class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     private val mapper = new ObjectMapper
@@ -28,12 +29,8 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     private val assessmentAggregatorDBInfo = Util.dbInfoMap.get(JsonKey.ASSESSMENT_AGGREGATOR_DB)
     val dateFormatter = ProjectUtil.getDateFormatter
 
-    val defaultFields = new java.util.HashSet[String](){{
-      addAll(ProjectUtil.getConfigValue("content.default.fields").split(",").toList.asJava)
-    }}
-    val jsonFields = new java.util.ArrayList[String](){{
-      add("progressdetails")
-    }}
+    var defaultFields: HashSet[String] = HashSet(ProjectUtil.getConfigValue("content.default.fields"))
+    val jsonFields = Set[String]("progressdetails")
 
     override def onReceive(request: Request): Unit = {
         Util.initializeContext(request, TelemetryEnvKey.BATCH)
@@ -307,7 +304,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         val fields = request.getRequest.getOrDefault(JsonKey.FIELDS, new java.util.ArrayList[String](){{ add(JsonKey.PROGRESS) }}).asInstanceOf[java.util.List[String]]
         //default fields added ..
         if (fields!=null && !fields.isEmpty ){
-          defaultFields.addAll(fields)
+            defaultFields = defaultFields ++ fields
         }
 
         val contentsConsumed = getContentsConsumption(userId, courseId, contentIds, batchId, defaultFields, request.getRequestContext)

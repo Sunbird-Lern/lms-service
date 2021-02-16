@@ -189,7 +189,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             if(CollectionUtils.isNotEmpty(contentIds))
                 put("contentid", contentIds)
         }}
-        val response = cassandraOperation.getRecords(requestContext, consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, filters, null)
+        val response = cassandraOperation.getRecords(requestContext, consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, filters, fields.toList)
         response.getResult.getOrDefault(JsonKey.RESPONSE, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
     }
 

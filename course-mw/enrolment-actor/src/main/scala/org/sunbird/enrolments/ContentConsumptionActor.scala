@@ -29,7 +29,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     private val assessmentAggregatorDBInfo = Util.dbInfoMap.get(JsonKey.ASSESSMENT_AGGREGATOR_DB)
     val dateFormatter = ProjectUtil.getDateFormatter
 
-    var defaultFields: HashSet[String] = HashSet(ProjectUtil.getConfigValue("content.default.fields"))
+    val defaultFields: HashSet[String] = HashSet(ProjectUtil.getConfigValue("content.default.fields"))
     val jsonFields = Set[String]("progressdetails")
 
     override def onReceive(request: Request): Unit = {
@@ -197,11 +197,10 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         val inputStatus = inputContent.getOrDefault(JsonKey.STATUS, 0.asInstanceOf[AnyRef]).asInstanceOf[Number].intValue()
         val updatedContent = new java.util.HashMap[String, AnyRef]()
         updatedContent.putAll(inputContent)
-        jsonFields.foreach(field =>
-          if (inputContent.containsKey(field))
-            updatedContent.put(field, mapper.writeValueAsString(inputContent.get(field)))
+        val parsedMap = new java.util.HashMap[String, AnyRef]()
+        jsonFields.flatMap(f => if(inputContent.containsKey(f)) Some(parsedMap.put(f,mapper.writeValueAsString(inputContent.get(f)))) else None)
+        updatedContent.putAll(parsedMap)
 
-        )
         val inputCompletedTime = parseDate(inputContent.getOrDefault(JsonKey.LAST_COMPLETED_TIME, "").asInstanceOf[String])
         val inputAccessTime = parseDate(inputContent.getOrDefault(JsonKey.LAST_ACCESS_TIME, "").asInstanceOf[String])
         if(MapUtils.isNotEmpty(existingContent)) {
@@ -303,11 +302,9 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         val contentIds = request.getRequest.getOrDefault(JsonKey.CONTENT_IDS, new java.util.ArrayList[String]()).asInstanceOf[java.util.List[String]]
         val fields = request.getRequest.getOrDefault(JsonKey.FIELDS, new java.util.ArrayList[String](){{ add(JsonKey.PROGRESS) }}).asInstanceOf[java.util.List[String]]
         //default fields added ..
-        if (fields!=null && !fields.isEmpty ){
-            defaultFields = defaultFields ++ fields
-        }
+        val finalFields = defaultFields ++ fields
 
-        val contentsConsumed = getContentsConsumption(userId, courseId, contentIds, batchId, defaultFields, request.getRequestContext)
+        val contentsConsumed = getContentsConsumption(userId, courseId, contentIds, batchId, finalFields, request.getRequestContext)
         val response = new Response
         if(CollectionUtils.isNotEmpty(contentsConsumed)) {
             val filteredContents = contentsConsumed.map(m => {

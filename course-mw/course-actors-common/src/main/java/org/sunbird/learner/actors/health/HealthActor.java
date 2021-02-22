@@ -34,6 +34,7 @@ public class HealthActor extends BaseActor {
   private Util.DbInfo pagesDbInfo = Util.dbInfoMap.get(JsonKey.PAGE_MGMT_DB);
   private ElasticSearchService esUtil = EsClientFactory.getInstance(JsonKey.REST);
   private static final String LMS_SERVICE = "lms-service";
+  public LoggerUtil logger = new LoggerUtil(this.getClass());
 
   @Override
   public void onReceive(Request message) throws Throwable {

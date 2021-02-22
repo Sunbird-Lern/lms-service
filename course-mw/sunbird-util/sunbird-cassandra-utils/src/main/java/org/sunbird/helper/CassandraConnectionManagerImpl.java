@@ -16,6 +16,7 @@ import org.sunbird.common.responsecode.ResponseCode;
 public class CassandraConnectionManagerImpl implements CassandraConnectionManager {
   private static Cluster cluster;
   private static Map<String, Session> cassandraSessionMap = new ConcurrentHashMap<>(2);
+  public static LoggerUtil logger = new LoggerUtil(CassandraConnectionManagerImpl.class);
 
   static {
     registerShutDownHook();
@@ -66,17 +67,17 @@ public class CassandraConnectionManagerImpl implements CassandraConnectionManage
 
       final Metadata metadata = cluster.getMetadata();
       String msg = String.format("Connected to cluster: %s", metadata.getClusterName());
-      ProjectLogger.log(msg);
+      logger.info(null, msg);
 
       for (final Host host : metadata.getAllHosts()) {
         msg =
             String.format(
                 "Datacenter: %s; Host: %s; Rack: %s",
                 host.getDatacenter(), host.getAddress(), host.getRack());
-        ProjectLogger.log(msg);
+       logger.info(null, msg);
       }
     } catch (Exception e) {
-      ProjectLogger.log("Error occured while creating cassandra connection :", e);
+      logger.error(null, "Error occured while creating cassandra connection :", e);
       throw new ProjectCommonException(
           ResponseCode.internalError.getErrorCode(),
           e.getMessage(),
@@ -94,9 +95,8 @@ public class CassandraConnectionManagerImpl implements CassandraConnectionManage
             .withPoolingOptions(poolingOptions);
 
     ConsistencyLevel consistencyLevel = getConsistencyLevel();
-    ProjectLogger.log(
-        "CassandraConnectionManagerImpl:createCluster: Consistency level = " + consistencyLevel,
-        LoggerEnum.INFO);
+    logger.info(null,
+        "CassandraConnectionManagerImpl:createCluster: Consistency level = " + consistencyLevel);
 
     if (consistencyLevel != null) {
       builder.withQueryOptions(new QueryOptions().setConsistencyLevel(consistencyLevel));
@@ -108,19 +108,17 @@ public class CassandraConnectionManagerImpl implements CassandraConnectionManage
   private static ConsistencyLevel getConsistencyLevel() {
     String consistency = ProjectUtil.getConfigValue(JsonKey.SUNBIRD_CASSANDRA_CONSISTENCY_LEVEL);
 
-    ProjectLogger.log(
-        "CassandraConnectionManagerImpl:getConsistencyLevel: level = " + consistency,
-        LoggerEnum.INFO);
+    logger.info(null,
+        "CassandraConnectionManagerImpl:getConsistencyLevel: level = " + consistency);
 
     if (StringUtils.isBlank(consistency)) return null;
 
     try {
       return ConsistencyLevel.valueOf(consistency.toUpperCase());
     } catch (IllegalArgumentException exception) {
-      ProjectLogger.log(
+      logger.info(null,
           "CassandraConnectionManagerImpl:getConsistencyLevel: Exception occurred with error message = "
-              + exception.getMessage(),
-          LoggerEnum.ERROR);
+              + exception.getMessage());
     }
     return null;
   }
@@ -137,7 +135,7 @@ public class CassandraConnectionManagerImpl implements CassandraConnectionManage
   public static void registerShutDownHook() {
     Runtime runtime = Runtime.getRuntime();
     runtime.addShutdownHook(new ResourceCleanUp());
-    ProjectLogger.log("Cassandra ShutDownHook registered.");
+    logger.info(null, "Cassandra ShutDownHook registered.");
   }
 
   /**
@@ -148,14 +146,14 @@ public class CassandraConnectionManagerImpl implements CassandraConnectionManage
     @Override
     public void run() {
       try {
-        ProjectLogger.log("started resource cleanup Cassandra.");
+        logger.info(null, "started resource cleanup Cassandra.");
         for (Map.Entry<String, Session> entry : cassandraSessionMap.entrySet()) {
           cassandraSessionMap.get(entry.getKey()).close();
         }
         cluster.close();
-        ProjectLogger.log("completed resource cleanup Cassandra.");
+        logger.info(null, "completed resource cleanup Cassandra.");
       } catch (Exception ex) {
-        ProjectLogger.log("Error :", ex);
+        logger.error(null, "Error :", ex);
       }
     }
   }

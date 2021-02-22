@@ -417,7 +417,6 @@ public final class JsonKey {
   public static final String PHONE_NUMBER_VERIFIED = "phoneNumberVerified";
   public static final String PHONE_UNIQUE = "phoneUnique";
   public static final String PHONE_VERIFIED = "phoneVerified";
-  public static final String PID = "pid";
   public static final String PORTAL_MAP = "portalMap";
   public static final String PORTAL_SECTIONS = "portalSections";
   public static final String POSITION = "position";
@@ -1035,6 +1034,13 @@ public final class JsonKey {
   public static final String X_AUTH_TOKEN = "X_AUTH_TOKEN";
   public static final String TEMPLATE = "template";
   public static final String ASSESSMENT_AGGREGATOR_DB = "assessment_aggregator_db";
+  public static final String SERVICE_NAME = "cert-service";
+  public static final String PRODUCER_NAME = "org.sunbird.cert-service";
+  public static final String PID = "cert-service";
+  public static final String P_VERSION = "1.0";
+  public static final String X_DEVICE_ID = "x-device-id";
+  public static final String X_SESSION_ID = "x-session-id";
+  public static final String X_TRACE_ID = "x-trace-id";
 
   private JsonKey() {}
 }

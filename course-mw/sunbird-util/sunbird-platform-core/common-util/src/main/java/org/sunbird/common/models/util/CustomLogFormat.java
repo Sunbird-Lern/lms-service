@@ -1,8 +1,11 @@
-package org.sunbird;
+package org.sunbird.common.models.util;
 
-import org.sunbird.request.RequestContext;
+import org.sunbird.common.request.RequestContext;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class CustomLogFormat {
     private String edataType = "system";

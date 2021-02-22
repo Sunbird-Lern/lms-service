@@ -75,14 +75,14 @@ public class TextbookController extends BaseController {
   //  @Override
   public Request createAndInitUploadRequest(
       String operation, String objectType, Http.Request httpRequest) throws IOException {
-    ProjectLogger.log("API call for operation : " + operation);
+    logger.info(null, "API call for operation : " + operation);
     Request reqObj = new Request();
     Map<String, Object> map = new HashMap<>();
     InputStream inputStream = null;
 
     String fileUrl = httpRequest.getQueryString(JsonKey.FILE_URL);
     if (StringUtils.isNotBlank(fileUrl)) {
-      ProjectLogger.log("Got fileUrl from path parameter: " + fileUrl, LoggerEnum.INFO.name());
+      logger.info(null, "Got fileUrl from path parameter: " + fileUrl);
       URL url = new URL(fileUrl.trim());
       inputStream = url.openStream();
     } else {
@@ -106,7 +106,7 @@ public class TextbookController extends BaseController {
           inputStream = new FileInputStream(filePart.get(0).getRef().path().toFile());
         }
       } else {
-        ProjectLogger.log("Textbook toc upload request body is empty", LoggerEnum.INFO.name());
+        logger.info(null, "Textbook toc upload request body is empty");
         throwClientErrorException(
             ResponseCode.invalidData, ResponseCode.invalidData.getErrorMessage());
       }
@@ -118,8 +118,7 @@ public class TextbookController extends BaseController {
         inputStream.close();
       }
     } catch (Exception e) {
-      ProjectLogger.log(
-          "TextbookController:createAndInitUploadRequest : Exception occurred while closing stream");
+      logger.error(null, "TextbookController:createAndInitUploadRequest : Exception occurred while closing stream", e);
     }
     reqObj.setOperation(operation);
     reqObj.setRequestId(httpRequest.attrs().getOptional(Attrs.REQUEST_ID).orElse(null));

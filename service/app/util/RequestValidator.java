@@ -4,13 +4,9 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.models.util.ProjectUtil;
+import org.sunbird.common.models.util.*;
 import org.sunbird.common.models.util.ProjectUtil.ProgressStatus;
 import org.sunbird.common.models.util.ProjectUtil.Source;
-import org.sunbird.common.models.util.PropertiesCache;
-import org.sunbird.common.models.util.StringFormatter;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.common.responsecode.ResponseMessage;
@@ -31,6 +27,7 @@ import java.util.Map;
  */
 public final class RequestValidator {
   private static final int ERROR_CODE = ResponseCode.CLIENT_ERROR.getResponseCode();
+  public static LoggerUtil logger = new LoggerUtil(RequestValidator.class);
 
   private RequestValidator() {}
 
@@ -550,7 +547,7 @@ public final class RequestValidator {
       status = checkProgressStatus(Integer.parseInt("" + request.getRequest().get(JsonKey.STATUS)));
 
     } catch (Exception e) {
-      ProjectLogger.log(e.getMessage(), e);
+        logger.error(null, e.getMessage(), e);
     }
     return status;
   }

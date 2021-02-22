@@ -11,6 +11,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.telemetry.util.TelemetryEvents;
 import org.sunbird.telemetry.util.TelemetryWriter;
@@ -24,6 +25,7 @@ public class AccessLogFilter extends EssentialFilter {
 
     private final Executor executor;
     private ObjectMapper objectMapper = new ObjectMapper();
+    public LoggerUtil logger = new LoggerUtil(this.getClass());
 
     @Inject
     public AccessLogFilter(Executor executor) {
@@ -65,7 +67,7 @@ public class AccessLogFilter extends EssentialFilter {
                                         TelemetryWriter.write(req);
                                     }
                                 } catch (Exception ex) {
-                                    ProjectLogger.log("AccessLogFilter:apply Exception in writing telemetry", ex);
+                                   logger.error(null, "AccessLogFilter:apply Exception in writing telemetry", ex);
                                 }
                                 return result;
                             },

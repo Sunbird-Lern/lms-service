@@ -9,6 +9,7 @@ import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.PropertiesCache;
 import org.sunbird.common.models.util.datasecurity.EncryptionService;
@@ -29,6 +30,7 @@ public class AuthenticationHelper {
 
   private static CassandraOperation cassandraOperation = ServiceFactory.getInstance();
   private static DbInfo userAuth = Util.dbInfoMap.get(JsonKey.USER_AUTH_DB);
+  public static LoggerUtil logger = new LoggerUtil(AuthenticationHelper.class);
 
   /**
    * This method will verify the incoming user access token against store data base /cache. If token
@@ -53,7 +55,7 @@ public class AuthenticationHelper {
         }
       }
     } catch (Exception e) {
-      ProjectLogger.log("invalid auth token =" + token, e);
+        logger.error(null, "invalid auth token =" + token, e);
     }
     return userId;
   }
@@ -75,7 +77,7 @@ public class AuthenticationHelper {
         validClientId = (String) dataList.get(0).get(JsonKey.ID);
       }
     } catch (Exception e) {
-      ProjectLogger.log("Validating client token failed due to : ", e);
+        logger.error(null, "Validating client token failed due to : ", e);
     }
     return validClientId;
   }

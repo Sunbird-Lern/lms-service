@@ -8,6 +8,7 @@ import org.sunbird.auth.verifier.AccessTokenValidator;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.HeaderParam;
@@ -40,8 +41,10 @@ public class OnRequestHandler implements ActionCreator {
   public static boolean isServiceHealthy = true;
   private final List<String> USER_UNAUTH_STATES =
       Arrays.asList(JsonKey.UNAUTHORIZED, JsonKey.ANONYMOUS);
+  public LoggerUtil logger = new LoggerUtil(this.getClass());
 
-  @Override
+
+    @Override
   public Action createAction(Http.Request request, Method actionMethod) {
     Optional<String> optionalMessageId = request.header(JsonKey.MESSAGE_ID);
     String messageId;
@@ -111,7 +114,7 @@ public class OnRequestHandler implements ActionCreator {
           try {
               requestedForUserID = UUID.fromString(uuidSegment).toString();
           } catch (IllegalArgumentException iae) {
-              ProjectLogger.log("Perhaps this is another API, like search that doesn't carry user id.");
+             logger.info(null, "Perhaps this is another API, like search that doesn't carry user id.");
           }
       }
       return requestedForUserID;
@@ -127,7 +130,7 @@ public class OnRequestHandler implements ActionCreator {
    */
   public CompletionStage<Result> onDataValidationError(
       Http.Request request, String errorMessage, int responseCode) {
-    ProjectLogger.log("Data error found--" + errorMessage);
+    logger.info(null, "Data error found--" + errorMessage);
     ResponseCode code = ResponseCode.getResponse(errorMessage);
     ResponseCode headerCode = ResponseCode.CLIENT_ERROR;
     Response resp = BaseController.createFailureResponse(request, code, headerCode);

@@ -22,12 +22,7 @@ import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.KeyCloakConnectionProvider;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.models.util.ProjectUtil;
-import org.sunbird.common.models.util.PropertiesCache;
+import org.sunbird.common.models.util.*;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.common.util.KeycloakRequiredActionLinkUtil;
 import org.sunbird.services.sso.SSOManager;
@@ -47,10 +42,11 @@ public class KeyCloakServiceImpl implements SSOManager {
           + "/protocol/openid-connect/token";
 
   private static PublicKey SSO_PUBLIC_KEY = null;
+  private static LoggerUtil logger = new LoggerUtil(Slug.class);
 
   public PublicKey getPublicKey() {
     if (null == SSO_PUBLIC_KEY) {
-      ProjectLogger.log("KeyCloakService - Empty Key. So, generating public key from Env.");
+      logger.info(null,"KeyCloakService - Empty Key. So, generating public key from Env.");
       SSO_PUBLIC_KEY = toPublicKey(System.getenv(JsonKey.SSO_PUBLIC_KEY));
     }
     return SSO_PUBLIC_KEY;
@@ -94,9 +90,8 @@ public class KeyCloakServiceImpl implements SSOManager {
       ur.resetPassword(cr);
       return true;
     } catch (Exception e) {
-      ProjectLogger.log(
-          "KeyCloakServiceImpl:updatePassword: Exception occurred with error message = " + e,
-          LoggerEnum.ERROR.name());
+      logger.error(null,
+          "KeyCloakServiceImpl:updatePassword: Exception occurred with error message = " + e, e);
     }
     return false;
   }
@@ -205,7 +200,7 @@ public class KeyCloakServiceImpl implements SSOManager {
       needTobeUpdate = true;
       ur.setEmail((String) request.get(JsonKey.EMAIL));
     }
-    ProjectLogger.log(
+    logger.info(null,
         "check user email is verified or not ,resource.toRepresentation().isEmailVerified() :"
             + resource.toRepresentation().isEmailVerified()
             + " for userId :"
@@ -331,9 +326,8 @@ public class KeyCloakServiceImpl implements SSOManager {
   private void makeUserActiveOrInactive(String userId, boolean status) {
     try {
       String fedUserId = getFederatedUserId(userId);
-      ProjectLogger.log(
-          "KeyCloakServiceImpl:makeUserActiveOrInactive: fedration id formed: " + fedUserId,
-          LoggerEnum.INFO.name());
+      logger.info(null,
+          "KeyCloakServiceImpl:makeUserActiveOrInactive: fedration id formed: " + fedUserId);
       validateUserId(fedUserId);
       Keycloak keycloak = KeyCloakConnectionProvider.getConnection();
       UserResource resource =
@@ -344,9 +338,8 @@ public class KeyCloakServiceImpl implements SSOManager {
         resource.update(ur);
       }
     } catch (Exception e) {
-      ProjectLogger.log(
-          "KeyCloakServiceImpl:makeUserActiveOrInactive:error occurred while blocking user: " + e,
-          LoggerEnum.ERROR.name());
+      logger.error(null,
+          "KeyCloakServiceImpl:makeUserActiveOrInactive:error occurred while blocking user: " + e, e);
       ProjectUtil.createAndThrowInvalidUserDataException();
     }
   }
@@ -431,7 +424,7 @@ public class KeyCloakServiceImpl implements SSOManager {
       resource.resetPassword(newCredential);
       response = true;
     } catch (Exception ex) {
-      ProjectLogger.log(ex.getMessage(), ex);
+      logger.error(null,ex.getMessage(), ex);
     }
     return response;
   }
@@ -453,7 +446,7 @@ public class KeyCloakServiceImpl implements SSOManager {
         lastLoginTime = list.get(0);
       }
     } catch (Exception e) {
-      ProjectLogger.log(e.getMessage(), e);
+      logger.error(null,e.getMessage(), e);
     }
     return lastLoginTime;
   }
@@ -485,7 +478,7 @@ public class KeyCloakServiceImpl implements SSOManager {
       ur.setAttributes(map);
       resource.update(ur);
     } catch (Exception e) {
-      ProjectLogger.log(e.getMessage(), e);
+      logger.error(null,e.getMessage(), e);
       response = false;
     }
     return response;
@@ -529,7 +522,7 @@ public class KeyCloakServiceImpl implements SSOManager {
         resource.update(ur);
       }
     } catch (Exception e) {
-      ProjectLogger.log(e.getMessage(), e);
+      logger.error(null,e.getMessage(), e);
       ProjectUtil.createAndThrowInvalidUserDataException();
     }
   }
@@ -557,16 +550,15 @@ public class KeyCloakServiceImpl implements SSOManager {
       UserRepresentation ur = resource.toRepresentation();
       return ur.getUsername();
     } catch (Exception e) {
-      ProjectLogger.log(
+      logger.error(null,
           "KeyCloakServiceImpl:getUsernameById: User not found for userId = "
               + userId
               + " error message = "
               + e.getMessage(),
           e);
     }
-    ProjectLogger.log(
-        "KeyCloakServiceImpl:getUsernameById: User not found for userId = " + userId,
-        LoggerEnum.INFO.name());
+    logger.info(null,
+        "KeyCloakServiceImpl:getUsernameById: User not found for userId = " + userId);
     return "";
   }
 
@@ -584,7 +576,7 @@ public class KeyCloakServiceImpl implements SSOManager {
                 ssoUrl + "realms/" + KeyCloakConnectionProvider.SSO_REALM,
                     checkActive,
                 true);
-        ProjectLogger.log(
+        logger.info(null,
             token.getId()
                 + " "
                 + token.issuedFor
@@ -597,8 +589,7 @@ public class KeyCloakServiceImpl implements SSOManager {
                 + "  isExpired: "
                 + token.isExpired()
                 + " "
-                + token.issuedNow().getExpiration(),
-            LoggerEnum.INFO.name());
+                + token.issuedNow().getExpiration());
         String tokenSubject = token.getSubject();
         if (StringUtils.isNotBlank(tokenSubject)) {
           int pos = tokenSubject.lastIndexOf(":");
@@ -606,17 +597,16 @@ public class KeyCloakServiceImpl implements SSOManager {
         }
         return token.getSubject();
       } else {
-        ProjectLogger.log(
-            "KeyCloakServiceImpl:verifyToken: SSO_PUBLIC_KEY is NULL.", LoggerEnum.ERROR);
+        logger.error(null,
+            "KeyCloakServiceImpl:verifyToken: SSO_PUBLIC_KEY is NULL.", null);
         throw new ProjectCommonException(
             ResponseCode.keyCloakDefaultError.getErrorCode(),
             ResponseCode.keyCloakDefaultError.getErrorMessage(),
             ResponseCode.keyCloakDefaultError.getResponseCode());
       }
     } catch (Exception e) {
-      ProjectLogger.log(
-          "KeyCloakServiceImpl:verifyToken: Exception occurred with message = " + e.getMessage(),
-          LoggerEnum.ERROR);
+      logger.error(null,
+          "KeyCloakServiceImpl:verifyToken: Exception occurred with message = " + e.getMessage(), e);
       throw new ProjectCommonException(
           ResponseCode.unAuthorized.getErrorCode(),
           ResponseCode.unAuthorized.getErrorMessage(),

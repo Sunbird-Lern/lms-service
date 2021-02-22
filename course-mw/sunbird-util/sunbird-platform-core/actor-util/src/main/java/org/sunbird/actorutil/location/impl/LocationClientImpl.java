@@ -13,11 +13,7 @@ import org.sunbird.actorutil.InterServiceCommunicationFactory;
 import org.sunbird.actorutil.location.LocationClient;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.GeoLocationJsonKey;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LocationActorOperation;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.*;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.models.location.Location;
@@ -28,6 +24,7 @@ public class LocationClientImpl implements LocationClient {
   private static InterServiceCommunication interServiceCommunication =
       InterServiceCommunicationFactory.getInstance();
   private ObjectMapper mapper = new ObjectMapper();
+  private LoggerUtil logger = new LoggerUtil(this.getClass());
 
   @Override
   public List<Location> getLocationsByCodes(ActorRef actorRef, List<String> codeList) {
@@ -58,7 +55,7 @@ public class LocationClientImpl implements LocationClient {
     Request request = new Request();
     request.setOperation(LocationActorOperation.SEARCH_LOCATION.getValue());
     request.getRequest().putAll(searchRequestMap);
-    ProjectLogger.log("LocationClientImpl : callSearchLocation ", LoggerEnum.INFO);
+    logger.info(null,"LocationClientImpl : callSearchLocation ");
     Object obj = interServiceCommunication.getResponse(actorRef, request);
     if (obj instanceof Response) {
       Response responseObj = (Response) obj;
@@ -93,7 +90,7 @@ public class LocationClientImpl implements LocationClient {
     request.getRequest().putAll(mapper.convertValue(location, Map.class));
     Map<String, Object> resLocation = new HashMap<>();
     request.setOperation(LocationActorOperation.CREATE_LOCATION.getValue());
-    ProjectLogger.log("LocationClientImpl : callCreateLocation ", LoggerEnum.INFO);
+    logger.info(null, "LocationClientImpl : callCreateLocation ");
     Object obj = interServiceCommunication.getResponse(actorRef, request);
     checkLocationResponseForException(obj);
     if (obj instanceof Response) {
@@ -108,7 +105,7 @@ public class LocationClientImpl implements LocationClient {
     Request request = new Request();
     request.getRequest().putAll(mapper.convertValue(location, Map.class));
     request.setOperation(LocationActorOperation.UPDATE_LOCATION.getValue());
-    ProjectLogger.log("LocationClientImpl : callUpdateLocation ", LoggerEnum.INFO);
+    logger.info(null, "LocationClientImpl : callUpdateLocation ");
     Object obj = interServiceCommunication.getResponse(actorRef, request);
     checkLocationResponseForException(obj);
   }
@@ -122,7 +119,7 @@ public class LocationClientImpl implements LocationClient {
     request.setOperation(LocationActorOperation.GET_RELATED_LOCATION_IDS.getValue());
     request.getRequest().putAll(requestMap);
 
-    ProjectLogger.log("LocationClientImpl: getRelatedLocationIds called", LoggerEnum.INFO);
+    logger.info(null, "LocationClientImpl: getRelatedLocationIds called");
     Object obj = interServiceCommunication.getResponse(actorRef, request);
     checkLocationResponseForException(obj);
 

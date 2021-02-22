@@ -519,7 +519,7 @@ public class TextbookTocActor extends BaseActor {
         }
       }
     } catch (Exception ex) {
-      logger.info(null, 
+      logger.error(null,
           "TextbookTocActor:callDialcodeSearchApi : Exception occurred with message:"
               + ex.getMessage(),
           ex);
@@ -715,9 +715,8 @@ public class TextbookTocActor extends BaseActor {
       try {
         if (null != csvFileParser) csvFileParser.close();
       } catch (IOException e) {
-        logger.info(null, 
-            "TextbookTocActor:readAndValidateCSV : Exception occurred while closing stream",
-            LoggerEnum.ERROR);
+        logger.error(null,
+            "TextbookTocActor:readAndValidateCSV : Exception occurred while closing stream", e);
       }
     }
     return result;
@@ -1032,7 +1031,7 @@ public class TextbookTocActor extends BaseActor {
           "Timed:TextbookTocActor:callUpdateHierarchyAndLinkDialCodeApi duration for link dial code: "
               + (Instant.now().toEpochMilli() - startTime.toEpochMilli()));
     } catch (Exception ex) {
-      logger.info(null, 
+      logger.error(null,
           "TextbookTocActor:callUpdateHierarchyAndLinkDialCodeApi : Exception occurred while linking dial code : ",
           ex);
       response
@@ -1424,7 +1423,7 @@ public class TextbookTocActor extends BaseActor {
               .body(mapper.writeValueAsString(updateRequest))
               .asString();
     } catch (Exception ex) {
-      logger.info(null, "TextbookTocActor:updateHierarchy : Update response call ", ex);
+      logger.error(null, "TextbookTocActor:updateHierarchy : Update response call ", ex);
     }
     logger.info(null, 
         "TextbookTocActor:updateHierarchy : access token  : " + mapper.writeValueAsString(headers));
@@ -1463,7 +1462,7 @@ public class TextbookTocActor extends BaseActor {
               ResponseCode.CLIENT_ERROR.getResponseCode());
         }
       } catch (Exception ex) {
-        logger.info(null, 
+        logger.error(null,
             "TextbookTocActor:updateHierarchy : Update response body " + updateResponse.getBody(),
             ex);
         if (ex instanceof ProjectCommonException) {

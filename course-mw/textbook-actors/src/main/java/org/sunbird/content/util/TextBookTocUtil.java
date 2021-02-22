@@ -102,10 +102,10 @@ public class TextBookTocUtil {
                 response.getResponseCode().getResponseCode());
       }
     } catch (IOException e) {
-      logger.info(null, "TextBookTocUtil:handleReadRequest: Exception occurred with error message = " + e.getMessage(), e);
+      logger.error(null, "TextBookTocUtil:handleReadRequest: Exception occurred with error message = " + e.getMessage(), e);
       throwServerErrorException(ResponseCode.SERVER_ERROR);
     } catch (UnirestException e) {
-      logger.info(null, "TextBookTocUtil:handleReadRequest: Exception occurred with error message = " + e.getMessage(), e);
+      logger.error(null, "TextBookTocUtil:handleReadRequest: Exception occurred with error message = " + e.getMessage(), e);
       throwServerErrorException(ResponseCode.SERVER_ERROR);
     }
     return response;

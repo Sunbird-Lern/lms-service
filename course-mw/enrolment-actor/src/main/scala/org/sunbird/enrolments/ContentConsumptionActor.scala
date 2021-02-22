@@ -166,7 +166,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     }
 
     private def pushInvalidDataToKafka(requestContext: RequestContext, data: java.util.Map[String, AnyRef], dataType: String): Unit = {
-        logger.info(requestContext, "LearnerStateUpdater - Invalid " + dataType, data)
+        logger.info(requestContext, "LearnerStateUpdater - Invalid " + dataType, null, data)
         val topic = ProjectUtil.getConfigValue("kafka_topics_contentstate_invalid")
         try {
             val event = mapper.writeValueAsString(data)

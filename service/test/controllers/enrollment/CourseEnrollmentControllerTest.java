@@ -1,4 +1,4 @@
-package controllers.courseenrollment;
+package controllers.enrollment;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.BaseApplicationTest;

@@ -142,6 +142,8 @@ public interface ResponseMessage {
     String USER_ALREADY_COMPLETED_COURSE = "User already completed given course batch.";
     String COURSE_BATCH_ALREADY_COMPLETED = "Course batch is already completed.";
     String COURSE_BATCH_ENROLLMENT_DATE_ENDED = "Course batch enrollment date has ended.";
+    String MISSING_FIXED_BATCH_ID = "Missing Fixed Batch Id.";
+    String CANNOT_UPDATE_EVENT_SET_HAVING_ENROLLMENTS = "Cannot update event set having enrollments.";
     String EXISTING_ORG_MEMBER = "You already have a membership of this organization.";
     String CONTENT_TYPE_ERROR = "Please add Content-Type header with value application/json";
     String INVALID_PROPERTY_ERROR = "Invalid property {0}.";
@@ -577,6 +579,8 @@ public interface ResponseMessage {
     String USER_ALREADY_COMPLETED_COURSE = "USER_ALREADY_COMPLETED_COURSE";
     String COURSE_BATCH_ALREADY_COMPLETED = "COURSE_BATCH_ALREADY_COMPLETED";
     String COURSE_BATCH_ENROLLMENT_DATE_ENDED = "COURSE_BATCH_ENROLLMENT_DATE_ENDED";
+    String MISSING_FIXED_BATCH_ID = "MISSING_FIXED_BATCH_ID";
+    String CANNOT_UPDATE_EVENT_SET_HAVING_ENROLLMENTS = "CANNOT_UPDATE_EVENT_SET_HAVING_ENROLLMENTS";
     String CONTENT_TYPE_ERROR = "CONTENT_TYPE_ERROR";
     String INVALID_PROPERTY_ERROR = "INVALID_PROPERTY_ERROR";
     String USER_NAME_OR_ID_ERROR = "USER_NAME_OR_ID_ERROR";

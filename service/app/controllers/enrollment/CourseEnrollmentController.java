@@ -1,22 +1,20 @@
-package controllers.courseenrollment;
+package controllers.enrollment;
 
 import akka.actor.ActorRef;
 import controllers.BaseController;
-import controllers.courseenrollment.validator.CourseEnrollmentRequestValidator;
-import org.sunbird.common.models.util.ActorOperations;
+import controllers.enrollment.validator.CourseEnrollmentRequestValidator;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
 import play.mvc.Http;
 import play.mvc.Result;
+import org.sunbird.common.Common;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
@@ -76,8 +74,7 @@ public class CourseEnrollmentController extends BaseController {
         httpRequest.body().asJson(),
         (request) -> {
           Request req = (Request) request;
-          String courseId = req.getRequest().containsKey(JsonKey.COURSE_ID) ? JsonKey.COURSE_ID : JsonKey.COLLECTION_ID;
-          req.getRequest().put(JsonKey.COURSE_ID, req.getRequest().get(courseId));
+          Common.handleFixedBatchIdRequest(req);
           new CourseEnrollmentRequestValidator().validateEnrollCourse(req);
           return null;
         },
@@ -91,13 +88,24 @@ public class CourseEnrollmentController extends BaseController {
         httpRequest.body().asJson(),
         (request) -> {
           Request req = (Request) request;
-          String courseId = req.getRequest().containsKey(JsonKey.COURSE_ID) ? JsonKey.COURSE_ID : JsonKey.COLLECTION_ID;
-          req.getRequest().put(JsonKey.COURSE_ID, req.getRequest().get(courseId));
+          Common.handleFixedBatchIdRequest(req);
           new CourseEnrollmentRequestValidator().validateUnenrollCourse(req);
           return null;
         },
         getAllRequestHeaders(httpRequest),
         httpRequest);
+  }
+
+  public CompletionStage<Result> getParticipantsForFixedBatch(Http.Request httpRequest) {
+      return handleRequest(courseEnrolmentActor, "getParticipantsForFixedBatch",
+              httpRequest.body().asJson(),
+              (request) -> {
+                  Common.handleFixedBatchIdRequest((Request) request);
+                  new CourseEnrollmentRequestValidator().validateCourseParticipant((Request) request);
+                  return null;
+              },
+              getAllRequestHeaders(httpRequest),
+              httpRequest);
   }
 
     public CompletionStage<Result> getUserEnrolledCourses(Http.Request httpRequest) {

@@ -30,6 +30,8 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
 
     override def onReceive(request: Request): Unit = {
         Util.initializeContext(request, TelemetryEnvKey.BATCH)
+        Util.initializeRequestContext(request, this.getClass.getName)
+
         request.getOperation match {
             case "updateConsumption" => updateConsumption(request)
             case "getConsumption" => getConsumption(request)

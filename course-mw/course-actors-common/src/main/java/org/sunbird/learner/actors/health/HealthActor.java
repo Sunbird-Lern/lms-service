@@ -42,6 +42,8 @@ public class HealthActor extends BaseActor {
       try {
         Request actorMessage = message;
         Util.initializeContext(actorMessage, TelemetryEnvKey.USER);
+        Util.initializeRequestContext(actorMessage, this.getClass().getName());
+
         // set request id fto thread loacl...
         if (actorMessage.getOperation().equalsIgnoreCase(ActorOperations.HEALTH_CHECK.getValue())) {
           checkAllComponentHealth();

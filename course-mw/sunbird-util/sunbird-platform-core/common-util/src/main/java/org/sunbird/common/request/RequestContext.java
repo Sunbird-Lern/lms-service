@@ -14,6 +14,7 @@ public class RequestContext {
     private String actorType;
     private String loggerLevel;
     private String requestId;
+    private String env;
     private Map<String, Object> contextMap = new HashMap<>();
     private String channel;
     private Map<String, Object> pdata = new HashMap<>();
@@ -70,6 +71,14 @@ public class RequestContext {
 
     public String getDebugEnabled() {
         return debugEnabled;
+    }
+
+    public String getEnv() {
+        return env;
+    }
+
+    public void setEnv(String env) {
+        this.env = env;
     }
 
     public Map<String, Object> getContextMap() {

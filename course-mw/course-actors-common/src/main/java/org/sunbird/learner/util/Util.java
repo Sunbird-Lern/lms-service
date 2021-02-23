@@ -380,6 +380,10 @@ public final class Util {
         ? (String) actorMessage.getContext().get(key)
         : "";
   }
+
+  public static void initializeRequestContext(Request actorMessage, String env) {
+    actorMessage.getRequestContext().setEnv(env);
+  }
 }
 
 @FunctionalInterface

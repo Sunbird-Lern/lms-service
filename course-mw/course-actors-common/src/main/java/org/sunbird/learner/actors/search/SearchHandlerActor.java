@@ -54,6 +54,8 @@ public class SearchHandlerActor extends BaseActor {
   public void onReceive(Request request) throws Throwable {
     request.toLower();
     Util.initializeContext(request, TelemetryEnvKey.USER);
+    Util.initializeRequestContext(request, this.getClass().getName());
+
     // set request id fto thread loacl...
 
     if (request.getOperation().equalsIgnoreCase(ActorOperations.COMPOSITE_SEARCH.getValue())) {

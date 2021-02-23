@@ -277,14 +277,14 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
 
     def updateProgressData(enrolments: java.util.List[java.util.Map[String, AnyRef]], userId: String, courseIds: java.util.List[String], requestContext: RequestContext): util.List[java.util.Map[String, AnyRef]] = {
         val enrolmentMap: Map[String, java.util.Map[String, AnyRef]] = enrolments.map(enrolment => enrolment.get(JsonKey.COURSE_ID).asInstanceOf[String] + "_" + enrolment.get(JsonKey.BATCH_ID).asInstanceOf[String] -> enrolment).toMap
-        val response: Response = groupDao.readEntries("Course", java.util.Arrays.asList(userId), enrolmentMap.keys.toList.asJava, requestContext)
+        val response: Response = groupDao.readEntries("Course", java.util.Arrays.asList(userId), courseIds, requestContext)
         if (response.getResponseCode != ResponseCode.OK)
             ProjectCommonException.throwServerErrorException(ResponseCode.erroCallGrooupAPI, MessageFormat.format(ResponseCode.erroCallGrooupAPI.getErrorMessage()))
         val userActivityList: util.List[util.Map[String, AnyRef]] = response.getResult.getOrDefault("response", new util.ArrayList()).asInstanceOf[util.List[util.Map[String, AnyRef]]]
         userActivityList.map(activity => {
             val completedCount: Int = activity.getOrDefault("agg", new util.HashMap[String, AnyRef]())
                 .asInstanceOf[util.Map[String, AnyRef]].getOrDefault("completedCount", 0.asInstanceOf[AnyRef]).asInstanceOf[Int]
-            val key = activity.getOrDefault("activity_id", "").asInstanceOf[String] + "_" + activity.getOrDefault("activity_id", "").asInstanceOf[String].replaceAll("cb:", "")
+            val key = activity.getOrDefault("activity_id", "").asInstanceOf[String] + "_" + activity.getOrDefault("context_id", "").asInstanceOf[String].replaceAll("cb:", "")
             val enrolment = enrolmentMap.getOrDefault(key, new util.HashMap[String, AnyRef]())
             if(MapUtils.isNotEmpty(enrolment)) {
               val leafNodesCount: Int = enrolment.get("leafNodesCount").asInstanceOf[Int]

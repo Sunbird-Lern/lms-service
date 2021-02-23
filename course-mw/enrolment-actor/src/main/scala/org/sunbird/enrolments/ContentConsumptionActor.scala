@@ -29,7 +29,9 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     private val assessmentAggregatorDBInfo = Util.dbInfoMap.get(JsonKey.ASSESSMENT_AGGREGATOR_DB)
     val dateFormatter = ProjectUtil.getDateFormatter
 
-    val defaultFields: HashSet[String] = HashSet(ProjectUtil.getConfigValue("content.default.fields"))
+    //Added default fields in env varible:
+    //content.default.fields=contentid,userid,batchid,courseid,completedcount,completionpercentage,lastcompletedtime,status,viewcount
+    val defaultFields: Set[String] = ProjectUtil.getConfigValue("content.default.fields").split(",").toSet
     val jsonFields = Set[String]("progressdetails")
 
     override def onReceive(request: Request): Unit = {
@@ -304,14 +306,13 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         //default fields added ..
         val finalFields = defaultFields ++ fields
 
-        val contentsConsumed = getContentsConsumption(userId, courseId, contentIds, batchId, finalFields, request.getRequestContext)
+        val contentsConsumed = getContentsConsumption(userId, courseId, contentIds, batchId, finalFields.asJava, request.getRequestContext)
         val response = new Response
         if(CollectionUtils.isNotEmpty(contentsConsumed)) {
             val filteredContents = contentsConsumed.map(m => {
                 ProjectUtil.removeUnwantedFields(m, JsonKey.DATE_TIME, JsonKey.USER_ID, JsonKey.ADDED_BY, JsonKey.LAST_UPDATED_TIME)
                 m.put(JsonKey.COLLECTION_ID, m.getOrDefault(JsonKey.COURSE_ID, ""))
-                jsonFields.foreach(field =>
-                  if (fields.contains(field))
+                fields.foreach(field =>
                     m.put(field, mapper.readTree(m.get(field).asInstanceOf[String]))
                 )
                 if (fields.contains(JsonKey.ASSESSMENT_SCORE))

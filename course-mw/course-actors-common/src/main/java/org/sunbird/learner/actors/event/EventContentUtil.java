@@ -26,7 +26,7 @@ public class EventContentUtil {
     public static List<String> getChildEventIds(Request request, String eventSetId) throws JsonProcessingException, UnirestException {
         Response response = getContent(request, JsonKey.IDENTIFIER, eventSetId, new HashMap<>(), "/eventset/v4/hierarchy/{identifier}");
         if (response != null && response.getResponseCode().getResponseCode() == ResponseCode.OK.getResponseCode()) {
-            Map<String, Object> result = (Map<String, Object>) response.getResult().getOrDefault("content", new HashMap<String, Object>());
+            Map<String, Object> result = (Map<String, Object>) response.getResult().getOrDefault(SunbirdKey.EVENT_SET, new HashMap<String, Object>());
             return (List<String>) result.getOrDefault("childNodes", new ArrayList<String>());
         }
         else

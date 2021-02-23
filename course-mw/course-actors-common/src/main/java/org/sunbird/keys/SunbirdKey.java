@@ -16,6 +16,7 @@ public final class SunbirdKey {
     public static final String NODE_ID = "node_id";
     public static final String CONTENT = "content";
     public static final String COLLECTION = "collection";
+    public static final String EVENT_SET = "eventSet";
     public static final String VERSION_KEY = "versionKey";
     public static final String TB_MESSAGES = "messages";
     public static final String CONTENT_TYPE = "contentType";

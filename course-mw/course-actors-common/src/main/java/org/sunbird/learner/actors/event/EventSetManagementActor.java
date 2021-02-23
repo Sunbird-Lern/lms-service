@@ -40,10 +40,10 @@ public class EventSetManagementActor extends BaseActor {
     private void updateEventSet(Request request) throws Exception {
         validateNoEventEnrollments(request);
         try {
-            Map<String, Object> contentMap = new HashMap<>((Map<String, Object>) request.get(SunbirdKey.CONTENT));
+            Map<String, Object> contentMap = new HashMap<>((Map<String, Object>) request.get(SunbirdKey.EVENT_SET));
             String pathId = JsonKey.IDENTIFIER;
             String pathVal = request.getRequest().getOrDefault(JsonKey.IDENTIFIER, "").toString();
-            Response response = EventContentUtil.postContent(request, SunbirdKey.COLLECTION, "/private/eventset/v4/update/{identifier}", contentMap, pathId, pathVal);
+            Response response = EventContentUtil.postContent(request, SunbirdKey.EVENT_SET, "/private/eventset/v4/update/{identifier}", contentMap, pathId, pathVal);
             if (null != response) {
                 if (response.getResponseCode().getResponseCode() == ResponseCode.OK.getResponseCode()) {
                     sender().tell(response, self());

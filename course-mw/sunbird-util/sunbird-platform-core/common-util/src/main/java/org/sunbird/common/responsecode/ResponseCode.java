@@ -251,6 +251,12 @@ public enum ResponseCode {
   courseBatchEnrollmentDateEnded(
       ResponseMessage.Key.COURSE_BATCH_ENROLLMENT_DATE_ENDED,
       ResponseMessage.Message.COURSE_BATCH_ENROLLMENT_DATE_ENDED),
+  missingFixedBatchId(
+      ResponseMessage.Key.MISSING_FIXED_BATCH_ID,
+      ResponseMessage.Message.MISSING_FIXED_BATCH_ID),
+  cannotUpdateEventSetHavingEnrollments(
+      ResponseMessage.Key.CANNOT_UPDATE_EVENT_SET_HAVING_ENROLLMENTS,
+      ResponseMessage.Message.CANNOT_UPDATE_EVENT_SET_HAVING_ENROLLMENTS),
   userAlreadyCompletedCourse(
       ResponseMessage.Key.USER_ALREADY_COMPLETED_COURSE,
       ResponseMessage.Message.USER_ALREADY_COMPLETED_COURSE),

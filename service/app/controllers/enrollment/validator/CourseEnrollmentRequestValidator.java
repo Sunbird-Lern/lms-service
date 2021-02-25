@@ -1,4 +1,4 @@
-package controllers.courseenrollment.validator;
+package controllers.enrollment.validator;
 
 import org.sunbird.common.models.util.*;
 import org.sunbird.common.request.BaseRequestValidator;
@@ -21,15 +21,26 @@ public class CourseEnrollmentRequestValidator extends BaseRequestValidator {
     validateParam(
         (String) courseRequestDto.getRequest().get(JsonKey.COURSE_ID),
         ResponseCode.mandatoryParamsMissing,
-        JsonKey.COURSE_ID+"/"+JsonKey.COLLECTION_ID);
+        JsonKey.COURSE_ID+"/"+JsonKey.ENROLLABLE_ITEM_ID+"/"+JsonKey.COLLECTION_ID);
     validateParam(
         (String) courseRequestDto.getRequest().get(JsonKey.BATCH_ID),
         ResponseCode.mandatoryParamsMissing,
-        JsonKey.BATCH_ID);
+        JsonKey.BATCH_ID+"/"+JsonKey.FIXED_BATCH_ID);
     validateParam(
         (String) courseRequestDto.getRequest().get(JsonKey.USER_ID),
         ResponseCode.mandatoryParamsMissing,
         JsonKey.USER_ID);
+  }
+
+  public void validateCourseParticipant(Request courseRequestDto) {
+    validateParam(
+        (String) courseRequestDto.getRequest().get(JsonKey.COURSE_ID),
+        ResponseCode.mandatoryParamsMissing,
+        JsonKey.COURSE_ID+"/"+JsonKey.ENROLLABLE_ITEM_ID+"/"+JsonKey.COLLECTION_ID);
+    validateParam(
+        (String) courseRequestDto.getRequest().get(JsonKey.BATCH_ID),
+        ResponseCode.mandatoryParamsMissing,
+        JsonKey.BATCH_ID+"/"+JsonKey.FIXED_BATCH_ID);
   }
 
   public void validateEnrolledCourse(Request courseRequestDto) {

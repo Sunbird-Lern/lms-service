@@ -1034,9 +1034,9 @@ public final class JsonKey {
   public static final String X_AUTH_TOKEN = "X_AUTH_TOKEN";
   public static final String TEMPLATE = "template";
   public static final String ASSESSMENT_AGGREGATOR_DB = "assessment_aggregator_db";
-  public static final String SERVICE_NAME = "cert-service";
-  public static final String PRODUCER_NAME = "org.sunbird.cert-service";
-  public static final String PID = "cert-service";
+  public static final String SERVICE_NAME = "course-service";
+  public static final String PRODUCER_NAME = "org.sunbird.course-service";
+  public static final String PID = "course-service";
   public static final String P_VERSION = "1.0";
   public static final String X_DEVICE_ID = "x-device-id";
   public static final String X_SESSION_ID = "x-session-id";

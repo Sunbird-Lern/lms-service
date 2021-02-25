@@ -511,6 +511,7 @@ public class CourseBatchManagementActor extends BaseActor {
     if (CollectionUtils.isNotEmpty(mentors)) {
       String batchCreatorRootOrgId = getRootOrg(courseBatch.getCreatedBy(), authToken);
       List<Map<String, Object>> mentorDetailList = userOrgService.getUsersByIds(mentors, authToken);
+      logger.info(null, "CourseBatchManagementActor::validateMentors::mentorDetailList : " + mentorDetailList);
       Map<String, Map<String, Object>> mentorDetails =
           mentorDetailList
               .stream()
@@ -608,6 +609,7 @@ public class CourseBatchManagementActor extends BaseActor {
   private Map<String, String> getRootOrgForMultipleUsers(List<String> userIds, String authToken) {
 
     List<Map<String, Object>> userlist = userOrgService.getUsersByIds(userIds, authToken);
+    logger.info(null, "CourseBatchManagementActor::getRootOrgForMultipleUsers::userlist : " + userlist);
     Map<String, String> userWithRootOrgs = new HashMap<>();
     if (CollectionUtils.isNotEmpty(userlist)) {
       userlist.forEach(

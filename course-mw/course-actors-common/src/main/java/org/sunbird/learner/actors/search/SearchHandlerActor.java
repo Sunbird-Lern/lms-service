@@ -1,10 +1,13 @@
 package org.sunbird.learner.actors.search;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.BooleanUtils;
+import org.apache.http.HttpHeaders;
 import org.sunbird.actor.base.BaseActor;
 import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.exception.ProjectCommonException;
@@ -12,29 +15,29 @@ import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.HttpUtilResponse;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.ActorOperations;
-import org.sunbird.common.models.util.HttpUtil;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.ProjectUtil;
+import org.sunbird.common.models.util.*;
 import org.sunbird.common.models.util.ProjectUtil.EsType;
-import org.sunbird.common.models.util.PropertiesCache;
-import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.learner.actors.coursebatch.service.UserCoursesService;
+import org.sunbird.learner.util.ContentSearchUtil;
 import org.sunbird.learner.util.JsonUtil;
 import org.sunbird.learner.util.Util;
 import org.sunbird.telemetry.util.TelemetryWriter;
 import scala.concurrent.Future;
 
+import javax.ws.rs.core.MediaType;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -47,8 +50,9 @@ public class SearchHandlerActor extends BaseActor {
   private String topn = PropertiesCache.getInstance().getProperty(JsonKey.SEARCH_TOP_N);
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private static final String CREATED_BY = "createdBy";
-  
-  
+  private static ObjectMapper mapper = new ObjectMapper();
+  private static LoggerUtil logger = new LoggerUtil(SearchHandlerActor.class);
+
   @SuppressWarnings({"unchecked", "rawtypes"})
   @Override
   public void onReceive(Request request) throws Throwable {
@@ -123,11 +127,64 @@ public class SearchHandlerActor extends BaseActor {
     List<Map<String, Object>> content = (List<Map<String, Object>>) result.getOrDefault("content", new ArrayList<Map<String, Object>>());
     if(CollectionUtils.isNotEmpty(content)){
 	    List<String> creatorIds = content.stream().filter(map -> map.containsKey(CREATED_BY)).map(map -> (String) map.get(CREATED_BY)).collect(Collectors.toList());
-        Map<String, Object> creatorDetails = getCreatorDetails(requestContext, creatorIds);
+        Map<String, Object> creatorDetails = getCreatorDetailsFromReadApi(requestContext, creatorIds);
         if(MapUtils.isNotEmpty(creatorDetails)){
 	      content.stream().filter(map -> creatorDetails.containsKey((String) map.get(CREATED_BY))).map(map -> map.put("creatorDetails", creatorDetails.get((String) map.get(CREATED_BY)))).collect(Collectors.toList());
         }
     }
+  }
+
+  private Map<String, Object> getCreatorDetailsFromReadApi(RequestContext requestContext, List<String> creatorIds) {
+    logger.info(null, "SearchHandlerActor:getCreatorDetailsFromReadApi:called");
+    List<CompletableFuture<Map<String, Object>>> futures = creatorIds.stream().map(id -> getCreatorDetail(requestContext, id)).collect(Collectors.toList());
+    List<Map<String, Object>> tempResult = futures.stream().map(CompletableFuture::join).collect(Collectors.toList());
+    logger.info(null, "SearchHandlerActor:getCreatorDetailsFromReadApi:tempResult : " + tempResult);
+    return CollectionUtils.isNotEmpty(tempResult) ? tempResult.stream().collect(Collectors.toMap(s -> (String) s.remove("id"), s -> s)) : new HashMap<String, Object>();
+  }
+
+  private CompletableFuture<Map<String, Object>> getCreatorDetail(RequestContext requestContext, String userId) {
+    CompletableFuture<Map<String, Object>> future = CompletableFuture.supplyAsync(new Supplier<Map<String, Object>>() {
+      @Override
+      public Map<String, Object> get() {
+        final Map<String, Object> userDetails = userReadRequest(requestContext, userId);
+        Map<String, Object> userDetail = (Map<String, Object>) userDetails.get(JsonKey.RESPONSE);
+        return new HashMap<>() {{
+          put("id", userDetail.get("id"));
+          put("firstName", userDetail.get("firstName"));
+          put("lastName", userDetail.get("lastName"));
+        }};
+      }
+    });
+    return future;
+  }
+
+  public static Map<String, Object> userReadRequest(RequestContext requestContext, String userId) {
+    Map<String, Object> resMap = new HashMap<>();
+    try {
+      logger.info(requestContext, "User read request for : " + userId);
+      String userReadUrl = ProjectUtil.getConfigValue(JsonKey.SUNBIRD_USER_ORG_API_BASE_URL) + "/user/v1/read/" + userId;
+      String response = HttpUtil.sendGetRequest(userReadUrl, HttpUtil.getHeader(null));
+      logger.info(requestContext, "User read response is : " + response);
+      Map<String, Object> data = mapper.readValue(response, Map.class);
+      if (MapUtils.isNotEmpty(data)) {
+        data = (Map<String, Object>) data.get(JsonKey.RESULT);
+        if (MapUtils.isNotEmpty(data)) {
+          Object userData = data.get(JsonKey.RESPONSE);
+          resMap.put(JsonKey.RESPONSE, userData);
+        } else {
+          logger.info(requestContext, "User read No data found userId : " + userId);
+        }
+      } else {
+        logger.info(requestContext, "User read No data found userId : " + userId);
+      }
+    } catch (IOException e) {
+      logger.error(requestContext, "Error found during user read parse : " + e.getMessage(), e);
+    } catch (UnirestException e) {
+      logger.error(requestContext, "Error found during user read parse : " + e.getMessage(), e);
+    } catch (Exception e) {
+      logger.error(requestContext, "Error found during user read call : " + e.getMessage(), e);
+    }
+    return resMap;
   }
 
   private Map<String, Object> getCreatorDetails(RequestContext requestContext, List<String> creatorIds) throws Exception {

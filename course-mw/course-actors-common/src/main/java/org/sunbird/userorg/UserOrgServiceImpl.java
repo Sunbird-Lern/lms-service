@@ -10,12 +10,16 @@ import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerUtil;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.common.util.KeycloakRequiredActionLinkUtil;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static org.sunbird.common.exception.ProjectCommonException.throwServerErrorException;
@@ -180,10 +184,11 @@ public class UserOrgServiceImpl implements UserOrgService {
 
   @Override
   public List<Map<String, Object>> getUsersByIds(List<String> ids, String authToken) {
-    Map<String, Object> filterlist = new HashMap<>();
-    filterlist.put(ID, ids);
-    Map<String, Object> requestMap = getRequestMap(filterlist);
-    return getUsersResponse(requestMap, authToken);
+    logger.info(null, "UserOrgServiceImpl::getUsersByIds::called");
+    List<CompletableFuture<Map<String, Object>>> futures = ids.stream().map(id -> getUserDetail(id, authToken)).collect(Collectors.toList());
+    List<Map<String, Object>> tempResult = futures.stream().map(CompletableFuture::join).collect(Collectors.toList());
+    logger.info(null, "UserOrgServiceImpl::getUsersByIds::tempResult : " + tempResult);
+    return tempResult;
   }
 
   @Override
@@ -227,5 +232,22 @@ public class UserOrgServiceImpl implements UserOrgService {
       }
     }
     return null;
+  }
+
+  private CompletableFuture<Map<String, Object>> getUserDetail(String userId, String authToken) {
+    logger.info(null, "UserOrgServiceImpl::getUserDetail::called");
+    CompletableFuture<Map<String, Object>> future = CompletableFuture.supplyAsync(new Supplier<Map<String, Object>>() {
+      @Override
+      public Map<String, Object> get() {
+        final Map<String, Object> userDetails = getUserById(userId, authToken);
+        Map<String, Object> userDetail = (Map<String, Object>) userDetails.get(JsonKey.RESPONSE);
+        return new HashMap<>() {{
+          put(ID, userDetail.get(ID));
+          put(JsonKey.FIRST_NAME, userDetail.get(JsonKey.FIRST_NAME));
+          put(JsonKey.LAST_NAME, userDetail.get(JsonKey.LAST_NAME));
+        }};
+      }
+    });
+    return future;
   }
 }

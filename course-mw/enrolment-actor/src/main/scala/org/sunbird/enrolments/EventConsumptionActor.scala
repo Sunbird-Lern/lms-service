@@ -2,7 +2,6 @@ package org.sunbird.enrolments
 
 import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang3.StringUtils
-import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
 import org.sunbird.common.models.util._
 import org.sunbird.common.request.{Request, RequestContext}
@@ -32,41 +31,33 @@ class EventConsumptionActor @Inject() extends BaseEnrolmentActor {
     val batchId = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
     val courseId = request.get(JsonKey.COURSE_ID).asInstanceOf[String]
     val existingConsumptionResult = getContentsConsumption(userId, courseId, batchId, request.getRequestContext)
-    if (existingConsumptionResult.isEmpty) {
-      val exception = new ProjectCommonException(
-        ResponseCode.resourceNotFound.getErrorCode(),
-        ResponseCode.resourceNotFound.getErrorMessage(),
-        ResponseCode.CLIENT_ERROR.getResponseCode());
-      sender().tell(exception, self);
-    } else {
-      val existingConsumption = existingConsumptionResult.get(0)
-      val existingCompletedTime = parseDate(existingConsumption.getOrDefault(JsonKey.LAST_COMPLETED_TIME, "").asInstanceOf[String])
-      var status: Integer = request.getRequest.getOrDefault(JsonKey.STATUS, Integer.valueOf(1)).asInstanceOf[Integer]
-      var progress: Integer = request.getRequest.getOrDefault(JsonKey.PROGRESS, Integer.valueOf(1)).asInstanceOf[Integer]
-      var completedCount: Integer = 0;
-      if (status >= 2) {
-        status = 2
-        completedCount = 1
-      }
-      if (completedCount >= 1) {
-        completedCount = 1
-        request.getRequest.put(JsonKey.LAST_COMPLETED_TIME, compareTime(existingCompletedTime, null))
-        //note progress should still denote the actual progress, so not making it 100 percent explicitly
-      }
-      if (progress > 100) progress = 100
-      request.getRequest.put(JsonKey.STATUS, status)
-      request.getRequest.put(JsonKey.PROGRESS, progress)
-      request.getRequest.put(JsonKey.COMPLETED_COUNT, completedCount)
-      request.getRequest.put(JsonKey.LAST_UPDATED_TIME, ProjectUtil.getFormattedDate)
-      cassandraOperation.upsertRecord(consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, request.getRequest, request.getRequestContext)
-      val response = new Response()
-      response.setResponseCode(ResponseCode.success)
-      sender().tell(response, self)
+    val existingCompletedTime = if (existingConsumptionResult.isEmpty) null else parseDate(existingConsumptionResult.get(0).getOrDefault(JsonKey.LAST_COMPLETED_TIME, "").asInstanceOf[String])
+    var status: Integer = request.getRequest.getOrDefault(JsonKey.STATUS, Integer.valueOf(1)).asInstanceOf[Integer]
+    var progress: Integer = request.getRequest.getOrDefault(JsonKey.PROGRESS, Integer.valueOf(1)).asInstanceOf[Integer]
+    var completedCount: Integer = 0;
+    if (status >= 2) {
+      status = 2
+      completedCount = 1
     }
+    if (completedCount >= 1) {
+      completedCount = 1
+      request.getRequest.put(JsonKey.LAST_COMPLETED_TIME, compareTime(existingCompletedTime, null))
+      //note progress should still denote the actual progress, so not making it 100 percent explicitly
+    }
+    if (progress > 100) progress = 100
+    request.getRequest.put(JsonKey.STATUS, status)
+    request.getRequest.put(JsonKey.PROGRESS, progress)
+    request.getRequest.put(JsonKey.COMPLETED_COUNT, completedCount)
+    request.getRequest.put(JsonKey.LAST_UPDATED_TIME, ProjectUtil.getFormattedDate)
+    cassandraOperation.upsertRecord(consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, request.getRequest, request.getRequestContext)
+    val response = new Response()
+    response.setResponseCode(ResponseCode.success)
+    sender().tell(response, self)
+
   }
 
   def parseDate(dateString: String) = {
-    if(StringUtils.isNotBlank(dateString) && !StringUtils.equalsIgnoreCase(JsonKey.NULL, dateString)) {
+    if (StringUtils.isNotBlank(dateString) && !StringUtils.equalsIgnoreCase(JsonKey.NULL, dateString)) {
       dateFormatter.parse(dateString)
     } else null
   }

@@ -165,6 +165,13 @@ public class SearchHandlerActorTest {
 
     Request reqObj = new Request();
     reqObj.setOperation("INVALID_OPERATION");
+    reqObj.setRequestContext(new RequestContext(
+            JsonKey.SERVICE_NAME,
+            JsonKey.PRODUCER_NAME,
+            "",
+            "X_DEVICE_ID",
+            "X_SESSION_ID",
+            JsonKey.PID,JsonKey.P_VERSION, null));
 
     subject.tell(reqObj, probe.getRef());
     ProjectCommonException exc = probe.expectMsgClass(ProjectCommonException.class);

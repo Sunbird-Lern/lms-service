@@ -20,6 +20,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+import com.mashape.unirest.request.GetRequest;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -53,6 +57,8 @@ import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.actors.coursebatch.dao.UserCoursesDao;
 import org.sunbird.learner.actors.coursebatch.dao.impl.UserCoursesDaoImpl;
 import org.sunbird.learner.actors.search.SearchHandlerActor;
+import org.sunbird.userorg.UserOrgService;
+import org.sunbird.userorg.UserOrgServiceImpl;
 import scala.concurrent.Promise;
 
 @RunWith(PowerMockRunner.class)
@@ -60,7 +66,8 @@ import scala.concurrent.Promise;
   ServiceFactory.class,
   ElasticSearchRestHighImpl.class,
   UserCoursesDaoImpl.class,
-  EsClientFactory.class, HttpUtil.class, KeycloakRequiredActionLinkUtil.class , ProjectUtil.class
+  EsClientFactory.class, HttpUtil.class, KeycloakRequiredActionLinkUtil.class , ProjectUtil.class,
+  Unirest.class
 })
 @PowerMockIgnore({"javax.management.*"})
 public class SearchHandlerActorTest {
@@ -209,17 +216,33 @@ public class SearchHandlerActorTest {
         }});
       }});
     }};
-    mockStatic(HttpUtil.class);
-    String response1 = "{\"id\":\"api.user.read.8454cb21-3ce9-4e30-85b5-fade097880d8\",\"ver\":\"v1\",\"ts\":\"2021-02-25 16:53:33:703+0000\",\"params\":{\"resmsgid\":null,\"msgid\":\"136672a9ff083d1c821a64b082fc4aa2\",\"err\":null,\"status\":\"success\",\"errmsg\":null},\"responseCode\":\"OK\",\"result\":{\"response\":{\"webPages\":[],\"maskedPhone\":\"******7418\",\"tcStatus\":null,\"subject\":[],\"channel\":null,\"language\":[],\"updatedDate\":\"2020-10-15 12:45:00:730+0000\",\"password\":\"5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8\",\"managedBy\":null,\"flagsValue\":6,\"id\":\"8454cb21-3ce9-4e30-85b5-fade097880d8\",\"recoveryEmail\":\"te*****@gmail.com\",\"identifier\":\"8454cb21-3ce9-4e30-85b5-fade097880d8\",\"thumbnail\":null,\"updatedBy\":\"8454cb21-3ce9-4e30-85b5-fade097880d8\",\"accesscode\":null,\"locationIds\":[\"af8e8c0a-f699-4185-81aa-2596332d0a1b\",\"3d69b821-88da-4838-8897-79ca749a8e5e\"],\"externalIds\":[],\"registryId\":null,\"rootOrgId\":\"ORG_001\",\"prevUsedEmail\":\"\",\"firstName\":\"Mentor First\",\"tncAcceptedOn\":1579606318379,\"allTncAccepted\":{\"groupsTnc\":{\"tncAcceptedOn\":\"2020-10-19 09:28:36:077+0000\",\"version\":\"3.4.0\"}},\"phone\":\"******7418\",\"dob\":null,\"grade\":[],\"currentLoginTime\":null,\"userType\":null,\"status\":1,\"lastName\":\"User\",\"tncLatestVersion\":\"v1\",\"gender\":null,\"roles\":[\"public\"],\"prevUsedPhone\":\"\",\"stateValidated\":true,\"isDeleted\":null,\"organisations\":[{\"organisationId\":\"ORG_001\",\"updatedBy\":null,\"addedByName\":null,\"addedBy\":\"781c21fc-5054-4ee0-9a02-fbb1006a4fdd\",\"roles\":[\"CONTENT_REVIEWER\",\"BOOK_REVIEWER\",\"ORG_ADMIN\",\"FLAG_REVIEWER\",\"CONTENT_CREATOR\",\"BOOK_CREATOR\",\"PUBLIC\"],\"approvedBy\":null,\"updatedDate\":\"2020-09-23 05:35:59:279+0000\",\"userId\":\"8454cb21-3ce9-4e30-85b5-fade097880d8\",\"approvaldate\":null,\"isDeleted\":false,\"hashTagId\":\"b00bc992ef25f1a9a8d63291e20efc8d\",\"isRejected\":false,\"id\":\"012718490252500992318\",\"position\":null,\"isApproved\":false,\"orgjoindate\":\"2019-03-14 07:45:04:542+0000\",\"orgLeftDate\":null}],\"provider\":null,\"countryCode\":null,\"tncLatestVersionUrl\":\"https:\\/\\/dev-sunbird-temp.azureedge.net\\/portal\\/terms-and-conditions-v1.html\",\"maskedEmail\":\"te****@yopmail.com\",\"tempPassword\":null,\"email\":\"te****@yopmail.com\",\"rootOrg\":{\"dateTime\":null,\"preferredLanguage\":\"English\",\"keys\":{\"encKeys\":[\"5766\",\"5767\"],\"signKeys\":[\"5766\",\"5767\"]},\"approvedBy\":null,\"channel\":\"ROOT_ORG\",\"description\":\"Andhra State Boardsssssss\",\"updatedDate\":\"2018-11-28 10:00:08:675+0000\",\"addressId\":null,\"orgType\":null,\"provider\":null,\"locationId\":null,\"orgCode\":\"sunbird\",\"theme\":null,\"id\":\"ORG_001\",\"communityId\":null,\"isApproved\":null,\"email\":\"support_dev@sunbird.org\",\"slug\":\"sunbird\",\"isSSOEnabled\":null,\"thumbnail\":null,\"orgName\":\"Sunbird\",\"updatedBy\":\"1d7b85b0-3502-4536-a846-d3a51fd0aeea\",\"locationIds\":[\"969dd3c1-4e98-4c17-a994-559f2dc70e18\"],\"externalId\":null,\"isRootOrg\":true,\"rootOrgId\":\"ORG_001\",\"approvedDate\":null,\"imgUrl\":null,\"homeUrl\":null,\"orgTypeId\":null,\"isDefault\":true,\"createdDate\":null,\"createdBy\":null,\"parentOrgId\":null,\"hashTagId\":\"b00bc992ef25f1a9a8d63291e20efc8d\",\"noOfMembers\":64,\"status\":1},\"phoneVerified\":false,\"profileSummary\":null,\"tcUpdatedDate\":null,\"recoveryPhone\":\"\",\"avatar\":null,\"userName\":\"ntptest104\",\"userId\":\"8454cb21-3ce9-4e30-85b5-fade097880d8\",\"userSubType\":null,\"promptTnC\":false,\"emailVerified\":true,\"lastLoginTime\":null,\"createdDate\":\"2017-10-31 10:47:05:401+0000\",\"framework\":{\"board\":[\"CBSE\"],\"gradeLevel\":[\"Grade 1\"],\"id\":[\"NCFCOPY\"],\"medium\":[\"English\"],\"subject\":[\"English\"]},\"createdBy\":\"5d7eb482-c2b8-4432-bf38-cc58f3c23b45\",\"location\":null,\"tncAcceptedVersion\":\"v1\"}}}";
-    String response2 = "{\"id\":\"api.user.read.95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"ver\":\"v1\",\"ts\":\"2021-02-25 16:54:17:704+0000\",\"params\":{\"resmsgid\":null,\"msgid\":\"a42fedc5652843368d636b403283e0ec\",\"err\":null,\"status\":\"success\",\"errmsg\":null},\"responseCode\":\"OK\",\"result\":{\"response\":{\"webPages\":[{\"type\":\"fb\",\"url\":\"https:\\/\\/www.facebook.com\\/teachers\"},{\"type\":\"twitter\",\"url\":\"https:\\/\\/twitter.com\\/sg\"}],\"maskedPhone\":\"******7418\",\"tcStatus\":null,\"subject\":[\"Bengali\"],\"channel\":\"013016492159606784174\",\"language\":[\"Gujarati\",\"Hindi\"],\"updatedDate\":\"2020-10-21 19:16:09:342+0000\",\"password\":\"5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8\",\"managedBy\":null,\"flagsValue\":6,\"id\":\"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"recoveryEmail\":\"lm****************@yopmail.com\",\"identifier\":\"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"thumbnail\":null,\"updatedBy\":\"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"accesscode\":null,\"locationIds\":[],\"registryId\":null,\"rootOrgId\":\"ORG_001\",\"prevUsedEmail\":\"\",\"firstName\":\"Reviewer\",\"tncAcceptedOn\":1578647946965,\"allTncAccepted\":{\"orgAdminTnc\":{\"tncAcceptedOn\":\"2020-12-11 09:34:03:037+0000\",\"version\":\"3.5.0\"},\"groupsTnc\":{\"tncAcceptedOn\":\"2020-10-22 12:30:36:504+0000\",\"version\":\"3.4.0\"}},\"phone\":\"******7418\",\"dob\":\"2018-04-23\",\"grade\":[\"Grade 5\",\"Grade 4\"],\"currentLoginTime\":null,\"userType\":null,\"status\":1,\"lastName\":\"User\",\"tncLatestVersion\":\"v1\",\"gender\":\"Male\",\"roles\":[\"public\"],\"prevUsedPhone\":\"\",\"stateValidated\":true,\"isDeleted\":null,\"organisations\":[{\"organisationId\":\"ORG_001\",\"updatedBy\":\"781c21fc-5054-4ee0-9a02-fbb1006a4fdd\",\"addedByName\":null,\"addedBy\":\"781c21fc-5054-4ee0-9a02-fbb1006a4fdd\",\"roles\":[\"COURSE_MENTOR\",\"CONTENT_REVIEWER\",\"ADMIN\",\"TEACHER_BADGE_ISSUER\",\"REPORT_VIEWER\",\"ORG_ADMIN\",\"BOOK_CREATOR\",\"BOOK_REVIEWER\",\"OFFICIAL_TEXTBOOK_BADGE_ISSUER\",\"COURSE_CREATOR\",\"COURSE_ADMIN\",\"REPORT_VIEWER\",\"ORG_MODERATOR\",\"PUBLIC\",\"ANNOUNCEMENT_SENDER\",\"CONTENT_CREATOR\",\"FLAG_REVIEWER\"],\"approvedBy\":null,\"updatedDate\":\"2020-10-05 10:46:39:565+0000\",\"userId\":\"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"approvaldate\":null,\"isDeleted\":false,\"hashTagId\":\"b00bc992ef25f1a9a8d63291e20efc8d\",\"isRejected\":false,\"id\":\"012718445039091712313\",\"position\":null,\"isApproved\":false,\"orgjoindate\":\"2019-03-14 06:14:56:439+0000\",\"orgLeftDate\":null}],\"provider\":null,\"countryCode\":null,\"tncLatestVersionUrl\":\"https:\\/\\/dev-sunbird-temp.azureedge.net\\/portal\\/terms-and-conditions-v1.html\",\"maskedEmail\":\"us****@yopmail.com\",\"tempPassword\":null,\"email\":\"us****@yopmail.com\",\"rootOrg\":{\"dateTime\":null,\"preferredLanguage\":\"English\",\"keys\":{\"encKeys\":[\"5766\",\"5767\"],\"signKeys\":[\"5766\",\"5767\"]},\"approvedBy\":null,\"channel\":\"ROOT_ORG\",\"description\":\"Andhra State Boardsssssss\",\"updatedDate\":\"2018-11-28 10:00:08:675+0000\",\"addressId\":null,\"orgType\":null,\"provider\":null,\"locationId\":null,\"orgCode\":\"sunbird\",\"theme\":null,\"id\":\"ORG_001\",\"communityId\":null,\"isApproved\":null,\"email\":\"support_dev@sunbird.org\",\"slug\":\"sunbird\",\"isSSOEnabled\":null,\"thumbnail\":null,\"orgName\":\"Sunbird\",\"updatedBy\":\"1d7b85b0-3502-4536-a846-d3a51fd0aeea\",\"locationIds\":[\"969dd3c1-4e98-4c17-a994-559f2dc70e18\"],\"externalId\":null,\"isRootOrg\":true,\"rootOrgId\":\"ORG_001\",\"approvedDate\":null,\"imgUrl\":null,\"homeUrl\":null,\"orgTypeId\":null,\"isDefault\":true,\"createdDate\":null,\"createdBy\":null,\"parentOrgId\":null,\"hashTagId\":\"b00bc992ef25f1a9a8d63291e20efc8d\",\"noOfMembers\":64,\"status\":1},\"phoneVerified\":false,\"profileSummary\":\"\",\"tcUpdatedDate\":null,\"recoveryPhone\":\"\",\"avatar\":\"https:\\/\\/sunbirddev.blob.core.windows.net\\/user\\/95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\\/File-0124905755632271362.jpeg\",\"userName\":\"ntptest103\",\"userId\":\"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"userSubType\":null,\"promptTnC\":false,\"emailVerified\":true,\"lastLoginTime\":null,\"createdDate\":\"2017-10-31 10:47:05:083+0000\",\"framework\":{\"board\":[\"NCERT\"],\"gradeLevel\":[\"Kindergarten\"],\"id\":[\"NCFCOPY\"],\"medium\":[\"English\"],\"subject\":[\"Mathematics\"]},\"createdBy\":\"5d7eb482-c2b8-4432-bf38-cc58f3c23b45\",\"location\":\"SdEVfkEzML47CKGeIp6gq2k8u4rJrIbnVHkgHv2cIAeknZLGIJOQUw\\/32a4u0\\/5HBnQ5EjrM1Rs7\\n508rbIHvjbSc2KcIt7kVkP2JR3JV7TeEYXVV\\/JylNVnggsVUUSNhT6a+wzaAmCWueMEdPmZuRg==\",\"tncAcceptedVersion\":\"v1\"}}}";
-    when(HttpUtil.sendGetRequest(Mockito.anyString(), Mockito.anyMap())).thenReturn(response1, response2);
-    Method method = SearchHandlerActor.class.getDeclaredMethod("populateCreatorDetails", RequestContext.class, Map.class);
+    mockResponse();
+    HashMap<String, Object> context = new HashMap<>(){{put("JsonKey.X_AUTH_TOKEN","authToken");}};
+    Method method = SearchHandlerActor.class.getDeclaredMethod("populateCreatorDetails", Map.class, Map.class);
     method.setAccessible(true);
-    method.invoke(actorRef.underlyingActor(), null, input);
+    method.invoke(actorRef.underlyingActor(), context, input);
     List<Map<String, Object>> content = (List<Map<String, Object>>) input.getOrDefault("content", new ArrayList<Map<String, Object>>());
     for(Map<String, Object> map : content){
       if(StringUtils.equalsIgnoreCase("95e4942d-cbe8-477d-aebd-ad8e6de4bfc8", (String) map.get("createdBy")))
         assertTrue(MapUtils.isNotEmpty((Map<String, Object>) map.get("creatorDetails")));
     }
+  }
+  private void mockResponse() throws UnirestException {
+    GetRequest http = Mockito.mock(GetRequest.class);
+    GetRequest http2 = Mockito.mock(GetRequest.class);
+    HttpResponse<String> response = Mockito.mock(HttpResponse.class);
+    HttpResponse<String> response2 = Mockito.mock(HttpResponse.class);
+    mockStatic(Unirest.class);
+    when(Unirest.get(Mockito.anyString())).thenReturn(http, http2);
+    when(http.headers(Mockito.anyMap())).thenReturn(http);
+    when(http2.headers(Mockito.anyMap())).thenReturn(http2);
+    when(http.asString()).thenReturn(response);
+    when(http2.asString()).thenReturn(response2);
+    when(response.getStatus()).thenReturn(200);
+    when(response2.getStatus()).thenReturn(200);
+    String resp1 = "{\"result\":{\"response\":{\"id\":\"8454cb21-3ce9-4e30-85b5-fade097880d8\",\"firstName\":\"FirstName1\",\"lastName\":\"LastName1\"}}}";
+    String resp2 = "{\"result\":{\"response\":{\"id\":\"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"firstName\":\"FirstName2\",\"lastName\":\"LastName2\"}}}";
+    when(response.getBody()).thenReturn(resp1);
+    when(response2.getBody()).thenReturn(resp2);
   }
 }

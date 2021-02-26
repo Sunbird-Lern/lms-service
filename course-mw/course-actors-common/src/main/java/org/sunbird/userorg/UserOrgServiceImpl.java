@@ -239,10 +239,9 @@ public class UserOrgServiceImpl implements UserOrgService {
     CompletableFuture<Map<String, Object>> future = CompletableFuture.supplyAsync(new Supplier<Map<String, Object>>() {
       @Override
       public Map<String, Object> get() {
-        final Map<String, Object> userDetails = getUserById(userId, authToken);
-        Map<String, Object> userDetail = (Map<String, Object>) userDetails.get(JsonKey.RESPONSE);
+        Map<String, Object> userDetail = getUserById(userId, authToken);
         return new HashMap<>() {{
-          put(ID, userDetail.get(ID));
+          put(JsonKey.ID, userDetail.get(JsonKey.ID));
           put(JsonKey.FIRST_NAME, userDetail.get(JsonKey.FIRST_NAME));
           put(JsonKey.LAST_NAME, userDetail.get(JsonKey.LAST_NAME));
         }};

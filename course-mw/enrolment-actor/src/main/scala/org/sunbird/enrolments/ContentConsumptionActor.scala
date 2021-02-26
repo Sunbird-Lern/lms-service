@@ -29,8 +29,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     val dateFormatter = ProjectUtil.getDateFormatter
 
     override def onReceive(request: Request): Unit = {
-        Util.initializeContext(request, TelemetryEnvKey.BATCH)
-        Util.initializeRequestContext(request, this.getClass.getName)
+        Util.initializeContext(request, TelemetryEnvKey.BATCH, this.getClass.getName)
 
         request.getOperation match {
             case "updateConsumption" => updateConsumption(request)

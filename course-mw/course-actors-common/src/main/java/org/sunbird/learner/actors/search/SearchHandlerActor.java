@@ -53,7 +53,7 @@ public class SearchHandlerActor extends BaseActor {
   @Override
   public void onReceive(Request request) throws Throwable {
     request.toLower();
-    Util.initializeContext(request, TelemetryEnvKey.USER);
+    Util.initializeContext(request, TelemetryEnvKey.USER, this.getClass().getName());
 
     // set request id fto thread loacl...
 

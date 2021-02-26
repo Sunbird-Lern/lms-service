@@ -25,6 +25,7 @@ import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.keys.*;
 
 import java.util.Arrays;
@@ -93,6 +94,13 @@ public class CourseManagementActorTest {
         TestKit probe = new TestKit(system);
         ActorRef toc = system.actorOf(props);
         Request request = new Request();
+        request.setRequestContext(new RequestContext(
+            JsonKey.SERVICE_NAME,
+            JsonKey.PRODUCER_NAME,
+            "test",
+            "X_DEVICE_ID",
+            "X_SESSION_ID",
+            JsonKey.PID,JsonKey.P_VERSION, null));
         request.getRequest().putAll(data);
         request.setOperation("createCourse");
         toc.tell(request, probe.getRef());

@@ -153,7 +153,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
     "listEnrol with multibatch same course" should "return success on listing" in {
         val userCourse = validUserCourse()
         userCourse.setActive(true)
-        userCourse.setCourseId("do_11305605610466508811")
+        userCourse.setCourseId("do_11305984881537024012255")
         userCourse.setBatchId("0130598559365038081")
         val groupResponseStr = "{\"id\":null,\"ver\":null,\"ts\":null,\"params\":null,\"responseCode\":\"OK\",\"result\":{\"response\":[{\"agg\":{\"completedCount\":1},\"user_id\":\"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"activity_type\":\"Course\",\"agg_last_updated\":{\"completedCount\":1595506598142},\"activity_id\":\"do_11305984881537024012255\",\"context_id\":\"cb:0130598559365038081\"},{\"agg\":{\"completedCount\":1},\"user_id\":\"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"activity_type\":\"Course\",\"agg_last_updated\":{\"completedCount\":1595506598145},\"activity_id\":\"do_11305984881537024012255\",\"context_id\":\"cb:0130598559365038082\"}]}}"
         val groupResponse = JsonUtil.deserialize(groupResponseStr, classOf[Response])
@@ -167,7 +167,8 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         println(response)
         assert(null != response)
         // TODO: Unable to mock search response as it is static method, hence commented below line to run it in local.
-        //assert(2 == response.getResult.getOrDefault("courses", new util.ArrayList[java.util.Map[String, AnyRef]]()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]].size())
+        assert(2 == response.getResult.getOrDefault("courses", new java.util.ArrayList[java.util.Map[String, AnyRef]]()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]].size())
+        assert(null != response.getResult.getOrDefault("courses", new java.util.ArrayList[java.util.Map[String, AnyRef]]()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]].get(0).get("completionPercentage"))
     }
 
     "listEnrol with RedisConnector is true" should "return success on listing from redis RedisConnector" in {
@@ -224,6 +225,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         assert(response.getMessage().equals(ResponseCode.courseBatchEnrollmentDateEnded.getErrorMessage))
     }
 
+    ""
 
     def validCourseBatch(): CourseBatch = {
         val courseBatch = new CourseBatch()

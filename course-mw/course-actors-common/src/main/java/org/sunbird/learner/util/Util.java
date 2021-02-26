@@ -370,6 +370,8 @@ public final class Util {
       requestContext.put(JsonKey.X_AUTH_TOKEN, getKeyFromContext(JsonKey.X_AUTH_TOKEN, actorMessage));
 
         actorMessage.getContext().putAll(requestContext);
+      actorMessage.getRequestContext().setEnv(env);
+
       // and global context will be set at the time of creation of thread local
       // automatically ...
     }
@@ -381,9 +383,6 @@ public final class Util {
         : "";
   }
 
-  public static void initializeRequestContext(Request actorMessage, String env) {
-    actorMessage.getRequestContext().setEnv(env);
-  }
 }
 
 @FunctionalInterface

@@ -28,6 +28,7 @@ import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.kafka.client.InstructionEventGenerator;
 import org.sunbird.kafka.client.KafkaClient;
@@ -118,6 +119,13 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
     mockCourseEnrollmentActor();
 
     Request req = new Request();
+    req.setRequestContext(new RequestContext(
+            JsonKey.SERVICE_NAME,
+            JsonKey.PRODUCER_NAME,
+            "test",
+            "X_DEVICE_ID",
+            "X_SESSION_ID",
+            JsonKey.PID,JsonKey.P_VERSION, null));
     req.setOperation("createBatch");
     req.setRequest(courseBatch);
     Response response = executeInTenSeconds(req, Response.class);
@@ -132,6 +140,13 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
     when(group.getESMockerService().getDataByIdentifier(Mockito.any(), Mockito.anyString(), Mockito.anyString()))
         .thenReturn(CustomObjectBuilder.getRandomCourseBatch().asESIdentifierResult());
     Request req = new Request();
+    req.setRequestContext(new RequestContext(
+            JsonKey.SERVICE_NAME,
+            JsonKey.PRODUCER_NAME,
+            "test",
+            "X_DEVICE_ID",
+            "X_SESSION_ID",
+            JsonKey.PID,JsonKey.P_VERSION, null));
     req.setOperation("getBatch");
     req.getContext().put(JsonKey.BATCH_ID, "randomBatchId");
     Response response = executeInTenSeconds(req, Response.class);

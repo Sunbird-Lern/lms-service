@@ -33,6 +33,7 @@ import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.util.Util;
 
@@ -73,6 +74,13 @@ public class BulkUploadManagementActorTest {
     TestKit probe = new TestKit(system);
     ActorRef subject = system.actorOf(props);
     Request reqObj = new Request();
+    reqObj.setRequestContext(new RequestContext(
+            JsonKey.SERVICE_NAME,
+            JsonKey.PRODUCER_NAME,
+            "test",
+            "X_DEVICE_ID",
+            "X_SESSION_ID",
+            JsonKey.PID,JsonKey.P_VERSION, null));
     reqObj.setOperation(ActorOperations.GET_BULK_OP_STATUS.getValue());
     reqObj.getRequest().put(JsonKey.PROCESS_ID, PROCESS_ID);
     subject.tell(reqObj, probe.getRef());
@@ -102,6 +110,13 @@ public class BulkUploadManagementActorTest {
         .thenReturn(insertResponse);
 
     Request reqObj = new Request();
+    reqObj.setRequestContext(new RequestContext(
+            JsonKey.SERVICE_NAME,
+            JsonKey.PRODUCER_NAME,
+            "test",
+            "X_DEVICE_ID",
+            "X_SESSION_ID",
+            JsonKey.PID,JsonKey.P_VERSION, null));
     reqObj.setOperation(ActorOperations.BULK_UPLOAD.getValue());
     HashMap<String, Object> innerMap = new HashMap<>();
 
@@ -134,6 +149,13 @@ public class BulkUploadManagementActorTest {
         .thenReturn(insertResponse);
 
     Request reqObj = new Request();
+    reqObj.setRequestContext(new RequestContext(
+            JsonKey.SERVICE_NAME,
+            JsonKey.PRODUCER_NAME,
+            "test",
+            "X_DEVICE_ID",
+            "X_SESSION_ID",
+            JsonKey.PID,JsonKey.P_VERSION, null));
     reqObj.setOperation(ActorOperations.BULK_UPLOAD.getValue());
     HashMap<String, Object> innerMap = new HashMap<>();
 

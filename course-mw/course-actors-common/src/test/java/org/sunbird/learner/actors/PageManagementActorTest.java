@@ -275,13 +275,6 @@ public class PageManagementActorTest {
             "X_DEVICE_ID",
             "X_SESSION_ID",
             JsonKey.PID,JsonKey.P_VERSION, null));
-    reqObj.setRequestContext(new RequestContext(
-            JsonKey.SERVICE_NAME,
-            JsonKey.PRODUCER_NAME,
-            "test",
-            "X_DEVICE_ID",
-            "X_SESSION_ID",
-            JsonKey.PID,JsonKey.P_VERSION, null));
     reqObj.setOperation(ActorOperations.CREATE_PAGE.getValue());
     HashMap<String, Object> innerMap = new HashMap<>();
     Map<String, Object> pageMap = new HashMap<String, Object>();

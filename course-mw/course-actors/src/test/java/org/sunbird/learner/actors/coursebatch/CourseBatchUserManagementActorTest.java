@@ -30,6 +30,7 @@ import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectUtil.EsType;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.userorg.UserOrgServiceImpl;
 import scala.concurrent.Future;
@@ -54,6 +55,13 @@ public class CourseBatchUserManagementActorTest extends SunbirdApplicationActorT
                     Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.any()))
         .thenReturn(CustomObjectBuilder.getRandomUserCoursesList(5).asCassandraResponse());
     Request req = new Request();
+req.setRequestContext(new RequestContext(
+            JsonKey.SERVICE_NAME,
+            JsonKey.PRODUCER_NAME,
+            "test",
+            "X_DEVICE_ID",
+            "X_SESSION_ID",
+            JsonKey.PID,JsonKey.P_VERSION, null));
     HashMap<String, Object> innerMap = new HashMap<>();
     innerMap.put(JsonKey.BATCH_ID, "randomBatchId");
     innerMap.put(JsonKey.ACTIVE, true);
@@ -82,6 +90,13 @@ public class CourseBatchUserManagementActorTest extends SunbirdApplicationActorT
                     Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.any()))
         .thenReturn(CustomObjectBuilder.getUserCoursesBuilder().buildList().asCassandraResponse());
     Request req = new Request();
+req.setRequestContext(new RequestContext(
+            JsonKey.SERVICE_NAME,
+            JsonKey.PRODUCER_NAME,
+            "test",
+            "X_DEVICE_ID",
+            "X_SESSION_ID",
+            JsonKey.PID,JsonKey.P_VERSION, null));
     HashMap<String, Object> innerMap = new HashMap<>();
     innerMap.put(JsonKey.BATCH_ID, "randomBatchId");
     innerMap.put(JsonKey.ACTIVE, true);
@@ -157,6 +172,13 @@ public class CourseBatchUserManagementActorTest extends SunbirdApplicationActorT
                 Mockito.anyMap()))
         .thenReturn(Futures.successful(true));
     Request req = new Request();
+req.setRequestContext(new RequestContext(
+            JsonKey.SERVICE_NAME,
+            JsonKey.PRODUCER_NAME,
+            "test",
+            "X_DEVICE_ID",
+            "X_SESSION_ID",
+            JsonKey.PID,JsonKey.P_VERSION, null));
     List<String> userIds = Arrays.asList("addUserId1", "addUserId2");
     availableUsers.addAll(userIds);
     req.setOperation("addUserBatch");
@@ -226,6 +248,13 @@ public class CourseBatchUserManagementActorTest extends SunbirdApplicationActorT
               }
             });
     Request req = new Request();
+req.setRequestContext(new RequestContext(
+            JsonKey.SERVICE_NAME,
+            JsonKey.PRODUCER_NAME,
+            "test",
+            "X_DEVICE_ID",
+            "X_SESSION_ID",
+            JsonKey.PID,JsonKey.P_VERSION, null));
     List<String> userIds = Arrays.asList("addUserId1", "addUserId2");
     availableUsers.addAll(userIds);
     req.setOperation("removeUserFromBatch");

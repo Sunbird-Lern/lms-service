@@ -86,13 +86,6 @@ public class CertificateActorTest extends SunbirdApplicationActorTest {
         .thenReturn(courseBatch.asESIdentifierResult());
     PowerMockito.doNothing().when(KafkaClient.class, "send", Mockito.any(), Mockito.anyString());
     Request req = new Request();
-    req.setRequestContext(new RequestContext(
-            JsonKey.SERVICE_NAME,
-            JsonKey.PRODUCER_NAME,
-            "test",
-            "X_DEVICE_ID",
-            "X_SESSION_ID",
-            JsonKey.PID,JsonKey.P_VERSION, null));
     HashMap<String, Object> innerMap = new HashMap<>();
     innerMap.put(JsonKey.BATCH_ID, courseBatch.get().get(JsonKey.BATCH_ID));
     innerMap.put(JsonKey.COURSE_ID, courseBatch.get().get(JsonKey.COURSE_ID));
@@ -141,13 +134,6 @@ public class CertificateActorTest extends SunbirdApplicationActorTest {
     when(group.getESMockerService().getDataByIdentifier(Mockito.any(), Mockito.anyString(), Mockito.anyString()))
         .thenReturn(courseBatch.asESIdentifierResult());
     Request req = new Request();
-    req.setRequestContext(new RequestContext(
-            JsonKey.SERVICE_NAME,
-            JsonKey.PRODUCER_NAME,
-            "test",
-            "X_DEVICE_ID",
-            "X_SESSION_ID",
-            JsonKey.PID,JsonKey.P_VERSION, null));
     HashMap<String, Object> innerMap = new HashMap<>();
     innerMap.put(JsonKey.BATCH_ID, courseBatch.get().get(JsonKey.BATCH_ID));
     innerMap.put(JsonKey.COURSE_ID, "otherCourseId");

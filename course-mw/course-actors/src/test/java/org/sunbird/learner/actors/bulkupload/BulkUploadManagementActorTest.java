@@ -103,13 +103,6 @@ public class BulkUploadManagementActorTest {
         .thenReturn(insertResponse);
 
     Request reqObj = new Request();
-    reqObj.setRequestContext(new RequestContext(
-            JsonKey.SERVICE_NAME,
-            JsonKey.PRODUCER_NAME,
-            "test",
-            "X_DEVICE_ID",
-            "X_SESSION_ID",
-            JsonKey.PID,JsonKey.P_VERSION, null));
     reqObj.setOperation(ActorOperations.BULK_UPLOAD.getValue());
     HashMap<String, Object> innerMap = new HashMap<>();
 

@@ -124,13 +124,6 @@ public class PageManagementActorTest {
   public void testInvalidRequest() {
 
     Request reqObj = new Request();
-    reqObj.setRequestContext(new RequestContext(
-            JsonKey.SERVICE_NAME,
-            JsonKey.PRODUCER_NAME,
-            "test",
-            "X_DEVICE_ID",
-            "X_SESSION_ID",
-            JsonKey.PID,JsonKey.P_VERSION, null));
 
     TestKit probe = new TestKit(system);
     ActorRef subject = system.actorOf(props);
@@ -171,13 +164,6 @@ public class PageManagementActorTest {
     ActorRef subject = system.actorOf(props);
 
     Request reqObj = new Request();
-    reqObj.setRequestContext(new RequestContext(
-            JsonKey.SERVICE_NAME,
-            JsonKey.PRODUCER_NAME,
-            "test",
-            "X_DEVICE_ID",
-            "X_SESSION_ID",
-            JsonKey.PID,JsonKey.P_VERSION, null));
     reqObj.setOperation(ActorOperations.CREATE_PAGE.getValue());
     HashMap<String, Object> innerMap = new HashMap<>();
     Map<String, Object> pageMap = new HashMap<String, Object>();
@@ -268,13 +254,6 @@ public class PageManagementActorTest {
     ActorRef subject = system.actorOf(props);
 
     Request reqObj = new Request();
-    reqObj.setRequestContext(new RequestContext(
-            JsonKey.SERVICE_NAME,
-            JsonKey.PRODUCER_NAME,
-            "test",
-            "X_DEVICE_ID",
-            "X_SESSION_ID",
-            JsonKey.PID,JsonKey.P_VERSION, null));
     reqObj.setOperation(ActorOperations.CREATE_PAGE.getValue());
     HashMap<String, Object> innerMap = new HashMap<>();
     Map<String, Object> pageMap = new HashMap<String, Object>();
@@ -352,13 +331,6 @@ public class PageManagementActorTest {
     boolean pageName = false;
 
     Request reqObj = new Request();
-    reqObj.setRequestContext(new RequestContext(
-            JsonKey.SERVICE_NAME,
-            JsonKey.PRODUCER_NAME,
-            "test",
-            "X_DEVICE_ID",
-            "X_SESSION_ID",
-            JsonKey.PID,JsonKey.P_VERSION, null));
     reqObj.setOperation(ActorOperations.GET_PAGE_SETTING.getValue());
     reqObj.getRequest().put(JsonKey.ID, "Test Page");
 
@@ -416,13 +388,6 @@ public class PageManagementActorTest {
 
     boolean pageName = false;
     Request reqObj = new Request();
-    reqObj.setRequestContext(new RequestContext(
-            JsonKey.SERVICE_NAME,
-            JsonKey.PRODUCER_NAME,
-            "test",
-            "X_DEVICE_ID",
-            "X_SESSION_ID",
-            JsonKey.PID,JsonKey.P_VERSION, null));
     reqObj.setOperation(ActorOperations.GET_PAGE_SETTINGS.getValue());
     reqObj.getRequest().put(JsonKey.ID, "Test Page");
 
@@ -475,13 +440,6 @@ public class PageManagementActorTest {
 
     boolean section = false;
     Request reqObj = new Request();
-    reqObj.setRequestContext(new RequestContext(
-            JsonKey.SERVICE_NAME,
-            JsonKey.PRODUCER_NAME,
-            "test",
-            "X_DEVICE_ID",
-            "X_SESSION_ID",
-            JsonKey.PID,JsonKey.P_VERSION, null));
     reqObj.setOperation(ActorOperations.GET_SECTION.getValue());
     reqObj.getRequest().put(JsonKey.ID, sectionId);
     subject.tell(reqObj, probe.getRef());
@@ -537,13 +495,6 @@ public class PageManagementActorTest {
     ActorRef subject = system.actorOf(props);
 
     Request reqObj = new Request();
-    reqObj.setRequestContext(new RequestContext(
-            JsonKey.SERVICE_NAME,
-            JsonKey.PRODUCER_NAME,
-            "test",
-            "X_DEVICE_ID",
-            "X_SESSION_ID",
-            JsonKey.PID,JsonKey.P_VERSION, null));
     reqObj.setOperation(ActorOperations.UPDATE_PAGE.getValue());
     HashMap<String, Object> innerMap = new HashMap<>();
     Map<String, Object> pageMap = new HashMap<String, Object>();
@@ -602,13 +553,6 @@ public class PageManagementActorTest {
     ActorRef subject = system.actorOf(props);
 
     Request reqObj = new Request();
-    reqObj.setRequestContext(new RequestContext(
-            JsonKey.SERVICE_NAME,
-            JsonKey.PRODUCER_NAME,
-            "test",
-            "X_DEVICE_ID",
-            "X_SESSION_ID",
-            JsonKey.PID,JsonKey.P_VERSION, null));
     reqObj.setOperation(ActorOperations.UPDATE_PAGE.getValue());
     HashMap<String, Object> innerMap = new HashMap<>();
     Map<String, Object> pageMap = new HashMap<String, Object>();
@@ -709,13 +653,6 @@ public class PageManagementActorTest {
     filterMap.put("gradeLevel", gradeListist);
 
     Request reqObj = new Request();
-    reqObj.setRequestContext(new RequestContext(
-            JsonKey.SERVICE_NAME,
-            JsonKey.PRODUCER_NAME,
-            "test",
-            "X_DEVICE_ID",
-            "X_SESSION_ID",
-            JsonKey.PID,JsonKey.P_VERSION, null));
     reqObj.setOperation(ActorOperations.GET_PAGE_DATA.getValue());
     reqObj.getRequest().put(JsonKey.SOURCE, "web");
     reqObj.getRequest().put(JsonKey.PAGE_NAME, "Test Page Name Updated");

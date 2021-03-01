@@ -119,13 +119,6 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
     mockCourseEnrollmentActor();
 
     Request req = new Request();
-    req.setRequestContext(new RequestContext(
-            JsonKey.SERVICE_NAME,
-            JsonKey.PRODUCER_NAME,
-            "test",
-            "X_DEVICE_ID",
-            "X_SESSION_ID",
-            JsonKey.PID,JsonKey.P_VERSION, null));
     req.setOperation("createBatch");
     req.setRequest(courseBatch);
     Response response = executeInTenSeconds(req, Response.class);

@@ -510,12 +510,7 @@ public class CourseBatchManagementActor extends BaseActor {
     List<String> mentors = courseBatch.getMentors();
     if (CollectionUtils.isNotEmpty(mentors)) {
       String batchCreatorRootOrgId = getRootOrg(courseBatch.getCreatedBy(), authToken);
-      List<Map<String, Object>> userDetails = userOrgService.getUsersByIds(mentors, authToken);
-      List<Map<String, Object>> mentorDetailList = userDetails.stream().map(user -> new HashMap<String, Object>() {{
-        put(JsonKey.ID, user.get(JsonKey.ID));
-        put(JsonKey.FIRST_NAME, user.get(JsonKey.FIRST_NAME));
-        put(JsonKey.LAST_NAME, user.get(JsonKey.LAST_NAME));
-      }}).collect(Collectors.toList());
+      List<Map<String, Object>> mentorDetailList = userOrgService.getUsersByIds(mentors, authToken);
       logger.info(null, "CourseBatchManagementActor::validateMentors::mentorDetailList : " + mentorDetailList);
       Map<String, Map<String, Object>> mentorDetails =
           mentorDetailList
@@ -613,12 +608,7 @@ public class CourseBatchManagementActor extends BaseActor {
   @SuppressWarnings("unchecked")
   private Map<String, String> getRootOrgForMultipleUsers(List<String> userIds, String authToken) {
 
-    List<Map<String, Object>> userDetails = userOrgService.getUsersByIds(userIds, authToken);
-    List<Map<String, Object>> userlist = userDetails.stream().map(user -> new HashMap<String, Object>() {{
-      put(JsonKey.ID, user.get(JsonKey.ID));
-      put(JsonKey.FIRST_NAME, user.get(JsonKey.FIRST_NAME));
-      put(JsonKey.LAST_NAME, user.get(JsonKey.LAST_NAME));
-    }}).collect(Collectors.toList());
+    List<Map<String, Object>> userlist = userOrgService.getUsersByIds(userIds, authToken);
     logger.info(null, "CourseBatchManagementActor::getRootOrgForMultipleUsers::userlist : " + userlist);
     Map<String, String> userWithRootOrgs = new HashMap<>();
     if (CollectionUtils.isNotEmpty(userlist)) {

@@ -164,12 +164,7 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
 
     Map<String, Object> map = null;
     List<String> createdFor = (List<String>) courseBatchObject.get(JsonKey.COURSE_CREATED_FOR);
-    List<Map<String, Object>> creatorDetails = userOrgService.getUsersByIds(userIds, (String) context.getOrDefault(JsonKey.X_AUTH_TOKEN, ""));
-    List<Map<String, Object>> userDetails = creatorDetails.stream().map(user -> new HashMap<String, Object>() {{
-      put(JsonKey.ID, user.get(JsonKey.ID));
-      put(JsonKey.FIRST_NAME, user.get(JsonKey.FIRST_NAME));
-      put(JsonKey.LAST_NAME, user.get(JsonKey.LAST_NAME));
-    }}).collect(Collectors.toList());
+    List<Map<String, Object>> userDetails = userOrgService.getUsersByIds(userIds, (String) context.getOrDefault(JsonKey.X_AUTH_TOKEN, ""));
     Map<String, String> userToRootOrg =
         userDetails
             .stream()

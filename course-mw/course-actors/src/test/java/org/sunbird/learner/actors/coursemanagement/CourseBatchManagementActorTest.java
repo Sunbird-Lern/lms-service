@@ -28,7 +28,6 @@ import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
-import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.kafka.client.InstructionEventGenerator;
@@ -131,13 +130,6 @@ public class CourseBatchManagementActorTest {
     TestKit probe = new TestKit(system);
     ActorRef subject = system.actorOf(props);
     Request reqObj = new Request();
-    reqObj.setRequestContext(new RequestContext(
-            JsonKey.SERVICE_NAME,
-            JsonKey.PRODUCER_NAME,
-            "test",
-            "X_DEVICE_ID",
-            "X_SESSION_ID",
-            JsonKey.PID,JsonKey.P_VERSION, null));
     reqObj.setOperation(ActorOperations.UPDATE_BATCH.getValue());
     HashMap<String, Object> innerMap = new HashMap<>();
     innerMap.put(JsonKey.ID, BATCH_ID);

@@ -37,7 +37,7 @@ public class UserOrgServiceTest {
         List<Map<String, Object>> content = userOrgService.getUsersByIds(ids, "authToken");
         for(Map<String, Object> map : content){
             if(StringUtils.equalsIgnoreCase("95e4942d-cbe8-477d-aebd-ad8e6de4bfc8", (String) map.get("id")))
-                assertTrue(MapUtils.isNotEmpty((Map<String, Object>) map.get("firstName")));
+                assertTrue(StringUtils.isNotEmpty((String) map.get("firstName")));
         }
     }
 

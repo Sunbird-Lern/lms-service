@@ -187,13 +187,8 @@ public class UserOrgServiceImpl implements UserOrgService {
     logger.info(null, "UserOrgServiceImpl::getUsersByIds::called");
     List<CompletableFuture<Map<String, Object>>> futures = ids.stream().map(id -> getUserDetail(id, authToken)).collect(Collectors.toList());
     List<Map<String, Object>> tempResult = futures.stream().map(CompletableFuture::join).collect(Collectors.toList());
-    List<Map<String, Object>> userDetails = tempResult.stream().map(result -> new HashMap<String, Object>() {{
-      put(JsonKey.ID, result.get(JsonKey.ID));
-      put(JsonKey.FIRST_NAME, result.get(JsonKey.FIRST_NAME));
-      put(JsonKey.LAST_NAME, result.get(JsonKey.LAST_NAME));
-    }}).collect(Collectors.toList());
     logger.info(null, "UserOrgServiceImpl::getUsersByIds::tempResult : " + tempResult);
-    return userDetails;
+    return tempResult;
   }
 
   @Override

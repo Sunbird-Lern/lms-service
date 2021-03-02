@@ -38,7 +38,6 @@ public class SearchHandlerActor extends BaseActor {
   private String topn = PropertiesCache.getInstance().getProperty(JsonKey.SEARCH_TOP_N);
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private static final String CREATED_BY = "createdBy";
-  private static ObjectMapper mapper = new ObjectMapper();
   private static LoggerUtil logger = new LoggerUtil(SearchHandlerActor.class);
   private UserOrgService userOrgService = UserOrgServiceImpl.getInstance();
 

@@ -48,6 +48,7 @@ import org.sunbird.common.models.util.HttpUtil;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.util.KeycloakRequiredActionLinkUtil;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.helper.ServiceFactory;
@@ -190,9 +191,10 @@ public class SearchHandlerActorTest {
     }};
     mockResponse();
     HashMap<String, Object> context = new HashMap<>(){{put("JsonKey.X_AUTH_TOKEN","authToken");}};
-    Method method = SearchHandlerActor.class.getDeclaredMethod("populateCreatorDetails", Map.class, Map.class);
+    RequestContext requestContext = new RequestContext( "uid", "did", "sid", "appId", "appVer", "reqId", "debugEnabled", "op");
+    Method method = SearchHandlerActor.class.getDeclaredMethod("populateCreatorDetails", Map.class, Map.class, RequestContext.class);
     method.setAccessible(true);
-    method.invoke(actorRef.underlyingActor(), context, input);
+    method.invoke(actorRef.underlyingActor(), context, input, requestContext);
     List<Map<String, Object>> content = (List<Map<String, Object>>) input.getOrDefault("content", new ArrayList<Map<String, Object>>());
     for(Map<String, Object> map : content){
       if(StringUtils.equalsIgnoreCase("95e4942d-cbe8-477d-aebd-ad8e6de4bfc8", (String) map.get("createdBy")))

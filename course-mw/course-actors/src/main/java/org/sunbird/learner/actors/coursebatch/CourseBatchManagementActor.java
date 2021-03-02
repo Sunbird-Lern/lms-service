@@ -117,7 +117,7 @@ public class CourseBatchManagementActor extends BaseActor {
     if(StringUtils.isBlank(courseBatch.getCreatedBy()))
     	courseBatch.setCreatedBy(requestedBy);
     validateContentOrg(actorMessage.getRequestContext(), courseBatch.getCreatedFor());
-    validateMentors(courseBatch, (String) actorMessage.getContext().getOrDefault(JsonKey.X_AUTH_TOKEN, ""));
+    validateMentors(courseBatch, (String) actorMessage.getContext().getOrDefault(JsonKey.X_AUTH_TOKEN, ""), actorMessage.getRequestContext());
     courseBatch.setBatchId(courseBatchId);
     Response result = courseBatchDao.create(actorMessage.getRequestContext(), courseBatch);
     result.put(JsonKey.BATCH_ID, courseBatchId);
@@ -203,7 +203,7 @@ public class CourseBatchManagementActor extends BaseActor {
     checkBatchStatus(courseBatch);
     validateUserPermission(courseBatch, requestedBy);
     validateContentOrg(actorMessage.getRequestContext(), courseBatch.getCreatedFor());
-    validateMentors(courseBatch, (String) actorMessage.getContext().getOrDefault(JsonKey.X_AUTH_TOKEN, ""));
+    validateMentors(courseBatch, (String) actorMessage.getContext().getOrDefault(JsonKey.X_AUTH_TOKEN, ""), actorMessage.getRequestContext());
     participantsMap = getMentorLists(participantsMap, oldBatch, courseBatch);
     Map<String, Object> courseBatchMap = new ObjectMapper().convertValue(courseBatch, Map.class);
     Response result =
@@ -312,7 +312,7 @@ public class CourseBatchManagementActor extends BaseActor {
     if (participants == null) {
       participants = new ArrayList<>();
     }
-    Map<String, String> participantWithRootOrgIds = getRootOrgForMultipleUsers(userIds, (String) actorMessage.getContext().getOrDefault(JsonKey.X_AUTH_TOKEN, ""));
+    Map<String, String> participantWithRootOrgIds = getRootOrgForMultipleUsers(userIds, (String) actorMessage.getContext().getOrDefault(JsonKey.X_AUTH_TOKEN, ""), actorMessage.getRequestContext());
     List<String> addedParticipants = new ArrayList<>();
     for (String userId : userIds) {
       if (!(participants.contains(userId))) {
@@ -506,12 +506,12 @@ public class CourseBatchManagementActor extends BaseActor {
     return ProgressStatus.NOT_STARTED.getValue();
   }
 
-  private void validateMentors(CourseBatch courseBatch, String authToken) {
+  private void validateMentors(CourseBatch courseBatch, String authToken, RequestContext requestContext) {
     List<String> mentors = courseBatch.getMentors();
     if (CollectionUtils.isNotEmpty(mentors)) {
       String batchCreatorRootOrgId = getRootOrg(courseBatch.getCreatedBy(), authToken);
       List<Map<String, Object>> mentorDetailList = userOrgService.getUsersByIds(mentors, authToken);
-      logger.info(null, "CourseBatchManagementActor::validateMentors::mentorDetailList : " + mentorDetailList);
+      logger.info(requestContext, "CourseBatchManagementActor::validateMentors::mentorDetailList : " + mentorDetailList);
       Map<String, Map<String, Object>> mentorDetails =
           mentorDetailList
               .stream()
@@ -606,10 +606,10 @@ public class CourseBatchManagementActor extends BaseActor {
   }
 
   @SuppressWarnings("unchecked")
-  private Map<String, String> getRootOrgForMultipleUsers(List<String> userIds, String authToken) {
+  private Map<String, String> getRootOrgForMultipleUsers(List<String> userIds, String authToken, RequestContext requestContext) {
 
     List<Map<String, Object>> userlist = userOrgService.getUsersByIds(userIds, authToken);
-    logger.info(null, "CourseBatchManagementActor::getRootOrgForMultipleUsers::userlist : " + userlist);
+    logger.info(requestContext, "CourseBatchManagementActor::getRootOrgForMultipleUsers::userlist : " + userlist);
     Map<String, String> userWithRootOrgs = new HashMap<>();
     if (CollectionUtils.isNotEmpty(userlist)) {
       userlist.forEach(

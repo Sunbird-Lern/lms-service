@@ -95,7 +95,7 @@ public class SearchHandlerActor extends BaseActor {
         Response response = new Response();
         if (result != null) {
           if (BooleanUtils.isTrue(showCreator))
-            populateCreatorDetails(request.getContext(), result);
+            populateCreatorDetails(request.getContext(), result, request.getRequestContext());
           if (!searchQueryMap.containsKey(JsonKey.FIELDS))
             addCollectionId(result);
           response.put(JsonKey.RESPONSE, result);
@@ -112,11 +112,12 @@ public class SearchHandlerActor extends BaseActor {
     }
   }
 
-  private void populateCreatorDetails(Map<String, Object> context, Map<String, Object> result) {
+  private void populateCreatorDetails(Map<String, Object> context, Map<String, Object> result, RequestContext requestContext) {
     List<Map<String, Object>> content = (List<Map<String, Object>>) result.getOrDefault("content", new ArrayList<Map<String, Object>>());
     if (CollectionUtils.isNotEmpty(content)) {
       List<String> creatorIds = content.stream().filter(map -> map.containsKey(CREATED_BY)).map(map -> (String) map.get(CREATED_BY)).collect(Collectors.toList());
       List<Map<String, Object>> userDetails = userOrgService.getUsersByIds(creatorIds, (String) context.getOrDefault(JsonKey.X_AUTH_TOKEN, ""));
+      logger.info(requestContext, "SearchHandlerActor::populateCreatorDetails::userDetails : " + userDetails);
       List<Map<String, Object>> creatorDetails = userDetails.stream().map(user -> new HashMap<String, Object>() {{
         put(JsonKey.ID, user.get(JsonKey.ID));
         put(JsonKey.FIRST_NAME, user.get(JsonKey.FIRST_NAME));

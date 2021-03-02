@@ -15,7 +15,6 @@ import akka.testkit.javadsl.TestKit;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +23,6 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -50,15 +48,12 @@ import org.sunbird.common.models.util.HttpUtil;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
-import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.util.KeycloakRequiredActionLinkUtil;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.actors.coursebatch.dao.UserCoursesDao;
 import org.sunbird.learner.actors.coursebatch.dao.impl.UserCoursesDaoImpl;
 import org.sunbird.learner.actors.search.SearchHandlerActor;
-import org.sunbird.userorg.UserOrgService;
-import org.sunbird.userorg.UserOrgServiceImpl;
 import scala.concurrent.Promise;
 
 @RunWith(PowerMockRunner.class)
@@ -176,29 +171,6 @@ public class SearchHandlerActorTest {
     subject.tell(reqObj, probe.getRef());
     ProjectCommonException exc = probe.expectMsgClass(ProjectCommonException.class);
     assertTrue(null != exc);
-  }
-
-  @Test
-  public void testGetUserSearchRequest() throws Exception {
-    Method method = SearchHandlerActor.class.getDeclaredMethod("getUserSearchRequest", List.class, List.class);
-    method.setAccessible(true);
-    List<String> creatorIds = Arrays.asList("test_id1", "test_id2");
-    List<String> fields = Arrays.asList("firstName", "lastName", "id");
-    String result = (String) method.invoke(actorRef.underlyingActor(), creatorIds, fields);
-    assertTrue(StringUtils.isNotBlank(result));
-    assertTrue(result.contains("test_id1"));
-    assertTrue(result.contains("firstName"));
-    assertTrue(result.contains("filters"));
-    assertTrue(result.contains("fields"));
-  }
-
-  @Test
-  public void testMakePostRequest() throws Exception {
-    String req = "{\"request\":{\"filters\":{\"id\":[\"test_id1\",\"test_id2\"]},\"fields\":[\"firstName\",\"lastName\",\"id\"]}}";
-    Method method = SearchHandlerActor.class.getDeclaredMethod("makePostRequest", RequestContext.class, String.class, String.class);
-    method.setAccessible(true);
-    List<Map<String, Object>> result = (List<Map<String, Object>>) method.invoke(actorRef.underlyingActor(), null, "test_url", req);
-    assertTrue(CollectionUtils.isNotEmpty(result));
   }
 
   @Test

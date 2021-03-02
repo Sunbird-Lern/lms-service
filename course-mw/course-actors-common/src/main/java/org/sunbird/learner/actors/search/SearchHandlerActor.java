@@ -1,45 +1,31 @@
 package org.sunbird.learner.actors.search;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.BooleanUtils;
-import org.apache.http.HttpHeaders;
 import org.sunbird.actor.base.BaseActor;
 import org.sunbird.common.ElasticSearchHelper;
-import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.inf.ElasticSearchService;
-import org.sunbird.common.models.response.HttpUtilResponse;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.*;
 import org.sunbird.common.models.util.ProjectUtil.EsType;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.request.RequestContext;
-import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.learner.actors.coursebatch.service.UserCoursesService;
-import org.sunbird.learner.util.ContentSearchUtil;
-import org.sunbird.learner.util.JsonUtil;
 import org.sunbird.learner.util.Util;
 import org.sunbird.telemetry.util.TelemetryWriter;
 import org.sunbird.userorg.UserOrgService;
 import org.sunbird.userorg.UserOrgServiceImpl;
 import scala.concurrent.Future;
 
-import javax.ws.rs.core.MediaType;
-import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -126,8 +112,7 @@ public class SearchHandlerActor extends BaseActor {
     }
   }
 
-  private void populateCreatorDetails(Map<String, Object> context, Map<String, Object> result) throws Exception {
-    logger.info(null, "SearchHandlerActor:populateCreatorDetails:called");
+  private void populateCreatorDetails(Map<String, Object> context, Map<String, Object> result) {
     List<Map<String, Object>> content = (List<Map<String, Object>>) result.getOrDefault("content", new ArrayList<Map<String, Object>>());
     if (CollectionUtils.isNotEmpty(content)) {
       List<String> creatorIds = content.stream().filter(map -> map.containsKey(CREATED_BY)).map(map -> (String) map.get(CREATED_BY)).collect(Collectors.toList());
@@ -137,53 +122,11 @@ public class SearchHandlerActor extends BaseActor {
         put(JsonKey.FIRST_NAME, user.get(JsonKey.FIRST_NAME));
         put(JsonKey.LAST_NAME, user.get(JsonKey.LAST_NAME));
       }}).collect(Collectors.toList());
-      Map<String, Object> tempResult = CollectionUtils.isNotEmpty(creatorDetails) ? creatorDetails.stream().collect(Collectors.toMap(s -> (String) s.remove("id"), s -> s)) : new HashMap<String, Object>();
+      Map<String, Object> tempResult = CollectionUtils.isNotEmpty(creatorDetails) ? creatorDetails.stream().collect(Collectors.toMap(s -> (String) s.remove("id"), s -> s)) : new HashMap<>();
       if (MapUtils.isNotEmpty(tempResult)) {
-        content.stream().filter(map -> tempResult.containsKey((String) map.get(CREATED_BY))).map(map -> map.put("creatorDetails", tempResult.get((String) map.get(CREATED_BY)))).collect(Collectors.toList());
+        content.stream().filter(map -> tempResult.containsKey(map.get(CREATED_BY))).map(map -> map.put("creatorDetails", tempResult.get((String) map.get(CREATED_BY)))).collect(Collectors.toList());
       }
     }
-    logger.info(null, "SearchHandlerActor:populateCreatorDetails:finished");
-  }
-
-  private Map<String, Object> getCreatorDetails(RequestContext requestContext, List<String> creatorIds) throws Exception {
-    String userSearchUrl = ProjectUtil.getConfigValue(JsonKey.USER_SEARCH_BASE_URL) + "/private/user/v1/search";
-    List<String> fields = Arrays.asList(ProjectUtil.getConfigValue(JsonKey.CREATOR_DETAILS_FIELDS).split(","));
-    String reqStr = getUserSearchRequest(creatorIds, fields);
-    logger.info(requestContext, "Calling user search to fetch creator details for IDs: " + creatorIds);
-	  List<Map<String, Object>> tempResult = makePostRequest(requestContext, userSearchUrl, reqStr);
-	  return CollectionUtils.isNotEmpty(tempResult) ? tempResult.stream().collect(Collectors.toMap(s -> (String) s.remove("id"), s -> s)) : new HashMap<String, Object>();
-  }
-
-  private String getUserSearchRequest(List<String> creatorIds, List<String> fields) throws Exception {
-    Map<String, Object> reqMap = new HashMap<String, Object>() {{
-      put("request", new HashMap<String, Object>() {{
-        put("filters", new HashMap<String, Object>() {{
-          put("id", creatorIds);
-        }});
-        put("fields", fields);
-      }});
-    }};
-    return JsonUtil.serialize(reqMap);
-  }
-
-  private List<Map<String, Object>> makePostRequest(RequestContext requestContext, String url, String req) throws Exception {
-    HttpUtilResponse resp = HttpUtil.doPostRequest(url, req, HttpUtil.getHeader(null));
-    logger.info(requestContext, "Response from user search for creator details: " + resp.getStatusCode() + " and body: " + resp.getBody());
-    Response response = getResponse(resp.getBody());
-    return (List<Map<String, Object>>) ((Map<String, Object>) response.getResult().getOrDefault("response", new HashMap<String, Object>())).getOrDefault("content", new ArrayList<Map<String, Object>>());    
-  }
-
-  private Response getResponse(String body) {
-		Response resp = new Response();
-		try {
-			resp = JsonUtil.deserialize(body, Response.class);
-		} catch (Exception e) {
-			throw new ProjectCommonException(
-					ResponseCode.unableToParseData.getErrorCode(),
-					ResponseCode.unableToParseData.getErrorMessage(),
-					ResponseCode.SERVER_ERROR.getResponseCode());
-		}
-		return resp;
   }
 
   private List<String> getParticipantList(RequestContext requestContext, String id) {

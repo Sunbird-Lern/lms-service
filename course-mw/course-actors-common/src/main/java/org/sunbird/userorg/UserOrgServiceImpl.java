@@ -184,11 +184,8 @@ public class UserOrgServiceImpl implements UserOrgService {
 
   @Override
   public List<Map<String, Object>> getUsersByIds(List<String> ids, String authToken) {
-    logger.info(null, "UserOrgServiceImpl::getUsersByIds::called");
     List<CompletableFuture<Map<String, Object>>> futures = ids.stream().map(id -> getUserDetail(id, authToken)).collect(Collectors.toList());
-    List<Map<String, Object>> tempResult = futures.stream().map(CompletableFuture::join).collect(Collectors.toList());
-    logger.info(null, "UserOrgServiceImpl::getUsersByIds::tempResult : " + tempResult);
-    return tempResult;
+    return futures.stream().map(CompletableFuture::join).collect(Collectors.toList());
   }
 
   @Override
@@ -235,14 +232,11 @@ public class UserOrgServiceImpl implements UserOrgService {
   }
 
   private CompletableFuture<Map<String, Object>> getUserDetail(String userId, String authToken) {
-    logger.info(null, "UserOrgServiceImpl::getUserDetail::called");
-    CompletableFuture<Map<String, Object>> future = CompletableFuture.supplyAsync(new Supplier<Map<String, Object>>() {
+    return CompletableFuture.supplyAsync(new Supplier<Map<String, Object>>() {
       @Override
       public Map<String, Object> get() {
-        Map<String, Object> userDetail = getUserById(userId, authToken);
-        return userDetail;
+        return getUserById(userId, authToken);
       }
     });
-    return future;
   }
 }

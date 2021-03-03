@@ -223,9 +223,10 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     val nofDates = date.replaceAll("[^0-9]", "")
 
     if (StringUtils.equalsIgnoreCase(date, "ALL")) { // When granularity Is ALL fetch the batch start and end date.
-      val batchStartDate = Option(courseBatchDao.readById(courseId, batchId, requestContext).getStartDate)
+      val courseBatchData = courseBatchDao.readById(courseId, batchId, requestContext)
+      val batchStartDate = Option(courseBatchData.getStartDate)
         .map(date => if (date.isEmpty) defaultStartDate else date).getOrElse(defaultStartDate)
-      val batchEndDate = Option(courseBatchDao.readById(courseId, batchId, requestContext).getEndDate)
+      val batchEndDate = Option(courseBatchData.getEndDate)
         .map(date => if (date.isEmpty) defaultEndDate else date).getOrElse(defaultEndDate)
       s"$batchStartDate/$batchEndDate"
     } else {

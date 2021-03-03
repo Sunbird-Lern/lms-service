@@ -39,6 +39,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     val collectionId = filters.get(JsonKey.COLLECTION_ID).asInstanceOf[String]
     val granularity = getDate(request.getRequestContext,request.getRequest.getOrDefault("granularity", "ALL").asInstanceOf[String], collectionId, batchId)
     val key = getCacheKey(batchId = batchId, granularity, groupByKeys)
+    println(s"Druid granularity: $granularity & Cache Key: $key")
     try {
       val redisData = cacheUtil.get(key)
       val result: util.Map[String, AnyRef] = if (null != redisData && !redisData.isEmpty) {
@@ -194,8 +195,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
          |    ]
          |  }
          |}""".stripMargin.replaceAll("null", " ")
-    ProjectLogger.log("Druid Query Is " + druidQuery)
-    println("Query" + druidQuery)
+    println("Druid Query" + JsonUtil.serialize(druidQuery))
     val host: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("druid_proxy_api_host"))) ProjectUtil.getConfigValue("druid_proxy_api_host") else "localhost"
     val port: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("druid_proxy_api_port"))) ProjectUtil.getConfigValue("druid_proxy_api_port") else "8081"
     val endPoint: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("druid_proxy_api_endpoint"))) ProjectUtil.getConfigValue("druid_proxy_api_endpoint") else "/druid/v2/"
@@ -217,18 +217,20 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
   }
 
   def getDate(requestContext: RequestContext, date: String, courseId: String, batchId: String): String = {
-    val dateTimeFormate = DateTimeFormat.forPattern("yyyy-MM-dd")
-    // When endate is null in the table considering default date as 7
-    val defaultEndDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(7))
+    val dateTimeFormat = DateTimeFormat.forPattern("yyyy-MM-dd")
+    val defaultEndDate = dateTimeFormat.print(DateTime.now(DateTimeZone.UTC).plusDays(1)) // Adding 1 Day extra
+    val defaultStartDate = dateTimeFormat.print(DateTime.now(DateTimeZone.UTC))
     val nofDates = date.replaceAll("[^0-9]", "")
-    val endDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).plusDays(1)) // Adding 1 Day extra
-    val startDate: String = if (!StringUtils.equalsIgnoreCase(date, "ALL")) {
-      dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(nofDates.toInt))
+
+    if (StringUtils.equalsIgnoreCase(date, "ALL")) { // When granularity Is ALL fetch the batch start and end date.
+      val batchStartDate = Option(courseBatchDao.readById(courseId, batchId, requestContext).getStartDate)
+        .map(date => if (date.isEmpty) defaultStartDate else date).getOrElse(defaultStartDate)
+      val batchEndDate = Option(courseBatchDao.readById(courseId, batchId, requestContext).getEndDate)
+        .map(date => if (date.isEmpty) defaultEndDate else date).getOrElse(defaultEndDate)
+      s"$batchStartDate/$batchEndDate"
     } else {
-      val batchEndDate = courseBatchDao.readById(courseId, batchId, requestContext).getEndDate
-      logger.debug(requestContext, s"BatchId: $batchId, CourseId: $courseId, EndDate" + batchEndDate)
-      Option(batchEndDate).map(date => if (date.isEmpty) defaultEndDate else date).getOrElse(defaultEndDate)
+      val startDate = dateTimeFormat.print(DateTime.now(DateTimeZone.UTC).minusDays(nofDates.toInt))
+      s"$startDate/$defaultEndDate"
     }
-    s"$startDate/$endDate"
   }
 }

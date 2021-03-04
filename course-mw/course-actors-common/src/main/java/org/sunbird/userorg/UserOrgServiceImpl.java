@@ -10,12 +10,16 @@ import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerUtil;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.common.util.KeycloakRequiredActionLinkUtil;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static org.sunbird.common.exception.ProjectCommonException.throwServerErrorException;
@@ -180,10 +184,8 @@ public class UserOrgServiceImpl implements UserOrgService {
 
   @Override
   public List<Map<String, Object>> getUsersByIds(List<String> ids, String authToken) {
-    Map<String, Object> filterlist = new HashMap<>();
-    filterlist.put(ID, ids);
-    Map<String, Object> requestMap = getRequestMap(filterlist);
-    return getUsersResponse(requestMap, authToken);
+    List<CompletableFuture<Map<String, Object>>> futures = ids.stream().map(id -> getUserDetail(id, authToken)).collect(Collectors.toList());
+    return futures.stream().map(CompletableFuture::join).collect(Collectors.toList());
   }
 
   @Override
@@ -227,5 +229,14 @@ public class UserOrgServiceImpl implements UserOrgService {
       }
     }
     return null;
+  }
+
+  private CompletableFuture<Map<String, Object>> getUserDetail(String userId, String authToken) {
+    return CompletableFuture.supplyAsync(new Supplier<Map<String, Object>>() {
+      @Override
+      public Map<String, Object> get() {
+        return getUserById(userId, authToken);
+      }
+    });
   }
 }

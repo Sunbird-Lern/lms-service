@@ -111,7 +111,7 @@ public class CourseBatchManagementActor extends BaseActor {
     if(StringUtils.isBlank(courseBatch.getCreatedBy()))
     	courseBatch.setCreatedBy(requestedBy);
     validateContentOrg(actorMessage.getRequestContext(), courseBatch.getCreatedFor());
-    validateMentors(courseBatch, (String) actorMessage.getContext().getOrDefault(JsonKey.X_AUTH_TOKEN, ""));
+    validateMentors(courseBatch, (String) actorMessage.getContext().getOrDefault(JsonKey.X_AUTH_TOKEN, ""), actorMessage.getRequestContext());
     courseBatch.setBatchId(courseBatchId);
     Response result = courseBatchDao.create(actorMessage.getRequestContext(), courseBatch);
     result.put(JsonKey.BATCH_ID, courseBatchId);
@@ -197,7 +197,7 @@ public class CourseBatchManagementActor extends BaseActor {
     checkBatchStatus(courseBatch);
     validateUserPermission(courseBatch, requestedBy);
     validateContentOrg(actorMessage.getRequestContext(), courseBatch.getCreatedFor());
-    validateMentors(courseBatch, (String) actorMessage.getContext().getOrDefault(JsonKey.X_AUTH_TOKEN, ""));
+    validateMentors(courseBatch, (String) actorMessage.getContext().getOrDefault(JsonKey.X_AUTH_TOKEN, ""), actorMessage.getRequestContext());
     participantsMap = getMentorLists(participantsMap, oldBatch, courseBatch);
     Map<String, Object> courseBatchMap = new ObjectMapper().convertValue(courseBatch, Map.class);
     Response result =
@@ -356,11 +356,12 @@ public class CourseBatchManagementActor extends BaseActor {
     return ProgressStatus.NOT_STARTED.getValue();
   }
 
-  private void validateMentors(CourseBatch courseBatch, String authToken) {
+  private void validateMentors(CourseBatch courseBatch, String authToken, RequestContext requestContext) {
     List<String> mentors = courseBatch.getMentors();
     if (CollectionUtils.isNotEmpty(mentors)) {
       String batchCreatorRootOrgId = getRootOrg(courseBatch.getCreatedBy(), authToken);
       List<Map<String, Object>> mentorDetailList = userOrgService.getUsersByIds(mentors, authToken);
+      logger.info(requestContext, "CourseBatchManagementActor::validateMentors::mentorDetailList : " + mentorDetailList);
       Map<String, Map<String, Object>> mentorDetails =
           mentorDetailList
               .stream()

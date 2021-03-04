@@ -47,8 +47,6 @@ POST     /private/v1/course/batch/create		@controllers.coursemanagement.CourseBa
 PATCH 	 /v1/course/batch/update				@controllers.coursemanagement.CourseBatchController.updateBatch(request: play.mvc.Http.Request)
 GET		 /v1/course/batch/read/:batchId			@controllers.coursemanagement.CourseBatchController.getBatch(batchId:String, request: play.mvc.Http.Request)
 POST     /v1/course/batch/search                @controllers.coursemanagement.CourseBatchController.search(request: play.mvc.Http.Request)
-POST	 /v1/course/batch/users/add/:batchId			@controllers.coursemanagement.CourseBatchController.addUserToCourseBatch(batchId:String, request: play.mvc.Http.Request)
-POST	 /v1/course/batch/users/remove/:batchId			@controllers.coursemanagement.CourseBatchController.removeUserFromCourseBatch(batchId:String, request: play.mvc.Http.Request)
 POST		 /v1/batch/participants/list			@controllers.coursemanagement.CourseBatchController.getParticipants(request: play.mvc.Http.Request)
 
 # Textbook APIs

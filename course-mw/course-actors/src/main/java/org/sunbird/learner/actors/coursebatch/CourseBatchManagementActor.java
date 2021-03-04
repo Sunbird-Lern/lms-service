@@ -79,12 +79,6 @@ public class CourseBatchManagementActor extends BaseActor {
       case "getBatch":
         getCourseBatch(request);
         break;
-      case "addUserBatch":
-        addUserCourseBatch(request);
-        break;
-      case "removeUserFromBatch":
-        removeUserCourseBatch(request);
-        break;
       case "getParticipants":
         getParticipants(request);
         break;
@@ -291,150 +285,6 @@ public class CourseBatchManagementActor extends BaseActor {
     return dbEnrollmentType;
   }
 
-  @SuppressWarnings("unchecked")
-  private void addUserCourseBatch(Request actorMessage) {
-    Map<String, Object> req = actorMessage.getRequest();
-    Response response = new Response();
-
-    Map<String, Object> targetObject = null;
-    List<Map<String, Object>> correlatedObject = new ArrayList<>();
-
-    String batchId = (String) req.get(JsonKey.BATCH_ID);
-    TelemetryUtil.generateCorrelatedObject(batchId, TelemetryEnvKey.BATCH, null, correlatedObject);
-    Map<String, Object> courseBatchObject = getValidatedCourseBatch(actorMessage.getRequestContext(), batchId);
-    String batchCreator = (String) courseBatchObject.get(JsonKey.CREATED_BY);
-    String batchCreatorRootOrgId = getRootOrg(batchCreator, (String) actorMessage.getContext().getOrDefault(JsonKey.X_AUTH_TOKEN, ""));
-    List<String> participants =
-        userCoursesService.getEnrolledUserFromBatch(
-                actorMessage.getRequestContext(), (String) courseBatchObject.get(JsonKey.BATCH_ID));
-    CourseBatch courseBatch = new ObjectMapper().convertValue(courseBatchObject, CourseBatch.class);
-    List<String> userIds = (List<String>) req.get(JsonKey.USER_IDs);
-    if (participants == null) {
-      participants = new ArrayList<>();
-    }
-    Map<String, String> participantWithRootOrgIds = getRootOrgForMultipleUsers(userIds, (String) actorMessage.getContext().getOrDefault(JsonKey.X_AUTH_TOKEN, ""));
-    List<String> addedParticipants = new ArrayList<>();
-    for (String userId : userIds) {
-      if (!(participants.contains(userId))) {
-        if (!participantWithRootOrgIds.containsKey(userId)
-            || (!batchCreatorRootOrgId.equals(participantWithRootOrgIds.get(userId)))) {
-          response.put(
-              userId,
-              MessageFormat.format(
-                  ResponseCode.userNotAssociatedToRootOrg.getErrorMessage(), userId));
-          continue;
-        }
-        addedParticipants.add(userId);
-
-      } else {
-        response.getResult().put(userId, JsonKey.SUCCESS);
-      }
-    }
-
-    userCoursesService.enroll(
-            actorMessage.getRequestContext(), batchId, (String) courseBatchObject.get(JsonKey.COURSE_ID), addedParticipants);
-    for (String userId : addedParticipants) {
-      participants.add(userId);
-      response.getResult().put(userId, JsonKey.SUCCESS);
-
-      targetObject =
-          TelemetryUtil.generateTargetObject(userId, TelemetryEnvKey.USER, JsonKey.UPDATE, null);
-      correlatedObject = new ArrayList<>();
-      TelemetryUtil.generateCorrelatedObject(
-          batchId, TelemetryEnvKey.BATCH, null, correlatedObject);
-      TelemetryUtil.telemetryProcessingCall(req, targetObject, correlatedObject, actorMessage.getContext());
-    }
-    sender().tell(response, self());
-    if (courseNotificationActive()) {
-      Map<String, Object> participantMentorMap = new HashMap<>();
-      participantMentorMap.put(JsonKey.ADDED_PARTICIPANTS, addedParticipants);
-      batchOperationNotifier(actorMessage, courseBatch, participantMentorMap);
-    }
-  }
-
-  @SuppressWarnings("unchecked")
-  private void removeUserCourseBatch(Request actorMessage) {
-    Map<String, Object> req = actorMessage.getRequest();
-    Response response = new Response();
-
-    Map<String, Object> targetObject = null;
-    List<Map<String, Object>> correlatedObject = new ArrayList<>();
-
-    String batchId = (String) req.get(JsonKey.BATCH_ID);
-    TelemetryUtil.generateCorrelatedObject(batchId, TelemetryEnvKey.BATCH, null, correlatedObject);
-    Map<String, Object> courseBatchObject = getValidatedCourseBatch(actorMessage.getRequestContext(), batchId);
-    List<String> participants =
-        userCoursesService.getEnrolledUserFromBatch(
-                actorMessage.getRequestContext(), (String) courseBatchObject.get(JsonKey.BATCH_ID));
-    CourseBatch courseBatch = new ObjectMapper().convertValue(courseBatchObject, CourseBatch.class);
-    List<String> userIds = (List<String>) req.get(JsonKey.USER_IDs);
-    if (participants == null) {
-      participants = new ArrayList<>();
-    }
-    List<String> participantsList =
-        CollectionUtils.isEmpty(participants) ? new ArrayList<>() : participants;
-    List<String> removedParticipants = new ArrayList<>();
-    userIds.forEach(
-        id -> {
-          if (!participantsList.contains(id)) {
-            response.getResult().put(id, ResponseCode.userNotEnrolledCourse.getErrorMessage());
-          } else {
-            try {
-              userCoursesService.unenroll(actorMessage.getRequestContext(), batchId, id);
-              removedParticipants.add(id);
-              response.getResult().put(id, JsonKey.SUCCESS);
-            } catch (ProjectCommonException ex) {
-              response.getResult().put(id, ex.getMessage());
-            }
-          }
-        });
-
-    for (String userId : removedParticipants) {
-      targetObject =
-          TelemetryUtil.generateTargetObject(userId, TelemetryEnvKey.USER, JsonKey.REMOVE, null);
-      correlatedObject = new ArrayList<>();
-      TelemetryUtil.generateCorrelatedObject(
-          batchId, TelemetryEnvKey.BATCH, null, correlatedObject);
-      TelemetryUtil.telemetryProcessingCall(req, targetObject, correlatedObject, actorMessage.getContext());
-    }
-    sender().tell(response, self());
-    if (courseNotificationActive()) {
-      Map<String, Object> participantMentorMap = new HashMap<>();
-      participantMentorMap.put(JsonKey.REMOVED_PARTICIPANTS, removedParticipants);
-      batchOperationNotifier(actorMessage, courseBatch, participantMentorMap);
-    }
-  }
-
-  private Map<String, Object> getValidatedCourseBatch(RequestContext requestContext, String batchId) {
-    Future<Map<String, Object>> resultF =
-        esService.getDataByIdentifier(requestContext, ProjectUtil.EsType.courseBatch.getTypeName(), batchId);
-    Map<String, Object> courseBatchObject =
-        (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
-
-    if (ProjectUtil.isNull(courseBatchObject.get(JsonKey.ENROLLMENT_TYPE))
-        || !((String) courseBatchObject.get(JsonKey.ENROLLMENT_TYPE))
-            .equalsIgnoreCase(JsonKey.INVITE_ONLY)) {
-      throw new ProjectCommonException(
-          ResponseCode.enrollmentTypeValidation.getErrorCode(),
-          ResponseCode.enrollmentTypeValidation.getErrorMessage(),
-          ResponseCode.CLIENT_ERROR.getResponseCode());
-    }
-    if (CollectionUtils.isEmpty((List) courseBatchObject.get(JsonKey.COURSE_CREATED_FOR))) {
-      throw new ProjectCommonException(
-          ResponseCode.courseCreatedForIsNull.getErrorCode(),
-          ResponseCode.courseCreatedForIsNull.getErrorMessage(),
-          ResponseCode.RESOURCE_NOT_FOUND.getResponseCode());
-    }
-    String batchCreator = (String) courseBatchObject.get(JsonKey.CREATED_BY);
-    if (StringUtils.isBlank(batchCreator)) {
-      throw new ProjectCommonException(
-          ResponseCode.invalidCourseCreatorId.getErrorCode(),
-          ResponseCode.invalidCourseCreatorId.getErrorMessage(),
-          ResponseCode.RESOURCE_NOT_FOUND.getResponseCode());
-    }
-    return courseBatchObject;
-  }
-
   private void getCourseBatch(Request actorMessage) {
     Future<Map<String, Object>> resultF =
         esService.getDataByIdentifier(
@@ -602,21 +452,6 @@ public class CourseBatchManagementActor extends BaseActor {
           ResponseCode.unAuthorized.getErrorMessage(),
           ResponseCode.UNAUTHORIZED.getResponseCode());
     }
-  }
-
-  @SuppressWarnings("unchecked")
-  private Map<String, String> getRootOrgForMultipleUsers(List<String> userIds, String authToken) {
-
-    List<Map<String, Object>> userlist = userOrgService.getUsersByIds(userIds, authToken);
-    Map<String, String> userWithRootOrgs = new HashMap<>();
-    if (CollectionUtils.isNotEmpty(userlist)) {
-      userlist.forEach(
-          user -> {
-            String rootOrg = getRootOrgFromUserMap(user);
-            userWithRootOrgs.put((String) user.get(JsonKey.ID), rootOrg);
-          });
-    }
-    return userWithRootOrgs;
   }
 
   private String getRootOrg(String batchCreator, String authToken) {

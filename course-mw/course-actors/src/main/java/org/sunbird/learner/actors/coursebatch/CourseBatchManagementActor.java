@@ -4,8 +4,6 @@ import static org.sunbird.common.models.util.JsonKey.ID;
 import static org.sunbird.common.models.util.JsonKey.PARTICIPANTS;
 
 import akka.actor.ActorRef;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -27,6 +25,7 @@ import org.sunbird.common.models.util.ProjectUtil.ProgressStatus;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.common.util.JsonUtil;
 import org.sunbird.kafka.client.InstructionEventGenerator;
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao;
 import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl;
@@ -51,8 +50,6 @@ public class CourseBatchManagementActor extends BaseActor {
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
   private List<String> validCourseStatus = Arrays.asList("Live", "Unlisted");
-  private static final ObjectMapper mapper = new ObjectMapper();
-
 
   @Inject
   @Named("course-batch-notification-actor")
@@ -103,7 +100,7 @@ public class CourseBatchManagementActor extends BaseActor {
           ProjectUtil.formatMessage(
               ResponseCode.invalidRequestParameter.getErrorMessage(), PARTICIPANTS));
     }
-    CourseBatch courseBatch = new ObjectMapper().convertValue(request, CourseBatch.class);
+    CourseBatch courseBatch = JsonUtil.convert(request, CourseBatch.class);
     courseBatch.setStatus(setCourseBatchStatus(actorMessage.getRequestContext(), (String) request.get(JsonKey.START_DATE)));
     String courseId = (String) request.get(JsonKey.COURSE_ID);
     Map<String, Object> contentDetails = getContentDetails(actorMessage.getRequestContext(),courseId, headers);
@@ -117,7 +114,7 @@ public class CourseBatchManagementActor extends BaseActor {
     result.put(JsonKey.BATCH_ID, courseBatchId);
 
     CourseBatchUtil.syncCourseBatchForeground(actorMessage.getRequestContext(),
-        courseBatchId, new ObjectMapper().convertValue(courseBatch, Map.class));
+        courseBatchId, JsonUtil.convert(courseBatch, Map.class));
     sender().tell(result, self());
 
     targetObject =
@@ -199,7 +196,7 @@ public class CourseBatchManagementActor extends BaseActor {
     validateContentOrg(actorMessage.getRequestContext(), courseBatch.getCreatedFor());
     validateMentors(courseBatch, (String) actorMessage.getContext().getOrDefault(JsonKey.X_AUTH_TOKEN, ""), actorMessage.getRequestContext());
     participantsMap = getMentorLists(participantsMap, oldBatch, courseBatch);
-    Map<String, Object> courseBatchMap = new ObjectMapper().convertValue(courseBatch, Map.class);
+    Map<String, Object> courseBatchMap = JsonUtil.convert(courseBatch, Map.class);
     Response result =
         courseBatchDao.update(actorMessage.getRequestContext(), (String) request.get(JsonKey.COURSE_ID), batchId, courseBatchMap);
     Map<String, Object> updatedCourseObject = mapESFieldsToObject(courseBatchMap);
@@ -253,7 +250,7 @@ public class CourseBatchManagementActor extends BaseActor {
   }
 
   @SuppressWarnings("unchecked")
-  private CourseBatch getUpdateCourseBatch(RequestContext requestContext, Map<String, Object> request) {
+  private CourseBatch getUpdateCourseBatch(RequestContext requestContext, Map<String, Object> request) throws Exception {
     CourseBatch courseBatch =
         courseBatchDao.readById(
             (String) request.get(JsonKey.COURSE_ID), (String) request.get(JsonKey.ID), requestContext);
@@ -408,8 +405,8 @@ public class CourseBatchManagementActor extends BaseActor {
   }
 
   @SuppressWarnings("unchecked")
-  private void updateCourseBatchDate(RequestContext requestContext, CourseBatch courseBatch, Map<String, Object> req) {
-    Map<String, Object> courseBatchMap = new ObjectMapper().convertValue(courseBatch, Map.class);
+  private void updateCourseBatchDate(RequestContext requestContext, CourseBatch courseBatch, Map<String, Object> req) throws Exception {
+    Map<String, Object> courseBatchMap = JsonUtil.convert(courseBatch, Map.class);
     Date todayDate = getDate(requestContext, null, DATE_FORMAT, null);
     Date dbBatchStartDate = getDate(requestContext, JsonKey.START_DATE, DATE_FORMAT, courseBatchMap);
     Date dbBatchEndDate = getDate(requestContext, JsonKey.END_DATE, DATE_FORMAT, courseBatchMap);
@@ -680,32 +677,21 @@ public class CourseBatchManagementActor extends BaseActor {
     try {
       template.put(
               JsonKey.CRITERIA,
-              mapper.readValue(
-                      (String) template.get(JsonKey.CRITERIA),
-                      new TypeReference<HashMap<String, Object>>() {}));
+              JsonUtil.deserialize((String) template.get(JsonKey.CRITERIA), Map.class));
       if(StringUtils.isNotEmpty((String)template.get(CourseJsonKey.SIGNATORY_LIST))) {
         template.put(
                 CourseJsonKey.SIGNATORY_LIST,
-                mapper.readValue(
-                        (String) template.get(CourseJsonKey.SIGNATORY_LIST),
-                        new TypeReference<List<Object>>() {
-                        }));
+                JsonUtil.deserialize((String) template.get(CourseJsonKey.SIGNATORY_LIST), ArrayList.class));
       }
       if(StringUtils.isNotEmpty((String)template.get(CourseJsonKey.ISSUER))) {
         template.put(
                 CourseJsonKey.ISSUER,
-                mapper.readValue(
-                        (String) template.get(CourseJsonKey.ISSUER),
-                        new TypeReference<HashMap<String, Object>>() {
-                        }));
+                JsonUtil.deserialize((String) template.get(CourseJsonKey.ISSUER), Map.class));
       }
       if(StringUtils.isNotEmpty((String)template.get(CourseJsonKey.NOTIFY_TEMPLATE))) {
         template.put(
                 CourseJsonKey.NOTIFY_TEMPLATE,
-                mapper.readValue(
-                        (String) template.get(CourseJsonKey.NOTIFY_TEMPLATE),
-                        new TypeReference<HashMap<String, Object>>() {
-                        }));
+                JsonUtil.deserialize((String) template.get(CourseJsonKey.NOTIFY_TEMPLATE), Map.class));
       }
     } catch (Exception ex) {
       ProjectLogger.log(

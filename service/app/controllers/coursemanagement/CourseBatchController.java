@@ -78,35 +78,6 @@ public class CourseBatchController extends BaseController {
         httpRequest);
   }
 
-  public CompletionStage<Result> addUserToCourseBatch(String batchId, Http.Request httpRequest) {
-    return handleRequest(
-        courseBatchActorRef,
-        ActorOperations.ADD_USER_TO_BATCH.getValue(),
-        httpRequest.body().asJson(),
-        (request) -> {
-          new CourseBatchRequestValidator().validateAddUserToCourseBatchRequest((Request) request);
-          return null;
-        },
-        batchId,
-        JsonKey.BATCH_ID,
-        httpRequest);
-  }
-
-  public CompletionStage<Result> removeUserFromCourseBatch(
-      String batchId, Http.Request httpRequest) {
-    return handleRequest(
-        courseBatchActorRef,
-        ActorOperations.REMOVE_USER_FROM_BATCH.getValue(),
-        httpRequest.body().asJson(),
-        (request) -> {
-          new CourseBatchRequestValidator().validateAddUserToCourseBatchRequest((Request) request);
-          return null;
-        },
-        batchId,
-        JsonKey.BATCH_ID,
-        httpRequest);
-  }
-
   @SuppressWarnings({"unchecked", "rawtypes"})
   public CompletionStage<Result> search(Http.Request httpRequest) {
     try {

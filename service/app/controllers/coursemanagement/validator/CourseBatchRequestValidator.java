@@ -117,8 +117,7 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
         ResponseCode.mandatoryParamsMissing,
         JsonKey.ENROLLMENT_TYPE);
     String enrolmentType = (String) request.getRequest().get(JsonKey.ENROLLMENT_TYPE);
-    if (!ProjectUtil.EnrolmentType.open.getVal().equalsIgnoreCase(enrolmentType)
-        && !ProjectUtil.EnrolmentType.inviteOnly.getVal().equalsIgnoreCase(enrolmentType)) {
+    if (!ProjectUtil.EnrolmentType.open.getVal().equalsIgnoreCase(enrolmentType)) {
       throw new ProjectCommonException(
           ResponseCode.invalidParameterValue.getErrorCode(),
           ResponseCode.invalidParameterValue.getErrorMessage(),

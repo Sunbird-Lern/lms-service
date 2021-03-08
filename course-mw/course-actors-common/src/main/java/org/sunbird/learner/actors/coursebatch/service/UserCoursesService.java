@@ -33,23 +33,6 @@ public class UserCoursesService {
     return batchId + UNDERSCORE + userId;
   }
 
-  public void validateUserUnenroll(RequestContext requestContext, UserCourses userCourseResult) {
-    if (userCourseResult == null || !userCourseResult.isActive()) {
-      logger.info(requestContext, "UserCoursesService:validateUserUnenroll: User is not enrolled yet");
-      throw new ProjectCommonException(
-          ResponseCode.userNotEnrolledCourse.getErrorCode(),
-          ResponseCode.userNotEnrolledCourse.getErrorMessage(),
-          ResponseCode.CLIENT_ERROR.getResponseCode());
-    }
-    if (userCourseResult.getStatus() == ProjectUtil.ProgressStatus.COMPLETED.getValue()) {
-      logger.debug(requestContext, "UserCoursesService:validateUserUnenroll: User already completed the course");
-      throw new ProjectCommonException(
-          ResponseCode.userAlreadyCompletedCourse.getErrorCode(),
-          ResponseCode.userAlreadyCompletedCourse.getErrorMessage(),
-          ResponseCode.CLIENT_ERROR.getResponseCode());
-    }
-  }
-
   public static String getPrimaryKey(Map<String, Object> userCourseMap) {
     String userId = (String) userCourseMap.get(JsonKey.USER_ID);
     String courseId = (String) userCourseMap.get(JsonKey.COURSE_ID);
@@ -64,40 +47,6 @@ public class UserCoursesService {
             + courseId
             + JsonKey.PRIMARY_KEY_DELIMETER
             + batchId);
-  }
-
-  public void enroll(RequestContext requestContext, String batchId, String courseId, List<String> userIds) {
-    Integer count = 0;
-
-    List<Map<String, Object>> records = new ArrayList<>();
-    Map<String, Object> userCoursesCommon = new HashMap<>();
-    userCoursesCommon.put(JsonKey.BATCH_ID, batchId);
-    userCoursesCommon.put(JsonKey.COURSE_ID, courseId);
-    userCoursesCommon.put(JsonKey.COURSE_ENROLL_DATE, ProjectUtil.getFormattedDate());
-    userCoursesCommon.put(JsonKey.ACTIVE, ProjectUtil.ActiveStatus.ACTIVE.getValue());
-    userCoursesCommon.put(JsonKey.STATUS, ProjectUtil.ProgressStatus.NOT_STARTED.getValue());
-    userCoursesCommon.put(JsonKey.COURSE_PROGRESS, 0);
-
-    for (String userId : userIds) {
-      Map<String, Object> userCourses = new HashMap<>();
-      userCourses.put(JsonKey.USER_ID, userId);
-      userCourses.putAll(userCoursesCommon);
-
-      count++;
-      records.add(userCourses);
-      if (count > CASSANDRA_BATCH_SIZE) {
-        performBatchInsert(requestContext, records);
-        syncUsersToES(requestContext, records);
-        records.clear();
-        count = 0;
-      }
-      if (count != 0) {
-        performBatchInsert(requestContext, records);
-        syncUsersToES(requestContext, records);
-        records.clear();
-        count = 0;
-      }
-    }
   }
 
   private void syncUsersToES(RequestContext requestContext, List<Map<String, Object>> records) {
@@ -128,15 +77,6 @@ public class UserCoursesService {
         }
       }
     }
-  }
-
-  public void unenroll(RequestContext requestContext, String batchId, String userId) {
-    UserCourses userCourses = userCourseDao.read(requestContext, batchId, userId);
-    validateUserUnenroll(requestContext, userCourses);
-    Map<String, Object> updateAttributes = new HashMap<>();
-    updateAttributes.put(JsonKey.ACTIVE, ProjectUtil.ActiveStatus.INACTIVE.getValue());
-    userCourseDao.update(requestContext, userCourses.getBatchId(), userCourses.getUserId(), updateAttributes);
-    sync(requestContext, updateAttributes, userCourses.getBatchId(), userCourses.getUserId());
   }
 
   public Map<String, Object> getActiveEnrollments(String userId) {

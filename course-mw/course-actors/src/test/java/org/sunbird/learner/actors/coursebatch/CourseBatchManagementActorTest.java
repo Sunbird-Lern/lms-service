@@ -65,7 +65,6 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
     Map<String, Object> courseBatch =
         CustomObjectBuilder.getCourseBatchBuilder()
             .generateRandomFields()
-            .addField(JsonKey.ENROLLMENT_TYPE, JsonKey.INVITE_ONLY)
             .build()
             .get();
     when(group

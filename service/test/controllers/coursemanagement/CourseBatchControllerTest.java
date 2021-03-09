@@ -42,9 +42,6 @@ public class CourseBatchControllerTest extends BaseApplicationTest {
   String GET_BATCH_URL =  "/v1/course/batch/read/"+BATCH_ID;
   String SEARCH_BATCH_URL =  "/v1/course/batch/search";
   String BATCH_PARTICIPANTS_LIST_URL =  "/v1/batch/participants/list";
-  String ADD_USERS_BATCH_URL =  "/v1/course/batch/users/add/"+BATCH_ID;
-  String REMOVE_USERS_BATCH_URL =  "/v1/course/batch/users/remove/"+BATCH_ID;
-
 
   @Before
   public void before() {
@@ -56,7 +53,7 @@ public class CourseBatchControllerTest extends BaseApplicationTest {
     Http.RequestBuilder req =
             new Http.RequestBuilder()
                     .uri(CREATE_BATCH_URL)
-                    .bodyJson(createCourseBatchRequest(COURSE_ID, COURSE_NAME,JsonKey.INVITE_ONLY,new Date(),getEndDate(true),getEnrollmentEndDate(true),null ))
+                    .bodyJson(createCourseBatchRequest(COURSE_ID, COURSE_NAME,JsonKey.OPEN,new Date(),getEndDate(true),getEnrollmentEndDate(true),null ))
                     .method("POST");
     Result result = Helpers.route(application, req);
     Assert.assertEquals( 200, result.status());
@@ -67,7 +64,7 @@ public class CourseBatchControllerTest extends BaseApplicationTest {
     Http.RequestBuilder req =
             new Http.RequestBuilder()
                     .uri(CREATE_BATCH_URL)
-                    .bodyJson(createCourseBatchRequest(COURSE_ID, COURSE_NAME,JsonKey.INVITE_ONLY,new Date(),getEndDate(true),getEnrollmentEndDate(true),MENTORS ))
+                    .bodyJson(createCourseBatchRequest(COURSE_ID, COURSE_NAME,JsonKey.OPEN,new Date(),getEndDate(true),getEnrollmentEndDate(true),MENTORS ))
                     .method("POST");
     Result result = Helpers.route(application, req);
     Assert.assertEquals( 200, result.status());
@@ -79,7 +76,7 @@ public class CourseBatchControllerTest extends BaseApplicationTest {
     Http.RequestBuilder req =
             new Http.RequestBuilder()
                     .uri(CREATE_BATCH_URL)
-                    .bodyJson(createCourseBatchRequest(COURSE_ID, COURSE_NAME,JsonKey.INVITE_ONLY,new Date(),null,null,null ))
+                    .bodyJson(createCourseBatchRequest(COURSE_ID, COURSE_NAME,JsonKey.OPEN,new Date(),null,null,null ))
                     .method("POST");
     Result result = Helpers.route(application, req);
     Assert.assertEquals( 200, result.status());
@@ -101,7 +98,7 @@ public class CourseBatchControllerTest extends BaseApplicationTest {
     Http.RequestBuilder req =
             new Http.RequestBuilder()
                     .uri(CREATE_BATCH_URL)
-                    .bodyJson(createCourseBatchRequest(COURSE_ID, COURSE_NAME,JsonKey.INVITE_ONLY,new Date(),getEndDate(true),getEnrollmentEndDate(true),INVALID_MENTORS_TYPE ))
+                    .bodyJson(createCourseBatchRequest(COURSE_ID, COURSE_NAME,JsonKey.OPEN,new Date(),getEndDate(true),getEnrollmentEndDate(true),INVALID_MENTORS_TYPE ))
                     .method("POST");
     Result result = Helpers.route(application, req);
     Assert.assertEquals( 400, result.status());
@@ -112,7 +109,7 @@ public class CourseBatchControllerTest extends BaseApplicationTest {
     Http.RequestBuilder req =
             new Http.RequestBuilder()
                     .uri(CREATE_BATCH_URL)
-                    .bodyJson(createCourseBatchRequest(COURSE_ID, COURSE_NAME,JsonKey.INVITE_ONLY,new Date(),getEndDate(false),getEnrollmentEndDate(true),null ))
+                    .bodyJson(createCourseBatchRequest(COURSE_ID, COURSE_NAME,JsonKey.OPEN,new Date(),getEndDate(false),getEnrollmentEndDate(true),null ))
                     .method("POST");
     Result result = Helpers.route(application, req);
     Assert.assertEquals( 400, result.status());
@@ -123,7 +120,7 @@ public class CourseBatchControllerTest extends BaseApplicationTest {
     Http.RequestBuilder req =
             new Http.RequestBuilder()
                     .uri(CREATE_BATCH_URL)
-                    .bodyJson(createCourseBatchRequest(COURSE_ID, COURSE_NAME, JsonKey.INVITE_ONLY, DateUtils.addDays(new Date(), -1), getEndDate(false), getEnrollmentEndDate(true), null))
+                    .bodyJson(createCourseBatchRequest(COURSE_ID, COURSE_NAME, JsonKey.OPEN, DateUtils.addDays(new Date(), -1), getEndDate(false), getEnrollmentEndDate(true), null))
                     .method("POST");
     Result result = Helpers.route(application, req);
     Assert.assertEquals(400, result.status());
@@ -135,7 +132,7 @@ public class CourseBatchControllerTest extends BaseApplicationTest {
     Http.RequestBuilder req =
             new Http.RequestBuilder()
                     .uri(CREATE_BATCH_URL)
-                    .bodyJson(createCourseBatchRequest(COURSE_ID, COURSE_NAME,JsonKey.INVITE_ONLY, currentdate,
+                    .bodyJson(createCourseBatchRequest(COURSE_ID, COURSE_NAME,JsonKey.OPEN, currentdate,
                             currentdate,null,null ))
                     .method("POST");
     Result result = Helpers.route(application, req);
@@ -147,7 +144,7 @@ public class CourseBatchControllerTest extends BaseApplicationTest {
     Http.RequestBuilder req =
             new Http.RequestBuilder()
                     .uri(CREATE_BATCH_URL)
-                    .bodyJson(createCourseBatchRequest(COURSE_ID, COURSE_NAME,JsonKey.INVITE_ONLY, new Date(),null,
+                    .bodyJson(createCourseBatchRequest(COURSE_ID, COURSE_NAME,JsonKey.OPEN, new Date(),null,
                             getEnrollmentEndDate(false),null ))
                     .method("POST");
     Result result = Helpers.route(application, req);
@@ -160,7 +157,7 @@ public class CourseBatchControllerTest extends BaseApplicationTest {
     Http.RequestBuilder req =
             new Http.RequestBuilder()
                     .uri(UPDATE_BATCH_URL)
-                    .bodyJson(updateCourseBatchRequest(COURSE_ID,BATCH_ID,COURSE_NAME,JsonKey.INVITE_ONLY, new Date(),
+                    .bodyJson(updateCourseBatchRequest(COURSE_ID,BATCH_ID,COURSE_NAME,JsonKey.OPEN, new Date(),
                             getEndDate(true),null ))
                     .method("PATCH");
     System.out.println(req.toString());
@@ -173,7 +170,7 @@ public class CourseBatchControllerTest extends BaseApplicationTest {
     Http.RequestBuilder req =
             new Http.RequestBuilder()
                     .uri(UPDATE_BATCH_URL)
-                    .bodyJson(updateCourseBatchRequest(COURSE_ID,BATCH_ID, COURSE_NAME,JsonKey.INVITE_ONLY, new Date(),
+                    .bodyJson(updateCourseBatchRequest(COURSE_ID,BATCH_ID, COURSE_NAME,JsonKey.OPEN, new Date(),
                             null,null ))
                     .method("PATCH");
     Result result = Helpers.route(application, req);
@@ -185,7 +182,7 @@ public class CourseBatchControllerTest extends BaseApplicationTest {
     Http.RequestBuilder req =
             new Http.RequestBuilder()
                     .uri(UPDATE_BATCH_URL)
-                    .bodyJson(updateCourseBatchRequest(COURSE_ID,BATCH_ID, COURSE_NAME,JsonKey.INVITE_ONLY, new Date(),
+                    .bodyJson(updateCourseBatchRequest(COURSE_ID,BATCH_ID, COURSE_NAME,JsonKey.OPEN, new Date(),
                             getEndDate(false),null ))
                     .method("PATCH");
     Result result = Helpers.route(application, req);
@@ -198,7 +195,7 @@ public class CourseBatchControllerTest extends BaseApplicationTest {
     Http.RequestBuilder req =
             new Http.RequestBuilder()
                     .uri(UPDATE_BATCH_URL)
-                    .bodyJson(updateCourseBatchRequest(COURSE_ID,BATCH_ID, COURSE_NAME,JsonKey.INVITE_ONLY, currentDate,
+                    .bodyJson(updateCourseBatchRequest(COURSE_ID,BATCH_ID, COURSE_NAME,JsonKey.OPEN, currentDate,
                             currentDate,null ))
                     .method("PATCH");
     Result result = Helpers.route(application, req);
@@ -249,50 +246,6 @@ public class CourseBatchControllerTest extends BaseApplicationTest {
                     .method("POST");
     Result result = Helpers.route(application, req);
     Assert.assertEquals( 200, result.status());
-  }
-
-  @Test
-  public void testAddUserToBatchSuccess() {
-    Http.RequestBuilder req =
-            new Http.RequestBuilder()
-                    .uri(ADD_USERS_BATCH_URL)
-                    .bodyJson(addAndRemoveUserToBatchRequest(true))
-                    .method("POST");
-    Result result = Helpers.route(application, req);
-    Assert.assertEquals( 200, result.status());
-  }
-
-  @Test
-  public void testAddUserToBatchFailureWithoutUserIds() {
-    Http.RequestBuilder req =
-            new Http.RequestBuilder()
-                    .uri(ADD_USERS_BATCH_URL)
-                    .bodyJson(addAndRemoveUserToBatchRequest(false))
-                    .method("POST");
-    Result result = Helpers.route(application, req);
-    Assert.assertEquals( 400, result.status());
-  }
-
-  @Test
-  public void testRemoveUserFromBatchSuccess() {
-    Http.RequestBuilder req =
-            new Http.RequestBuilder()
-                    .uri(REMOVE_USERS_BATCH_URL)
-                    .bodyJson(addAndRemoveUserToBatchRequest(true))
-                    .method("POST");
-    Result result = Helpers.route(application, req);
-    Assert.assertEquals( 200, result.status());
-  }
-
-  @Test
-  public void testRemoveUserToBatchFailureWithoutUserIds() {
-    Http.RequestBuilder req =
-            new Http.RequestBuilder()
-                    .uri(REMOVE_USERS_BATCH_URL)
-                    .bodyJson(addAndRemoveUserToBatchRequest(false))
-                    .method("POST");
-    Result result = Helpers.route(application, req);
-    Assert.assertEquals( 400, result.status());
   }
 
   @Test

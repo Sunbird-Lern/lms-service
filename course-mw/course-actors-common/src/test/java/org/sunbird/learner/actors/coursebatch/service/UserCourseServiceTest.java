@@ -69,42 +69,6 @@ public class UserCourseServiceTest {
   }
 
   @Test
-  public void validateUserUnenrollEmptyUserCoursesTest() {
-    try {
-      userCoursesService = new UserCoursesService();
-      userCoursesService.validateUserUnenroll(null, null);
-    } catch (ProjectCommonException e) {
-      Assert.assertEquals(ResponseCode.userNotEnrolledCourse.getErrorCode(), e.getCode());
-    }
-  }
-
-  @Test
-  public void validateUserUnenrollAlreadyUnrolledTest() {
-    try {
-      UserCourses userCourses = new UserCourses();
-      userCourses.setActive(false);
-      userCoursesService = new UserCoursesService();
-      userCoursesService.validateUserUnenroll(null, userCourses);
-    } catch (ProjectCommonException e) {
-      Assert.assertEquals(ResponseCode.userNotEnrolledCourse.getErrorCode(), e.getCode());
-    }
-  }
-
-  @Test
-  public void validateUserUnenrollAlreadyCompletedTest() {
-    try {
-      UserCourses userCourses = new UserCourses();
-      userCourses.setActive(true);
-      // userCourses.setLeafNodesCount(1);
-      userCourses.setProgress(1);
-      userCoursesService = new UserCoursesService();
-      userCoursesService.validateUserUnenroll(null, userCourses);
-    } catch (ProjectCommonException e) {
-      Assert.assertEquals(ResponseCode.userAlreadyCompletedCourse.getErrorCode(), e.getCode());
-    }
-  }
-
-  @Test
   public void getPrimaryKeyTest() {
     Assert.assertEquals(
         UserCoursesService.getPrimaryKey(JsonKey.USER_ID, JsonKey.COURSE_ID, JsonKey.BATCH_ID),

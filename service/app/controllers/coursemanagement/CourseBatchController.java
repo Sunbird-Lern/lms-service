@@ -78,35 +78,6 @@ public class CourseBatchController extends BaseController {
         httpRequest);
   }
 
-  public CompletionStage<Result> addUserToCourseBatch(String batchId, Http.Request httpRequest) {
-    return handleRequest(
-        courseBatchActorRef,
-        ActorOperations.ADD_USER_TO_BATCH.getValue(),
-        httpRequest.body().asJson(),
-        (request) -> {
-          new CourseBatchRequestValidator().validateAddUserToCourseBatchRequest((Request) request);
-          return null;
-        },
-        batchId,
-        JsonKey.BATCH_ID,
-        httpRequest);
-  }
-
-  public CompletionStage<Result> removeUserFromCourseBatch(
-      String batchId, Http.Request httpRequest) {
-    return handleRequest(
-        courseBatchActorRef,
-        ActorOperations.REMOVE_USER_FROM_BATCH.getValue(),
-        httpRequest.body().asJson(),
-        (request) -> {
-          new CourseBatchRequestValidator().validateAddUserToCourseBatchRequest((Request) request);
-          return null;
-        },
-        batchId,
-        JsonKey.BATCH_ID,
-        httpRequest);
-  }
-
   @SuppressWarnings({"unchecked", "rawtypes"})
   public CompletionStage<Result> search(Http.Request httpRequest) {
     try {
@@ -119,6 +90,7 @@ public class CourseBatchController extends BaseController {
       reqObj.setRequestId(httpRequest.attrs().getOptional(Attrs.REQUEST_ID).orElse(null));
       reqObj.setEnv(getEnvironment());
       reqObj.put(JsonKey.REQUESTED_BY, httpRequest.attrs().getOptional(Attrs.USER_ID).orElse(null));
+      reqObj.getContext().put(JsonKey.X_AUTH_TOKEN, httpRequest.attrs().getOptional(Attrs.X_AUTH_TOKEN).orElse(""));
       String requestedField = httpRequest.getQueryString(JsonKey.FIELDS);
       reqObj.getContext().put(JsonKey.PARTICIPANTS, requestedField);
       List<String> esObjectType = new ArrayList<>();

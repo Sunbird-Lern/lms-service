@@ -173,9 +173,11 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>3.0.0-M4</version>
 				<configuration>
-					<argLine>
-						--illegal-access=warn
-					</argLine>
+					<!-- <skipTests>true</skipTests> -->
+					<includes>
+						<include>**/*Spec.java</include>
+						<include>**/*Test.java</include>
+					</includes>
 				</configuration>
 			</plugin>
 		</plugins>

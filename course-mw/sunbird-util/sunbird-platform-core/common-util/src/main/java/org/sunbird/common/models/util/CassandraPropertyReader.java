@@ -14,6 +14,7 @@ public class CassandraPropertyReader {
   private final Properties properties = new Properties();
   private static final String file = "cassandratablecolumn.properties";
   private static CassandraPropertyReader cassandraPropertyReader = null;
+  public LoggerUtil logger = new LoggerUtil(this.getClass());
 
   /** private default constructor */
   private CassandraPropertyReader() {
@@ -21,7 +22,7 @@ public class CassandraPropertyReader {
     try {
       properties.load(in);
     } catch (IOException e) {
-      ProjectLogger.log("Error in properties cache", e);
+      logger.error(null, "Error in properties cache", e);
     }
   }
 

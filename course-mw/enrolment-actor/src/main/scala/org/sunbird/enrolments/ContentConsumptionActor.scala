@@ -29,7 +29,8 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     val dateFormatter = ProjectUtil.getDateFormatter
 
     override def onReceive(request: Request): Unit = {
-        Util.initializeContext(request, TelemetryEnvKey.BATCH)
+        Util.initializeContext(request, TelemetryEnvKey.BATCH, this.getClass.getName)
+
         request.getOperation match {
             case "updateConsumption" => updateConsumption(request)
             case "getConsumption" => getConsumption(request)
@@ -166,7 +167,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     }
 
     private def pushInvalidDataToKafka(requestContext: RequestContext, data: java.util.Map[String, AnyRef], dataType: String): Unit = {
-        logger.info(requestContext, "LearnerStateUpdater - Invalid " + dataType, data)
+        logger.info(requestContext, "LearnerStateUpdater - Invalid " + dataType, null, data)
         val topic = ProjectUtil.getConfigValue("kafka_topics_contentstate_invalid")
         try {
             val event = mapper.writeValueAsString(data)

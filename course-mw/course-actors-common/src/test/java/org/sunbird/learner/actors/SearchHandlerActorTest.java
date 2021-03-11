@@ -191,7 +191,7 @@ public class SearchHandlerActorTest {
     }};
     mockResponse();
     HashMap<String, Object> context = new HashMap<>(){{put("JsonKey.X_AUTH_TOKEN","authToken");}};
-    RequestContext requestContext = new RequestContext( "uid", "did", "sid", "appId", "appVer", "reqId", "debugEnabled", "op");
+    RequestContext requestContext = new RequestContext( "uid", "did", "sid", "appId", "appVer", "reqId", "debugEnabled", null);
     Method method = SearchHandlerActor.class.getDeclaredMethod("populateCreatorDetails", Map.class, Map.class, RequestContext.class);
     method.setAccessible(true);
     method.invoke(actorRef.underlyingActor(), context, input, requestContext);

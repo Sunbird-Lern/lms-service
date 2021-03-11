@@ -55,7 +55,8 @@ public class QRCodeDownloadManagementActor extends BaseActor {
 
   @Override
   public void onReceive(Request request) throws Throwable {
-    Util.initializeContext(request, TelemetryEnvKey.QR_CODE_DOWNLOAD);
+    Util.initializeContext(request, TelemetryEnvKey.QR_CODE_DOWNLOAD, this.getClass().getName());
+
     String requestedOperation = request.getOperation();
     switch (requestedOperation) {
       case "downloadQRCodes":

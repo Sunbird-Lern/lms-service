@@ -34,13 +34,15 @@ public class HealthActor extends BaseActor {
   private Util.DbInfo pagesDbInfo = Util.dbInfoMap.get(JsonKey.PAGE_MGMT_DB);
   private ElasticSearchService esUtil = EsClientFactory.getInstance(JsonKey.REST);
   private static final String LMS_SERVICE = "lms-service";
+  public LoggerUtil logger = new LoggerUtil(this.getClass());
 
   @Override
   public void onReceive(Request message) throws Throwable {
     if (message instanceof Request) {
       try {
         Request actorMessage = message;
-        Util.initializeContext(actorMessage, TelemetryEnvKey.USER);
+        Util.initializeContext(actorMessage, TelemetryEnvKey.USER, this.getClass().getName());
+
         // set request id fto thread loacl...
         if (actorMessage.getOperation().equalsIgnoreCase(ActorOperations.HEALTH_CHECK.getValue())) {
           checkAllComponentHealth();

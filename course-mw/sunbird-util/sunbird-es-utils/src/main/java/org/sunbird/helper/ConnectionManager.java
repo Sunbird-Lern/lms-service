@@ -11,6 +11,7 @@ import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerEnum;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectLogger;
 
 /**
@@ -23,6 +24,7 @@ public class ConnectionManager {
   private static RestHighLevelClient restClient = null;
   private static List<String> host = new ArrayList<>();
   private static List<Integer> ports = new ArrayList<>();
+  public static LoggerUtil logger = new LoggerUtil(ConnectionManager.class);
 
   static {
     System.setProperty("es.set.netty.runtime.available.processors", "false");
@@ -50,17 +52,16 @@ public class ConnectionManager {
         ports.add(Integer.parseInt(val));
       }
       response = createRestClient(cluster, host);
-      ProjectLogger.log(
+      logger.info(null,
           "ELASTIC SEARCH CONNECTION ESTABLISHED for restClient from EVN with Following Details cluster "
               + cluster
               + "  hostName"
               + hostName
               + " port "
               + port
-              + response,
-          LoggerEnum.INFO.name());
+              + response);
     } catch (Exception e) {
-      ProjectLogger.log("Error while initialising connection for restClient from the Env", e);
+      logger.error(null, "Error while initialising connection for restClient from the Env", e);
       return false;
     }
     return response;
@@ -73,13 +74,11 @@ public class ConnectionManager {
    */
   public static RestHighLevelClient getRestClient() {
     if (restClient == null) {
-      ProjectLogger.log(
-          "ConnectionManager:getRestClient eLastic search rest clinet is null ",
-          LoggerEnum.INFO.name());
+      logger.info(null,
+          "ConnectionManager:getRestClient eLastic search rest clinet is null ");
       initialiseRestClientConnection();
-      ProjectLogger.log(
-          "ConnectionManager:getRestClient after calling initialiseRestClientConnection ES client value ",
-          LoggerEnum.INFO.name());
+      logger.info(null,
+          "ConnectionManager:getRestClient after calling initialiseRestClientConnection ES client value ");
     }
     return restClient;
   }
@@ -98,8 +97,8 @@ public class ConnectionManager {
       httpHost[i] = new HttpHost(host.get(i), 9200);
     }
     restClient = new RestHighLevelClient(RestClient.builder(httpHost));
-    ProjectLogger.log(
-        "ConnectionManager:createRestClient client initialisation done. ", LoggerEnum.INFO.name());
+    logger.info(null,
+        "ConnectionManager:createRestClient client initialisation done. ");
     return true;
   }
 
@@ -116,10 +115,9 @@ public class ConnectionManager {
         restClient.close();
       } catch (IOException e) {
         e.printStackTrace();
-        ProjectLogger.log(
+        logger.info(null,
             "ConnectionManager:ResourceCleanUp error occured during restclient resource cleanup "
-                + e,
-            LoggerEnum.ERROR.name());
+                + e);
       }
     }
   }

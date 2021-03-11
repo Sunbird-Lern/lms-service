@@ -64,8 +64,7 @@ public class RedisConnectionManager {
         "RedisConnectionManager: initialisingClusterServer called with host = "
             + host
             + " port = "
-            + port,
-        LoggerEnum.INFO.name());
+            + port);
 
     String[] hosts = host.split(",");
     String[] ports = port.split(",");

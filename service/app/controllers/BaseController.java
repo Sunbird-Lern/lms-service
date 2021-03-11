@@ -18,6 +18,7 @@ import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.request.HeaderParam;
 import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
@@ -59,13 +60,14 @@ public class BaseController extends Controller {
   public static final int AKKA_WAIT_TIME = 30;
   protected Timeout timeout = new Timeout(AKKA_WAIT_TIME, TimeUnit.SECONDS);
   private static final String debugEnabled = "false";
+  public static final LoggerUtil logger = new LoggerUtil(BaseController.class);
 
   private org.sunbird.common.request.Request initRequest(
       org.sunbird.common.request.Request request, String operation, Http.Request httpRequest) {
     request.setOperation(operation);
     request.setRequestId(httpRequest.attrs().getOptional(Attrs.REQUEST_ID).orElse(null));
     request.setEnv(getEnvironment());
-    request.setRequestContext(getRequestContext(httpRequest, operation));
+    request.setRequestContext(getRequestContext(httpRequest, request));
     request.getContext().put(JsonKey.REQUESTED_BY, httpRequest.attrs().getOptional(Attrs.USER_ID).orElse(null));
     if (StringUtils.isNotBlank(httpRequest.attrs().getOptional(Attrs.REQUESTED_FOR).orElse(null)))
       request.getContext().put(SunbirdKey.REQUESTED_FOR, httpRequest.attrs().get(Attrs.REQUESTED_FOR));
@@ -74,13 +76,17 @@ public class BaseController extends Controller {
     return request;
   }
 
-  private RequestContext getRequestContext(Request httpRequest, String actorOperation) {
-    RequestContext requestContext = new RequestContext(httpRequest.attrs().getOptional(Attrs.USER_ID).orElse(null), 
-            httpRequest.header("x-device-id").orElse(null), httpRequest.header("x-session-id").orElse(null),
-            httpRequest.header("x-app-id").orElse(null), httpRequest.header("x-app-ver").orElse(null),
-            httpRequest.header("x-trace-id").orElse(UUID.randomUUID().toString()),
-            (httpRequest.header("x-trace-enabled").isPresent() ? httpRequest.header("x-trace-enabled").orElse(debugEnabled): debugEnabled),
-            actorOperation);
+  private RequestContext getRequestContext(Http.Request httpRequest, org.sunbird.common.request.Request request) {
+    RequestContext requestContext = new RequestContext(
+            JsonKey.SERVICE_NAME,
+            JsonKey.PRODUCER_NAME,
+            request.getContext().getOrDefault(JsonKey.ENV, "").toString(),
+            httpRequest.header(JsonKey.X_DEVICE_ID).orElse(null),
+            httpRequest.header(JsonKey.X_SESSION_ID).orElse(null),
+            JsonKey.PID,JsonKey.P_VERSION, null);
+    requestContext.setActorId(httpRequest.attrs().getOptional(Attrs.ACTOR_ID).orElse(null));
+    requestContext.setActorType(httpRequest.attrs().getOptional(Attrs.ACTOR_TYPE).orElse(null));
+    requestContext.setRequestId(httpRequest.attrs().getOptional(Attrs.REQUEST_ID).orElse(null));
     return requestContext;
   }
 
@@ -235,7 +241,7 @@ public class BaseController extends Controller {
 
       return actorResponseHandler(actorRef, request, timeout, null, httpRequest);
     } catch (Exception e) {
-      ProjectLogger.log(
+      logger.error(null,
           "BaseController:handleRequest: Exception occurred with error message = " + e.getMessage(),
           e);
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
@@ -276,7 +282,7 @@ public class BaseController extends Controller {
       }
       return actorResponseHandler(actorRef, request, timeout, null, httpRequest);
     } catch (Exception e) {
-      ProjectLogger.log(
+      logger.error(null,
           "BaseController:handleRequest: Exception occurred with error message = " + e.getMessage(),
           e);
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
@@ -369,7 +375,7 @@ public class BaseController extends Controller {
    */
   public static Response createResponseOnException(
       Http.Request request, ProjectCommonException exception) {
-    ProjectLogger.log(
+    logger.error(null,
         exception != null ? exception.getMessage() : "Message is not coming",
         exception,
         genarateTelemetryInfoForError(request));
@@ -482,7 +488,7 @@ public class BaseController extends Controller {
    */
   public Result createCommonExceptionResponse(Exception e, Http.Request request) {
     Request req = request;
-    ProjectLogger.log(e.getMessage(), e, genarateTelemetryInfoForError(request));
+    logger.error(null, e.getMessage(), e, genarateTelemetryInfoForError(request));
     ProjectCommonException exception = null;
     if (e instanceof ProjectCommonException) {
       exception = (ProjectCommonException) e;
@@ -722,10 +728,9 @@ public class BaseController extends Controller {
     } else {
       OnRequestHandler.isServiceHealthy = false;
     }
-    ProjectLogger.log(
+    logger.info(null,
         "BaseController:setGlobalHealthFlag: isServiceHealthy = "
-            + OnRequestHandler.isServiceHealthy,
-        LoggerEnum.INFO.name());
+            + OnRequestHandler.isServiceHealthy);
   }
 
   protected String getQueryString(Map<String, String[]> queryStringMap) {

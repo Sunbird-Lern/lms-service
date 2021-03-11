@@ -33,7 +33,7 @@ public class CourseBatchCertificateActor extends BaseActor {
 
   @Override
   public void onReceive(Request request) throws Throwable {
-    Util.initializeContext(request, TelemetryEnvKey.USER);
+    Util.initializeContext(request, TelemetryEnvKey.USER, this.getClass().getName());
 
     String requestedOperation = request.getOperation();
     switch (requestedOperation) {

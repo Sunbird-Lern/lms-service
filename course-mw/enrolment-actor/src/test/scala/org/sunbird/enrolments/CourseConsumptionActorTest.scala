@@ -11,7 +11,7 @@ import org.sunbird.common.Constants
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.inf.ElasticSearchService
 import org.sunbird.common.models.response.Response
-import org.sunbird.common.models.util.ProjectUtil
+import org.sunbird.common.models.util.{JsonKey, ProjectUtil}
 import org.sunbird.common.request.{Request, RequestContext}
 import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.dto.SearchDTO

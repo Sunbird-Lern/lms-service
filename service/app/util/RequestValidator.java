@@ -101,7 +101,7 @@ public final class RequestValidator {
     }
       List<Map<String, Object>> assessmentData =
           (List<Map<String, Object>>) contentRequestDto.getRequest().get(JsonKey.ASSESSMENT_EVENTS);
-      if (!CollectionUtils.isEmpty(assessmentData)) {
+      if (CollectionUtils.isNotEmpty(assessmentData)) {
         for (Map<String, Object> map : assessmentData) {
           if (!map.containsKey(JsonKey.ASSESSMENT_TS)) {
             throw new ProjectCommonException(
@@ -156,6 +156,29 @@ public final class RequestValidator {
                 ResponseCode.eventsRequired.getErrorMessage(),
                 ERROR_CODE);
           }
+        }
+      }
+      // Validation for enrolment sync
+      if(CollectionUtils.isEmpty(list) && CollectionUtils.isEmpty(assessmentData)) {
+        contentRequestDto.getRequest().put(JsonKey.COURSE_ID, contentRequestDto.getOrDefault(JsonKey.COURSE_ID, contentRequestDto.getOrDefault(JsonKey.COLLECTION_ID, "")));
+        if (StringUtils.isBlank((String) contentRequestDto.getOrDefault(JsonKey.COURSE_ID, ""))) {
+          throw new ProjectCommonException(
+                  ResponseCode.courseIdRequired.getErrorCode(),
+                  ResponseCode.courseIdRequiredError.getErrorMessage(),
+                  ERROR_CODE);
+        }
+        if (StringUtils.isBlank((String) contentRequestDto.getOrDefault(JsonKey.BATCH_ID, ""))) {
+          throw new ProjectCommonException(
+                  ResponseCode.courseBatchIdRequired.getErrorCode(),
+                  ResponseCode.courseBatchIdRequired.getErrorMessage(),
+                  ERROR_CODE);
+        }
+
+        if (StringUtils.isBlank((String) contentRequestDto.getOrDefault(JsonKey.USER_ID, ""))) {
+          throw new ProjectCommonException(
+                  ResponseCode.userIdRequired.getErrorCode(),
+                  ResponseCode.userIdRequired.getErrorMessage(),
+                  ERROR_CODE);
         }
       }
   }

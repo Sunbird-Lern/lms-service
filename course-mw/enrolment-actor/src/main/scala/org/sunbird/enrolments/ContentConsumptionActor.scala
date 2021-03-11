@@ -1,6 +1,7 @@
 package org.sunbird.enrolments
 
 import java.util
+import java.util.UUID
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import javax.inject.Inject
@@ -26,6 +27,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     private var pushTokafkaEnabled: Boolean = true //TODO: to be removed once all are in scala
     private val consumptionDBInfo = Util.dbInfoMap.get(JsonKey.LEARNER_CONTENT_DB)
     private val assessmentAggregatorDBInfo = Util.dbInfoMap.get(JsonKey.ASSESSMENT_AGGREGATOR_DB)
+    private val enrolmentDBInfo = Util.dbInfoMap.get(JsonKey.LEARNER_COURSE_DB)
     val dateFormatter = ProjectUtil.getDateFormatter
 
     override def onReceive(request: Request): Unit = {
@@ -36,11 +38,11 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             case _ => onReceiveUnsupportedOperation(request.getOperation)
         }
     }
-    
+
     def updateConsumption(request: Request): Unit = {
         val requestBy = request.get(JsonKey.REQUESTED_BY).asInstanceOf[String]
         val requestedFor = request.get(JsonKey.REQUESTED_FOR).asInstanceOf[String]
-        
+        processEnrolmentSync(request, requestBy, requestedFor)    
         processAssessments(request, requestBy, requestedFor)
         processContents(request, requestBy, requestedFor)
     }
@@ -336,5 +338,46 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             (ProjectUtil.getConfigValue("assessment.attempts.limit")).asInstanceOf[Integer] else 25.asInstanceOf[Integer]
         val response = cassandraOperation.getRecordsWithLimit(requestContext, assessmentAggregatorDBInfo.getKeySpace, assessmentAggregatorDBInfo.getTableName, filters, fieldsToGet, limit)
         response.getResult.getOrDefault(JsonKey.RESPONSE, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
+    }
+
+    def processEnrolmentSync(request: Request, requestedBy: String, requestedFor: String): Unit = {
+        val assessmentEvents = request.getRequest.getOrDefault(JsonKey.ASSESSMENT_EVENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
+        val contentList = request.getRequest.getOrDefault(JsonKey.CONTENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
+        if(CollectionUtils.isEmpty(contentList) && CollectionUtils.isEmpty(assessmentEvents)) {
+            val primaryUserId = if(StringUtils.isNotBlank(requestedFor)) requestedFor else requestedBy
+            val userId: String = request.getOrDefault(JsonKey.USER_ID, primaryUserId).asInstanceOf[String]
+            val courseId: String = request.getOrDefault(JsonKey.COURSE_ID, "").asInstanceOf[String]
+            val batchId: String = request.getOrDefault(JsonKey.COURSE_ID, "").asInstanceOf[String]
+            val filters = new java.util.HashMap[String, AnyRef]() {{
+                put("userid", userId)
+                put("courseid", courseId)
+                put("batchid", batchId)
+            }}
+            val result = cassandraOperation.getRecords(request.getRequestContext, enrolmentDBInfo.getKeySpace, enrolmentDBInfo.getTableName, filters, null)
+            val resp = result.getResult.getOrDefault(JsonKey.RESPONSE, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
+            val response = {
+                if(CollectionUtils.isNotEmpty(resp)) {
+                    pushEnrolmentSyncEvent(userId, courseId, batchId)
+                    successResponse()
+                } else {
+                    clientError(s"""No Enrolment found for userId: $userId, batchId: $batchId, courseId: $courseId""")
+                }
+            }
+            sender().tell(response, self)
+        }
+    }
+
+    def pushEnrolmentSyncEvent(userId: String, courseId: String, batchId: String) = {
+        val now = System.currentTimeMillis()
+        val event =
+            s"""{"eid":"BE_JOB_REQUEST","ets":$now,"mid":"LP.$now.${UUID.randomUUID()}"
+               |,"actor":{"type":"System","id":"Course Batch Updater"},"context":{"pdata":{"ver":"1.0","id":"org.sunbird.platform"}}
+               |,"object":{"type":"CourseBatchEnrolment","id":"${batchId}_${userId}"},"edata":{"action":"user-enrolment-sync"
+               |,"iteration":1,"batchId":"$batchId","userId":"$userId","courseId":"$courseId"}}""".stripMargin
+              .replaceAll("\n", "")
+        if(pushTokafkaEnabled){
+            val topic = ProjectUtil.getConfigValue("sync_event_topic")
+            KafkaClient.send(userId, event, topic)
+        }
     }
 }

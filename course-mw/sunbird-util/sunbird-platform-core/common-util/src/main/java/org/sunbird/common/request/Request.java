@@ -183,4 +183,12 @@ public class Request implements Serializable {
   public void setRequestContext(RequestContext requestContext) {
     this.requestContext = requestContext;
   }
+  
+  public Object getOrDefault(String key, Object defaultVal) {
+    return request.getOrDefault(key, defaultVal);
+  }
+  
+  public Boolean contains(String key) {
+    return request.containsKey(key);
+  }
 }

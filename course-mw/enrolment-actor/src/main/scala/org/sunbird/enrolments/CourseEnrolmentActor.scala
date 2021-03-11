@@ -60,7 +60,8 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     }
 
     override def onReceive(request: Request): Unit = {
-        Util.initializeContext(request, TelemetryEnvKey.BATCH)
+        Util.initializeContext(request, TelemetryEnvKey.BATCH, this.getClass.getName)
+
         request.getOperation match {
             case "enrol" => enroll(request)
             case "unenrol" => unEnroll(request)

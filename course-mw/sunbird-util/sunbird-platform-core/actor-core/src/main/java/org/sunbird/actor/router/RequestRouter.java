@@ -77,12 +77,11 @@ public class RequestRouter extends BaseRouter {
    */
   private boolean route(ActorRef router, Request message, ExecutionContext ec) {
     long startTime = System.currentTimeMillis();
-    ProjectLogger.log(
+    logger.info(message.getRequestContext(),
         "Actor Service Call start  for  api =="
             + message.getOperation()
             + " start time "
-            + startTime,
-        LoggerEnum.PERF_LOG);
+            + startTime);
     Timeout timeout = new Timeout(Duration.create(message.getTimeout(), TimeUnit.SECONDS));
     Future<Object> future = Patterns.ask(router, message, timeout);
     ActorRef parent = sender();
@@ -92,7 +91,7 @@ public class RequestRouter extends BaseRouter {
           public void onComplete(Throwable failure, Object result) {
             if (failure != null) {
               // We got a failure, handle it here
-              ProjectLogger.log(failure.getMessage(), failure);
+              logger.error(null, failure.getMessage(), failure);
               if (failure instanceof ProjectCommonException) {
                 parent.tell(failure, self());
               } else if (failure instanceof akka.pattern.AskTimeoutException) {

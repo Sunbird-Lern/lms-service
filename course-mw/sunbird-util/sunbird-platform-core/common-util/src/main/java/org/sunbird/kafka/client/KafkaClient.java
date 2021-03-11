@@ -15,6 +15,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.util.LoggerEnum;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.responsecode.ResponseCode;
@@ -30,6 +31,7 @@ public class KafkaClient {
   private static Producer<String, String> producer;
   private static Consumer<String, String> consumer;
   private static volatile Map<String, List<PartitionInfo>> topics;
+  public static LoggerUtil logger = new LoggerUtil(KafkaClient.class);
 
   static {
     loadProducerProperties();
@@ -52,8 +54,8 @@ public class KafkaClient {
       loadConsumerProperties();
     }
     topics = consumer.listTopics();
-    ProjectLogger.log(
-        "KafkaClient:loadTopics Kafka topic infos =>" + topics, LoggerEnum.INFO.name());
+    logger.info(null,
+        "KafkaClient:loadTopics Kafka topic infos =>" + topics);
   }
 
   private static void loadConsumerProperties() {
@@ -79,7 +81,7 @@ public class KafkaClient {
       ProducerRecord<String, String> record = new ProducerRecord<String, String>(topic, event);
       producer.send(record);
     } else {
-      ProjectLogger.log("Topic id: " + topic + ", does not exists.", LoggerEnum.ERROR);
+      logger.error(null, "Topic id: " + topic + ", does not exists.", null);
       throw new ProjectCommonException(
           "TOPIC_NOT_EXISTS_EXCEPTION",
           "Topic id: " + topic + ", does not exists.",
@@ -93,7 +95,7 @@ public class KafkaClient {
       ProducerRecord<String, String> record = new ProducerRecord<String, String>(topic, key, event);
       producer.send(record);
     } else {
-      ProjectLogger.log("Topic id: " + topic + ", does not exists.", LoggerEnum.ERROR);
+      logger.error(null, "Topic id: " + topic + ", does not exists.", null);
       throw new ProjectCommonException(
           "TOPIC_NOT_EXISTS_EXCEPTION",
           "Topic id: " + topic + ", does not exists.",

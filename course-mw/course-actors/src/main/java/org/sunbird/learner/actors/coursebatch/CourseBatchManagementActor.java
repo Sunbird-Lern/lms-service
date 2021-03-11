@@ -63,7 +63,7 @@ public class CourseBatchManagementActor extends BaseActor {
   @Override
   public void onReceive(Request request) throws Throwable {
 
-    Util.initializeContext(request, TelemetryEnvKey.BATCH);
+    Util.initializeContext(request, TelemetryEnvKey.BATCH, this.getClass().getName());
 
     String requestedOperation = request.getOperation();
     switch (requestedOperation) {
@@ -606,8 +606,8 @@ public class CourseBatchManagementActor extends BaseActor {
 
   private Map<String, Object> getContentDetails(RequestContext requestContext, String courseId, Map<String, String> headers) {
     Map<String, Object> ekStepContent = ContentUtil.getContent(courseId);
-    logger.info(requestContext, "CourseBatchManagementActor:getEkStepContent: courseId: " + courseId,
-            " :: content: " + ekStepContent);
+    logger.info(requestContext, "CourseBatchManagementActor:getEkStepContent: courseId: " + courseId, null,
+            ekStepContent);
     String status = (String) ((Map<String, Object>)ekStepContent.getOrDefault("content", new HashMap<>())).getOrDefault("status", "");
     if (null == ekStepContent ||
             ekStepContent.size() == 0 ||
@@ -694,8 +694,7 @@ public class CourseBatchManagementActor extends BaseActor {
                 JsonUtil.deserialize((String) template.get(CourseJsonKey.NOTIFY_TEMPLATE), Map.class));
       }
     } catch (Exception ex) {
-      ProjectLogger.log(
-              "CourseBatchCertificateActor:mapToObject Exception occurred with error message ==", ex);
+      logger.error(null, "CourseBatchCertificateActor:mapToObject Exception occurred with error message ==", ex);
     }
     return template;
   }

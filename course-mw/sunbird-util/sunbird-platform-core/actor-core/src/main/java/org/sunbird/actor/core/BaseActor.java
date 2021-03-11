@@ -12,6 +12,7 @@ import org.sunbird.actor.service.BaseMWService;
 import org.sunbird.actor.service.SunbirdMWService;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
@@ -23,17 +24,18 @@ public abstract class BaseActor extends UntypedAbstractActor {
 
   public static final int AKKA_WAIT_TIME = 30;
   protected static Timeout timeout = new Timeout(AKKA_WAIT_TIME, TimeUnit.SECONDS);
+  public LoggerUtil logger = new LoggerUtil(this.getClass());
 
   @Override
   public void onReceive(Object message) throws Throwable {
     if (message instanceof Request) {
       Request request = (Request) message;
       String operation = request.getOperation();
-      ProjectLogger.log("BaseActor: onReceive called for operation: " + operation);
+      logger.info(request.getRequestContext(), "BaseActor: onReceive called for operation: " + operation);
       try {
         onReceive(request);
       } catch (Exception e) {
-        ProjectLogger.log("BaseActor: FAILED onReceive called for operation: " + operation);
+        logger.info(request.getRequestContext(), "BaseActor: FAILED onReceive called for operation: " + operation);
         onReceiveException(operation, e);
       }
     }
@@ -53,12 +55,12 @@ public abstract class BaseActor extends UntypedAbstractActor {
   }
 
   public void onReceiveUnsupportedOperation(String callerName) throws Exception {
-    ProjectLogger.log(callerName + ": unsupported message");
+    logger.info(null, callerName + ": unsupported message");
     unSupportedMessage();
   }
 
   public void onReceiveUnsupportedMessage(String callerName) {
-    ProjectLogger.log(callerName + ": unsupported operation");
+    logger.info(null, callerName + ": unsupported operation");
     ProjectCommonException exception =
         new ProjectCommonException(
             ResponseCode.invalidOperationName.getErrorCode(),
@@ -68,7 +70,7 @@ public abstract class BaseActor extends UntypedAbstractActor {
   }
 
   protected void onReceiveException(String callerName, Exception exception) throws Exception {
-    ProjectLogger.log(
+    logger.error(null,
         "Exception in message processing for: "
             + callerName
             + " :: message: "
@@ -93,7 +95,7 @@ public abstract class BaseActor extends UntypedAbstractActor {
       try {
         actor = futureActor.toCompletableFuture().get();
       } catch (Exception e) {
-        ProjectLogger.log(
+        logger.error(null,
             "InterServiceCommunicationImpl : getResponse - unable to get actorref from actorselection "
                 + e.getMessage(),
             e);

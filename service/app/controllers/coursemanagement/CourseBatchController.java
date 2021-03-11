@@ -82,9 +82,8 @@ public class CourseBatchController extends BaseController {
   public CompletionStage<Result> search(Http.Request httpRequest) {
     try {
       JsonNode requestData = httpRequest.body().asJson();
-      ProjectLogger.log(
-          "CourseBatchController: search called with data = " + requestData,
-          LoggerEnum.DEBUG.name());
+     logger.debug(null,
+          "CourseBatchController: search called with data = ", null, new HashMap<>(){{put("requestData", requestData);}});
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
         reqObj.put("creatorDetails", httpRequest.queryString().containsKey("creatorDetails"));
       reqObj.setOperation(ActorOperations.COMPOSITE_SEARCH.getValue());

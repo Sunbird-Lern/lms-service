@@ -67,7 +67,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
       while (iterator.hasNext()) {
         array[i++] = iterator.next();
       }
-      if(null != statement) logger.debug(requestContext, statement.getQueryString(), null);
+      if(null != statement) logger.debug(requestContext, statement.getQueryString());
       connectionManager.getSession(keyspaceName).execute(boundStatement.bind(array));
       response.put(Constants.RESPONSE, Constants.SUCCESS);
     } catch (Exception e) {
@@ -213,8 +213,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
           String keyspaceName, String tableName, Map<String, Object> propertyMap, List<String> fields, RequestContext requestContext) {
     long startTime = System.currentTimeMillis();
     logger.info(requestContext, 
-        "Cassandra Service getRecordsByProperties method started at ==" + startTime,
-        LoggerEnum.INFO);
+        "Cassandra Service getRecordsByProperties method started at ==" + startTime);
     Response response = new Response();
     try {
       Builder selectBuilder;
@@ -261,8 +260,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
           String keyspaceName, String tableName, String id, RequestContext requestContext, String... properties) {
     long startTime = System.currentTimeMillis();
     logger.info(requestContext, 
-        "Cassandra Service getPropertiesValueById method started at ==" + startTime,
-        LoggerEnum.INFO);
+        "Cassandra Service getPropertiesValueById method started at ==" + startTime);
     Response response = new Response();
     try {
       String selectQuery = CassandraUtil.getSelectStatement(keyspaceName, tableName, properties);
@@ -502,7 +500,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
         | QueryValidationException
         | NoHostAvailableException
         | IllegalStateException e) {
-      logger.info(requestContext, "Cassandra Batch Insert Failed." + e.getMessage(), e);
+      logger.error(requestContext, "Cassandra Batch Insert Failed." + e.getMessage(), e);
       throw new ProjectCommonException(
           ResponseCode.SERVER_ERROR.getErrorCode(),
           ResponseCode.SERVER_ERROR.getErrorMessage(),
@@ -559,8 +557,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
           String keyspaceName, String tableName, String propertyName, Object propertyValue, RequestContext requestContext) {
     long startTime = System.currentTimeMillis();
     logger.info(requestContext, 
-        "CassandraOperationImpl:getRecordsByIndexedProperty called at " + startTime,
-        LoggerEnum.INFO);
+        "CassandraOperationImpl:getRecordsByIndexedProperty called at " + startTime);
     Response response = new Response();
     try {
       Select selectQuery = QueryBuilder.select().all().from(keyspaceName, tableName);
@@ -592,8 +589,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
           String keyspaceName, String tableName, Map<String, String> compositeKeyMap, RequestContext requestContext) {
     long startTime = System.currentTimeMillis();
     logger.info(requestContext, 
-        "CassandraOperationImpl: deleteRecord by composite key called at " + startTime,
-        LoggerEnum.INFO);
+        "CassandraOperationImpl: deleteRecord by composite key called at " + startTime);
     try {
       Delete delete = QueryBuilder.delete().from(keyspaceName, tableName);
       Delete.Where deleteWhere = delete.where();
@@ -777,7 +773,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
             | QueryValidationException
             | NoHostAvailableException
             | IllegalStateException e) {
-      logger.info(requestContext, "Cassandra Batch Insert Failed." + e.getMessage(), e);
+      logger.error(requestContext, "Cassandra Batch Insert Failed." + e.getMessage(), e);
       if (e instanceof WriteTimeoutException && writeType.contains(((WriteTimeoutException) e).getWriteType().name()))
         response.put(Constants.RESPONSE, Constants.SUCCESS);
       else {

@@ -219,13 +219,15 @@ public class CourseBatchManagementActorTest {
   public void checkTelemetryKeyFailure() throws Exception {
 
     String telemetryEnvKey = "batch";
+    String envKey = "CourseBatchManagementActor";
     PowerMockito.mockStatic(Util.class);
     doNothing()
         .when(
             Util.class,
             "initializeContext",
             Mockito.any(Request.class),
-            Mockito.eq(telemetryEnvKey));
+            Mockito.eq(telemetryEnvKey),
+            Mockito.eq(envKey));
 
     int batchProgressStatus = ProjectUtil.ProgressStatus.STARTED.getValue();
     Response mockGetRecordByIdResponse = getMockCassandraRecordByIdResponse(batchProgressStatus);

@@ -12,6 +12,7 @@ import play.mvc.Result;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.HashMap;
 import java.util.concurrent.CompletionStage;
 
 public class CourseController extends BaseController {
@@ -21,9 +22,8 @@ public class CourseController extends BaseController {
     private ActorRef courseActorRef;
 
     public CompletionStage<Result> createCourse(Http.Request httpRequest) {
-        ProjectLogger.log(
-                "Create course method is called = " + httpRequest.body().asJson(),
-                LoggerEnum.DEBUG.name());
+       logger.debug(null,
+                "Create course method is called", null, new HashMap<>(){{put("requestData", httpRequest.body().asJson());}});
         return handleRequest(
                 courseActorRef,
                 ActorOperations.CREATE_COURSE.getValue(),

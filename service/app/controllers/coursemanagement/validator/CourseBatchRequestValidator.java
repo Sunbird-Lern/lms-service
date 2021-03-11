@@ -312,7 +312,7 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
       status = checkProgressStatus(Integer.parseInt("" + request.getRequest().get(JsonKey.STATUS)));
 
     } catch (Exception e) {
-      ProjectLogger.log(e.getMessage(), e);
+     logger.error(null, e.getMessage(), e);
     }
     return status;
   }

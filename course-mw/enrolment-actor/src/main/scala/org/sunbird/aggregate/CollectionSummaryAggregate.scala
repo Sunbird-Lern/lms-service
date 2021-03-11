@@ -31,7 +31,8 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
   var courseBatchDao: CourseBatchDao = new CourseBatchDaoImpl()
 
   override def onReceive(request: Request): Unit = {
-    Util.initializeContext(request, TelemetryEnvKey.BATCH)
+    Util.initializeContext(request, TelemetryEnvKey.BATCH, this.getClass.getName)
+
     val response = new Response()
     val filters = request.getRequest.get(JsonKey.FILTERS).asInstanceOf[util.Map[String, AnyRef]]
     val groupByKeys = request.getRequest.getOrDefault(JsonKey.GROUPBY, new util.ArrayList[String]()).asInstanceOf[util.ArrayList[String]].asScala.toList

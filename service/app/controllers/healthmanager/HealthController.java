@@ -12,6 +12,8 @@ import java.util.concurrent.CompletionStage;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.*;
 import org.sunbird.common.request.Request;
@@ -60,7 +62,7 @@ public class HealthController extends BaseController {
    * @return CompletionStage<Result>
    */
   public CompletionStage<Result> getServiceHealth(Http.Request httpRequest) {
-    ProjectLogger.log("Call to get play service health for service.", LoggerEnum.INFO.name());
+   logger.info(null, "Call to get play service health for service.");
     Map<String, Object> finalResponseMap = new HashMap<>();
     List<Map<String, Object>> responseList = new ArrayList<>();
     responseList.add(ProjectUtil.createCheckResponse(JsonKey.LEARNER_SERVICE, false, null));

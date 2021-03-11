@@ -63,7 +63,7 @@ public class LearnerController extends BaseController {
   public CompletionStage<Result> updateContentState(Http.Request httpRequest) {
     try {
       JsonNode requestData = httpRequest.body().asJson();
-      ProjectLogger.log(" updateContentState request data=" + requestData, LoggerEnum.INFO.name());
+      logger.info(null, " updateContentState request data", null, new HashMap<>(){{put("requestData", requestData);}});
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
       RequestValidator.validateUpdateContent(reqObj);
       reqObj = transformUserId(reqObj);

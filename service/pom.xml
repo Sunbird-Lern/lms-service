@@ -277,6 +277,11 @@
 					<argLine>
 						--illegal-access=warn
 					</argLine>
+					<argLine>@{argLine} -Xmx1024m -XX:MaxPermSize=256m</argLine>
+					<includes>
+						<include>**/*Spec.java</include>
+						<include>**/*Test.java</include>
+					</includes>
 				</configuration>
 			</plugin>
 			<plugin>

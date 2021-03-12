@@ -377,7 +377,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                |,"iteration":1,"batchId":"$batchId","userId":"$userId","courseId":"$courseId"}}""".stripMargin
               .replaceAll("\n", "")
         if(pushTokafkaEnabled){
-            val topic = ProjectUtil.getConfigValue("sync_event_topic")
+            val topic = ProjectUtil.getConfigValue("kafka_enrolment_sync_topic")
             KafkaClient.send(userId, event, topic)
         }
     }

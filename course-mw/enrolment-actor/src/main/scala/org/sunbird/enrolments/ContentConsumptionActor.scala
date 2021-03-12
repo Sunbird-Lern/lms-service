@@ -43,9 +43,14 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     def updateConsumption(request: Request): Unit = {
         val requestBy = request.get(JsonKey.REQUESTED_BY).asInstanceOf[String]
         val requestedFor = request.get(JsonKey.REQUESTED_FOR).asInstanceOf[String]
-        processEnrolmentSync(request, requestBy, requestedFor)    
-        processAssessments(request, requestBy, requestedFor)
-        processContents(request, requestBy, requestedFor)
+        val assessmentEvents = request.getRequest.getOrDefault(JsonKey.ASSESSMENT_EVENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
+        val contentList = request.getRequest.getOrDefault(JsonKey.CONTENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
+        if(CollectionUtils.isEmpty(contentList) && CollectionUtils.isEmpty(assessmentEvents)) {
+            processEnrolmentSync(request, requestBy, requestedFor)
+        } else {
+            processAssessments(request, requestBy, requestedFor)
+            processContents(request, requestBy, requestedFor)
+        }
     }
 
     def processAssessments(request: Request, requestedBy: String, requestedFor: String) = {
@@ -342,30 +347,26 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     }
 
     def processEnrolmentSync(request: Request, requestedBy: String, requestedFor: String): Unit = {
-        val assessmentEvents = request.getRequest.getOrDefault(JsonKey.ASSESSMENT_EVENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
-        val contentList = request.getRequest.getOrDefault(JsonKey.CONTENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
-        if(CollectionUtils.isEmpty(contentList) && CollectionUtils.isEmpty(assessmentEvents)) {
-            val primaryUserId = if(StringUtils.isNotBlank(requestedFor)) requestedFor else requestedBy
-            val userId: String = request.getOrDefault(JsonKey.USER_ID, primaryUserId).asInstanceOf[String]
-            val courseId: String = request.getOrDefault(JsonKey.COURSE_ID, "").asInstanceOf[String]
-            val batchId: String = request.getOrDefault(JsonKey.COURSE_ID, "").asInstanceOf[String]
-            val filters = new java.util.HashMap[String, AnyRef]() {{
-                put("userid", userId)
-                put("courseid", courseId)
-                put("batchid", batchId)
-            }}
-            val result = cassandraOperation.getRecords(request.getRequestContext, enrolmentDBInfo.getKeySpace, enrolmentDBInfo.getTableName, filters, null)
-            val resp = result.getResult.getOrDefault(JsonKey.RESPONSE, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
-            val response = {
-                if(CollectionUtils.isNotEmpty(resp)) {
-                    pushEnrolmentSyncEvent(userId, courseId, batchId)
-                    successResponse()
-                } else {
-                    clientError(s"""No Enrolment found for userId: $userId, batchId: $batchId, courseId: $courseId""")
-                }
+        val primaryUserId = if (StringUtils.isNotBlank(requestedFor)) requestedFor else requestedBy
+        val userId: String = request.getOrDefault(JsonKey.USER_ID, primaryUserId).asInstanceOf[String]
+        val courseId: String = request.getOrDefault(JsonKey.COURSE_ID, "").asInstanceOf[String]
+        val batchId: String = request.getOrDefault(JsonKey.COURSE_ID, "").asInstanceOf[String]
+        val filters = Map[String, AnyRef]("userid"-> userId, "courseid"-> courseId, "batchid"-> batchId).asJava
+        val result = cassandraOperation
+          .getRecords(request.getRequestContext, enrolmentDBInfo.getKeySpace, enrolmentDBInfo.getTableName, filters,
+              null)
+        val resp = result.getResult
+          .getOrDefault(JsonKey.RESPONSE, new java.util.ArrayList[java.util.Map[String, AnyRef]])
+          .asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
+        val response = {
+            if (CollectionUtils.isNotEmpty(resp)) {
+                pushEnrolmentSyncEvent(userId, courseId, batchId)
+                successResponse()
+            } else {
+                clientError(s"""No Enrolment found for userId: $userId, batchId: $batchId, courseId: $courseId""")
             }
-            sender().tell(response, self)
         }
+        sender().tell(response, self)
     }
 
     def pushEnrolmentSyncEvent(userId: String, courseId: String, batchId: String) = {

@@ -98,30 +98,6 @@
 					</dependency>
 				</dependencies>
 			</plugin>
-                <plugin>
-                    <groupId>org.jacoco</groupId>
-                    <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.5</version>
-                    <configuration>
-                        <destFile>${basedir}/target/jacoco-unit.exec</destFile>
-                        <dataFile>${basedir}/target/jacoco-unit.exec</dataFile>
-                        <excludes>
-                            <exclude>**/common/**</exclude>
-                            <exclude>**/router/**</exclude>
-                            <exclude>**/Reverse*/**</exclude>
-                            <exclude>**/routes.*</exclude>
-                            <exclude>**/routes$javascript.**</exclude>
-                        </excludes>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>prepare-agent</goal>
-                                <goal>report</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
             </plugins>
         </pluginManagement>
     </build>

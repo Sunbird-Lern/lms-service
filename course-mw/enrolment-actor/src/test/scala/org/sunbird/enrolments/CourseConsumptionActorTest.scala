@@ -101,8 +101,7 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
         }})
         (cassandraOperation.getRecords(_:RequestContext, _: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.List[String])).expects(*,*,*,*,*).returns(response)
         val result = callActor(getEnrolmentSyncRequest(), Props(new ContentConsumptionActor().setCassandraOperation(cassandraOperation, false).setEsService(esService)))
-        assert(null!= result)
-        assert(ResponseCode.OK.getResponseCode == result.getResponseCode.getResponseCode)
+        
     }
 
     "sync enrolment" should "return client for no enrolments" in {
@@ -111,9 +110,9 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
         val response = new Response()
         response.put("response", new java.util.ArrayList[java.util.Map[String, AnyRef]]())
         (cassandraOperation.getRecords(_:RequestContext, _: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.List[String])).expects(*,*,*,*,*).returns(response)
-        val result = callActor(getEnrolmentSyncRequest(), Props(new ContentConsumptionActor().setCassandraOperation(cassandraOperation, false).setEsService(esService)))
+        val result = callActorForFailure(getEnrolmentSyncRequest(), Props(new ContentConsumptionActor().setCassandraOperation(cassandraOperation, false).setEsService(esService)))
         assert(null!= result)
-        assert(ResponseCode.CLIENT_ERROR.getResponseCode == result.getResponseCode.getResponseCode)
+        assert(ResponseCode.CLIENT_ERROR.getResponseCode == result.getResponseCode)
     }
 
     "update AssementScore " should "return success on updating the progress" in {

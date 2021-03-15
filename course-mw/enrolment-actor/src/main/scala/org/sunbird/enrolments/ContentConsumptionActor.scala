@@ -350,7 +350,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         val primaryUserId = if (StringUtils.isNotBlank(requestedFor)) requestedFor else requestedBy
         val userId: String = request.getOrDefault(JsonKey.USER_ID, primaryUserId).asInstanceOf[String]
         val courseId: String = request.getOrDefault(JsonKey.COURSE_ID, "").asInstanceOf[String]
-        val batchId: String = request.getOrDefault(JsonKey.COURSE_ID, "").asInstanceOf[String]
+        val batchId: String = request.getOrDefault(JsonKey.BATCH_ID, "").asInstanceOf[String]
         val filters = Map[String, AnyRef]("userid"-> userId, "courseid"-> courseId, "batchid"-> batchId).asJava
         val result = cassandraOperation
           .getRecords(request.getRequestContext, enrolmentDBInfo.getKeySpace, enrolmentDBInfo.getTableName, filters,
@@ -363,7 +363,8 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                 pushEnrolmentSyncEvent(userId, courseId, batchId)
                 successResponse()
             } else {
-                clientError(s"""No Enrolment found for userId: $userId, batchId: $batchId, courseId: $courseId""")
+                new ProjectCommonException(ResponseCode.invalidRequestData.getErrorCode,
+                    s"""No Enrolment found for userId: $userId, batchId: $batchId, courseId: $courseId""", ResponseCode.CLIENT_ERROR.getResponseCode)
             }
         }
         sender().tell(response, self)

@@ -3,6 +3,7 @@ package org.sunbird.actor.base;
 import akka.actor.UntypedAbstractActor;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
+import org.sunbird.common.models.response.ResponseParams;
 import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
@@ -49,6 +50,18 @@ public abstract class BaseActor extends UntypedAbstractActor {
   public Response successResponse() {
     Response response = new Response();
     response.put("response", "SUCCESS");
+    return response;
+  }
+  
+  public Response clientError(String message) {
+    Response response = new Response();
+    response.setResponseCode(ResponseCode.CLIENT_ERROR);
+    ResponseParams params = new ResponseParams();
+    params.setStatus(ResponseParams.StatusType.FAILED.name());
+    params.setErr(ResponseCode.invalidRequestData.getErrorCode());
+    params.setErrmsg(ResponseCode.invalidRequestData.getErrorMessage());
+    response.setParams(params);
+    response.put("response", message);
     return response;
   }
 }

@@ -101,22 +101,6 @@ public class RequestValidatorTest {
   }
 
   @Test
-  public void testValidteUpdateContentFailureWithEmptyContents() {
-    Request request = new Request();
-    List<Map<String, Object>> listOfMap = new ArrayList<>();
-    Map<String, Object> innerMap = new HashMap<>();
-    innerMap.put(JsonKey.CONTENTS, listOfMap);
-    innerMap.put(JsonKey.USER_ID, "user123");
-    request.setRequest(innerMap);
-    try {
-      RequestValidator.validateUpdateContent(request);
-    } catch (ProjectCommonException e) {
-      Assert.assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
-      Assert.assertEquals(ResponseCode.contentIdRequiredError.getErrorCode(), e.getCode());
-    }
-  }
-
-  @Test
   public void testValidateRegisterClientFailureWithEmptyClientName() {
     Request request = new Request();
     Map<String, Object> requestObj = new HashMap<>();
@@ -527,4 +511,65 @@ public class RequestValidatorTest {
     }
     Assert.assertEquals(false, response);
   }
+
+  @Test
+  public void testValidateSyncEnrolment() {
+    Request request = new Request();
+    boolean response = false;
+    List<Map<String, Object>> listOfMap = new ArrayList<>();
+    Map<String, Object> requestObj = new HashMap<>();
+    listOfMap.add(requestObj);
+    Map<String, Object> innerMap = new HashMap<>();
+    innerMap.put(JsonKey.USER_ID, "user1");
+    innerMap.put(JsonKey.COURSE_ID, "do_123");
+    innerMap.put(JsonKey.BATCH_ID, "0123");
+    request.setRequest(innerMap);
+    try {
+      RequestValidator.validateUpdateContent(request);
+      response = true;
+    } catch (ProjectCommonException e) {}
+    Assert.assertEquals(true, response);
+  }
+
+    @Test
+    public void testValidateSyncEnrolmentWithoutCourseId() {
+        Request request = new Request();
+        boolean response = false;
+        List<Map<String, Object>> listOfMap = new ArrayList<>();
+        Map<String, Object> requestObj = new HashMap<>();
+        listOfMap.add(requestObj);
+        Map<String, Object> innerMap = new HashMap<>();
+        innerMap.put(JsonKey.USER_ID, "user1");
+        innerMap.put(JsonKey.BATCH_ID, "0123");
+        request.setRequest(innerMap);
+        try {
+            RequestValidator.validateUpdateContent(request);
+            response = true;
+        } catch (ProjectCommonException e) {
+            Assert.assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+            Assert.assertEquals(ResponseCode.courseIdRequiredError.getErrorCode(), e.getCode());
+        }
+        Assert.assertEquals(false, response);
+    }
+
+    @Test
+    public void testValidateSyncEnrolmentWithoutBatchId() {
+        Request request = new Request();
+        boolean response = false;
+        List<Map<String, Object>> listOfMap = new ArrayList<>();
+        Map<String, Object> requestObj = new HashMap<>();
+        listOfMap.add(requestObj);
+        Map<String, Object> innerMap = new HashMap<>();
+        innerMap.put(JsonKey.USER_ID, "user1");
+        innerMap.put(JsonKey.COURSE_ID, "0123");
+        request.setRequest(innerMap);
+        try {
+            RequestValidator.validateUpdateContent(request);
+            response = true;
+        } catch (ProjectCommonException e) {
+            Assert.assertEquals(ResponseCode.CLIENT_ERROR.getResponseCode(), e.getResponseCode());
+            Assert.assertEquals(ResponseCode.courseBatchIdRequired.getErrorCode(), e.getCode());
+        }
+        Assert.assertEquals(false, response);
+    }
 }

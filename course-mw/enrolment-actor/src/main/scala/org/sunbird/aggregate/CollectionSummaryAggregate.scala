@@ -228,7 +228,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     } else {
       val batchEndDate = courseBatchDao.readById(courseId, batchId, requestContext).getEndDate
       logger.debug(requestContext, s"BatchId: $batchId, CourseId: $courseId, EndDate" + batchEndDate)
-      Option(batchEndDate).map(date => if (date.isEmpty) defaultEndDate else date).getOrElse(defaultEndDate)
+      Option(batchEndDate).map(date => if (date == null) defaultEndDate else date).getOrElse(defaultEndDate)
     }
     s"$startDate/$endDate"
   }

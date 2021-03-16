@@ -1,5 +1,7 @@
 package org.sunbird.enrolments
 
+import java.sql.Timestamp
+import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
@@ -30,6 +32,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
     val groupDao = mock[GroupDaoImpl]
     val cacheUtil = mock[RedisCacheUtil]
     val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    val simpleDateFormat = new SimpleDateFormat("yyyyy-MM-dd")
 
     "CourseEnrolmentActor" should "return success on enrol" in {
         (courseDao.readById(_: String, _: String,_: RequestContext)).expects(*,*,*).returns(validCourseBatch())
@@ -68,7 +71,8 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
     "On previous enrollment end  batch" should "return client error" in  {
         val courseBatch = validCourseBatch()
         courseBatch.setStatus(1)
-        courseBatch.setEnrollmentEndDate("2019-01-01")
+        val date = simpleDateFormat.parse("2019-01-01")
+        courseBatch.setEnrollmentEndDate(new Timestamp(date.getTime()))
         (courseDao.readById(_: String, _: String, _:RequestContext)).expects(*,*,*).returns(courseBatch)
         (userDao.read(_: RequestContext, _: String,_: String,_: String)).expects(*,*,*,*).returns(null)
         val response = callActorForFailure(getEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
@@ -87,7 +91,8 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
 
     "On previous batch end date" should "return client error" in  {
         val courseBatch = validCourseBatch()
-        courseBatch.setEndDate("2019-07-01")
+        val date = simpleDateFormat.parse("2019-07-01")
+        courseBatch.setEndDate(new Timestamp(date.getTime()))
         (courseDao.readById(_: String, _: String, _:RequestContext)).expects(*,*,*).returns(courseBatch)
         (userDao.read(_: RequestContext, _: String,_: String,_: String)).expects(*,*,*,*).returns(null)
         val response = callActorForFailure(getEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
@@ -231,7 +236,8 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         val courseBatch = new CourseBatch()
         courseBatch.setBatchId("0123")
         courseBatch.setCourseId("do_123")
-        courseBatch.setEndDate("2099-07-01")
+        val date = simpleDateFormat.parse("2099-07-01")
+        courseBatch.setEndDate(new Timestamp(date.getTime()))
         courseBatch.setStatus(1)
         courseBatch
     }

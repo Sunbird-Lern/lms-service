@@ -1041,6 +1041,7 @@ public final class JsonKey {
   public static final String X_DEVICE_ID = "x-device-id";
   public static final String X_SESSION_ID = "x-session-id";
   public static final String X_TRACE_ID = "x-trace-id";
+  public static final String CONVERT_DATE_AS_STRING = "convertDateAsString";
 
   private JsonKey() {}
 }

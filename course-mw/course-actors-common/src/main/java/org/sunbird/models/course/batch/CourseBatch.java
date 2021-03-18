@@ -45,7 +45,7 @@ public class CourseBatch implements Serializable {
   @JsonSerialize(using = CustomDateSerializer.class)
   private Date updatedDate;
 
-  private Map<String, Object> cert_templates;
+  private Map<String, Object> certTemplates;
 
   private Boolean convertDateAsString;
 
@@ -182,8 +182,12 @@ public class CourseBatch implements Serializable {
     this.batchId = batchId;
   }
 
-  public Map<String, Object> getCert_templates() {
-    return cert_templates;
+  public Map<String, Object> getCertTemplates() {
+    return certTemplates;
+  }
+
+  public Map<String, Object> setCertTemplates(Map<String, Object> certTemplates) {
+    return this.certTemplates = certTemplates;
   }
 
   public Boolean getConvertDateAsString() {

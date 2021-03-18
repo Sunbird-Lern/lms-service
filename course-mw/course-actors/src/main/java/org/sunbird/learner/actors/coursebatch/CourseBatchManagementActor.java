@@ -12,8 +12,6 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -53,7 +51,6 @@ public class CourseBatchManagementActor extends BaseActor {
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
   private List<String> validCourseStatus = Arrays.asList("Live", "Unlisted");
-  private ObjectMapper objectMapper = new ObjectMapper();
 
   @Inject
   @Named("course-batch-notification-actor")
@@ -206,12 +203,10 @@ public class CourseBatchManagementActor extends BaseActor {
     Map<String, Object> courseBatchMap = JsonUtil.convert(courseBatch, Map.class);
     Response result =
         courseBatchDao.update(actorMessage.getRequestContext(), (String) request.get(JsonKey.COURSE_ID), batchId, courseBatchMap);
-    Map<String, Object> updatedCourseObject = mapESFieldsToObject(courseBatchMap);
+    CourseBatch updatedCourseObject = mapESFieldsToObject(courseBatch);
     sender().tell(result, self());
-    courseBatch.setConvertDateAsString(true);
-    objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-    objectMapper.setDateFormat(DATE_FORMAT);
-    Map<String, Object> esCourseMap = objectMapper.convertValue(updatedCourseObject, Map.class);
+    updatedCourseObject.setConvertDateAsString(true);
+    Map<String, Object> esCourseMap = JsonUtil.convert(updatedCourseObject, Map.class);
     esCourseMap.remove(JsonKey.CONVERT_DATE_AS_STRING);
     CourseBatchUtil.syncCourseBatchForeground(actorMessage.getRequestContext(), batchId, esCourseMap);
 
@@ -678,10 +673,8 @@ public class CourseBatchManagementActor extends BaseActor {
     sender().tell(response, self());
   }
 
-  private Map<String, Object> mapESFieldsToObject(Map<String, Object> courseBatch) {
-    Map<String, Map<String, Object>> certificateTemplates =
-            (Map<String, Map<String, Object>>)
-                    courseBatch.get(CourseJsonKey.CERTIFICATE_TEMPLATES_COLUMN);
+  private CourseBatch mapESFieldsToObject(CourseBatch courseBatch) {
+    Map<String, Object> certificateTemplates = courseBatch.getCertTemplates();
     if(MapUtils.isNotEmpty(certificateTemplates)) {
       certificateTemplates
               .entrySet()
@@ -689,8 +682,8 @@ public class CourseBatchManagementActor extends BaseActor {
               .forEach(
                       cert_template ->
                               certificateTemplates.put(
-                                      cert_template.getKey(), mapToObject(cert_template.getValue())));
-      courseBatch.put(CourseJsonKey.CERTIFICATE_TEMPLATES_COLUMN, certificateTemplates);
+                                      cert_template.getKey(), mapToObject((Map<String, Object>) cert_template.getValue())));
+      courseBatch.setCertTemplates(certificateTemplates);
     }
     return courseBatch;
   }

@@ -121,7 +121,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                             })
                             cassandraOperation.batchInsertLogged(request.getRequestContext, consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, contents)
                             val updateData = getLatestReadDetails(userId, batchId, contents)
-                            cassandraOperation.updateRecordV2(request.getRequestContext, "sunbird_courses", "user_enrolments", updateData._1, updateData._2, true)
+                            cassandraOperation.updateRecordV2(request.getRequestContext, Util.dbInfoMap.get(JsonKey.USER_ENROLMENTS_DB).getKeySpace, Util.dbInfoMap.get(JsonKey.USER_ENROLMENTS_DB).getTableName, updateData._1, updateData._2, true)
                             pushInstructionEvent(request.getRequestContext, userId, batchId, courseId, contents.asJava)
                             contentIds.map(id => responseMessage.put(id,JsonKey.SUCCESS))
 

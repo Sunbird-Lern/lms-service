@@ -3,6 +3,7 @@ package org.sunbird.models.user.courses;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.io.Serializable;
+import java.util.Date;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -14,7 +15,7 @@ public class UserCourses implements Serializable {
   private String batchId;
   private String courseId;
   private String delta;
-  private String enrolledDate;
+  private Date enrolledDate;
   private String grade;
   private String datetime;
   private String lastReadContentId;
@@ -64,11 +65,11 @@ public class UserCourses implements Serializable {
     this.delta = delta;
   }
 
-  public String getEnrolledDate() {
+  public Date getEnrolledDate() {
     return enrolledDate;
   }
 
-  public void setEnrolledDate(String enrolledDate) {
+  public void setEnrolledDate(Date enrolledDate) {
     this.enrolledDate = enrolledDate;
   }
 

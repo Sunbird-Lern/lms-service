@@ -1,6 +1,7 @@
 package org.sunbird.enrolments
 
 import java.util
+import java.util.Date
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import javax.inject.Inject
@@ -197,13 +198,13 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         val inputCompletedTime = parseDate(inputContent.getOrDefault(JsonKey.LAST_COMPLETED_TIME, "").asInstanceOf[String])
         val inputAccessTime = parseDate(inputContent.getOrDefault(JsonKey.LAST_ACCESS_TIME, "").asInstanceOf[String])
         if(MapUtils.isNotEmpty(existingContent)) {
-            val existingAccessTime = parseDate(existingContent.getOrDefault(JsonKey.LAST_ACCESS_TIME, "").asInstanceOf[String])
+            val existingAccessTime = existingContent.getOrDefault(JsonKey.LAST_ACCESS_TIME, null).asInstanceOf[Date]
             updatedContent.put(JsonKey.LAST_ACCESS_TIME, compareTime(existingAccessTime, inputAccessTime))
             val inputProgress = inputContent.getOrDefault(JsonKey.PROGRESS, 0.asInstanceOf[AnyRef]).asInstanceOf[Number].intValue()
             val existingProgress = Option(existingContent.getOrDefault(JsonKey.PROGRESS, 0.asInstanceOf[AnyRef]).asInstanceOf[Number]).getOrElse(0.asInstanceOf[Number]).intValue()
             updatedContent.put(JsonKey.PROGRESS, List(inputProgress, existingProgress).max.asInstanceOf[AnyRef])
             val existingStatus = Option(existingContent.getOrDefault(JsonKey.STATUS, 0.asInstanceOf[AnyRef]).asInstanceOf[Number]).getOrElse(0.asInstanceOf[Number]).intValue()
-            val existingCompletedTime = parseDate(existingContent.getOrDefault(JsonKey.LAST_COMPLETED_TIME, "").asInstanceOf[String])
+            val existingCompletedTime = existingContent.getOrDefault(JsonKey.LAST_COMPLETED_TIME, null).asInstanceOf[Date]
             if(inputStatus >= existingStatus) {
                 if(inputStatus >= 2) {
                     updatedContent.put(JsonKey.STATUS, 2.asInstanceOf[AnyRef])
@@ -222,7 +223,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             }
             updatedContent.put(JsonKey.LAST_ACCESS_TIME, compareTime(null, inputAccessTime))
         }
-        updatedContent.put(JsonKey.LAST_UPDATED_TIME, ProjectUtil.getFormattedDate)
+        updatedContent.put(JsonKey.LAST_UPDATED_TIME, ProjectUtil.getTimeStamp)
         updatedContent.put(JsonKey.USER_ID, userId)
         updatedContent
     }
@@ -233,19 +234,19 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         } else null
     }
 
-    def compareTime(existingTime: java.util.Date, inputTime: java.util.Date): String = {
-        if(null == existingTime && null == inputTime) {
-            ProjectUtil.getFormattedDate
-        } else if(null == existingTime) dateFormatter.format(inputTime)
-        else if(null == inputTime) dateFormatter.format(existingTime)
+    def compareTime(existingTime: java.util.Date, inputTime: java.util.Date): Date = {
+        if (null == existingTime && null == inputTime) {
+            ProjectUtil.getTimeStamp
+        } else if (null == existingTime) inputTime
+        else if (null == inputTime) existingTime
         else {
-            if(inputTime.after(existingTime)) dateFormatter.format(inputTime)
-            else dateFormatter.format(existingTime)
+            if (inputTime.after(existingTime)) inputTime
+            else existingTime
         }
     }
 
     def getLatestReadDetails(userId: String, batchId: String, contents: List[java.util.Map[String, AnyRef]]) = {
-       val lastAccessContent: java.util.Map[String, AnyRef] = contents.groupBy(x => x.getOrDefault(JsonKey.LAST_ACCESS_TIME, "").asInstanceOf[String]).maxBy(_._1)._2.get(0)
+       val lastAccessContent: java.util.Map[String, AnyRef] = contents.groupBy(x => x.getOrDefault(JsonKey.LAST_ACCESS_TIME, null).asInstanceOf[Date]).maxBy(_._1)._2.get(0)
        val updateMap = new java.util.HashMap[String, AnyRef] () {{
             put("lastreadcontentid", lastAccessContent.get("contentId"))
             put("lastreadcontentstatus", lastAccessContent.get("status"))

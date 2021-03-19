@@ -226,7 +226,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             put(JsonKey.ACTIVE, ProjectUtil.ActiveStatus.ACTIVE.getValue.asInstanceOf[AnyRef])
             if (null == enrolmentData) {
                 put(JsonKey.ADDED_BY, requestedBy)
-                put(JsonKey.COURSE_ENROLL_DATE, ProjectUtil.getFormattedDate)
+                put(JsonKey.COURSE_ENROLL_DATE, ProjectUtil.getTimeStamp)
                 put(JsonKey.STATUS, ProjectUtil.ProgressStatus.NOT_STARTED.getValue.asInstanceOf[AnyRef])
                 put(JsonKey.DATE_TIME, new Timestamp(new Date().getTime))
                 put(JsonKey.COURSE_PROGRESS, 0.asInstanceOf[AnyRef])

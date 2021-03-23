@@ -32,7 +32,9 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
     val groupDao = mock[GroupDaoImpl]
     val cacheUtil = mock[RedisCacheUtil]
     val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    val simpleDateFormat = new SimpleDateFormat("yyyyy-MM-dd")
+    val simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd")
+    val sd = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSSZ")
+
 
     "CourseEnrolmentActor" should "return success on enrol" in {
         (courseDao.readById(_: String, _: String,_: RequestContext)).expects(*,*,*).returns(validCourseBatch())
@@ -309,25 +311,28 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
     }
     
     private def getBatchWithValidEnrolmentEndDateAndBatchEndDate(): CourseBatch = {
-        val startDate = LocalDateTime.now().minusDays(3).format(dateTimeFormatter)
-        val today = LocalDateTime.now().format(dateTimeFormatter)
+        val startDate = sd.format(simpleDateFormat.parse(LocalDateTime.now().minusDays(3).format(dateTimeFormatter)))
+        val today = sd.format(simpleDateFormat.parse(LocalDateTime.now().format(dateTimeFormatter)))
         val batchData: String = "{\"batchId\": \"0130901005678510081\",\"endDate\": \""+ today +"\",\"description\": \"batch description1\",\"batchId\": \"0130901005678510081\",\"createdDate\": \"2020-08-20 08:28:47:534+0000\",\"createdBy\": \"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"name\": \"Batch-3\",\"enrollmentType\": \"open\",\"courseId\": \"do_11308799051844812811152\",\"enrollmentEndDate\": \""+ today +"\",\"startDate\": \""+ startDate +"\",\"status\": 1}"
+        mapper.setDateFormat(sd)
         mapper.readValue(batchData, classOf[CourseBatch])
     }
 
     private def getBatchWithInvalidEnrolmentEndDate(): CourseBatch = {
-        val startDate = LocalDateTime.now().minusDays(3).format(dateTimeFormatter)
-        val endDate = LocalDateTime.now().plusDays(1).format(dateTimeFormatter)
-        val enrolmentEnddate = LocalDateTime.now().minusDays(1).format(dateTimeFormatter)
+        val startDate = sd.format(simpleDateFormat.parse(LocalDateTime.now().minusDays(3).format(dateTimeFormatter)))
+        val endDate = sd.format(simpleDateFormat.parse(LocalDateTime.now().plusDays(1).format(dateTimeFormatter)))
+        val enrolmentEnddate = sd.format(simpleDateFormat.parse(LocalDateTime.now().minusDays(1).format(dateTimeFormatter)))
         val batchData: String = "{\"batchId\": \"0130901005678510081\",\"endDate\": \""+ endDate +"\",\"description\": \"batch description1\",\"batchId\": \"0130901005678510081\",\"createdDate\": \"2020-08-20 08:28:47:534+0000\",\"createdBy\": \"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"name\": \"Batch-3\",\"enrollmentType\": \"open\",\"courseId\": \"do_11308799051844812811152\",\"enrollmentEndDate\": \""+ enrolmentEnddate +"\",\"startDate\": \""+ startDate +"\",\"status\": 1}"
+        mapper.setDateFormat(sd)
         mapper.readValue(batchData, classOf[CourseBatch])
     }
 
     private def getBatchWithInvalidBatchEndDate(): CourseBatch = {
-        val startDate = LocalDateTime.now().minusDays(3).format(dateTimeFormatter)
-        val endDate = LocalDateTime.now().minusDays(1).format(dateTimeFormatter)
-        val enrolmentEndDate = LocalDateTime.now().minusDays(2).format(dateTimeFormatter)
+        val startDate = sd.format(simpleDateFormat.parse(LocalDateTime.now().minusDays(3).format(dateTimeFormatter)))
+        val endDate = sd.format(simpleDateFormat.parse(LocalDateTime.now().minusDays(1).format(dateTimeFormatter)))
+        val enrolmentEndDate = sd.format(simpleDateFormat.parse(LocalDateTime.now().minusDays(2).format(dateTimeFormatter)))
         val batchData: String = "{\"batchId\": \"0130901005678510081\",\"endDate\": \""+ endDate +"\",\"description\": \"batch description1\",\"batchId\": \"0130901005678510081\",\"createdDate\": \"2020-08-20 08:28:47:534+0000\",\"createdBy\": \"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"name\": \"Batch-3\",\"enrollmentType\": \"open\",\"courseId\": \"do_11308799051844812811152\",\"enrollmentEndDate\": \""+ enrolmentEndDate +"\",\"startDate\": \""+ startDate +"\",\"status\": 1}"
+        mapper.setDateFormat(sd)
         mapper.readValue(batchData, classOf[CourseBatch])
     }
 }

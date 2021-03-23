@@ -163,6 +163,15 @@ public class LearnerControllerTest extends BaseApplicationTest {
     Assert.assertEquals(200, result.status());
   }
 
+  @Test
+  public void testUpdateContentStateForEnrolmentSync() {
+    JsonNode json = createGetContentStateRequest(USER_ID, COURSE_ID, BATCH_ID);
+    Http.RequestBuilder req =
+            new Http.RequestBuilder().uri(CONTENT_STATE_UPDATE_URL).bodyJson(json).method("PATCH");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals(200, result.status());
+  }
+
   private JsonNode createUpdateContentStateRequest(
       String contentId, String status, String lastUpdatedTime, String courseId) {
     Map<String, Object> requestMap = new HashMap<>();

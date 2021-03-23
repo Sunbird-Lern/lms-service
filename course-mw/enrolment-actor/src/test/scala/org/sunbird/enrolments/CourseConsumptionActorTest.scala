@@ -81,6 +81,40 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
         assert(null!= result)
     }
 
+    "sync enrolment" should "return success on updating the progress" in {
+        val cassandraOperation = mock[CassandraOperation]
+        val esService = mock[ElasticSearchService]
+        val response = new Response()
+        response.put("response", new java.util.ArrayList[java.util.Map[String, AnyRef]] {{
+            add(new java.util.HashMap[String, AnyRef] {{
+                put("userId", "user1")
+                put("courseId", "do_123")
+                put("batchId", "0123")
+                put("contentId", "do_456")
+            }})
+            add(new java.util.HashMap[String, AnyRef] {{
+                put("userId", "user1")
+                put("courseId", "do_123")
+                put("batchId", "0123")
+                put("contentId", "do_789")
+            }})
+        }})
+        (cassandraOperation.getRecords(_:RequestContext, _: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.List[String])).expects(*,*,*,*,*).returns(response)
+        val result = callActor(getEnrolmentSyncRequest(), Props(new ContentConsumptionActor().setCassandraOperation(cassandraOperation, false).setEsService(esService)))
+        
+    }
+
+    "sync enrolment" should "return client for no enrolments" in {
+        val cassandraOperation = mock[CassandraOperation]
+        val esService = mock[ElasticSearchService]
+        val response = new Response()
+        response.put("response", new java.util.ArrayList[java.util.Map[String, AnyRef]]())
+        (cassandraOperation.getRecords(_:RequestContext, _: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.List[String])).expects(*,*,*,*,*).returns(response)
+        val result = callActorForFailure(getEnrolmentSyncRequest(), Props(new ContentConsumptionActor().setCassandraOperation(cassandraOperation, false).setEsService(esService)))
+        assert(null!= result)
+        assert(ResponseCode.CLIENT_ERROR.getResponseCode == result.getResponseCode)
+    }
+
     "update AssementScore " should "return success on updating the progress" in {
         val cassandraOperation = mock[CassandraOperation]
         val esService = mock[ElasticSearchService]
@@ -132,6 +166,16 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
                 put("status", 2.asInstanceOf[AnyRef])
             }})
         }})
+        request
+    }
+
+    def getEnrolmentSyncRequest(): Request = {
+        val request = new Request
+        request.setOperation("updateConsumption")
+        request.put("userId", "user1")
+        request.put("courseId", "do_123")
+        request.put("batchId", "0123")
+        request.put("requestedBy", "user1")
         request
     }
 

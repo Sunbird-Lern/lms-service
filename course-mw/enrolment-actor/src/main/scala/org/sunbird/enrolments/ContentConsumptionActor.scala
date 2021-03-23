@@ -13,6 +13,7 @@ import org.sunbird.common.models.response.Response
 import org.sunbird.common.models.util._
 import org.sunbird.common.request.{Request, RequestContext}
 import org.sunbird.common.responsecode.ResponseCode
+import org.sunbird.common.util.JsonUtil
 import org.sunbird.helper.ServiceFactory
 import org.sunbird.kafka.client.{InstructionEventGenerator, KafkaClient}
 import org.sunbird.learner.constants.{CourseJsonKey, InstructionEvent}
@@ -303,7 +304,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                 m.put(JsonKey.COLLECTION_ID, m.getOrDefault(JsonKey.COURSE_ID, ""))
                 if (fields.contains(JsonKey.ASSESSMENT_SCORE))
                     m.putAll(mapAsJavaMap(Map(JsonKey.ASSESSMENT_SCORE -> getScore(userId, courseId, m.get("contentId").asInstanceOf[String], batchId, request.getRequestContext))))
-                m
+                JsonUtil.convertWithDateFormat(m, classOf[util.Map[String, Object]])
             }).asJava
             response.put(JsonKey.RESPONSE, filteredContents)
         } else {

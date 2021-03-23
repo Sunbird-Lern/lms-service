@@ -189,8 +189,9 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
         selectStatement.and(QueryBuilder.eq(propertyName, propertyValue));
       }
       ResultSet results = null;
+      Select selectQuery = selectStatement.allowFiltering();
       if (null != selectStatement) logger.debug(requestContext, selectStatement.getQueryString());
-      results = session.execute(selectStatement);
+      results = session.execute(selectQuery);
       response = CassandraUtil.createResponse(results);
     } catch (Exception e) {
       logger.error(requestContext, Constants.EXCEPTION_MSG_FETCH + tableName + " : " + e.getMessage(), e);

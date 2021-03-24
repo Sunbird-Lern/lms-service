@@ -309,9 +309,10 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             val filteredContents = contentsConsumed.map(m => {
                 ProjectUtil.removeUnwantedFields(m, JsonKey.DATE_TIME, JsonKey.USER_ID, JsonKey.ADDED_BY, JsonKey.LAST_UPDATED_TIME)
                 m.put(JsonKey.COLLECTION_ID, m.getOrDefault(JsonKey.COURSE_ID, ""))
+                val formattedMap = JsonUtil.convertWithDateFormat(m, classOf[util.Map[String, Object]])
                 if (fields.contains(JsonKey.ASSESSMENT_SCORE))
-                    m.putAll(mapAsJavaMap(Map(JsonKey.ASSESSMENT_SCORE -> getScore(userId, courseId, m.get("contentId").asInstanceOf[String], batchId, request.getRequestContext))))
-                JsonUtil.convertWithDateFormat(m, classOf[util.Map[String, Object]])
+                    formattedMap.putAll(mapAsJavaMap(Map(JsonKey.ASSESSMENT_SCORE -> getScore(userId, courseId, m.get("contentId").asInstanceOf[String], batchId, request.getRequestContext))))
+                formattedMap
             }).asJava
             response.put(JsonKey.RESPONSE, filteredContents)
         } else {

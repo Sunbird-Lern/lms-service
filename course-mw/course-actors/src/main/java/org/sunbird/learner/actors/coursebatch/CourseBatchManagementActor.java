@@ -356,34 +356,39 @@ public class CourseBatchManagementActor extends BaseActor {
   private void validateMentors(CourseBatch courseBatch, String authToken, RequestContext requestContext) {
     List<String> mentors = courseBatch.getMentors();
     if (CollectionUtils.isNotEmpty(mentors)) {
+      mentors = mentors.stream().distinct().collect(Collectors.toList());
+      courseBatch.setMentors(mentors);
       String batchCreatorRootOrgId = getRootOrg(courseBatch.getCreatedBy(), authToken);
       List<Map<String, Object>> mentorDetailList = userOrgService.getUsersByIds(mentors, authToken);
       logger.info(requestContext, "CourseBatchManagementActor::validateMentors::mentorDetailList : " + mentorDetailList);
-      Map<String, Map<String, Object>> mentorDetails =
-          mentorDetailList
-              .stream()
-              .collect(Collectors.toMap(map -> (String) map.get(JsonKey.ID), map -> map));
-      for (String userId : mentors) {
-        Map<String, Object> result = mentorDetails.get(userId);
-        String mentorRootOrgId = getRootOrgFromUserMap(result);
-        if (!batchCreatorRootOrgId.equals(mentorRootOrgId)) {
-          throw new ProjectCommonException(
-              ResponseCode.userNotAssociatedToRootOrg.getErrorCode(),
-              ResponseCode.userNotAssociatedToRootOrg.getErrorMessage(),
-              ResponseCode.CLIENT_ERROR.getResponseCode(),
-              userId);
+      if(CollectionUtils.isNotEmpty(mentorDetailList)){
+        Map<String, Map<String, Object>> mentorDetails =
+                mentorDetailList.stream().collect(Collectors.toMap(map -> (String) map.get(JsonKey.ID), map -> map));
+        
+        for(String mentorId: mentors) {
+          Map<String, Object> result = mentorDetails.getOrDefault(mentorId, new HashMap<>());
+          if(MapUtils.isEmpty(result) || (result.containsKey(JsonKey.IS_DELETED) && (Boolean) result.get(JsonKey.IS_DELETED))) {
+            throw new ProjectCommonException(
+                    ResponseCode.invalidUserId.getErrorCode(),
+                    ResponseCode.invalidUserId.getErrorMessage(),
+                    ResponseCode.CLIENT_ERROR.getResponseCode());
+          } else {
+            String mentorRootOrgId = getRootOrgFromUserMap(result);
+            if (!batchCreatorRootOrgId.equals(mentorRootOrgId)) {
+              throw new ProjectCommonException(
+                      ResponseCode.userNotAssociatedToRootOrg.getErrorCode(),
+                      ResponseCode.userNotAssociatedToRootOrg.getErrorMessage(),
+                      ResponseCode.CLIENT_ERROR.getResponseCode(),
+                      mentorId);
+            }
+          }
         }
-        if ((ProjectUtil.isNull(result))
-            || (ProjectUtil.isNotNull(result) && result.isEmpty())
-            || (ProjectUtil.isNotNull(result)
-                && result.containsKey(JsonKey.IS_DELETED)
-                && ProjectUtil.isNotNull(result.get(JsonKey.IS_DELETED))
-                && (Boolean) result.get(JsonKey.IS_DELETED))) {
-          throw new ProjectCommonException(
-              ResponseCode.invalidUserId.getErrorCode(),
-              ResponseCode.invalidUserId.getErrorMessage(),
-              ResponseCode.CLIENT_ERROR.getResponseCode());
-        }
+      } else {
+        logger.info( requestContext,"Invalid mentors for batchId: " + courseBatch.getBatchId() +", mentors: " + mentors);
+        throw new ProjectCommonException(
+                ResponseCode.invalidUserId.getErrorCode(),
+                ResponseCode.invalidUserId.getErrorMessage(),
+                ResponseCode.CLIENT_ERROR.getResponseCode());
       }
     }
   }

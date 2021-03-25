@@ -118,14 +118,16 @@ public class SearchHandlerActor extends BaseActor {
       List<String> creatorIds = content.stream().filter(map -> map.containsKey(CREATED_BY)).map(map -> (String) map.get(CREATED_BY)).collect(Collectors.toList());
       List<Map<String, Object>> userDetails = userOrgService.getUsersByIds(creatorIds, (String) context.getOrDefault(JsonKey.X_AUTH_TOKEN, ""));
       logger.info(requestContext, "SearchHandlerActor::populateCreatorDetails::userDetails : " + userDetails);
-      List<Map<String, Object>> creatorDetails = userDetails.stream().map(user -> new HashMap<String, Object>() {{
-        put(JsonKey.ID, user.get(JsonKey.ID));
-        put(JsonKey.FIRST_NAME, user.get(JsonKey.FIRST_NAME));
-        put(JsonKey.LAST_NAME, user.get(JsonKey.LAST_NAME));
-      }}).collect(Collectors.toList());
-      Map<String, Object> tempResult = CollectionUtils.isNotEmpty(creatorDetails) ? creatorDetails.stream().collect(Collectors.toMap(s -> (String) s.remove("id"), s -> s)) : new HashMap<>();
-      if (MapUtils.isNotEmpty(tempResult)) {
-        content.stream().filter(map -> tempResult.containsKey(map.get(CREATED_BY))).map(map -> map.put("creatorDetails", tempResult.get((String) map.get(CREATED_BY)))).collect(Collectors.toList());
+      if(CollectionUtils.isNotEmpty(userDetails)) {
+        List<Map<String, Object>> creatorDetails = userDetails.stream().map(user -> new HashMap<String, Object>() {{
+          put(JsonKey.ID, user.get(JsonKey.ID));
+          put(JsonKey.FIRST_NAME, user.get(JsonKey.FIRST_NAME));
+          put(JsonKey.LAST_NAME, user.get(JsonKey.LAST_NAME));
+        }}).collect(Collectors.toList());
+        Map<String, Object> tempResult = CollectionUtils.isNotEmpty(creatorDetails) ? creatorDetails.stream().collect(Collectors.toMap(s -> (String) s.remove("id"), s -> s)) : new HashMap<>();
+        if (MapUtils.isNotEmpty(tempResult)) {
+          content.stream().filter(map -> tempResult.containsKey(map.get(CREATED_BY))).map(map -> map.put("creatorDetails", tempResult.get((String) map.get(CREATED_BY)))).collect(Collectors.toList());
+        }
       }
     }
   }

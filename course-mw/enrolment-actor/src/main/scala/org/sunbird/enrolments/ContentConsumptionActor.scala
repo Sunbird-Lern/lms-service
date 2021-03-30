@@ -30,7 +30,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
 
     //Added default fields in env varible:
     //content.default.fields=contentid,userid,batchid,courseid,completedcount,completionpercentage,lastcompletedtime,status,viewcount
-    val defaultFields: Set[String] = ProjectUtil.getConfigValue("content.default.fields").split(",").toSet
+    val defaultFields: Set[String] = if(ProjectUtil.getConfigValue("content.default.fields")!=null) ProjectUtil.getConfigValue("content.default.fields").split(",").toSet else Set[String]("contentid","userid","batchid","courseid","completedcount","completionpercentage","lastcompletedtime","status","viewcount")
     val jsonFields = Set[String]("progressdetails")
 
     override def onReceive(request: Request): Unit = {

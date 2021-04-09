@@ -74,7 +74,7 @@ public class CourseBatchNotificationActor extends BaseActor {
 
       if (operationType.equals(JsonKey.ADD)) {
         template = JsonKey.OPEN_BATCH_LEARNER_ENROL;
-        subject = JsonKey.COURSE_INVITATION;
+        subject = TRAINING_INVITATION;
       }
 
       triggerEmailNotification(
@@ -89,11 +89,11 @@ public class CourseBatchNotificationActor extends BaseActor {
       List<String> removedMentors = (List<String>) requestMap.get(JsonKey.REMOVED_MENTORS);
 
       triggerEmailNotification(
-              addedMentors,
-              courseBatch,
-              JsonKey.COURSE_INVITATION,
-              JsonKey.BATCH_MENTOR_ENROL,
-              contentDetails);
+          addedMentors,
+          courseBatch,
+          TRAINING_INVITATION,
+          JsonKey.BATCH_MENTOR_ENROL,
+          contentDetails);
       triggerEmailNotification(
               removedMentors,
               courseBatch,
@@ -106,11 +106,11 @@ public class CourseBatchNotificationActor extends BaseActor {
               (List<String>) requestMap.get(JsonKey.REMOVED_PARTICIPANTS);
 
       triggerEmailNotification(
-              addedParticipants,
-              courseBatch,
-              JsonKey.COURSE_INVITATION,
-              JsonKey.BATCH_LEARNER_ENROL,
-              contentDetails);
+          addedParticipants,
+          courseBatch,
+          TRAINING_INVITATION,
+          JsonKey.BATCH_LEARNER_ENROL,
+          contentDetails);
       triggerEmailNotification(
               removedParticipants,
               courseBatch,

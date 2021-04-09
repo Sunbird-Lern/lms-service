@@ -48,41 +48,41 @@
             <artifactId>play-logback_${scala.major.version}</artifactId>
             <version>${play2.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.typesafe.play</groupId>
-            <artifactId>play-guice_${scala.major.version}</artifactId>
-            <version>${play2.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.inject</groupId>
-                    <artifactId>guice</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.inject.extensions</groupId>
-                    <artifactId>guice-assistedinject</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.google.inject</groupId>
-            <artifactId>guice</artifactId>
-            <version>3.0</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/com.google.inject.extensions/guice-assistedinject -->
-        <dependency>
-            <groupId>com.google.inject.extensions</groupId>
-            <artifactId>guice-assistedinject</artifactId>
-            <version>3.0</version>
-        </dependency>
-
-        <!--<dependency>-->
-        <!--<groupId>com.typesafe.play</groupId>-->
-        <!--<artifactId>play-netty-server_${scala.major.version}</artifactId>-->
-        <!--<version>${play2.version}</version>-->
-        <!--<scope>runtime</scope>-->
-        <!--</dependency>-->
-        <!-- Add actor here itself to avoid netty jar conflict. -->
-        <dependency>
+        <dependency>	
+			<groupId>com.typesafe.play</groupId>	
+			<artifactId>play-guice_${scala.major.version}</artifactId>	
+			<version>${play2.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.inject</groupId>
+					<artifactId>guice</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.google.inject.extensions</groupId>
+		    		<artifactId>guice-assistedinject</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.google.inject</groupId>
+			<artifactId>guice</artifactId>
+			<version>3.0</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.google.inject.extensions/guice-assistedinject -->
+		<dependency>
+		    <groupId>com.google.inject.extensions</groupId>
+		    <artifactId>guice-assistedinject</artifactId>
+		    <version>3.0</version>
+		</dependency>
+		
+		<!--<dependency>-->
+			<!--<groupId>com.typesafe.play</groupId>-->
+			<!--<artifactId>play-netty-server_${scala.major.version}</artifactId>-->
+			<!--<version>${play2.version}</version>-->
+			<!--<scope>runtime</scope>-->
+		<!--</dependency>-->
+		<!-- Add actor here itself to avoid netty jar conflict. -->
+		<dependency>
             <groupId>org.sunbird</groupId>
             <artifactId>course-actors-common</artifactId>
             <version>1.0-SNAPSHOT</version>

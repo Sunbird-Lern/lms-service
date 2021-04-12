@@ -5,6 +5,7 @@ import com.mashape.unirest.http.HttpMethod;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
@@ -176,16 +177,16 @@ public class UserOrgServiceImpl implements UserOrgService {
     }
     String relativeUrl = getConfigValue(SUNBIRD_GET_SINGLE_USER_API) + FORWARD_SLASH + id;
     Response response = getUserOrgResponse(relativeUrl, HttpMethod.GET, requestMap, headers);
-    if (response != null) {
+    if (response != null && ResponseCode.OK == response.getResponseCode()) {
       return (Map<String, Object>) response.get(RESPONSE);
-    }
-    return null;
+    } else
+    return new HashMap<>();
   }
 
   @Override
   public List<Map<String, Object>> getUsersByIds(List<String> ids, String authToken) {
     List<CompletableFuture<Map<String, Object>>> futures = ids.stream().map(id -> getUserDetail(id, authToken)).collect(Collectors.toList());
-    return futures.stream().map(CompletableFuture::join).collect(Collectors.toList());
+    return futures.stream().map(CompletableFuture::join).filter(map -> MapUtils.isNotEmpty(map)).collect(Collectors.toList());
   }
 
   @Override

@@ -7,8 +7,6 @@
   <name>sunbird_lms_service</name>
 
   <properties>
-	  <maven.compiler.source>1.8</maven.compiler.source>
-	  <maven.compiler.target>1.8</maven.compiler.target>
 	  <play2.plugin.version>1.0.0-rc5</play2.plugin.version>
   </properties>
 
@@ -40,7 +38,7 @@
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.4</version>
+                    <version>0.8.5</version>
                     <executions>
                         <execution>
                             <id>merge-results</id>

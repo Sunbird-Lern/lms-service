@@ -1,9 +1,5 @@
 package controllers.search;
 
-import static org.junit.Assert.assertEquals;
-import static org.powermock.api.mockito.PowerMockito.when;
-import static play.test.Helpers.route;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import controllers.BaseApplicationTest;
@@ -28,7 +24,9 @@ import util.ACTOR_NAMES;
 /** Created by arvind on 6/12/17. */
 @RunWith(PowerMockRunner.class)
 @SuppressStaticInitializationFor({"util.AuthenticationHelper"})
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*", "jdk.internal.reflect.*",
+        "sun.security.ssl.*", "javax.net.ssl.*", "javax.crypto.*",
+        "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class SearchControllerTest extends BaseApplicationTest {
 
   @Before
@@ -55,7 +53,7 @@ public class SearchControllerTest extends BaseApplicationTest {
     Assert.assertEquals( 200, result.status());
   }
 
-  private static String mapToJson(Map map) {
+  private String mapToJson(Map map) {
     ObjectMapper mapperObj = new ObjectMapper();
     String jsonResp = "";
     try {

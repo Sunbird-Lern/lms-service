@@ -5,28 +5,31 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.request.BaseRequest;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.PropertiesCache;
 import org.sunbird.common.models.util.RestUtil;
+import org.sunbird.common.request.RequestContext;
 import scala.concurrent.ExecutionContextExecutor;
 import scala.concurrent.Future;
+
+import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /** @author Mahesh Kumar Gangula */
 public class ContentSearchUtil {
 
   private static String contentSearchURL = null;
+  private static LoggerUtil logger = new LoggerUtil(ContentSearchUtil.class);
 
   static {
     String baseUrl = System.getenv(JsonKey.SUNBIRD_API_MGR_BASE_URL);
@@ -47,17 +50,17 @@ public class ContentSearchUtil {
     return headers;
   }
 
-  public static Future<Map<String, Object>> searchContent(
-      String queryRequestBody, Map<String, String> headers, ExecutionContextExecutor ec) {
-    return searchContent(null, queryRequestBody, headers, ec);
-  }
+  /*public static Future<Map<String, Object>> searchContent(
+          RequestContext requestContext, String urlQueryString, String queryRequestBody, Map<String, String> headers, ExecutionContextExecutor ec) {
+    return searchContent(requestContext,null, queryRequestBody, headers, ec);
+  }*/
 
-  public static Future<Map<String, Object>> searchContent(
+  public static Future<Map<String, Object>> searchContent( RequestContext requestContext, 
       String urlQueryString,
       String queryRequestBody,
       Map<String, String> headers,
       ExecutionContextExecutor ec) {
-    String logMsgPrefix = "ContentSearchUtil:searchContent: ";
+    String logMsgPrefix = "searchContent: ";
 
     Unirest.clearDefaultHeaders();
     String urlString =
@@ -87,13 +90,11 @@ public class ContentSearchUtil {
                 resultMap.put(JsonKey.PARAMS, param);
                 return resultMap;
               } else {
-                ProjectLogger.log(
-                    logMsgPrefix + "Search content failed. Error response = " + response.getBody());
+                logger.debug(requestContext, logMsgPrefix + "Search content failed. Error response = " + response.getBody());
                 return null;
               }
             } catch (Exception e) {
-              ProjectLogger.log(
-                  logMsgPrefix + "Exception occurred with error message = " + e.getMessage(), e);
+              logger.error(requestContext, logMsgPrefix + "Exception occurred with error message = " + e.getMessage(), e);
               return null;
             }
           }
@@ -102,7 +103,7 @@ public class ContentSearchUtil {
   }
 
   public static Map<String, Object> searchContentSync(
-      String urlQueryString, String queryRequestBody, Map<String, String> headers) {
+          RequestContext requestContext, String urlQueryString, String queryRequestBody, Map<String, String> headers) {
     Unirest.clearDefaultHeaders();
     String urlString =
         StringUtils.isNotBlank(urlQueryString)
@@ -127,10 +128,12 @@ public class ContentSearchUtil {
         resultMap.put(JsonKey.PARAMS, param);
         return resultMap;
       } else {
-        return null;
+        logger.info(requestContext, "Composite search resturned failed response :: " + response.getStatus());
+        return new HashMap<>();
       }
     } catch (Exception e) {
-      return null;
+      logger.error(requestContext, "Exception occurred while calling composite search service :: ", e);
+      return new HashMap<>();
     }
   }
 

@@ -1,9 +1,5 @@
 package org.sunbird.common.cacheloader;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.apache.commons.collections.CollectionUtils;
 import org.sunbird.cache.CacheFactory;
 import org.sunbird.cache.interfaces.Cache;
@@ -11,15 +7,20 @@ import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.util.DataCacheHandler;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class PageCacheLoaderService implements Runnable {
   private CassandraOperation cassandraOperation = ServiceFactory.getInstance();
   private static final String KEY_SPACE_NAME = "sunbird";
   private static boolean isCacheEnabled = false;
+  private static LoggerUtil logger = new LoggerUtil(PageCacheLoaderService.class);
   //      Boolean.parseBoolean(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_CACHE_ENABLE));
 
   private static Cache cache = CacheFactory.getInstance();
@@ -28,7 +29,7 @@ public class PageCacheLoaderService implements Runnable {
   public Map<String, Map<String, Object>> cacheLoader(String tableName) {
     Map<String, Map<String, Object>> map = new HashMap<>();
     try {
-      Response response = cassandraOperation.getAllRecords(KEY_SPACE_NAME, tableName);
+      Response response = cassandraOperation.getAllRecords(null, KEY_SPACE_NAME, tableName);
       List<Map<String, Object>> responseList =
           (List<Map<String, Object>>) response.get(JsonKey.RESPONSE);
       if (CollectionUtils.isNotEmpty(responseList)) {
@@ -39,8 +40,7 @@ public class PageCacheLoaderService implements Runnable {
         }
       }
     } catch (Exception e) {
-      ProjectLogger.log(
-          "CacheLoaderService:cacheLoader: Exception occurred = " + e.getMessage(), e);
+      logger.error(null, "CacheLoaderService:cacheLoader: Exception occurred = " + e.getMessage(), e);
     }
     return map;
   }
@@ -75,8 +75,7 @@ public class PageCacheLoaderService implements Runnable {
   }
 
   private void updateAllCache() {
-    ProjectLogger.log("CacheLoaderService: updateAllCache called", LoggerEnum.INFO.name());
-
+    logger.info(null, "CacheLoaderService: updateAllCache called");
     updateCache(cacheLoader(JsonKey.PAGE_SECTION), ActorOperations.GET_SECTION.getValue());
     updateCache(cacheLoader(JsonKey.PAGE_MANAGEMENT), ActorOperations.GET_PAGE_DATA.getValue());
   }
@@ -98,9 +97,7 @@ public class PageCacheLoaderService implements Runnable {
         cache.put(mapName, key, cacheMap.get(key));
       }
     } catch (Exception e) {
-      ProjectLogger.log(
-          "CacheLoaderService:updateCache: Error occured = " + e.getMessage(),
-          LoggerEnum.ERROR.name());
+      logger.error(null, "CacheLoaderService:updateCache: Error occured = " + e.getMessage(), e);
     }
   }
 

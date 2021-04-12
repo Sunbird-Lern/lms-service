@@ -4,6 +4,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
 
 import akka.dispatch.Futures;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.Assert;
@@ -12,8 +13,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.application.test.SunbirdApplicationActorTest;
 import org.sunbird.builder.mocker.CassandraMocker;
@@ -26,12 +29,17 @@ import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.request.Request;
 import org.sunbird.helper.ServiceFactory;
-import org.sunbird.learner.util.EkStepRequestUtil;
+import org.sunbird.kafka.client.InstructionEventGenerator;
+import org.sunbird.kafka.client.KafkaClient;
+import org.sunbird.learner.util.ContentUtil;
 import org.sunbird.userorg.UserOrgServiceImpl;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ServiceFactory.class})
-@PowerMockIgnore("javax.management.*")
+@SuppressStaticInitializationFor("org.sunbird.kafka.client.KafkaClient")
+@PrepareForTest({ServiceFactory.class, InstructionEventGenerator.class, KafkaClient.class})
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*", "jdk.internal.reflect.*",
+        "sun.security.ssl.*", "javax.net.ssl.*", "javax.crypto.*",
+        "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest {
 
   private MockerBuilder.MockersGroup group;
@@ -45,15 +53,15 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
     ServiceFactory.class,
     EsClientFactory.class,
     UserOrgServiceImpl.class,
-    EkStepRequestUtil.class
+    ContentUtil.class,  InstructionEventGenerator.class, KafkaClient.class
   })
-  public void createBatchInviteSuccess() {
+  public void createBatchInviteSuccess() throws Exception {
     group =
         MockerBuilder.getFreshMockerGroup()
             .withCassandraMock(new CassandraMocker())
             .withESMock(new ESMocker())
             .withUserOrgMock(new UserOrgMocker())
-            .andStaticMock(EkStepRequestUtil.class);
+            .andStaticMock(ContentUtil.class);
     Map<String, Object> courseBatch =
         CustomObjectBuilder.getCourseBatchBuilder()
             .generateRandomFields()
@@ -62,19 +70,29 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
             .get();
     when(group
             .getESMockerService()
-            .save(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
+            .save(Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
         .thenReturn(Futures.successful("randomESID"));
-    when(EkStepRequestUtil.searchContent(Mockito.anyString(), Mockito.anyMap()))
+    when(ContentUtil.searchContent(Mockito.anyString(), Mockito.anyMap()))
         .thenReturn(CustomObjectBuilder.getRandomCourse().get());
     when(group
             .getCassandraMockerService()
-            .insertRecord(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
+            .insertRecord(Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
         .thenReturn(
             new CustomObjectBuilder.CustomObjectWrapper<Boolean>(true).asCassandraResponse());
     when(group.getUserOrgMockerService().getOrganisationById(Mockito.anyString()))
         .thenReturn(CustomObjectBuilder.getRandomOrg().get());
+    PowerMockito.mockStatic(InstructionEventGenerator.class);
+    PowerMockito.mockStatic(KafkaClient.class);
+    PowerMockito.doNothing()
+            .when(InstructionEventGenerator.class,
+                    "pushInstructionEvent",
+                    Mockito.anyString(),
+                    Mockito.anyMap());
+
+    PowerMockito.doNothing()
+            .when(KafkaClient.class, "send", Mockito.anyString(), Mockito.anyString());
     String orgId = ((List<String>) courseBatch.get(JsonKey.COURSE_CREATED_FOR)).get(0);
-    when(group.getUserOrgMockerService().getUsersByIds(Mockito.anyList()))
+    when(group.getUserOrgMockerService().getUsersByIds(Mockito.anyList(), Mockito.anyString()))
         .then(
             new Answer<List<Map<String, Object>>>() {
               @Override
@@ -84,7 +102,7 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
                 return CustomObjectBuilder.getRandomUsersWithIds(userList, orgId).get();
               }
             });
-    when(group.getUserOrgMockerService().getUserById(Mockito.anyString()))
+    when(group.getUserOrgMockerService().getUserById(Mockito.anyString(), Mockito.anyString()))
         .then(
             new Answer<Map<String, Object>>() {
 
@@ -96,6 +114,9 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
                     .get(0);
               }
             });
+    PowerMockito.mockStatic(ContentUtil.class);
+    mockCourseEnrollmentActor();
+
     Request req = new Request();
     req.setOperation("createBatch");
     req.setRequest(courseBatch);
@@ -108,12 +129,23 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
   @PrepareForTest({EsClientFactory.class})
   public void getBatchSuccess() {
     group = MockerBuilder.getFreshMockerGroup().withESMock(new ESMocker());
-    when(group.getESMockerService().getDataByIdentifier(Mockito.anyString(), Mockito.anyString()))
+    when(group.getESMockerService().getDataByIdentifier(Mockito.any(), Mockito.anyString(), Mockito.anyString()))
         .thenReturn(CustomObjectBuilder.getRandomCourseBatch().asESIdentifierResult());
     Request req = new Request();
     req.setOperation("getBatch");
     req.getContext().put(JsonKey.BATCH_ID, "randomBatchId");
     Response response = executeInTenSeconds(req, Response.class);
     Assert.assertNotNull(response);
+  }
+
+  private void mockCourseEnrollmentActor(){
+    Map<String, Object> courseMap = new HashMap<String, Object>() {{
+      put("content", new HashMap<String, Object>() {{
+        put("contentType", "Course");
+        put("status", "Live");
+      }});
+    }};
+    when(ContentUtil.getContent(
+            Mockito.anyString())).thenReturn(courseMap);
   }
 }

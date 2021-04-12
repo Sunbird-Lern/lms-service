@@ -1,22 +1,24 @@
 package org.sunbird.learner.actors.coursebatch;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.apache.commons.collections.CollectionUtils;
 import org.sunbird.actor.base.BaseActor;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.PropertiesCache;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.request.RequestContext;
+import org.sunbird.learner.util.ContentUtil;
 import org.sunbird.learner.util.CourseBatchSchedulerUtil;
 import org.sunbird.models.course.batch.CourseBatch;
 import org.sunbird.userorg.UserOrgService;
 import org.sunbird.userorg.UserOrgServiceImpl;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Actor responsible to sending email notifications to participants and mentors in open and
@@ -24,10 +26,10 @@ import org.sunbird.userorg.UserOrgServiceImpl;
  */
 public class CourseBatchNotificationActor extends BaseActor {
   private static String courseBatchNotificationSignature =
-          PropertiesCache.getInstance()
-                  .getProperty(JsonKey.SUNBIRD_COURSE_BATCH_NOTIFICATION_SIGNATURE);
+      PropertiesCache.getInstance()
+          .getProperty(JsonKey.SUNBIRD_COURSE_BATCH_NOTIFICATION_SIGNATURE);
   private static String baseUrl =
-          PropertiesCache.getInstance().getProperty(JsonKey.SUNBIRD_WEB_URL);
+      PropertiesCache.getInstance().getProperty(JsonKey.SUNBIRD_WEB_URL);
   private UserOrgService userOrgService = UserOrgServiceImpl.getInstance();
 
   @Override
@@ -35,15 +37,11 @@ public class CourseBatchNotificationActor extends BaseActor {
     String requestedOperation = request.getOperation();
 
     if (requestedOperation.equals(ActorOperations.COURSE_BATCH_NOTIFICATION.getValue())) {
-      ProjectLogger.log(
-              "CourseBatchNotificationActor:onReceive: operation = " + request.getOperation(),
-              LoggerEnum.INFO);
+      logger.info(request.getRequestContext(), "CourseBatchNotificationActor:onReceive: operation = " + request.getOperation());
       courseBatchNotification(request);
     } else {
-      ProjectLogger.log(
-              "CourseBatchNotificationActor:onReceive: Unsupported operation = "
-                      + request.getOperation(),
-              LoggerEnum.ERROR);
+      logger.error(request.getRequestContext(), "CourseBatchNotificationActor:onReceive: Unsupported operation = "
+              + request.getOperation(), null);
     }
   }
 
@@ -52,19 +50,17 @@ public class CourseBatchNotificationActor extends BaseActor {
     Map<String, Object> requestMap = request.getRequest();
 
     CourseBatch courseBatch = (CourseBatch) requestMap.get(JsonKey.COURSE_BATCH);
+    String authToken = (String) request.getContext().getOrDefault(JsonKey.X_AUTH_TOKEN, "");
 
     String userId = (String) requestMap.get(JsonKey.USER_ID);
-    ProjectLogger.log(
-            "CourseBatchNotificationActor:courseBatchNotification: userId = " + userId,
-            LoggerEnum.INFO);
+    logger.info(request.getRequestContext(), "CourseBatchNotificationActor:courseBatchNotification: userId = " + userId);
 
     Map<String, String> headers = CourseBatchSchedulerUtil.headerMap;
     Map<String, Object> contentDetails =
-            CourseEnrollmentActor.getCourseObjectFromEkStep(courseBatch.getCourseId(), headers);
+        ContentUtil.getCourseObjectFromEkStep(courseBatch.getCourseId(), headers);
 
     if (userId != null) {
-      ProjectLogger.log(
-              "CourseBatchNotificationActor:courseBatchNotification: Open batch", LoggerEnum.INFO);
+      logger.info(request.getRequestContext(), "CourseBatchNotificationActor:courseBatchNotification: Open batch");
 
       // Open batch
       String template = JsonKey.OPEN_BATCH_LEARNER_UNENROL;
@@ -74,85 +70,78 @@ public class CourseBatchNotificationActor extends BaseActor {
 
       if (operationType.equals(JsonKey.ADD)) {
         template = JsonKey.OPEN_BATCH_LEARNER_ENROL;
-        subject = TRAINING_INVITATION;
+        subject = JsonKey.COURSE_INVITATION;
       }
 
-      triggerEmailNotification(
-              Arrays.asList(userId), courseBatch, subject, template, contentDetails);
+      triggerEmailNotification( request.getRequestContext(), 
+          Arrays.asList(userId), courseBatch, subject, template, contentDetails, authToken);
 
     } else {
-      ProjectLogger.log(
-              "CourseBatchNotificationActor:courseBatchNotification: Invite only batch",
-              LoggerEnum.INFO);
+      logger.info(request.getRequestContext(), "CourseBatchNotificationActor:courseBatchNotification: Invite only batch");
 
       List<String> addedMentors = (List<String>) requestMap.get(JsonKey.ADDED_MENTORS);
       List<String> removedMentors = (List<String>) requestMap.get(JsonKey.REMOVED_MENTORS);
 
       triggerEmailNotification(
-          addedMentors,
+              request.getRequestContext(), addedMentors,
           courseBatch,
-          TRAINING_INVITATION,
+          JsonKey.COURSE_INVITATION,
           JsonKey.BATCH_MENTOR_ENROL,
-          contentDetails);
+          contentDetails, authToken);
       triggerEmailNotification(
-              removedMentors,
-              courseBatch,
-              JsonKey.UNENROLL_FROM_COURSE_BATCH,
-              JsonKey.BATCH_MENTOR_UNENROL,
-              contentDetails);
+              request.getRequestContext(), removedMentors,
+          courseBatch,
+          JsonKey.UNENROLL_FROM_COURSE_BATCH,
+          JsonKey.BATCH_MENTOR_UNENROL,
+          contentDetails, authToken);
 
       List<String> addedParticipants = (List<String>) requestMap.get(JsonKey.ADDED_PARTICIPANTS);
       List<String> removedParticipants =
-              (List<String>) requestMap.get(JsonKey.REMOVED_PARTICIPANTS);
+          (List<String>) requestMap.get(JsonKey.REMOVED_PARTICIPANTS);
 
       triggerEmailNotification(
-          addedParticipants,
+              request.getRequestContext(), addedParticipants,
           courseBatch,
-          TRAINING_INVITATION,
+          JsonKey.COURSE_INVITATION,
           JsonKey.BATCH_LEARNER_ENROL,
-          contentDetails);
+          contentDetails, authToken);
       triggerEmailNotification(
-              removedParticipants,
-              courseBatch,
-              JsonKey.UNENROLL_FROM_COURSE_BATCH,
-              JsonKey.BATCH_LEARNER_UNENROL,
-              contentDetails);
+              request.getRequestContext(), removedParticipants,
+          courseBatch,
+          JsonKey.UNENROLL_FROM_COURSE_BATCH,
+          JsonKey.BATCH_LEARNER_UNENROL,
+          contentDetails, authToken);
     }
   }
 
   private void triggerEmailNotification(
-          List<String> userIdList,
+          RequestContext requestContext, List<String> userIdList,
           CourseBatch courseBatch,
           String subject,
           String template,
-          Map<String, Object> contentDetails) {
+          Map<String, Object> contentDetails, String authToken) {
 
-    ProjectLogger.log(
-            "CourseBatchNotificationActor:triggerEmailNotification: userIdList = "
-                    + CollectionUtils.isEmpty(userIdList),
-            LoggerEnum.INFO);
+    logger.debug(requestContext, "CourseBatchNotificationActor:triggerEmailNotification: userIdList = "
+            + userIdList);
 
     if (CollectionUtils.isEmpty(userIdList)) return;
 
     for (String userId : userIdList) {
       Map<String, Object> requestMap =
-              createEmailRequest(userId, courseBatch, contentDetails, subject, template);
+          createEmailRequest(userId, courseBatch, contentDetails, subject, template);
 
-      ProjectLogger.log(
-              "CourseBatchNotificationActor:triggerEmailNotification: requestMap = " + requestMap,
-              LoggerEnum.INFO);
-
-      sendMail(requestMap);
+      logger.info(requestContext, "CourseBatchNotificationActor:triggerEmailNotification: requestMap = " + requestMap);
+      sendMail(requestContext, requestMap, authToken);
     }
   }
 
   @SuppressWarnings("unchecked")
   private Map<String, Object> createEmailRequest(
-          String userId,
-          CourseBatch courseBatch,
-          Map<String, Object> contentDetails,
-          String subject,
-          String template) {
+      String userId,
+      CourseBatch courseBatch,
+      Map<String, Object> contentDetails,
+      String subject,
+      String template) {
     Map<String, Object> courseBatchObject = new ObjectMapper().convertValue(courseBatch, Map.class);
 
     Map<String, Object> request = new HashMap<>();
@@ -169,14 +158,11 @@ public class CourseBatchNotificationActor extends BaseActor {
     requestMap.put(JsonKey.BATCH_NAME, courseBatch.getName());
     requestMap.put(JsonKey.COURSE_NAME, contentDetails.get(JsonKey.NAME));
     requestMap.put(
-            JsonKey.COURSE_BATCH_URL,
-            getCourseBatchUrl(courseBatch.getCourseId(), courseBatch.getBatchId()));
+        JsonKey.COURSE_BATCH_URL,
+        getCourseBatchUrl(courseBatch.getCourseId(), courseBatch.getBatchId()));
     requestMap.put(JsonKey.SIGNATURE, courseBatchNotificationSignature);
     requestMap.put(JsonKey.RECIPIENT_USERIDS, Arrays.asList(userId));
     request.put(JsonKey.REQUEST, requestMap);
-    ProjectLogger.log(
-            "CourseBatchNotificationActor:createEmailRequest: success  ", LoggerEnum.INFO);
-
     return request;
   }
 
@@ -186,17 +172,14 @@ public class CourseBatchNotificationActor extends BaseActor {
     return url;
   }
 
-  private void sendMail(Map<String, Object> requestMap) {
-    ProjectLogger.log("CourseBatchNotificationActor:sendMail: email ready  ", LoggerEnum.INFO);
+  private void sendMail(RequestContext requestContext, Map<String, Object> requestMap, String authToken) {
+    logger.info(requestContext, "CourseBatchNotificationActor:sendMail: email ready");
     try {
-      userOrgService.sendEmailNotification(requestMap);
-      ProjectLogger.log(
-              "CourseBatchNotificationActor:sendMail: Email sent successfully", LoggerEnum.INFO);
+      userOrgService.sendEmailNotification(requestMap, authToken);
+      logger.info(requestContext, "CourseBatchNotificationActor:sendMail: Email sent successfully");
     } catch (Exception e) {
-      ProjectLogger.log(
-              "CourseBatchNotificationActor:sendMail: Exception occurred with error message = "
-                      + e.getMessage(),
-              e);
+      logger.error(requestContext, "CourseBatchNotificationActor:sendMail: Exception occurred with error message = "
+                      + e.getMessage(), e);
     }
   }
 }

@@ -25,7 +25,9 @@ import java.util.Map;
 
 /** Created by arvind on 4/12/17. */
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*", "jdk.internal.reflect.*",
+        "sun.security.ssl.*", "javax.net.ssl.*", "javax.crypto.*",
+        "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 
 public class BulkUploadControllerTest extends BaseApplicationTest {
 
@@ -91,7 +93,7 @@ public class BulkUploadControllerTest extends BaseApplicationTest {
     Assert.assertEquals( 200, result.status());
   }
 
-  private static String mapToJson(Map map) {
+  private String mapToJson(Map map) {
     ObjectMapper mapperObj = new ObjectMapper();
     String jsonResp = "";
     try {

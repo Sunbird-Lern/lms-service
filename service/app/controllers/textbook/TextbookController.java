@@ -1,25 +1,10 @@
 package controllers.textbook;
 
+import static org.sunbird.common.exception.ProjectCommonException.throwClientErrorException;
+
 import akka.actor.ActorRef;
 import akka.util.Timeout;
 import controllers.BaseController;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.request.ExecutionContext;
-import org.sunbird.common.request.Request;
-import org.sunbird.common.responsecode.ResponseCode;
-import org.sunbird.learner.actors.textbook.TextbookActorOperation;
-import play.libs.Files;
-import play.mvc.Http;
-import play.mvc.Result;
-
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,8 +15,22 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
-
-import static org.sunbird.common.exception.ProjectCommonException.throwClientErrorException;
+import javax.inject.Inject;
+import javax.inject.Named;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.LoggerEnum;
+import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.request.Request;
+import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.learner.actors.textbook.TextbookActorOperation;
+import play.libs.Files;
+import play.mvc.Http;
+import play.mvc.Result;
+import util.Attrs;
 
 /**
  * Handles Textbook TOC APIs.
@@ -63,16 +62,19 @@ public class TextbookController extends BaseController {
   public CompletionStage<Result> getTocUrl(String textbookId, Http.Request httpRequest) {
     try {
       return handleRequest(
-              textbookTocActorRef,
-          TextbookActorOperation.TEXTBOOK_TOC_URL.getValue(), textbookId, JsonKey.TEXTBOOK_ID, httpRequest);
+          textbookTocActorRef,
+          TextbookActorOperation.TEXTBOOK_TOC_URL.getValue(),
+          textbookId,
+          JsonKey.TEXTBOOK_ID,
+          httpRequest);
     } catch (Exception e) {
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
   }
 
-//  @Override
-  public Request createAndInitUploadRequest(String operation, String objectType, Http.Request httpRequest)
-      throws IOException {
+  //  @Override
+  public Request createAndInitUploadRequest(
+      String operation, String objectType, Http.Request httpRequest) throws IOException {
     ProjectLogger.log("API call for operation : " + operation);
     Request reqObj = new Request();
     Map<String, Object> map = new HashMap<>();
@@ -120,10 +122,10 @@ public class TextbookController extends BaseController {
           "TextbookController:createAndInitUploadRequest : Exception occurred while closing stream");
     }
     reqObj.setOperation(operation);
-    reqObj.setRequestId(ExecutionContext.getRequestId());
+    reqObj.setRequestId(httpRequest.attrs().getOptional(Attrs.REQUEST_ID).orElse(null));
     reqObj.setEnv(getEnvironment());
     map.put(JsonKey.OBJECT_TYPE, objectType);
-    map.put(JsonKey.CREATED_BY, httpRequest.flash().get(JsonKey.USER_ID));
+    map.put(JsonKey.CREATED_BY, httpRequest.attrs().getOptional(Attrs.USER_ID).orElse(null));
     map.put(JsonKey.DATA, byteArray);
     reqObj.setRequest(map);
     return reqObj;

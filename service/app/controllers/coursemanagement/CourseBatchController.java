@@ -18,19 +18,19 @@ import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerEnum;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil.EsType;
-import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
 import play.mvc.Http;
 import play.mvc.Result;
+import util.Attrs;
 
 public class CourseBatchController extends BaseController {
 
-    @Inject
-    @Named("course-batch-management-actor")
+  @Inject
+  @Named("course-batch-management-actor")
   private ActorRef courseBatchActorRef;
 
-    @Inject
-    @Named("search-handler-actor")
+  @Inject
+  @Named("search-handler-actor")
   private ActorRef compositeSearchActorRef;
 
   public CompletionStage<Result> createBatch(Http.Request httpRequest) {
@@ -39,11 +39,18 @@ public class CourseBatchController extends BaseController {
         ActorOperations.CREATE_BATCH.getValue(),
         httpRequest.body().asJson(),
         (request) -> {
-          new CourseBatchRequestValidator().validateCreateCourseBatchRequest((Request) request);
+          Request req = (Request) request;
+          String courseId = req.getRequest().containsKey(JsonKey.COURSE_ID) ? JsonKey.COURSE_ID : JsonKey.COLLECTION_ID;
+          req.getRequest().put(JsonKey.COURSE_ID, req.getRequest().get(courseId));
+          new CourseBatchRequestValidator().validateCreateCourseBatchRequest(req);
           return null;
         },
         getAllRequestHeaders(httpRequest),
         httpRequest);
+  }
+
+  public CompletionStage<Result> privateCreateBatch(Http.Request httpRequest) {
+      return createBatch(httpRequest);
   }
 
   public CompletionStage<Result> getBatch(String batchId, Http.Request httpRequest) {
@@ -62,7 +69,10 @@ public class CourseBatchController extends BaseController {
         ActorOperations.UPDATE_BATCH.getValue(),
         httpRequest.body().asJson(),
         (request) -> {
-          new CourseBatchRequestValidator().validateUpdateCourseBatchRequest((Request) request);
+          Request req = (Request) request;
+          String courseId = req.getRequest().containsKey(JsonKey.COURSE_ID) ? JsonKey.COURSE_ID : JsonKey.COLLECTION_ID;
+          req.getRequest().put(JsonKey.COURSE_ID, req.getRequest().get(courseId));
+          new CourseBatchRequestValidator().validateUpdateCourseBatchRequest(req);
           return null;
         },
         httpRequest);
@@ -105,10 +115,11 @@ public class CourseBatchController extends BaseController {
           "CourseBatchController: search called with data = " + requestData,
           LoggerEnum.DEBUG.name());
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
+        reqObj.put("creatorDetails", httpRequest.queryString().containsKey("creatorDetails"));
       reqObj.setOperation(ActorOperations.COMPOSITE_SEARCH.getValue());
-      reqObj.setRequestId(ExecutionContext.getRequestId());
+      reqObj.setRequestId(httpRequest.attrs().getOptional(Attrs.REQUEST_ID).orElse(null));
       reqObj.setEnv(getEnvironment());
-      reqObj.put(JsonKey.REQUESTED_BY, httpRequest.flash().get(JsonKey.USER_ID));
+      reqObj.put(JsonKey.REQUESTED_BY, httpRequest.attrs().getOptional(Attrs.USER_ID).orElse(null));
       String requestedField = httpRequest.getQueryString(JsonKey.FIELDS);
       reqObj.getContext().put(JsonKey.PARTICIPANTS, requestedField);
       List<String> esObjectType = new ArrayList<>();

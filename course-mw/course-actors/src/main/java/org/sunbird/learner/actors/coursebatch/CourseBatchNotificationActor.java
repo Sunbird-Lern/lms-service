@@ -70,7 +70,7 @@ public class CourseBatchNotificationActor extends BaseActor {
 
       if (operationType.equals(JsonKey.ADD)) {
         template = JsonKey.OPEN_BATCH_LEARNER_ENROL;
-        subject = TRAINING_INVITATION;
+        subject = JsonKey.COURSE_INVITATION;
       }
 
       triggerEmailNotification( request.getRequestContext(), 

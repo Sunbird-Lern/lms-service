@@ -16,7 +16,7 @@ public class CertificateRequestValidator extends BaseRequestValidator {
     validateParam(
         (String) certRequestDto.getRequest().get(JsonKey.COURSE_ID),
         ResponseCode.mandatoryParamsMissing,
-        JsonKey.COURSE_ID);
+        JsonKey.COURSE_ID+"/"+JsonKey.COLLECTION_ID);
     validateParam(
         (String) certRequestDto.getRequest().get(JsonKey.BATCH_ID),
         ResponseCode.mandatoryParamsMissing,
@@ -190,6 +190,23 @@ public class CertificateRequestValidator extends BaseRequestValidator {
             MessageFormat.format(ResponseCode.invalidPropertyError.getErrorMessage(), "for Score"),
             ResponseCode.CLIENT_ERROR.getResponseCode());
       }
+    }
+    if (criteria.containsKey(JsonKey.USER)
+            && !(criteria.get(JsonKey.USER) instanceof Map)) {
+      throw new ProjectCommonException(
+              ResponseCode.dataTypeError.getErrorCode(),
+              MessageFormat.format(
+                      ResponseCode.dataTypeError.getErrorMessage(), JsonKey.USER, "Map"),
+              ResponseCode.CLIENT_ERROR.getResponseCode());
+    }
+    if (criteria.containsKey(JsonKey.USER)
+            && !((Map<String, Object>) criteria.get(JsonKey.USER))
+            .containsKey(JsonKey.ROOT_ORG_ID)) {
+      throw new ProjectCommonException(
+              ResponseCode.mandatoryParamsMissing.getErrorCode(),
+              MessageFormat.format(
+                      ResponseCode.mandatoryParamsMissing.getErrorMessage(), JsonKey.ROOT_ORG_ID),
+              ResponseCode.CLIENT_ERROR.getResponseCode());
     }
   }
 }

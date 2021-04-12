@@ -1,24 +1,25 @@
 package org.sunbird.learner.util;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.ElasticSearchHelper;
-import org.sunbird.common.ElasticSearchTcpImpl;
+import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.util.HttpUtil;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.PropertiesCache;
 import org.sunbird.common.request.HeaderParam;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.helper.ServiceFactory;
 import scala.concurrent.Future;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This class will update course batch count to EKStep. First it will get batch details from ES ,
@@ -29,9 +30,10 @@ import scala.concurrent.Future;
  */
 public final class CourseBatchSchedulerUtil {
   public static Map<String, String> headerMap = new HashMap<>();
-  private static ElasticSearchService esService = new ElasticSearchTcpImpl();
+  private static ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
+  private static LoggerUtil logger = new LoggerUtil(CourseBatchSchedulerUtil.class);
   private static String EKSTEP_COURSE_SEARCH_QUERY =
-      "{\"request\": {\"filters\":{\"contentType\": [\"Course\"], \"objectType\": [\"Content\"], \"identifier\": \"COURSE_ID_PLACEHOLDER\", \"status\": \"Live\"},\"limit\": 1}}";
+      "{\"request\": {\"filters\":{\"identifier\": \"COURSE_ID_PLACEHOLDER\", \"status\": \"Live\", \"mimeType\": \"application/vnd.ekstep.content-collection\", \"trackable.enabled\": \"Yes\"},\"limit\": 1}}";
 
   static {
     String header = ProjectUtil.getConfigValue(JsonKey.EKSTEP_AUTHORIZATION);
@@ -45,66 +47,61 @@ public final class CourseBatchSchedulerUtil {
   /**
    * Method to update course batch status to db as well as EkStep .
    *
-   * @param increment
    * @param map
+   * @param increment
+   * @param requestContext
    */
-  public static void updateCourseBatchDbStatus(Map<String, Object> map, Boolean increment) {
-    ProjectLogger.log(
-        "CourseBatchSchedulerUtil:updateCourseBatchDbStatus: updating course batch details start",
-        LoggerEnum.INFO.name());
+  public static void updateCourseBatchDbStatus(Map<String, Object> map, Boolean increment, RequestContext requestContext) {
+    logger.info(requestContext, "updateCourseBatchDbStatus: updating course batch details start");
     try {
       boolean response =
-          doOperationInEkStepCourse(
+          doOperationInContentCourse(requestContext,
               (String) map.get(JsonKey.COURSE_ID),
               increment,
               (String) map.get(JsonKey.ENROLLMENT_TYPE));
-      ProjectLogger.log("Geeting response code back for update content == " + response);
+      logger.debug(requestContext, "Response for update content == " + response);
       if (response) {
-        boolean flag = updateDataIntoES(map);
+        boolean flag = updateDataIntoES(requestContext, map);
         if (flag) {
-          updateDataIntoCassandra(map);
+          updateDataIntoCassandra(requestContext, map);
         }
       } else {
-        ProjectLogger.log(
-            "CourseBatchSchedulerUtil:updateCourseBatchDbStatus: Ekstep content update failed for courseId "
-                + (String) map.get(JsonKey.COURSE_ID),
-            LoggerEnum.INFO.name());
+        logger.info(requestContext, "CourseBatchSchedulerUtil:updateCourseBatchDbStatus: Ekstep content update failed for courseId "
+                + (String) map.get(JsonKey.COURSE_ID));
       }
     } catch (Exception e) {
-      ProjectLogger.log(
-          "CourseBatchSchedulerUtil:updateCourseBatchDbStatus: Exception occurred while savin data to course batch db "
-              + e.getMessage(),
-          LoggerEnum.INFO.name());
+      logger.error(requestContext, "CourseBatchSchedulerUtil:updateCourseBatchDbStatus: Exception occurred while savin data to course batch db "
+              + e.getMessage(), e);
     }
   }
 
-  /** @param map */
-  public static boolean updateDataIntoES(Map<String, Object> map) {
+  /**
+   * @param requestContext
+   * @param map */
+  public static boolean updateDataIntoES(RequestContext requestContext, Map<String, Object> map) {
     boolean flag = true;
     try {
       Future<Boolean> flagF =
           esService.update(
-              ProjectUtil.EsType.course.getTypeName(), (String) map.get(JsonKey.ID), map);
+                  requestContext, ProjectUtil.EsType.course.getTypeName(), (String) map.get(JsonKey.ID), map);
       flag = (boolean) ElasticSearchHelper.getResponseFromFuture(flagF);
     } catch (Exception e) {
-      ProjectLogger.log(
-          "CourseBatchSchedulerUtil:updateDataIntoES: Exception occurred while saving course batch data to ES",
-          e);
+      logger.error(requestContext, "CourseBatchSchedulerUtil:updateDataIntoES: Exception occurred while saving course batch data to ES", e);
       flag = false;
     }
     return flag;
   }
 
-  /** @param map */
-  public static void updateDataIntoCassandra(Map<String, Object> map) {
+  /**
+   * @param map
+   * @param requestContext */
+  public static void updateDataIntoCassandra(RequestContext requestContext, Map<String, Object> map) {
     CassandraOperation cassandraOperation = ServiceFactory.getInstance();
     Util.DbInfo courseBatchDBInfo = Util.dbInfoMap.get(JsonKey.COURSE_BATCH_DB);
     cassandraOperation.updateRecord(
-        courseBatchDBInfo.getKeySpace(), courseBatchDBInfo.getTableName(), map);
-    ProjectLogger.log(
-        "CourseBatchSchedulerUtil:updateDataIntoCassandra: Update Successful for batchId "
-            + map.get(JsonKey.ID),
-        LoggerEnum.INFO);
+            requestContext, courseBatchDBInfo.getKeySpace(), courseBatchDBInfo.getTableName(), map);
+    logger.info(requestContext, "CourseBatchSchedulerUtil:updateDataIntoCassandra: Update Successful for batchId "
+            + map.get(JsonKey.ID));
   }
 
   private static void addHeaderProps(Map<String, String> header, String key, String value) {
@@ -113,37 +110,33 @@ public final class CourseBatchSchedulerUtil {
   /**
    * Method to update the content state at ekstep : batch count
    *
+   *
+   * @param requestContext
    * @param courseId
    * @param increment
    * @param enrollmentType
    * @return
    */
-  public static boolean doOperationInEkStepCourse(
-      String courseId, boolean increment, String enrollmentType) {
+  public static boolean doOperationInContentCourse(
+          RequestContext requestContext, String courseId, boolean increment, String enrollmentType) {
     String contentName = getCountName(enrollmentType);
     boolean response = false;
-    Map<String, Object> ekStepContent = getCourseObjectFromEkStep(courseId, getBasicHeader());
+    Map<String, Object> ekStepContent = getCourseObject(requestContext, courseId, getBasicHeader());
     if (MapUtils.isNotEmpty(ekStepContent)) {
       int val = getUpdatedBatchCount(ekStepContent, contentName, increment);
       if (ekStepContent.get(JsonKey.CHANNEL) != null) {
-        ProjectLogger.log(
-            "Channel value coming from content is "
-                + (String) ekStepContent.get(JsonKey.CHANNEL)
-                + " Id "
-                + courseId,
-            LoggerEnum.INFO.name());
+        logger.info(requestContext, "Channel value coming from content is " + (String) ekStepContent.get(JsonKey.CHANNEL)
+                + " Id " + courseId);
         addHeaderProps(
             getBasicHeader(),
             HeaderParam.CHANNEL_ID.getName(),
             (String) ekStepContent.get(JsonKey.CHANNEL));
       } else {
-        ProjectLogger.log(
-            "No channel value available in content with Id " + courseId, LoggerEnum.INFO.name());
+        logger.info(requestContext, "No channel value available in content with Id " + courseId);
       }
-      response = updateEkstepContent(courseId, contentName, val);
+      response = updateCourseContent(requestContext, courseId, contentName, val);
     } else {
-      ProjectLogger.log(
-          "EKstep content not found for course id==" + courseId, LoggerEnum.INFO.name());
+      logger.info(requestContext, "EKstep content not found for course id==" + courseId);
     }
     return response;
   }
@@ -170,11 +163,10 @@ public final class CourseBatchSchedulerUtil {
     return val;
   }
 
-  public static boolean updateEkstepContent(String courseId, String contentName, int val) {
+  public static boolean updateCourseContent(RequestContext requestContext, String courseId, String contentName, int val) {
     String response = "";
     try {
-      ProjectLogger.log("updating content details to Ekstep start", LoggerEnum.INFO.name());
-      String contentUpdateBaseUrl = ProjectUtil.getConfigValue(JsonKey.EKSTEP_BASE_URL);
+      String contentUpdateBaseUrl = ProjectUtil.getConfigValue(JsonKey.LEARNING_SERVICE_BASE_URL);
       response =
           HttpUtil.sendPatchRequest(
               contentUpdateBaseUrl
@@ -182,33 +174,28 @@ public final class CourseBatchSchedulerUtil {
                   + courseId,
               "{\"request\": {\"content\": {\"" + contentName + "\": " + val + "}}}",
               getBasicHeader());
-      ProjectLogger.log(
-          "batch count update response==" + response + " " + courseId, LoggerEnum.INFO.name());
-    } catch (IOException e) {
-      ProjectLogger.log("Error while updating content value " + e.getMessage(), e);
+    } catch (Exception e) {
+      logger.error(requestContext, "Error while updating content value " + e.getMessage(), e);
     }
     return JsonKey.SUCCESS.equalsIgnoreCase(response);
   }
 
   @SuppressWarnings("unchecked")
-  public static Map<String, Object> getCourseObjectFromEkStep(
-      String courseId, Map<String, String> headers) {
-    ProjectLogger.log("Requested course id is ==" + courseId, LoggerEnum.INFO.name());
+  public static Map<String, Object> getCourseObject(RequestContext requestContext, String courseId, Map<String, String> headers) {
+    logger.debug(requestContext, "getCourseObject: Requested course id is ==" + courseId);
     if (!StringUtils.isBlank(courseId)) {
       try {
         String query = EKSTEP_COURSE_SEARCH_QUERY.replaceAll("COURSE_ID_PLACEHOLDER", courseId);
-        Map<String, Object> result = EkStepRequestUtil.searchContent(query, headers);
+        Map<String, Object> result = ContentUtil.searchContent(query, headers);
         if (null != result && !result.isEmpty() && result.get(JsonKey.CONTENTS) != null) {
           return ((List<Map<String, Object>>) result.get(JsonKey.CONTENTS)).get(0);
           // return (Map<String, Object>) contentObject;
         } else {
-          ProjectLogger.log(
-              "CourseEnrollmentActor:getCourseObjectFromEkStep: Content not found for requested courseId "
-                  + courseId,
-              LoggerEnum.INFO.name());
+          logger.info(requestContext, "CourseEnrollmentActor:getCourseObjectFromEkStep: Content not found for requested courseId "
+                  + courseId);
         }
       } catch (Exception e) {
-        ProjectLogger.log(e.getMessage(), e);
+        logger.error(requestContext, e.getMessage(), e);
       }
     }
     return null;

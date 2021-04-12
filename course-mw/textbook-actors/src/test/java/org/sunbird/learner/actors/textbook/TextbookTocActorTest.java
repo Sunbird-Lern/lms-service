@@ -17,6 +17,7 @@ import com.mashape.unirest.request.body.RequestBodyEntity;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +40,7 @@ import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.common.util.CloudStorageUtil;
+import org.sunbird.common.util.KeycloakRequiredActionLinkUtil;
 import org.sunbird.content.util.TextBookTocUtil;
 import org.sunbird.services.sso.SSOServiceFactory;
 import org.sunbird.services.sso.impl.KeyCloakServiceImpl;
@@ -49,36 +51,36 @@ import org.sunbird.services.sso.impl.KeyCloakServiceImpl;
   ProjectUtil.class,
   Unirest.class,
   SSOServiceFactory.class,
-  CloudStorageUtil.class
+  CloudStorageUtil.class, KeycloakRequiredActionLinkUtil.class
 })
-@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*"})
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "jdk.internal.reflect.*", "sun.security.ssl.*", "javax.net.ssl.*" , "javax.crypto.*"})
 public class TextbookTocActorTest {
 
   private static ActorSystem system;
   private static final Props props =
       Props.create(org.sunbird.learner.actors.textbook.TextbookTocActor.class);
 
-  private static final String VALID_HEADER =
+  String VALID_HEADER =
       "Identifier,Board,Medium,Grade,Subject,Textbook Name,Level 1 Textbook Unit,Description,QR Code Required?,QR Code,Purpose of Content to be linked,Mapped Topics,Keywords\n";
-  private static final String TEXTBOOK_TOC_INPUT_MAPPING =
+  String TEXTBOOK_TOC_INPUT_MAPPING =
       "{ \"identifier\":\"Identifier\",\"frameworkCategories\":{\"medium\":\"Medium\",\"gradeLevel\":\"Grade\",\"subject\":\"Subject\"},\"hierarchy\":{\"Textbook\":\"Textbook Name\",\"L:1\":\"Level 1 Textbook Unit\",\"L:2\":\"Level 2 Textbook Unit\",\"L:3\":\"Level 3 Textbook Unit\",\"L:4\":\"Level 4 Textbook Unit\"},\"metadata\":{\"description\":\"Description\",\"dialcodeRequired\":\"QR Code Required?\",\"dialcodes\":\"QR Code\",\"purpose\":\"Purpose of Content to be linked\",\"topic\":\"Mapped Topics\",\"keywords\":\"Keywords\"}}"; // getFileAsString("FrameworkForTextbookTocActorTest.json");
-  private static final String MANDATORY_VALUES =
+  String MANDATORY_VALUES =
       "{\"Textbook\":\"Textbook Name\",\"L:1\":\"Level 1 Textbook Unit\"}";
-  private static final String CONTENT_TYPE = "any";
-  private static final String IDENTIFIER = "do_1126788813057638401122";
-  private static final String TEXTBOOK_NAME = "test";
-  private static final String UNIT_NAME = "unit1";
+  String CONTENT_TYPE = "any";
+  String IDENTIFIER = "do_1126788813057638401122";
+  String TEXTBOOK_NAME = "test";
+  String UNIT_NAME = "unit1";
 
   @Before
-  public void setUp() {
+  public void setUp() throws Exception {
     PowerMockito.mockStatic(TextBookTocUtil.class);
     PowerMockito.mockStatic(ProjectUtil.class);
     PowerMockito.mockStatic(Unirest.class);
     PowerMockito.mockStatic(SSOServiceFactory.class);
     PowerMockito.mockStatic(CloudStorageUtil.class);
+    PowerMockito.mockStatic(KeycloakRequiredActionLinkUtil.class);
     KeyCloakServiceImpl ssoManager = PowerMockito.mock(KeyCloakServiceImpl.class);
     when(SSOServiceFactory.getInstance()).thenReturn(ssoManager);
-    when(ssoManager.login(Mockito.anyString(), Mockito.anyString())).thenReturn("aValidAuthToken");
     system = ActorSystem.create("system");
     when(ProjectUtil.getConfigValue(JsonKey.TEXTBOOK_TOC_MAX_CSV_ROWS)).thenReturn("5");
     when(ProjectUtil.getConfigValue(JsonKey.TEXTBOOK_TOC_MANDATORY_FIELDS))
@@ -262,10 +264,10 @@ public class TextbookTocActorTest {
     toc.tell(request, probe.getRef());
     if (error) {
       ProjectCommonException res =
-          probe.expectMsgClass(duration("10 second"), ProjectCommonException.class);
+          probe.expectMsgClass(Duration.ofSeconds(10), ProjectCommonException.class);
       return res;
     }
-    Response response = probe.expectMsgClass(duration("10 second"), Response.class);
+    Response response = probe.expectMsgClass(Duration.ofSeconds(10), Response.class);
     return response;
   }
 
@@ -292,7 +294,7 @@ public class TextbookTocActorTest {
   }
 
   private void mockRequiredMethods(boolean error, boolean withChildren) {
-    when(TextBookTocUtil.getRelatedFrameworkById(Mockito.anyString())).thenReturn(new Response());
+    when(TextBookTocUtil.getRelatedFrameworkById(Mockito.any())).thenReturn(new Response());
     when(TextBookTocUtil.readContent(Mockito.anyString(), Mockito.anyString()))
         .thenReturn(getReadContentTextbookData(withChildren));
     when(TextBookTocUtil.getObjectFrom(Mockito.anyString(), Mockito.any())).thenCallRealMethod();

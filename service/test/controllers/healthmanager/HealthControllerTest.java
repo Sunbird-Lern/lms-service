@@ -18,18 +18,13 @@ import play.mvc.Result;
 import play.test.Helpers;
 import util.ACTOR_NAMES;
 
-import java.io.IOException;
-
-import static org.junit.Assert.assertEquals;
-import static org.powermock.api.mockito.PowerMockito.when;
-import static play.test.Helpers.route;
-
 /** Created by arvind on 5/12/17. */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({HttpUtil.class})
-@PowerMockIgnore("javax.management.*")
-
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*", "jdk.internal.reflect.*",
+        "sun.security.ssl.*", "javax.net.ssl.*", "javax.crypto.*",
+        "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class HealthControllerTest extends BaseApplicationTest {
 
   @Before
@@ -49,20 +44,13 @@ public class HealthControllerTest extends BaseApplicationTest {
   }
 
   @Test
-  public void testgetEkstepServiceHealth() throws IOException {
+  public void testServiceHealth() throws Exception {
     PowerMockito.mockStatic(HttpUtil.class);
     String response ="OK";
-    when(HttpUtil.sendPostRequest(Mockito.anyString(),Mockito.anyString(),Mockito.anyMap())).thenReturn(response);
-    RequestBuilder req = new RequestBuilder().uri("/ekstep/health").method("GET");
-    Result result = route(application, req);
-    assertEquals(200, result.status());
-  }
-
-  @Test
-  public void testgetLearnerServiceHealth() throws IOException {
-    RequestBuilder req = new RequestBuilder().uri("/learner/health").method("GET");
-    Result result = route(application, req);
-    assertEquals(200, result.status());
+    PowerMockito.when(HttpUtil.sendPostRequest(Mockito.anyString(),Mockito.anyString(),Mockito.anyMap())).thenReturn(response);
+    RequestBuilder req = new RequestBuilder().uri("/service/health").method("GET");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals(200, result.status());
   }
 
 }

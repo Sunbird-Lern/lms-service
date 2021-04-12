@@ -14,9 +14,8 @@ notifications:
    on_failure: always
    email:
      recipients:
-      - manzarul.haque@tarento.com
-      - amit.kumar@tarento.com
-      - vinayab@ilimi.in
+      - mahesh@ilimi.in
+      - pradyumnan@ilimi.in
      on_success: never
      on_failure: always
 git:

@@ -22,19 +22,21 @@ import util.ACTOR_NAMES;
 
 /** @author arvind */
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*", "jdk.internal.reflect.*",
+        "sun.security.ssl.*", "javax.net.ssl.*", "javax.crypto.*",
+        "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class LearnerControllerTest extends BaseApplicationTest {
 
-  private static final String COURSE_ID = "course-123";
-  private static final String USER_ID = "user-123";
-  private static final String CONTENT_ID = "content-123";
-  private static final String BATCH_ID = "batch-123";
-  private static final String CONTENT_STATE_UPDATE_URL = "/v1/content/state/update";
-  private static final String CONTENT_STATE_READ_URL = "/v1/content/state/read";
+  String COURSE_ID = "course-123";
+  String USER_ID = "user-123";
+  String CONTENT_ID = "content-123";
+  String BATCH_ID = "batch-123";
+  String CONTENT_STATE_UPDATE_URL = "/v1/content/state/update";
+  String CONTENT_STATE_READ_URL = "/v1/content/state/read";
 
   @Before
   public void before() {
-    setup(Arrays.asList(ACTOR_NAMES.LEARNER_STATE_UPDATE_ACTOR,ACTOR_NAMES.LEARNER_STATE_ACTOR), DummyActor.class);
+    setup(Arrays.asList(ACTOR_NAMES.COURSE_ENROLMENT_ACTOR,ACTOR_NAMES.CONTENT_CONSUMPTION_ACTOR), DummyActor.class);
   }
 
   @Test
@@ -168,10 +170,12 @@ public class LearnerControllerTest extends BaseApplicationTest {
     List<Object> list = new ArrayList<>();
     Map<String, Object> map = new HashMap<>();
     map.put(JsonKey.CONTENT_ID, contentId);
+    map.put(JsonKey.COURSE_ID, courseId);
     map.put(JsonKey.STATUS, status);
     map.put(JsonKey.LAST_UPDATED_TIME, lastUpdatedTime);
     list.add(map);
     innerMap.put("contents", list);
+    innerMap.put("userId", USER_ID);
     innerMap.put("courseId", courseId);
     requestMap.put(JsonKey.REQUEST, innerMap);
     String data = mapToJson(requestMap);

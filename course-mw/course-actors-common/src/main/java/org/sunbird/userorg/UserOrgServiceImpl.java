@@ -1,45 +1,51 @@
 package org.sunbird.userorg;
 
-import static org.apache.http.HttpHeaders.AUTHORIZATION;
-import static org.sunbird.common.exception.ProjectCommonException.throwServerErrorException;
-import static org.sunbird.common.models.util.JsonKey.*;
-import static org.sunbird.common.models.util.LoggerEnum.ERROR;
-import static org.sunbird.common.models.util.LoggerEnum.INFO;
-import static org.sunbird.common.models.util.ProjectLogger.log;
-import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
-import static org.sunbird.common.responsecode.ResponseCode.errorProcessingRequest;
-import static org.sunbird.learner.constants.CourseJsonKey.SUNBIRD_SEND_EMAIL_NOTIFICATION_API;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.HttpMethod;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.responsecode.ResponseCode;
-import org.sunbird.services.sso.SSOManager;
-import org.sunbird.services.sso.SSOServiceFactory;
+import org.sunbird.common.util.KeycloakRequiredActionLinkUtil;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.apache.http.HttpHeaders.AUTHORIZATION;
+import static org.sunbird.common.exception.ProjectCommonException.throwServerErrorException;
+import static org.sunbird.common.models.util.JsonKey.BEARER;
+import static org.sunbird.common.models.util.JsonKey.CONTENT;
+import static org.sunbird.common.models.util.JsonKey.FILTERS;
+import static org.sunbird.common.models.util.JsonKey.ID;
+import static org.sunbird.common.models.util.JsonKey.RESPONSE;
+import static org.sunbird.common.models.util.JsonKey.SUNBIRD_AUTHORIZATION;
+import static org.sunbird.common.models.util.JsonKey.SUNBIRD_GET_MULTIPLE_USER_API;
+import static org.sunbird.common.models.util.JsonKey.SUNBIRD_GET_ORGANISATION_API;
+import static org.sunbird.common.models.util.JsonKey.SUNBIRD_GET_SINGLE_USER_API;
+import static org.sunbird.common.models.util.JsonKey.SUNBIRD_USER_ORG_API_BASE_URL;
+import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
+import static org.sunbird.common.responsecode.ResponseCode.errorProcessingRequest;
+import static org.sunbird.common.responsecode.ResponseCode.resourceNotFound;
+import static org.sunbird.learner.constants.CourseJsonKey.SUNBIRD_SEND_EMAIL_NOTIFICATION_API;
 
 public class UserOrgServiceImpl implements UserOrgService {
 
-  private SSOManager ssoManager = SSOServiceFactory.getInstance();
   private ObjectMapper mapper = new ObjectMapper();
   private static final String FORWARD_SLASH = "/";
+  private static final String X_AUTHENTICATED_USER_TOKEN = "x-authenticated-user-token";
+  private LoggerUtil logger = new LoggerUtil(UserOrgServiceImpl.class);
 
   private static UserOrgService instance = null;
 
-  public static UserOrgService getInstance() {
+  public static synchronized UserOrgService getInstance() {
     if (instance == null) {
-      synchronized (UserOrgServiceImpl.class) {
-        if (instance == null) {
-          instance = new UserOrgServiceImpl();
-        }
-      }
+      instance = new UserOrgServiceImpl();
     }
     return instance;
   }
@@ -62,31 +68,30 @@ public class UserOrgServiceImpl implements UserOrgService {
     String requestUrl = getConfigValue(SUNBIRD_USER_ORG_API_BASE_URL) + requestAPI;
     HttpResponse<String> httpResponse = null;
     String responseBody = null;
-    log(
+    logger.info( null,
         "UserOrgServiceImpl:getResponse:Sending "
             + requestType
             + " Request, Request URL: "
-            + requestUrl,
-        INFO.name());
+            + requestUrl);
     try {
       String reqBody = mapper.writeValueAsString(requestMap);
-      log("UserOrgServiceImpl:getResponse:Sending Request Body=" + reqBody, INFO.name());
+      logger.info(null, "UserOrgServiceImpl:getResponse:Sending Request Body=" + reqBody);
       if (HttpMethod.POST.equals(requestType)) {
         httpResponse = Unirest.post(requestUrl).headers(headers).body(reqBody).asString();
       }
       if (HttpMethod.GET.equals(requestType)) {
         httpResponse = Unirest.get(requestUrl).headers(headers).asString();
       }
-      log(
-          "UserOrgServiceImpl:getResponse Response Status : " + httpResponse.getStatus(),
-          ERROR.name());
-      if (StringUtils.isBlank(httpResponse.getBody())) {
+      logger.info(null, 
+          "UserOrgServiceImpl:getResponse Response Status : "
+              + (httpResponse != null ? httpResponse.getStatus() : null));
+      if (httpResponse == null || StringUtils.isBlank(httpResponse.getBody())) {
         throwServerErrorException(
             ResponseCode.SERVER_ERROR, errorProcessingRequest.getErrorMessage());
       }
       responseBody = httpResponse.getBody();
       response = mapper.readValue(responseBody, Response.class);
-      if (!ResponseCode.OK.equals(response.getResponseCode())) {
+      if (response != null && !ResponseCode.OK.equals(response.getResponseCode())) {
 
         throw new ProjectCommonException(
             response.getResponseCode().name(),
@@ -94,7 +99,7 @@ public class UserOrgServiceImpl implements UserOrgService {
             response.getResponseCode().getResponseCode());
       }
     } catch (ProjectCommonException e) {
-      log(
+      logger.error(null, 
           "UserOrgServiceImpl:getResponse ProjectCommonException:"
               + requestType
               + "Request , Status : "
@@ -102,11 +107,10 @@ public class UserOrgServiceImpl implements UserOrgService {
               + " "
               + e.getMessage()
               + ",Response Body :"
-              + responseBody,
-          ERROR.name());
+              + responseBody,e);
       throw e;
     } catch (Exception e) {
-      log(
+      logger.error(null,
           "UserOrgServiceImpl:getResponse:Exception occurred with error message = "
               + e.getMessage()
               + ", Response Body : "
@@ -129,93 +133,99 @@ public class UserOrgServiceImpl implements UserOrgService {
   public Map<String, Object> getOrganisationById(String id) {
     Map<String, Object> filterlist = new HashMap<>();
     filterlist.put(ID, id);
-    Map<String, Object> requestMap = getRequestMap(filterlist);
-    Map<String, String> headers = getdefaultHeaders();
-    Response response =
-        getUserOrgResponse(
-            getConfigValue(SUNBIRD_GET_ORGANISATION_API), HttpMethod.POST, requestMap, headers);
-    Map<String, Object> orgDetails = (Map<String, Object>) response.get(RESPONSE);
-    List<Map<String, Object>> list = (List<Map<String, Object>>) orgDetails.get(CONTENT);
-    return list.get(0);
+    List<Map<String, Object>> list = getOrganisations(filterlist);
+    return !CollectionUtils.isEmpty(list) ? list.get(0) : null;
   }
 
   @Override
   public List<Map<String, Object>> getOrganisationsByIds(List<String> ids) {
     Map<String, Object> filterlist = new HashMap<>();
     filterlist.put(ID, ids);
+    return getOrganisations(filterlist);
+  }
+
+  private List<Map<String, Object>> getOrganisations(Map<String, Object> filterlist) {
     Map<String, Object> requestMap = getRequestMap(filterlist);
     Map<String, String> headers = getdefaultHeaders();
     Response response =
         getUserOrgResponse(
             getConfigValue(SUNBIRD_GET_ORGANISATION_API), HttpMethod.POST, requestMap, headers);
-    Map<String, Object> orgMap = (Map<String, Object>) response.get(RESPONSE);
-    List<Map<String, Object>> orglist = (List<Map<String, Object>>) orgMap.get(CONTENT);
-    return orglist;
+    if (response != null) {
+      Map<String, Object> orgMap = (Map<String, Object>) response.get(RESPONSE);
+      if (orgMap != null) {
+        return (List<Map<String, Object>>) orgMap.get(CONTENT);
+      }
+    }
+    return null;
   }
 
   @Override
-  public Map<String, Object> getUserById(String id) {
+  public Map<String, Object> getUserById(String id, String authToken) {
     Map<String, Object> filterlist = new HashMap<>();
     filterlist.put(ID, id);
     Map<String, Object> requestMap = getRequestMap(filterlist);
     Map<String, String> headers = getdefaultHeaders();
-    headers.put(
-        "x-authenticated-user-token",
-        ssoManager.login(
-            getConfigValue(JsonKey.SUNBIRD_SSO_USERNAME),
-            getConfigValue(JsonKey.SUNBIRD_SSO_PASSWORD)));
+    if(StringUtils.isNotBlank(authToken)) {
+      headers.put(X_AUTHENTICATED_USER_TOKEN, authToken);
+    } else {
+      logger.error(null, "authToken is empty for gerUserById for ID: " + id, null);
+    }
     String relativeUrl = getConfigValue(SUNBIRD_GET_SINGLE_USER_API) + FORWARD_SLASH + id;
     Response response = getUserOrgResponse(relativeUrl, HttpMethod.GET, requestMap, headers);
-    Map<String, Object> userMap = (Map<String, Object>) response.get(RESPONSE);
-    return userMap;
+    if (response != null) {
+      return (Map<String, Object>) response.get(RESPONSE);
+    }
+    return null;
   }
 
   @Override
-  public List<Map<String, Object>> getUsersByIds(List<String> ids) {
+  public List<Map<String, Object>> getUsersByIds(List<String> ids, String authToken) {
     Map<String, Object> filterlist = new HashMap<>();
     filterlist.put(ID, ids);
     Map<String, Object> requestMap = getRequestMap(filterlist);
+    return getUsersResponse(requestMap, authToken);
+  }
+
+  @Override
+  public void sendEmailNotification(Map<String, Object> request, String authToken) {
     Map<String, String> headers = getdefaultHeaders();
-    headers.put(
-        "x-authenticated-user-token",
-        ssoManager.login(
-            getConfigValue(JsonKey.SUNBIRD_SSO_USERNAME),
-            getConfigValue(JsonKey.SUNBIRD_SSO_PASSWORD)));
+    if(StringUtils.isNotBlank(authToken)) {
+      headers.put(X_AUTHENTICATED_USER_TOKEN, authToken);
+    } else {
+      logger.error(null, "authToken is empty for sendEmailNotification", null);
+    }
     Response response =
         getUserOrgResponse(
-            getConfigValue(SUNBIRD_GET_MULTIPLE_USER_API), HttpMethod.POST, requestMap, headers);
-    Map<String, Object> userMap = (Map<String, Object>) response.get(RESPONSE);
-    List<Map<String, Object>> userlist = (List<Map<String, Object>>) userMap.get(CONTENT);
-    return userlist;
+            getConfigValue(SUNBIRD_SEND_EMAIL_NOTIFICATION_API), HttpMethod.POST, request, headers);
+    if (response != null) {
+      logger.info(null,
+          "UserOrgServiceImpl:sendEmailNotification Response" + response.get(RESPONSE));
+    }
   }
 
   @Override
-  public void sendEmailNotification(Map<String, Object> request) {
-    Map<String, String> headers = getdefaultHeaders();
-    headers.put(
-        "x-authenticated-user-token",
-        ssoManager.login(
-            getConfigValue(JsonKey.SUNBIRD_SSO_USERNAME),
-            getConfigValue(JsonKey.SUNBIRD_SSO_PASSWORD)));
-    getUserOrgResponse(
-        getConfigValue(SUNBIRD_SEND_EMAIL_NOTIFICATION_API), HttpMethod.POST, request, headers);
-  }
-
-  @Override
-  public List<Map<String, Object>> getUsers(Map<String, Object> request) {
+  public List<Map<String, Object>> getUsers(Map<String, Object> request, String authToken) {
     Map<String, Object> requestMap = new HashMap<>();
     requestMap.put(JsonKey.REQUEST, request);
+    return getUsersResponse(requestMap, authToken);
+  }
+
+  private List<Map<String, Object>> getUsersResponse(Map<String, Object> requestMap, String authToken) {
     Map<String, String> headers = getdefaultHeaders();
-    headers.put(
-        "x-authenticated-user-token",
-        ssoManager.login(
-            getConfigValue(JsonKey.SUNBIRD_SSO_USERNAME),
-            getConfigValue(JsonKey.SUNBIRD_SSO_PASSWORD)));
+    if(StringUtils.isNotBlank(authToken)) {
+      headers.put(X_AUTHENTICATED_USER_TOKEN, authToken);
+    } else {
+      logger.error(null, "authToken is empty for getUsersResponse() for request : " + requestMap, null);
+    }
     Response response =
         getUserOrgResponse(
             getConfigValue(SUNBIRD_GET_MULTIPLE_USER_API), HttpMethod.POST, requestMap, headers);
-    Map<String, Object> userMap = (Map<String, Object>) response.get(RESPONSE);
-    List<Map<String, Object>> userlist = (List<Map<String, Object>>) userMap.get(CONTENT);
-    return userlist;
+    if (response != null) {
+      Map<String, Object> orgMap = (Map<String, Object>) response.get(RESPONSE);
+      if (orgMap != null) {
+        return (List<Map<String, Object>>) orgMap.get(CONTENT);
+      }
+    }
+    return null;
   }
 }

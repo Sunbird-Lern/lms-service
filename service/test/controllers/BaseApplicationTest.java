@@ -1,6 +1,6 @@
 package controllers;
 
-import static play.inject.Bindings.bind;
+import play.inject.Bindings;
 
 import java.io.File;
 import java.util.List;
@@ -19,10 +19,12 @@ import util.ACTOR_NAMES;
 import util.RequestInterceptor;
 
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*", "jdk.internal.reflect.*",
+        "sun.security.ssl.*", "javax.net.ssl.*", "javax.crypto.*",
+        "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 @PrepareForTest({RequestInterceptor.class})
 public abstract class BaseApplicationTest {
-  protected Application application;
+  public Application application;
 
   public <T> void setup(ACTOR_NAMES actor, Class actorClass) {
     application =
@@ -33,7 +35,7 @@ public abstract class BaseApplicationTest {
             //                        .disable(ActorStartModule.class)
             //
             // .bindings(bind(actorClass).qualifiedWith(actor.getActorName()).toInstance(subject))
-            .overrides(bind(actor.getActorClass()).to(actorClass))
+            .overrides(Bindings.bind(actor.getActorClass()).to(actorClass))
             .build();
     Helpers.start(application);
     PowerMockito.mockStatic(RequestInterceptor.class);
@@ -47,7 +49,7 @@ public abstract class BaseApplicationTest {
             .in(Mode.TEST)
             .disable(StartModule.class);
     for (ACTOR_NAMES actor : actors) {
-      applicationBuilder = applicationBuilder.overrides(bind(actor.getActorClass()).to(actorClass));
+      applicationBuilder = applicationBuilder.overrides(Bindings.bind(actor.getActorClass()).to(actorClass));
     }
     application = applicationBuilder.build();
     Helpers.start(application);

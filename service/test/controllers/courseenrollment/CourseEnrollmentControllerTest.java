@@ -23,20 +23,23 @@ import java.util.Map;
 import static util.TestUtil.mapToJson;
 
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore("javax.management.*")
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*", "jdk.internal.reflect.*",
+        "sun.security.ssl.*", "javax.net.ssl.*", "javax.crypto.*",
+        "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class CourseEnrollmentControllerTest extends BaseApplicationTest {
 
-  public static String COURSE_ID = "courseId";
-  public static String BATCH_ID = "batchId";
-  public static String USER_ID = "userId";
-  private static final String ENROLL_BATCH_URL = "/v1/course/enroll";
-  private static final String UENROLL_BATCH_URL = "/v1/course/unenroll";
-  private static final String GET_ENROLLED_COURSES_URL = "/v1/user/courses/list/"+USER_ID;
-  private static final String GET_ENROLLED_COURSE_URL = "/v1/user/courses/read";
+  String COURSE_ID = "courseId";
+  String BATCH_ID = "batchId";
+  String USER_ID = "userId";
+  String ENROLL_BATCH_URL = "/v1/course/enroll";
+  String UENROLL_BATCH_URL = "/v1/course/unenroll";
+  String GET_ENROLLED_COURSES_URL = "/v1/user/courses/list/"+USER_ID;
+  String GET_ENROLLED_COURSE_URL_V2 = "/v2/user/courses/list";
+  String GET_ENROLLED_COURSE_URL_CACHE = "/v1/user/courses/list/" + USER_ID + "?cache=false";
 
   @Before
   public void before() {
-    setup(Arrays.asList(ACTOR_NAMES.COURSE_ENROLLEMENT_ACTOR,ACTOR_NAMES.LEARNER_STATE_ACTOR), DummyActor.class);
+    setup(Arrays.asList(ACTOR_NAMES.COURSE_ENROLMENT_ACTOR,ACTOR_NAMES.CONTENT_CONSUMPTION_ACTOR), DummyActor.class);
   }
 
   @Test
@@ -139,36 +142,24 @@ public class CourseEnrollmentControllerTest extends BaseApplicationTest {
   }
 
   @Test
-  public void testGetEnrolledCourseSuccess() {
+  public void testGetUserEnrolledCourses() {
     Http.RequestBuilder req =
             new Http.RequestBuilder()
-                    .uri(GET_ENROLLED_COURSE_URL)
-                    .bodyJson(createCourseEnrollmentRequest(null,BATCH_ID,USER_ID))
+                    .uri(GET_ENROLLED_COURSE_URL_V2)
+                    .bodyJson(createCourseEnrollmentRequest(null,null, USER_ID))
                     .method("POST");
     Result result = Helpers.route(application, req);
     Assert.assertEquals( 200, result.status());
   }
 
   @Test
-  public void testGetEnrolledCourseFailureWithoutBatchId() {
+  public void testGetUserEnrolledCoursesWithCache() {
     Http.RequestBuilder req =
             new Http.RequestBuilder()
-                    .uri(GET_ENROLLED_COURSE_URL)
-                    .bodyJson(createCourseEnrollmentRequest(null,null,USER_ID))
-                    .method("POST");
+                    .uri(GET_ENROLLED_COURSE_URL_CACHE)
+                    .method("GET");
     Result result = Helpers.route(application, req);
-    Assert.assertEquals( 400, result.status());
-  }
-
-  @Test
-  public void testGetEnrolledCourseFailureWithoutUserId() {
-    Http.RequestBuilder req =
-            new Http.RequestBuilder()
-                    .uri(GET_ENROLLED_COURSE_URL)
-                    .bodyJson(createCourseEnrollmentRequest(null,BATCH_ID,null))
-                    .method("POST");
-    Result result = Helpers.route(application, req);
-    Assert.assertEquals( 400, result.status());
+    Assert.assertEquals( 200, result.status());
   }
 
   private JsonNode createCourseEnrollmentRequest(

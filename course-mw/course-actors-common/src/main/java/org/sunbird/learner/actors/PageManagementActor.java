@@ -1,16 +1,11 @@
 package org.sunbird.learner.actors;
 
-import static org.sunbird.common.models.util.JsonKey.ID;
-
 import akka.dispatch.Futures;
 import akka.dispatch.Mapper;
 import akka.pattern.Patterns;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import java.io.IOException;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -20,24 +15,40 @@ import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.cacheloader.PageCacheLoaderService;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
-import org.sunbird.common.hash.HashGeneratorUtil;
 import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.*;
-import org.sunbird.common.request.ExecutionContext;
+import org.sunbird.common.models.util.ActorOperations;
+import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.LoggerUtil;
+import org.sunbird.common.models.util.ProjectUtil;
+import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.util.ContentSearchUtil;
 import org.sunbird.learner.util.Util;
-import org.sunbird.notification.utils.JsonUtil;
 import org.sunbird.telemetry.util.TelemetryUtil;
 import org.sunbird.userorg.UserOrgService;
 import org.sunbird.userorg.UserOrgServiceImpl;
 import scala.concurrent.ExecutionContextExecutor;
 import scala.concurrent.Future;
 import scala.concurrent.Promise;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static org.sunbird.common.models.util.JsonKey.ID;
 
 /**
  * This actor will handle page management operation .
@@ -52,52 +63,45 @@ public class PageManagementActor extends BaseActor {
   private CassandraOperation cassandraOperation = ServiceFactory.getInstance();
   private ObjectMapper mapper = new ObjectMapper();
   private UserOrgService userOrgService = UserOrgServiceImpl.getInstance();
-  private boolean isCacheEnabled = false;
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
+  private static final String DYNAMIC_FILTERS = "dynamicFilters";
+  private static List<String> userProfilePropList = Arrays.asList("board");
+  private LoggerUtil logger = new LoggerUtil(PageManagementActor.class);
 
   @Override
   public void onReceive(Request request) throws Throwable {
     Util.initializeContext(request, TelemetryEnvKey.PAGE);
 
-    ExecutionContext.setRequestId(request.getRequestId());
-    ProjectLogger.log(
-        "PageManagementActor: Request recieved : " + request.getRequest(), LoggerEnum.INFO.name());
-    if (request.getOperation().equalsIgnoreCase(ActorOperations.CREATE_PAGE.getValue())) {
+    if(request.getOperation().equalsIgnoreCase(ActorOperations.GET_DIAL_PAGE_DATA.getValue())) {
+      getDIALPageData(request);
+    } else if(request.getOperation().equalsIgnoreCase(ActorOperations.GET_PAGE_DATA.getValue())) {
+      getPageData(request);
+    } else if (request.getOperation().equalsIgnoreCase(ActorOperations.GET_PAGE_SETTING.getValue())) {
+      getPageSetting(request);
+    } else if (request.getOperation().equalsIgnoreCase(ActorOperations.CREATE_PAGE.getValue())) {
       createPage(request);
     } else if (request.getOperation().equalsIgnoreCase(ActorOperations.UPDATE_PAGE.getValue())) {
       updatePage(request);
-    } else if (request
-        .getOperation()
-        .equalsIgnoreCase(ActorOperations.GET_PAGE_SETTING.getValue())) {
-      getPageSetting(request);
-    } else if (request
-        .getOperation()
-        .equalsIgnoreCase(ActorOperations.GET_PAGE_SETTINGS.getValue())) {
-      getPageSettings();
-    } else if (request.getOperation().equalsIgnoreCase(ActorOperations.GET_PAGE_DATA.getValue())) {
-      getPageData(request);
+    } else if (request.getOperation().equalsIgnoreCase(ActorOperations.GET_PAGE_SETTINGS.getValue())) {
+      getPageSettings(request.getRequestContext());
     } else if (request.getOperation().equalsIgnoreCase(ActorOperations.CREATE_SECTION.getValue())) {
       createPageSection(request);
     } else if (request.getOperation().equalsIgnoreCase(ActorOperations.UPDATE_SECTION.getValue())) {
       updatePageSection(request);
     } else if (request.getOperation().equalsIgnoreCase(ActorOperations.GET_SECTION.getValue())) {
       getSection(request);
-    } else if (request
-        .getOperation()
-        .equalsIgnoreCase(ActorOperations.GET_ALL_SECTION.getValue())) {
-      getAllSections();
+    } else if (request.getOperation().equalsIgnoreCase(ActorOperations.GET_ALL_SECTION.getValue())) {
+      getAllSections(request.getRequestContext());
     } else {
-      ProjectLogger.log(
-          "PageManagementActor: Invalid operation request : " + request.getOperation(),
-          LoggerEnum.ERROR.name());
+      logger.error(request.getRequestContext(), "PageManagementActor: Invalid operation request : " + request.getOperation(), null);
       onReceiveUnsupportedOperation(request.getOperation());
     }
   }
 
-  private void getAllSections() {
+  private void getAllSections(RequestContext requestContext) {
     Response response = null;
     response =
-        cassandraOperation.getAllRecords(sectionDbInfo.getKeySpace(), sectionDbInfo.getTableName());
+        cassandraOperation.getAllRecords(requestContext, sectionDbInfo.getKeySpace(), sectionDbInfo.getTableName());
     @SuppressWarnings("unchecked")
     List<Map<String, Object>> result =
         (List<Map<String, Object>>) response.getResult().get(JsonKey.RESPONSE);
@@ -120,8 +124,8 @@ public class PageManagementActor extends BaseActor {
 
     if (sectionMap == null) {
       response =
-          cassandraOperation.getRecordById(
-              sectionDbInfo.getKeySpace(), sectionDbInfo.getTableName(), sectionId);
+          cassandraOperation.getRecordByIdentifier(
+                  actorMessage.getRequestContext(), sectionDbInfo.getKeySpace(), sectionDbInfo.getTableName(), sectionId, null);
       List<Map<String, Object>> result =
           (List<Map<String, Object>>) response.getResult().get(JsonKey.RESPONSE);
       if (!(result.isEmpty())) {
@@ -144,7 +148,6 @@ public class PageManagementActor extends BaseActor {
   }
 
   private void updatePageSection(Request actorMessage) {
-    ProjectLogger.log("Inside updatePageSection method", LoggerEnum.INFO);
     Map<String, Object> req = actorMessage.getRequest();
     // object of telemetry event...
     Map<String, Object> targetObject = new HashMap<>();
@@ -156,7 +159,7 @@ public class PageManagementActor extends BaseActor {
         sectionMap.put(
             JsonKey.SEARCH_QUERY, mapper.writeValueAsString(sectionMap.get(JsonKey.SEARCH_QUERY)));
       } catch (IOException e) {
-        ProjectLogger.log("Exception occurred while processing search query " + e.getMessage(), e);
+        logger.error(actorMessage.getRequestContext(), "Exception occurred while processing search query " + e.getMessage(), e);
       }
     }
     if (null != sectionMap.get(JsonKey.SECTION_DISPLAY)) {
@@ -165,14 +168,13 @@ public class PageManagementActor extends BaseActor {
             JsonKey.SECTION_DISPLAY,
             mapper.writeValueAsString(sectionMap.get(JsonKey.SECTION_DISPLAY)));
       } catch (IOException e) {
-        ProjectLogger.log("Exception occurred while processing display " + e.getMessage(), e);
+        logger.error(actorMessage.getRequestContext(), "Exception occurred while processing display " + e.getMessage(), e);
       }
     }
     sectionMap.put(JsonKey.UPDATED_DATE, ProjectUtil.getFormattedDate());
-    ProjectLogger.log("update section details", LoggerEnum.INFO);
     Response response =
         cassandraOperation.updateRecord(
-            sectionDbInfo.getKeySpace(), sectionDbInfo.getTableName(), sectionMap);
+                actorMessage.getRequestContext(), sectionDbInfo.getKeySpace(), sectionDbInfo.getTableName(), sectionMap);
     sender().tell(response, self());
     targetObject =
         TelemetryUtil.generateTargetObject(
@@ -181,14 +183,12 @@ public class PageManagementActor extends BaseActor {
             JsonKey.CREATE,
             null);
     TelemetryUtil.telemetryProcessingCall(
-        actorMessage.getRequest(), targetObject, correlatedObject);
+        actorMessage.getRequest(), targetObject, correlatedObject, actorMessage.getContext());
     // update DataCacheHandler section map with updated page section data
-    ProjectLogger.log("Calling  updateSectionDataCache method", LoggerEnum.INFO);
     updateSectionDataCache(response, sectionMap);
   }
 
   private void createPageSection(Request actorMessage) {
-    ProjectLogger.log("Inside createPageSection method", LoggerEnum.INFO);
     Map<String, Object> req = actorMessage.getRequest();
     @SuppressWarnings("unchecked")
     Map<String, Object> sectionMap = (Map<String, Object>) req.get(JsonKey.SECTION);
@@ -201,7 +201,7 @@ public class PageManagementActor extends BaseActor {
         sectionMap.put(
             JsonKey.SEARCH_QUERY, mapper.writeValueAsString(sectionMap.get(JsonKey.SEARCH_QUERY)));
       } catch (IOException e) {
-        ProjectLogger.log("Exception occurred while processing search Query " + e.getMessage(), e);
+        logger.error(actorMessage.getRequestContext(), "Exception occurred while processing search Query " + e.getMessage(), e);
       }
     }
     if (null != sectionMap.get(JsonKey.SECTION_DISPLAY)) {
@@ -210,7 +210,7 @@ public class PageManagementActor extends BaseActor {
             JsonKey.SECTION_DISPLAY,
             mapper.writeValueAsString(sectionMap.get(JsonKey.SECTION_DISPLAY)));
       } catch (IOException e) {
-        ProjectLogger.log("Exception occurred while processing Section display", e);
+        logger.error(actorMessage.getRequestContext(), "Exception occurred while processing Section display", e);
       }
     }
     sectionMap.put(JsonKey.ID, uniqueId);
@@ -218,16 +218,15 @@ public class PageManagementActor extends BaseActor {
     sectionMap.put(JsonKey.CREATED_DATE, ProjectUtil.getFormattedDate());
     Response response =
         cassandraOperation.insertRecord(
-            sectionDbInfo.getKeySpace(), sectionDbInfo.getTableName(), sectionMap);
+                actorMessage.getRequestContext(), sectionDbInfo.getKeySpace(), sectionDbInfo.getTableName(), sectionMap);
     response.put(JsonKey.SECTION_ID, uniqueId);
     sender().tell(response, self());
     targetObject =
         TelemetryUtil.generateTargetObject(
             uniqueId, TelemetryEnvKey.PAGE_SECTION, JsonKey.CREATE, null);
     TelemetryUtil.telemetryProcessingCall(
-        actorMessage.getRequest(), targetObject, correlatedObject);
+        actorMessage.getRequest(), targetObject, correlatedObject, actorMessage.getContext());
     // update DataCacheHandler section map with new page section data
-    ProjectLogger.log("Calling  updateSectionDataCache method", LoggerEnum.INFO);
     updateSectionDataCache(response, sectionMap);
   }
 
@@ -246,7 +245,6 @@ public class PageManagementActor extends BaseActor {
 
   @SuppressWarnings("unchecked")
   private void getPageData(Request actorMessage) throws Exception {
-    ProjectLogger.log("PageManagementActor:getPageData: start", LoggerEnum.INFO.name());
     String sectionQuery = null;
     Map<String, Object> filterMap = new HashMap<>();
     Map<String, Object> req = (Map<String, Object>) actorMessage.getRequest().get(JsonKey.PAGE);
@@ -254,18 +252,15 @@ public class PageManagementActor extends BaseActor {
     String source = (String) req.get(JsonKey.SOURCE);
     String orgId = (String) req.get(JsonKey.ORGANISATION_ID);
     String urlQueryString = (String) actorMessage.getContext().get(JsonKey.URL_QUERY_STRING);
+    Map<String, Object> sectionFilters = (Map<String, Object>) req.getOrDefault(JsonKey.SECTIONS, new HashMap<>());
     Map<String, String> headers =
         (Map<String, String>) actorMessage.getRequest().get(JsonKey.HEADER);
     filterMap.putAll(req);
-    filterMap.remove(JsonKey.PAGE_NAME);
-    filterMap.remove(JsonKey.SOURCE);
-    filterMap.remove(JsonKey.ORG_CODE);
-    filterMap.remove(JsonKey.FILTERS);
-    filterMap.remove(JsonKey.CREATED_BY);
+    filterMap.keySet().removeAll(Arrays.asList(JsonKey.PAGE_NAME, JsonKey.SOURCE, JsonKey.ORG_CODE, JsonKey.FILTERS, JsonKey.CREATED_BY, JsonKey.SECTIONS));
     Map<String, Object> reqFilters = (Map<String, Object>) req.get(JsonKey.FILTERS);
 
-    Map<String, Object> pageMap = getPageMapData(pageName, orgId);
-    if (null == pageMap && StringUtils.isNotBlank(orgId)) pageMap = getPageMapData(pageName, "NA");
+    Map<String, Object> pageMap = getPageMapData(actorMessage.getRequestContext(), pageName, orgId);
+    if (null == pageMap && StringUtils.isNotBlank(orgId)) pageMap = getPageMapData(actorMessage.getRequestContext(), pageName, "NA");
 
     if (null == pageMap) {
       throw new ProjectCommonException(
@@ -282,76 +277,24 @@ public class PageManagementActor extends BaseActor {
         sectionQuery = (String) pageMap.get(JsonKey.APP_MAP);
       }
     }
-    Object[] arr = null;
+    List<Map<String,Object>> arr = null;
     try {
-      arr = mapper.readValue(sectionQuery, Object[].class);
+      arr = mapper.readValue(sectionQuery, new TypeReference<List<Map<String, Object>>>(){});
     } catch (Exception e) {
-      ProjectLogger.log(
-          "PageManagementActor:getPageData: Exception occurred with error message =  "
-              + e.getMessage(),
-          LoggerEnum.INFO.name());
+      logger.error(actorMessage.getRequestContext(), "PageManagementActor:getPageData: Exception occurred with error message =  "
+              + e.getMessage(), e);
       throw new ProjectCommonException(
           ResponseCode.errorInvalidPageSection.getErrorCode(),
           ResponseCode.errorInvalidPageSection.getErrorMessage(),
           ResponseCode.CLIENT_ERROR.getResponseCode());
     }
 
-    String requestHashCode = "";
-    if (isCacheEnabled) {
-      Map<String, Object> reqMap = new HashMap<>();
-      reqMap.put(JsonKey.SECTION, arr);
-      reqMap.put(JsonKey.FILTERS, reqFilters);
-      reqMap.put(JsonKey.HEADER, headers);
-      reqMap.put(JsonKey.FILTER, filterMap);
-      reqMap.put(JsonKey.URL_QUERY_STRING, urlQueryString);
-      requestHashCode = HashGeneratorUtil.getHashCode(JsonUtil.toJson(reqMap));
-      Response cachedResponse =
-          PageCacheLoaderService.getDataFromCache(
-              JsonKey.PAGE_ASSEMBLE, requestHashCode, Response.class);
-      if (StringUtils.isNotBlank(requestHashCode) && cachedResponse != null) {
-        ProjectLogger.log(
-            "PageManagementActor : getPageData : response returned from cache",
-            LoggerEnum.INFO.name());
-        sender().tell(cachedResponse, self());
-        return;
-      }
-    }
-    String reqHashCode = requestHashCode;
     try {
-      List<Future<Map<String, Object>>> sectionList = new ArrayList<>();
-      if (arr != null) {
-        for (Object obj : arr) {
-          Map<String, Object> sectionMap = (Map<String, Object>) obj;
-
-          if (MapUtils.isNotEmpty(sectionMap)) {
-
-            Map<String, Object> sectionData =
-                new HashMap<String, Object>(
-                    PageCacheLoaderService.getDataFromCache(
-                        ActorOperations.GET_SECTION.getValue(),
-                        (String) sectionMap.get(JsonKey.ID),
-                        Map.class));
-            if (MapUtils.isNotEmpty(sectionData)) {
-              Future<Map<String, Object>> contentFuture =
-                  getContentData(
-                      sectionData,
-                      reqFilters,
-                      headers,
-                      filterMap,
-                      urlQueryString,
-                      sectionMap.get(JsonKey.GROUP),
-                      sectionMap.get(JsonKey.INDEX),
-                      context().dispatcher());
-              sectionList.add(contentFuture);
-            }
-          }
-        }
-      }
-
-      Future<Iterable<Map<String, Object>>> sectionsFuture =
-          Futures.sequence(sectionList, getContext().dispatcher());
+      List<String> ignoredSections = new ArrayList<>();
+      List<Future<Map<String, Object>>> sectionList = getSectionData(actorMessage.getRequestContext(), arr, reqFilters, urlQueryString, headers, sectionFilters, filterMap, ignoredSections);
+      Future<Iterable<Map<String, Object>>> sectionsFuture = Futures.sequence(sectionList, getContext().dispatcher());
       Map<String, Object> finalPageMap = pageMap;
-      Future<Response> response =
+        Future<Response> response =
           sectionsFuture.map(
               new Mapper<Iterable<Map<String, Object>>, Response>() {
                 @Override
@@ -361,29 +304,45 @@ public class PageManagementActor extends BaseActor {
                   result.put(JsonKey.NAME, finalPageMap.get(JsonKey.NAME));
                   result.put(JsonKey.ID, finalPageMap.get(JsonKey.ID));
                   result.put(JsonKey.SECTIONS, sectionList);
+                  result.put("ignoredSections", ignoredSections);
                   Response response = new Response();
                   response.put(JsonKey.RESPONSE, result);
-                  ProjectLogger.log(
-                      "PageManagementActor:getPageData:apply: Response before caching it = "
-                          + response,
-                      LoggerEnum.INFO);
+                  logger.debug(actorMessage.getRequestContext(), "PageManagementActor:getPageData:apply: Response before caching it = "
+                          + response);
                   return response;
                 }
               },
               getContext().dispatcher());
-      ProjectLogger.log("PageManagementActor:getPageData: end", LoggerEnum.INFO.name());
       Patterns.pipe(response, getContext().dispatcher()).to(sender());
 
     } catch (Exception e) {
-      ProjectLogger.log(
-          "PageManagementActor:getPageData: Exception occurred with error message = "
-              + e.getMessage(),
-          LoggerEnum.ERROR);
-      ProjectLogger.log(
-          "PageManagementActor:getPageData: Exception occurred with error message = "
-              + e.getMessage(),
-          e);
+      logger.error(actorMessage.getRequestContext(), "PageManagementActor:getPageData: Exception occurred with error message = "
+              + e.getMessage(), e);
     }
+  }
+
+  private List<Future<Map<String, Object>>> getSectionData(RequestContext requestContext, List<Map<String, Object>> sectionList, Map<String, Object> reqFilters, String urlQueryString, Map<String, String> headers, Map<String, Object> sectionFilters, Map<String, Object> filterMap, List<String> ignoredSections) throws Exception {
+    List<Future<Map<String, Object>>> data = new ArrayList<>();
+    if(CollectionUtils.isNotEmpty(sectionList)) {
+      for(Map<String, Object> section : sectionList){
+        String sectionId = (String) section.get(ID);
+        Map<String, Object> sectionData = new HashMap<String, Object>(PageCacheLoaderService.getDataFromCache(ActorOperations.GET_SECTION.getValue(),sectionId,Map.class));
+        if(MapUtils.isNotEmpty(sectionData)){
+          String dynamicFilters = (String) sectionData.getOrDefault(DYNAMIC_FILTERS, "optional");
+          Map<String, Object> sectionFilter = (Map<String, Object>) sectionFilters.get(sectionId);
+          if(MapUtils.isEmpty(sectionFilter) && StringUtils.equalsIgnoreCase("required", dynamicFilters)){
+            ProjectCommonException.throwClientErrorException(ResponseCode.errorInvalidPageSection,"Section level filers are mandatory for this section: " + sectionId);
+          }
+          if( MapUtils.isEmpty(sectionFilter) && StringUtils.equalsIgnoreCase("ignore", dynamicFilters)){
+            ignoredSections.add(sectionId);
+            continue;
+          }
+          Future<Map<String, Object>> contentFuture = getContentData(requestContext, sectionData, reqFilters, headers, filterMap, urlQueryString, section.get(JsonKey.GROUP), section.get(JsonKey.INDEX), sectionFilters, context().dispatcher());
+          data.add(contentFuture);
+        }
+      }
+    }
+    return data;
   }
 
   @SuppressWarnings("unchecked")
@@ -402,7 +361,7 @@ public class PageManagementActor extends BaseActor {
     if (response == null) {
       response =
           cassandraOperation.getRecordsByProperty(
-              pageDbInfo.getKeySpace(), pageDbInfo.getTableName(), JsonKey.PAGE_NAME, pageName);
+                  actorMessage.getRequestContext(), pageDbInfo.getKeySpace(), pageDbInfo.getTableName(), JsonKey.PAGE_NAME, pageName, null);
       List<Map<String, Object>> result =
           (List<Map<String, Object>>) response.getResult().get(JsonKey.RESPONSE);
       if (!(result.isEmpty())) {
@@ -425,7 +384,7 @@ public class PageManagementActor extends BaseActor {
                 ResponseCode.RESOURCE_NOT_FOUND.getResponseCode());
           }
         }
-        Map<String, Object> responseMap = getPageSetting(pageDO);
+        Map<String, Object> responseMap = getPageSetting(actorMessage.getRequestContext(), pageDO);
         response.getResult().put(JsonKey.PAGE, responseMap);
         response.getResult().remove(JsonKey.RESPONSE);
       }
@@ -437,18 +396,18 @@ public class PageManagementActor extends BaseActor {
   }
 
   @SuppressWarnings("unchecked")
-  private void getPageSettings() {
+  private void getPageSettings(RequestContext requestContext) {
     Response response =
         PageCacheLoaderService.getDataFromCache(
             ActorOperations.GET_PAGE_SETTINGS.name(), JsonKey.PAGE, Response.class);
     List<Map<String, Object>> pageList = new ArrayList<>();
     if (response == null) {
       response =
-          cassandraOperation.getAllRecords(pageDbInfo.getKeySpace(), pageDbInfo.getTableName());
+          cassandraOperation.getAllRecords(requestContext, pageDbInfo.getKeySpace(), pageDbInfo.getTableName());
       List<Map<String, Object>> result =
           (List<Map<String, Object>>) response.getResult().get(JsonKey.RESPONSE);
       for (Map<String, Object> pageDO : result) {
-        Map<String, Object> responseMap = getPageSetting(pageDO);
+        Map<String, Object> responseMap = getPageSetting(requestContext, pageDO);
         pageList.add(responseMap);
       }
       response.getResult().put(JsonKey.PAGE, pageList);
@@ -464,7 +423,6 @@ public class PageManagementActor extends BaseActor {
 
   @SuppressWarnings("unchecked")
   private void updatePage(Request actorMessage) {
-    ProjectLogger.log("Inside updatePage method", LoggerEnum.INFO);
     Map<String, Object> req = actorMessage.getRequest();
     Map<String, Object> pageMap = (Map<String, Object>) req.get(JsonKey.PAGE);
     // object of telemetry event...
@@ -481,7 +439,7 @@ public class PageManagementActor extends BaseActor {
 
       Response res =
           cassandraOperation.getRecordsByProperties(
-              pageDbInfo.getKeySpace(), pageDbInfo.getTableName(), map);
+                  actorMessage.getRequestContext(), pageDbInfo.getKeySpace(), pageDbInfo.getTableName(), map);
       if (!((List<Map<String, Object>>) res.get(JsonKey.RESPONSE)).isEmpty()) {
         Map<String, Object> page = ((List<Map<String, Object>>) res.get(JsonKey.RESPONSE)).get(0);
         if (!(((String) page.get(JsonKey.ID)).equals(pageMap.get(JsonKey.ID)))) {
@@ -500,29 +458,27 @@ public class PageManagementActor extends BaseActor {
       try {
         pageMap.put(JsonKey.PORTAL_MAP, mapper.writeValueAsString(pageMap.get(JsonKey.PORTAL_MAP)));
       } catch (IOException e) {
-        ProjectLogger.log("Exception occurred while updating portal map data " + e.getMessage(), e);
+        logger.error(actorMessage.getRequestContext(), "Exception occurred while updating portal map data " + e.getMessage(), e);
       }
     }
     if (null != pageMap.get(JsonKey.APP_MAP)) {
       try {
         pageMap.put(JsonKey.APP_MAP, mapper.writeValueAsString(pageMap.get(JsonKey.APP_MAP)));
       } catch (IOException e) {
-        ProjectLogger.log("Exception occurred while updating app map data " + e.getMessage(), e);
+        logger.error(actorMessage.getRequestContext(), "Exception occurred while updating app map data " + e.getMessage(), e);
       }
     }
     Response response =
         cassandraOperation.updateRecord(
-            pageDbInfo.getKeySpace(), pageDbInfo.getTableName(), pageMap);
+                actorMessage.getRequestContext(), pageDbInfo.getKeySpace(), pageDbInfo.getTableName(), pageMap);
     sender().tell(response, self());
 
     targetObject =
         TelemetryUtil.generateTargetObject(
             (String) pageMap.get(JsonKey.ID), JsonKey.PAGE, JsonKey.CREATE, null);
     TelemetryUtil.telemetryProcessingCall(
-        actorMessage.getRequest(), targetObject, correlatedObject);
+        actorMessage.getRequest(), targetObject, correlatedObject, actorMessage.getContext());
     // update DataCacheHandler page map with updated page data
-    ProjectLogger.log(
-        "Calling updatePageDataCacheHandler while updating page data ", LoggerEnum.INFO);
     updatePageDataCacheHandler(response, pageMap);
   }
 
@@ -548,7 +504,7 @@ public class PageManagementActor extends BaseActor {
 
       Response res =
           cassandraOperation.getRecordsByProperties(
-              pageDbInfo.getKeySpace(), pageDbInfo.getTableName(), map);
+                  actorMessage.getRequestContext(), pageDbInfo.getKeySpace(), pageDbInfo.getTableName(), map);
       if (!((List<Map<String, Object>>) res.get(JsonKey.RESPONSE)).isEmpty()) {
         ProjectCommonException exception =
             new ProjectCommonException(
@@ -565,24 +521,24 @@ public class PageManagementActor extends BaseActor {
       try {
         pageMap.put(JsonKey.PORTAL_MAP, mapper.writeValueAsString(pageMap.get(JsonKey.PORTAL_MAP)));
       } catch (IOException e) {
-        ProjectLogger.log(e.getMessage(), e);
+        logger.error(actorMessage.getRequestContext(), "createPage: " + e.getMessage(), e);
       }
     }
     if (null != pageMap.get(JsonKey.APP_MAP)) {
       try {
         pageMap.put(JsonKey.APP_MAP, mapper.writeValueAsString(pageMap.get(JsonKey.APP_MAP)));
       } catch (IOException e) {
-        ProjectLogger.log(e.getMessage(), e);
+        logger.error(actorMessage.getRequestContext(), "createPage: " + e.getMessage(), e);
       }
     }
     Response response =
         cassandraOperation.insertRecord(
-            pageDbInfo.getKeySpace(), pageDbInfo.getTableName(), pageMap);
+                actorMessage.getRequestContext(), pageDbInfo.getKeySpace(), pageDbInfo.getTableName(), pageMap);
     response.put(JsonKey.PAGE_ID, uniqueId);
     sender().tell(response, self());
     targetObject = TelemetryUtil.generateTargetObject(uniqueId, JsonKey.PAGE, JsonKey.CREATE, null);
     TelemetryUtil.telemetryProcessingCall(
-        actorMessage.getRequest(), targetObject, correlatedObject);
+        actorMessage.getRequest(), targetObject, correlatedObject, actorMessage.getContext());
 
     updatePageDataCacheHandler(response, pageMap);
   }
@@ -607,17 +563,17 @@ public class PageManagementActor extends BaseActor {
 
   @SuppressWarnings("unchecked")
   private Future<Map<String, Object>> getContentData(
-      Map<String, Object> section,
-      Map<String, Object> reqFilters,
-      Map<String, String> headers,
-      Map<String, Object> filterMap,
-      String urlQueryString,
-      Object group,
-      Object index,
-      ExecutionContextExecutor ec)
+          RequestContext requestContext, Map<String, Object> section,
+          Map<String, Object> reqFilters,
+          Map<String, String> headers,
+          Map<String, Object> filterMap,
+          String urlQueryString,
+          Object group,
+          Object index,
+          Map<String, Object> sectionFilters,
+          ExecutionContextExecutor ec)
       throws Exception {
 
-    ProjectLogger.log("PageManagementActor:getContentData: start", LoggerEnum.INFO.name());
     Map<String, Object> searchQueryMap =
         mapper.readValue((String) section.get(JsonKey.SEARCH_QUERY), HashMap.class);
     if (MapUtils.isEmpty(searchQueryMap)) {
@@ -633,9 +589,13 @@ public class PageManagementActor extends BaseActor {
     }
     request.put("limit", 10);
 
-    Map<String, Object> filters = (Map<String, Object>) request.get(JsonKey.FILTERS);
-
-    applyFilters(filters, reqFilters);
+    Map<String, Object> filters = (Map<String, Object>) request.getOrDefault(JsonKey.FILTERS, new HashMap<String, Object>());
+    if(sectionFilters.containsKey(section.get(ID))){
+      applySectionLevelFilters((String)section.get(ID), sectionFilters, filters);
+    } else {
+      applyFilters(filters, reqFilters);
+    }
+    
     String queryRequestBody = mapper.writeValueAsString(searchQueryMap);
     if (StringUtils.isBlank(queryRequestBody)) {
       queryRequestBody = (String) section.get(JsonKey.SEARCH_QUERY);
@@ -646,8 +606,8 @@ public class PageManagementActor extends BaseActor {
     section.put(JsonKey.GROUP, group);
     section.put(JsonKey.INDEX, index);
     if (StringUtils.isEmpty(dataSource) || JsonKey.CONTENT.equalsIgnoreCase(dataSource)) {
-
-      result = ContentSearchUtil.searchContent(urlQueryString, queryRequestBody, headers, ec);
+      result = ContentSearchUtil.searchContent(requestContext, urlQueryString, queryRequestBody, headers, ec);
+      final String finalQueryRequestBody = queryRequestBody;
       return result.map(
           new Mapper<Map<String, Object>, Map<String, Object>>() {
             @Override
@@ -659,11 +619,8 @@ public class PageManagementActor extends BaseActor {
                 section.put(JsonKey.RES_MSG_ID, tempMap.get(JsonKey.RES_MSG_ID));
                 section.put(JsonKey.API_ID, tempMap.get(JsonKey.API_ID));
                 removeUnwantedData(section, "getPageData");
-                ProjectLogger.log(
-                    "PageManagementActor:getContentData:apply: section = " + section,
-                    LoggerEnum.DEBUG.name());
-                ProjectLogger.log(
-                    "PageManagementActor:getContentData: end", LoggerEnum.INFO.name());
+                section.put(JsonKey.SEARCH_QUERY, finalQueryRequestBody);
+                logger.debug(requestContext, "PageManagementActor:getContentData:apply: section = " + section);
               }
               return section;
             }
@@ -671,19 +628,25 @@ public class PageManagementActor extends BaseActor {
           getContext().dispatcher());
     } else {
       Map<String, Object> esResponse =
-          searchFromES((Map<String, Object>) searchQueryMap.get(JsonKey.REQUEST), dataSource);
+          searchFromES(requestContext, (Map<String, Object>) searchQueryMap.get(JsonKey.REQUEST), dataSource);
       section.put(JsonKey.COUNT, esResponse.get(JsonKey.COUNT));
       section.put(JsonKey.CONTENTS, esResponse.get(JsonKey.CONTENT));
       removeUnwantedData(section, "getPageData");
       final Promise promise = Futures.promise();
       promise.success(section);
       result = promise.future();
-      ProjectLogger.log("PageManagementActor:getContentData: end", LoggerEnum.INFO.name());
       return result;
     }
   }
 
-  private Map<String, Object> searchFromES(Map<String, Object> map, String dataSource) {
+  private void applySectionLevelFilters(String sectionId, Map<String, Object> sectionFilters, Map<String, Object> filters) {
+    Map<String, Object> sectionFilter = (Map<String, Object>) sectionFilters.get(sectionId);
+    if(MapUtils.isNotEmpty(sectionFilter)){
+      filters.putAll((Map<String, Object>) sectionFilter.getOrDefault(JsonKey.FILTERS, new HashMap<String, Object>()));
+    }
+  }
+
+  private Map<String, Object> searchFromES(RequestContext requestContext, Map<String, Object> map, String dataSource) {
     SearchDTO searcDto = new SearchDTO();
     searcDto.setQuery((String) map.get(JsonKey.QUERY));
     searcDto.setLimit((Integer) map.get(JsonKey.LIMIT));
@@ -696,7 +659,7 @@ public class PageManagementActor extends BaseActor {
       return null;
     }
 
-    Future<Map<String, Object>> resultF = esService.search(searcDto, type);
+    Future<Map<String, Object>> resultF = esService.search(requestContext, searcDto, type);
     Map<String, Object> result =
         (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
     return result;
@@ -711,49 +674,49 @@ public class PageManagementActor extends BaseActor {
    */
   private void applyFilters(Map<String, Object> filters, Map<String, Object> reqFilters) {
     if (null != reqFilters) {
-      Set<Entry<String, Object>> entrySet = reqFilters.entrySet();
-      for (Entry<String, Object> entry : entrySet) {
-        String key = entry.getKey();
-        if (filters.containsKey(key)) {
-          Object obj = entry.getValue();
-          if (obj instanceof List) {
+      reqFilters.entrySet().forEach(entry -> {
+        if (filters.containsKey(entry.getKey())) {
+          String key = entry.getKey();
+          if (entry.getValue() instanceof List) {
             if (filters.get(key) instanceof List) {
               Set<Object> set = new HashSet<>((List<Object>) filters.get(key));
-              set.addAll((List<Object>) obj);
+              set.addAll((List<Object>) entry.getValue());
               ((List<Object>) filters.get(key)).clear();
               ((List<Object>) filters.get(key)).addAll(set);
             } else if (filters.get(key) instanceof Map) {
-              filters.put(key, obj);
+              filters.put(key, entry.getValue());
             } else {
-              if (!(((List<Object>) obj).contains(filters.get(key)))) {
-                ((List<Object>) obj).add(filters.get(key));
+              List<Object> list = new ArrayList<>();
+              list.addAll((List<Object>) entry.getValue());
+              if (!(((List<Object>) entry.getValue()).contains(filters.get(key)))) {
+                list.add(filters.get(key));
               }
-              filters.put(key, obj);
+              filters.put(key, list);
             }
-          } else if (obj instanceof Map) {
-            filters.put(key, obj);
+          } else if (entry.getValue() instanceof Map) {
+            filters.put(key, entry.getValue());
           } else {
             if (filters.get(key) instanceof List) {
-              if (!(((List<Object>) filters.get(key)).contains(obj))) {
-                ((List<Object>) filters.get(key)).add(obj);
+              if (!(((List<Object>) filters.get(key)).contains(entry.getValue()))) {
+                ((List<Object>) filters.get(key)).add(entry.getValue());
               }
             } else if (filters.get(key) instanceof Map) {
-              filters.put(key, obj);
+              filters.put(key, entry.getValue());
             } else {
               List<Object> list = new ArrayList<>();
               list.add(filters.get(key));
-              list.add(obj);
+              list.add(entry.getValue());
               filters.put(key, list);
             }
           }
         } else {
-          filters.put(key, entry.getValue());
+          filters.put(entry.getKey(), entry.getValue());
         }
-      }
+      });
     }
   }
-
-  private Map<String, Object> getPageSetting(Map<String, Object> pageDO) {
+  
+  private Map<String, Object> getPageSetting(RequestContext requestContext, Map<String, Object> pageDO) {
 
     Map<String, Object> responseMap = new HashMap<>();
     responseMap.put(JsonKey.NAME, pageDO.get(JsonKey.NAME));
@@ -764,10 +727,10 @@ public class PageManagementActor extends BaseActor {
     }
 
     if (pageDO.containsKey(JsonKey.APP_MAP) && null != pageDO.get(JsonKey.APP_MAP)) {
-      responseMap.put(JsonKey.APP_SECTIONS, parsePage(pageDO, JsonKey.APP_MAP));
+      responseMap.put(JsonKey.APP_SECTIONS, parsePage(requestContext, pageDO, JsonKey.APP_MAP));
     }
     if (pageDO.containsKey(JsonKey.PORTAL_MAP) && null != pageDO.get(JsonKey.PORTAL_MAP)) {
-      responseMap.put(JsonKey.PORTAL_SECTIONS, parsePage(pageDO, JsonKey.PORTAL_MAP));
+      responseMap.put(JsonKey.PORTAL_SECTIONS, parsePage(requestContext, pageDO, JsonKey.PORTAL_MAP));
     }
     return responseMap;
   }
@@ -783,7 +746,7 @@ public class PageManagementActor extends BaseActor {
   }
 
   @SuppressWarnings("unchecked")
-  private List<Map<String, Object>> parsePage(Map<String, Object> pageDO, String mapType) {
+  private List<Map<String, Object>> parsePage(RequestContext requestContext, Map<String, Object> pageDO, String mapType) {
     List<Map<String, Object>> sections = new ArrayList<>();
     String sectionQuery = (String) pageDO.get(mapType);
     try {
@@ -791,10 +754,10 @@ public class PageManagementActor extends BaseActor {
       for (Object obj : arr) {
         Map<String, Object> sectionMap = (Map<String, Object>) obj;
         Response sectionResponse =
-            cassandraOperation.getRecordById(
-                pageSectionDbInfo.getKeySpace(),
+            cassandraOperation.getRecordByIdentifier(
+                    requestContext, pageSectionDbInfo.getKeySpace(),
                 pageSectionDbInfo.getTableName(),
-                (String) sectionMap.get(JsonKey.ID));
+                (String) sectionMap.get(JsonKey.ID), null);
 
         List<Map<String, Object>> sectionResult =
             (List<Map<String, Object>>) sectionResponse.getResult().get(JsonKey.RESPONSE);
@@ -806,7 +769,7 @@ public class PageManagementActor extends BaseActor {
         }
       }
     } catch (Exception e) {
-      ProjectLogger.log(e.getMessage(), e);
+      logger.error(requestContext, "parsePage: " + e.getMessage(), e);
     }
     return sections;
   }
@@ -821,17 +784,152 @@ public class PageManagementActor extends BaseActor {
     }
   }
 
-  private Map<String, Object> getPageMapData(String pageName, String orgId) {
+  private Map<String, Object> getPageMapData(RequestContext requestContext, String pageName, String orgId) {
     /** if orgId is not then consider default page */
     if (StringUtils.isBlank(orgId)) {
       orgId = "NA";
     }
-    ProjectLogger.log(
-        "Fetching data from Cache for " + orgId + ":" + pageName, LoggerEnum.INFO.name());
+    logger.info(requestContext, "Fetching data from Cache for " + orgId + ":" + pageName);
     Map<String, Object> pageMapData =
         PageCacheLoaderService.getDataFromCache(
             ActorOperations.GET_PAGE_DATA.getValue(), orgId + ":" + pageName, Map.class);
 
     return pageMapData;
+  }
+  
+  private void getDIALPageData(Request request) {
+    Map<String, Object> req = (Map<String, Object>) request.getRequest().get(JsonKey.PAGE);
+    String pageName = (String) req.get(JsonKey.PAGE_NAME);
+    String source = (String) req.get(JsonKey.SOURCE);
+    String orgId = (String) req.get(JsonKey.ORGANISATION_ID);
+    String urlQueryString = (String) request.getContext().get(JsonKey.URL_QUERY_STRING);
+    Map<String, Object> sectionFilters = (Map<String, Object>) req.getOrDefault(JsonKey.SECTIONS, new HashMap<>());
+    Map<String, String> headers = (Map<String, String>) request.getRequest().get(JsonKey.HEADER);
+
+    Map<String, Object> filterMap = new HashMap<>();
+    filterMap.putAll(req);
+    filterMap.keySet().removeAll(Arrays.asList(JsonKey.PAGE_NAME, JsonKey.SOURCE, JsonKey.ORG_CODE, JsonKey.FILTERS, JsonKey.CREATED_BY, JsonKey.SECTIONS));
+    
+    Map<String, Object> reqFilters = (Map<String, Object>) req.get(JsonKey.FILTERS);
+    Map<String, Object> userProfile = (Map<String, Object>) req.getOrDefault("userProfile", new HashMap<String, Object>());
+
+    Map<String, Object> pageMap = getPageMapData(request.getRequestContext(), pageName, orgId);
+    if (null == pageMap && StringUtils.isNotBlank(orgId)) pageMap = getPageMapData(request.getRequestContext(), pageName, "NA");
+
+    if (null == pageMap) {
+      throw new ProjectCommonException(
+              ResponseCode.pageDoesNotExist.getErrorCode(),
+              ResponseCode.pageDoesNotExist.getErrorMessage(),
+              ResponseCode.RESOURCE_NOT_FOUND.getResponseCode());
+    }
+
+    String sectionQuery = null;
+      if (source.equalsIgnoreCase(ProjectUtil.Source.WEB.getValue())) {
+        sectionQuery = (String) pageMap.getOrDefault(JsonKey.PORTAL_MAP, "");
+      } else {
+        sectionQuery = (String) pageMap.getOrDefault(JsonKey.APP_MAP, "");
+      }  
+    
+    
+    try {
+      List<Map<String,Object>> arr = mapper.readValue(sectionQuery, new TypeReference<List<Map<String, Object>>>(){});
+      List<String> ignoredSections = new ArrayList<>();
+      List<Future<Map<String, Object>>> sectionList = getSectionData(request.getRequestContext(), arr, reqFilters, urlQueryString, headers, sectionFilters, filterMap, ignoredSections);
+      Future<Iterable<Map<String, Object>>> sectionsFuture = Futures.sequence(sectionList, getContext().dispatcher());
+      Map<String, Object> finalPageMap = pageMap;
+      Future<Response> response =
+              sectionsFuture.map(
+                      new Mapper<Iterable<Map<String, Object>>, Response>() {
+                        @Override
+                        public Response apply(Iterable<Map<String, Object>> sections) {
+                          List<Map<String, Object>> sectionList = getUserProfileData(request.getRequestContext(), Lists.newArrayList(sections), userProfile);
+                          Map<String, Object> result = new HashMap<>();
+                          result.put(JsonKey.NAME, finalPageMap.get(JsonKey.NAME));
+                          result.put(JsonKey.ID, finalPageMap.get(JsonKey.ID));
+                          result.put(JsonKey.SECTIONS, sectionList);
+                          result.put("ignoredSections", ignoredSections);
+                          Response response = new Response();
+                          response.put(JsonKey.RESPONSE, result);
+                          logger.debug(request.getRequestContext(), "PageManagementActor:getPageData:apply: Response before caching it = "
+                                  + response);
+                          return response;
+                        }
+                      },
+                      getContext().dispatcher());
+      Patterns.pipe(response, getContext().dispatcher()).to(sender());
+    }
+    catch (Exception e) {
+      logger.error(request.getRequestContext(), "PageManagementActor:getPageData: Exception occurred with error message = "
+              + e.getMessage(), e);
+    }
+  }
+
+  private List<Map<String, Object>> getUserProfileData(RequestContext requestContext, List<Map<String, Object>> sectionList, Map<String, Object> userProfile) {
+    List<Map<String, Object>> filteredSectionsContents = sectionList.stream().filter(section -> CollectionUtils.isNotEmpty((List<Map<String, Object>>) section.get("contents"))).collect(Collectors.toList());
+    List<Map<String, Object>> filteredSectionsCollections = sectionList.stream().filter(section -> (Integer) section.getOrDefault("collectionsCount", 0) > 0).collect(Collectors.toList());
+    // if user profile is empty - take only origin content (collections or contents)
+    if (MapUtils.isEmpty(userProfile)) {
+      if(CollectionUtils.isNotEmpty(filteredSectionsCollections)){
+        filterData(filteredSectionsCollections, new HashMap<String, Object>(), "collections");
+      } else if (CollectionUtils.isNotEmpty(filteredSectionsContents)) {
+        filterData(filteredSectionsContents, new HashMap<String, Object>(), "contents");
+      }
+    } else {
+      Map<String, Object> filteredUserProfile = userProfilePropList.stream().collect(Collectors.toMap(key -> key, key -> userProfile.get(key)));
+      filteredUserProfile.values().removeIf(Objects::isNull);
+      if (MapUtils.isNotEmpty(filteredUserProfile)) {
+        if(CollectionUtils.isNotEmpty(filteredSectionsCollections)){
+          filterData(filteredSectionsCollections, filteredUserProfile, "collections");
+        } else if (CollectionUtils.isNotEmpty(filteredSectionsContents)) {
+          filterData(filteredSectionsContents, filteredUserProfile, "contents");
+        }
+      }
+    }
+    logger.info(requestContext, "PageManagementActor:getUserProfileData ::::: final value returned = " + sectionList);
+    return sectionList;
+  }
+
+  private void filterData(List<Map<String, Object>> filteredSections, Map<String, Object> filteredUserProfile, String param) {
+    if (CollectionUtils.isNotEmpty(filteredSections)) {
+      for (Map<String, Object> section : filteredSections) {
+        List<Map<String, Object>> data = (List<Map<String, Object>>) section.get(param);
+        List<Map<String, Object>> originData = data.stream().filter(content -> (!((String) content.getOrDefault("originData", "")).contains("shallow"))).collect(Collectors.toList());
+        List<Map<String, Object>> shallowCopiedData = data.stream().filter(content -> ((String) content.getOrDefault("originData", "")).contains("shallow")).collect(Collectors.toList());
+        if (MapUtils.isNotEmpty(filteredUserProfile)) {
+          List<Map<String, Object>> filteredShallowCopied = shallowCopiedData.stream().filter(content -> {
+            List<String> matchedProps = new ArrayList<>();
+            filteredUserProfile.entrySet().forEach(entry -> {
+              List<String> userProfileVal = getStringListFromObj(entry.getValue());
+              List<String> contentVal = getStringListFromObj(content.getOrDefault(entry.getKey(), ""));
+              if (CollectionUtils.containsAny(contentVal, userProfileVal)) matchedProps.add(entry.getKey());
+            });
+            return matchedProps.containsAll(filteredUserProfile.keySet());
+          }).collect(Collectors.toList());
+          // if user profile matched with data - take only shallow copied data (contents or collections.)
+          if (CollectionUtils.isNotEmpty(filteredShallowCopied)) {
+            section.put(param, filteredShallowCopied);
+            String key = StringUtils.equalsIgnoreCase("collections", param)? "collectionsCount" : "count";
+            section.put(key, filteredShallowCopied.size());
+          } else {
+            // if user profile not matched with data (e.g: board) - take only origin data (contents or collections)
+            section.put(param, originData);
+            String key = StringUtils.equalsIgnoreCase("collections", param)? "collectionsCount" : "count";
+            section.put(key, originData.size());
+          }
+        } else {
+          section.put(param, originData);
+          String key = StringUtils.equalsIgnoreCase("collections", param)? "collectionsCount" : "count";
+          section.put(key, originData.size());
+        }
+      }
+    }
+  }
+
+  private List<String> getStringListFromObj(Object obj) {
+    if(obj instanceof List){
+      return (List<String>) obj;
+    } else {
+      return Arrays.asList((String)obj);
+    }
   }
 }

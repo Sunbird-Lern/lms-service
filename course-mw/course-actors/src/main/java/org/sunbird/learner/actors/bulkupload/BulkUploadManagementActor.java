@@ -2,28 +2,18 @@ package org.sunbird.learner.actors.bulkupload;
 
 import akka.actor.ActorRef;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.inject.Inject;
-import javax.inject.Named;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.BulkUploadJsonKey;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.PropertiesCache;
 import org.sunbird.common.models.util.TelemetryEnvKey;
-import org.sunbird.common.request.ExecutionContext;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.common.util.CloudStorageUtil;
 import org.sunbird.common.util.CloudStorageUtil.CloudStorageType;
@@ -32,6 +22,16 @@ import org.sunbird.learner.actors.bulkupload.dao.impl.BulkUploadProcessDaoImpl;
 import org.sunbird.learner.actors.bulkupload.model.BulkUploadProcess;
 import org.sunbird.learner.actors.bulkupload.model.StorageDetails;
 import org.sunbird.learner.util.Util;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This actor will handle bulk upload operation .
@@ -55,7 +55,6 @@ public class BulkUploadManagementActor extends BaseBulkUploadActor {
   public void onReceive(Request request) throws Throwable {
     Util.initializeContext(request, TelemetryEnvKey.USER);
     // set request id fto thread local...
-    ExecutionContext.setRequestId(request.getRequestId());
     if (request.getOperation().equalsIgnoreCase(ActorOperations.BULK_UPLOAD.getValue())) {
       upload(request);
     } else if (request
@@ -75,7 +74,7 @@ public class BulkUploadManagementActor extends BaseBulkUploadActor {
   private void getBulkUploadDownloadStatusLink(Request actorMessage) {
     String processId = (String) actorMessage.getRequest().get(JsonKey.PROCESS_ID);
     BulkUploadProcessDaoImpl bulkuploadDao = new BulkUploadProcessDaoImpl();
-    BulkUploadProcess bulkUploadProcess = bulkuploadDao.read(processId);
+    BulkUploadProcess bulkUploadProcess = bulkuploadDao.read(actorMessage.getRequestContext(), processId);
     if (bulkUploadProcess != null) {
 
       try {
@@ -118,8 +117,8 @@ public class BulkUploadManagementActor extends BaseBulkUploadActor {
             JsonKey.SUCCESS_RESULT,
             JsonKey.FAILURE_RESULT);
     response =
-        cassandraOperation.getRecordById(
-            bulkDb.getKeySpace(), bulkDb.getTableName(), processId, fields);
+        cassandraOperation.getRecordByIdentifier(
+                actorMessage.getRequestContext(), bulkDb.getKeySpace(), bulkDb.getTableName(), processId, fields);
     @SuppressWarnings("unchecked")
     List<Map<String, Object>> resList =
         ((List<Map<String, Object>>) response.get(JsonKey.RESPONSE));
@@ -162,14 +161,6 @@ public class BulkUploadManagementActor extends BaseBulkUploadActor {
         MessageFormat.format(BulkUploadJsonKey.OPERATION_STATUS_MSG, status.toLowerCase()));
   }
 
-  private void addTaskDataToList(List<Map> list, String data) {
-    try {
-      list.add(mapper.readValue(data, Map.class));
-    } catch (IOException ex) {
-      ProjectLogger.log("Error while converting success list to map" + ex.getMessage(), ex);
-    }
-  }
-
   @SuppressWarnings("unchecked")
   private void upload(Request actorMessage) throws IOException {
     String processId = ProjectUtil.getUniqueIdFromTimestamp(1);
@@ -177,20 +168,20 @@ public class BulkUploadManagementActor extends BaseBulkUploadActor {
     req.put(JsonKey.CREATED_BY, req.get(JsonKey.CREATED_BY));
     if (((String) req.get(JsonKey.OBJECT_TYPE)).equals(JsonKey.BATCH_LEARNER_ENROL)
         || ((String) req.get(JsonKey.OBJECT_TYPE)).equals(JsonKey.BATCH_LEARNER_UNENROL)) {
-      processBulkBatchEnrollment(req, processId, (String) req.get(JsonKey.OBJECT_TYPE));
+      processBulkBatchEnrollment(actorMessage.getRequestContext(), req, processId, (String) req.get(JsonKey.OBJECT_TYPE));
     }
   }
 
   private void processBulkBatchEnrollment(
-      Map<String, Object> req, String processId, String objectType) throws IOException {
-    List<String[]> batchList = parseCsvFile((byte[]) req.get(JsonKey.FILE), processId);
+          RequestContext requestContext, Map<String, Object> req, String processId, String objectType) throws IOException {
+    List<String[]> batchList = parseCsvFile(requestContext, (byte[]) req.get(JsonKey.FILE), processId);
     if (null != batchList) {
 
       if (null != PropertiesCache.getInstance().getProperty(JsonKey.BULK_UPLOAD_BATCH_DATA_SIZE)) {
         batchDataSize =
             (Integer.parseInt(
                 PropertiesCache.getInstance().getProperty(JsonKey.BULK_UPLOAD_BATCH_DATA_SIZE)));
-        ProjectLogger.log("bulk upload batch data size read from config file " + batchDataSize);
+        logger.debug(requestContext, "bulk upload batch data size read from config file " + batchDataSize);
       }
       validateFileSizeAgainstLineNumbers(batchDataSize, batchList.size());
       if (!batchList.isEmpty()) {
@@ -210,17 +201,17 @@ public class BulkUploadManagementActor extends BaseBulkUploadActor {
     }
     // save csv file to db
     uploadCsvToDB(
-        batchList, processId, null, objectType, (String) req.get(JsonKey.CREATED_BY), null);
+            requestContext, batchList, processId, null, objectType, (String) req.get(JsonKey.CREATED_BY), null);
   }
 
   private void uploadCsvToDB(
-      List<String[]> dataList,
-      String processId,
-      String orgId,
-      String objectType,
-      String requestedBy,
-      String rootOrgId) {
-    ProjectLogger.log("BulkUploadManagementActor: uploadCsvToDB called.", LoggerEnum.INFO);
+          RequestContext requestContext, List<String[]> dataList,
+          String processId,
+          String orgId,
+          String objectType,
+          String requestedBy,
+          String rootOrgId) {
+    logger.info(requestContext, "BulkUploadManagementActor: uploadCsvToDB called.");
     List<Map<String, Object>> dataMapList = new ArrayList<>();
     if (dataList.size() > 1) {
       try {
@@ -237,7 +228,7 @@ public class BulkUploadManagementActor extends BaseBulkUploadActor {
           dataMapList.add(dataMap);
         }
       } catch (Exception e) {
-        ProjectLogger.log(e.getMessage(), e);
+        logger.error(requestContext, "Error while updating csv to DB: " + e.getMessage(), e);
         throw new ProjectCommonException(
             ResponseCode.csvError.getErrorCode(),
             ResponseCode.csvError.getErrorMessage(),
@@ -256,10 +247,8 @@ public class BulkUploadManagementActor extends BaseBulkUploadActor {
     try {
       map.put(JsonKey.DATA, mapper.writeValueAsString(dataMapList));
     } catch (IOException e) {
-      ProjectLogger.log(
-          "BulkUploadManagementActor:uploadCsvToDB: Exception while converting map to string: "
-              + e.getMessage(),
-          e);
+      logger.error(requestContext, ":uploadCsvToDB: Exception while converting map to string: "
+              + e.getMessage(), e);
       throw new ProjectCommonException(
           ResponseCode.internalError.getErrorCode(),
           ResponseCode.internalError.getErrorMessage(),
@@ -273,21 +262,17 @@ public class BulkUploadManagementActor extends BaseBulkUploadActor {
     map.put(JsonKey.PROCESS_START_TIME, ProjectUtil.getFormattedDate());
     map.put(JsonKey.STATUS, ProjectUtil.BulkProcessStatus.NEW.getValue());
     Response res =
-        cassandraOperation.insertRecord(bulkDb.getKeySpace(), bulkDb.getTableName(), map);
+        cassandraOperation.insertRecord(requestContext, bulkDb.getKeySpace(), bulkDb.getTableName(), map);
     res.put(JsonKey.PROCESS_ID, processId);
-    ProjectLogger.log(
-        "BulkUploadManagementActor: uploadCsvToDB returned response for processId: " + processId,
-        LoggerEnum.INFO);
+    logger.info(requestContext, "uploadCsvToDB returned response for processId: " + processId);
     sender().tell(res, self());
     if (((String) res.get(JsonKey.RESPONSE)).equalsIgnoreCase(JsonKey.SUCCESS)) {
       // send processId for data processing to background job
-      Request request = new Request();
+      Request request = new Request(requestContext);
       request.put(JsonKey.PROCESS_ID, processId);
       request.setOperation(ActorOperations.PROCESS_BULK_UPLOAD.getValue());
       bulkUploadBackGroundJobActorRef.tell(request, getSelf());
     }
-    ProjectLogger.log(
-        "BulkUploadManagementActor: uploadCsvToDB completed processing for processId: " + processId,
-        LoggerEnum.INFO);
+    logger.info(requestContext, "uploadCsvToDB completed processing for processId: " + processId);
   }
 }

@@ -106,7 +106,8 @@ class GroupAggregatesActor @Inject()(implicit val cacheUtil: RedisCacheUtil) ext
       usersAggs.map(dbAggRecord => {
         val dbAgg = dbAggRecord.get("agg").asInstanceOf[java.util.Map[String, AnyRef]]
         val aggLastUpdated = dbAggRecord.get("agg_last_updated").asInstanceOf[java.util.Map[String, AnyRef]]
-        val agg = List(Map("metric"-> aggName, "value" -> dbAgg.get(aggName), "lastUpdatedOn" -> aggLastUpdated.get(aggName)).asJava).asJava
+        //val agg = List(Map("metric"-> aggName, "value" -> dbAgg.get(aggName), "lastUpdatedOn" -> aggLastUpdated.get(aggName)).asJava).asJava
+        val agg = dbAgg.map(aggregate => Map("metric"-> aggregate._1, "value" -> aggregate._2, "lastUpdatedOn" -> aggLastUpdated.get(aggregate._1)).asJava).toList.asJava
         val userId = dbAggRecord.get("user_id").asInstanceOf[String]
         (membersMap.get(userId).filterKeys(key => GROUP_MEMBERS_METADATA.contains(key)) ++ Map("agg" -> agg)).asJava
       }).toList

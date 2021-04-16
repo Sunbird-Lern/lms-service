@@ -677,6 +677,7 @@ public class CourseBatchManagementActor extends BaseActor {
     data.put("startDate", courseBatch.getStartDate());
     data.put("endDate", courseBatch.getEndDate());
     data.put("enrollmentType", courseBatch.getEnrollmentType());
+    data.put("status", courseBatch.getStatus());
     data.put("enrollmentEndDate", getEnrollmentEndDate(courseBatch.getEnrollmentEndDate(), courseBatch.getEndDate()));
     batches.removeIf(map -> StringUtils.equalsIgnoreCase(courseBatch.getBatchId(), (String)map.get("batchId")));
     batches.add(data);

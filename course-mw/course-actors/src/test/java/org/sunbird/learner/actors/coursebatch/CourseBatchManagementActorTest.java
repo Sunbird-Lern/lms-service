@@ -146,6 +146,6 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
       }});
     }};
     when(ContentUtil.getContent(
-            Mockito.anyString())).thenReturn(courseMap);
+            Mockito.anyString(), Mockito.anyList())).thenReturn(courseMap);
   }
 }

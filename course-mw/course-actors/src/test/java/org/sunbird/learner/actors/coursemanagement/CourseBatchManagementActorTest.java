@@ -34,13 +34,14 @@ import org.sunbird.kafka.client.InstructionEventGenerator;
 import org.sunbird.kafka.client.KafkaClient;
 import org.sunbird.learner.actors.coursebatch.CourseBatchManagementActor;
 import org.sunbird.learner.constants.CourseJsonKey;
+import org.sunbird.learner.util.ContentUtil;
 import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.JsonUtil;
 import org.sunbird.learner.util.Util;
 
 @RunWith(PowerMockRunner.class)
 @SuppressStaticInitializationFor("org.sunbird.kafka.client.KafkaClient")
-@PrepareForTest({ServiceFactory.class, EsClientFactory.class, CourseBatchUtil.class, Util.class, InstructionEventGenerator.class, KafkaClient.class})
+@PrepareForTest({ServiceFactory.class, EsClientFactory.class, CourseBatchUtil.class, Util.class, InstructionEventGenerator.class, KafkaClient.class, ContentUtil.class})
 @PowerMockIgnore({"javax.management.*"})
 public class CourseBatchManagementActorTest {
 
@@ -73,6 +74,8 @@ public class CourseBatchManagementActorTest {
     PowerMockito.mockStatic(ServiceFactory.class);
     when(ServiceFactory.getInstance()).thenReturn(mockCassandraOperation);
     PowerMockito.mockStatic(CourseBatchUtil.class);
+    PowerMockito.mockStatic(ContentUtil.class);
+    mockCourseEnrollmentActor();
   }
 
   private String calculateDate(int dayOffset) {
@@ -503,5 +506,16 @@ public class CourseBatchManagementActorTest {
             "    }\n" +
             "}";
     return JsonUtil.deserialize(template, Map.class);
+  }
+
+  private void mockCourseEnrollmentActor(){
+    Map<String, Object> courseMap = new HashMap<String, Object>() {{
+      put("content", new HashMap<String, Object>() {{
+        put("contentType", "Course");
+        put("status", "Live");
+      }});
+    }};
+    when(ContentUtil.getContent(
+            Mockito.anyString(), Mockito.anyList())).thenReturn(courseMap);
   }
 }

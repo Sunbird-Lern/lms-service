@@ -195,7 +195,7 @@ public class CourseBatchManagementActor extends BaseActor {
     courseBatch.setUpdatedDate(ProjectUtil.getFormattedDate());
     checkBatchStatus(courseBatch);
     Map<String, Object> contentDetails = getContentDetails(actorMessage.getRequestContext(),courseBatch.getCourseId(), headers);
-    //validateUserPermission(courseBatch, requestedBy);
+    validateUserPermission(courseBatch, requestedBy);
     validateContentOrg(actorMessage.getRequestContext(), courseBatch.getCreatedFor());
     validateMentors(courseBatch, (String) actorMessage.getContext().getOrDefault(JsonKey.X_AUTH_TOKEN, ""), actorMessage.getRequestContext());
     participantsMap = getMentorLists(participantsMap, oldBatch, courseBatch);

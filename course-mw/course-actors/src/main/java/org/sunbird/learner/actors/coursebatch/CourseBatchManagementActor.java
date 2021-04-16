@@ -101,7 +101,7 @@ public class CourseBatchManagementActor extends BaseActor {
               ResponseCode.invalidRequestParameter.getErrorMessage(), PARTICIPANTS));
     }
     CourseBatch courseBatch = JsonUtil.convert(request, CourseBatch.class);
-    courseBatch.setStatus(ProgressStatus.NOT_STARTED.getValue());
+    courseBatch.setStatus(setCourseBatchStatus(actorMessage.getRequestContext(), (String) request.get(JsonKey.START_DATE)));
     String courseId = (String) request.get(JsonKey.COURSE_ID);
     Map<String, Object> contentDetails = getContentDetails(actorMessage.getRequestContext(),courseId, headers);
     courseBatch.setCreatedDate(ProjectUtil.getFormattedDate());
@@ -335,6 +335,23 @@ public class CourseBatchManagementActor extends BaseActor {
                 + data+" and Topic "+topic);
         InstructionEventGenerator.pushInstructionEvent(batchId, topic, data);
     }
+
+  private int setCourseBatchStatus(RequestContext requestContext, String startDate) {
+    try {
+      Date todayDate = DATE_FORMAT.parse(DATE_FORMAT.format(new Date()));
+      Date requestedStartDate = DATE_FORMAT.parse(startDate);
+      logger.info(requestContext, "CourseBatchManagementActor:setCourseBatchStatus: todayDate="
+              + todayDate + ", requestedStartDate=" + requestedStartDate);
+      if (todayDate.compareTo(requestedStartDate) == 0) {
+        return ProgressStatus.STARTED.getValue();
+      } else {
+        return ProgressStatus.NOT_STARTED.getValue();
+      }
+    } catch (ParseException e) {
+      logger.error(requestContext, "CourseBatchManagementActor:setCourseBatchStatus: Exception occurred with error message = " + e.getMessage(), e);
+    }
+    return ProgressStatus.NOT_STARTED.getValue();
+  }
 
   private void validateMentors(CourseBatch courseBatch, String authToken, RequestContext requestContext) {
     List<String> mentors = courseBatch.getMentors();

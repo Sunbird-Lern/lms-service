@@ -409,6 +409,11 @@ public class CourseBatchManagementActor extends BaseActor {
     Date requestedEndDate = getDate(requestContext, JsonKey.END_DATE, DATE_FORMAT, req);
     Date requestedEnrollmentEndDate = getDate(requestContext, JsonKey.ENROLLMENT_END_DATE, DATE_FORMAT, req);
 
+    // After deprecating the text date remove below
+    dbBatchStartDate = dbBatchStartDate == null ? getDate(requestContext, JsonKey.OLD_START_DATE, DATE_FORMAT, courseBatchMap) : dbBatchStartDate;
+    dbBatchEndDate = dbBatchEndDate == null ? getDate(requestContext, JsonKey.OLD_END_DATE, DATE_FORMAT, courseBatchMap) : dbBatchEndDate;
+    dbEnrollmentEndDate = dbEnrollmentEndDate == null ? getDate(requestContext, JsonKey.OLD_ENROLLMENT_END_DATE, DATE_FORMAT, courseBatchMap) : dbEnrollmentEndDate;
+
     validateUpdateBatchStartDate(requestedStartDate);
     validateBatchStartAndEndDate(
         dbBatchStartDate, dbBatchEndDate, requestedStartDate, requestedEndDate, todayDate);

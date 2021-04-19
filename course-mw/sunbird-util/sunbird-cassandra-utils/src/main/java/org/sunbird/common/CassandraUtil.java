@@ -341,4 +341,8 @@ public final class CassandraUtil {
       where.and(QueryBuilder.eq(key, value));
     }
   }
+
+  public static Map<String, Object> changeCassandraColumnMapping(Map<String, Object> map) {
+    return map.entrySet().stream().collect(Collectors.toMap(entry -> propertiesCache.readPropertyValue(entry.getKey()), entry -> entry.getValue()));
+  }
 }

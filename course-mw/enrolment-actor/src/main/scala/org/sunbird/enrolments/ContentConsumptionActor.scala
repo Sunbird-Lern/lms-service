@@ -9,6 +9,7 @@ import javax.inject.Inject
 import org.apache.commons.collections4.{CollectionUtils, MapUtils}
 import org.apache.commons.lang3.StringUtils
 import org.sunbird.cassandra.CassandraOperation
+import org.sunbird.common.CassandraUtil
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
 import org.sunbird.common.models.util._
@@ -126,7 +127,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                             val existingContents = getContentsConsumption(userId, courseId, contentIds, batchId, request.getRequestContext).groupBy(x => x.get("contentId").asInstanceOf[String]).map(e => e._1 -> e._2.toList.head).toMap
                             val contents:List[java.util.Map[String, AnyRef]] = entry._2.toList.map(inputContent => {
                                 val existingContent = existingContents.getOrElse(inputContent.get("contentId").asInstanceOf[String], new java.util.HashMap[String, AnyRef])
-                                processContentConsumption(inputContent, existingContent, userId)
+                                CassandraUtil.changeCassandraColumnMapping(processContentConsumption(inputContent, existingContent, userId))
                             })
                             // First push the event to kafka and then update cassandra user_content_consumption table
                             pushInstructionEvent(request.getRequestContext, userId, batchId, courseId, contents.asJava)
@@ -232,7 +233,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             }
             updatedContent.put(JsonKey.LAST_ACCESS_TIME, compareTime(null, inputAccessTime))
         }
-        updatedContent.put(JsonKey.LAST_UPDATED_TIME, ProjectUtil.getFormattedDate)
+        updatedContent.put(JsonKey.LAST_UPDATED_TIME, ProjectUtil.getTimeStamp)
         updatedContent.put(JsonKey.USER_ID, userId)
         updatedContent
     }

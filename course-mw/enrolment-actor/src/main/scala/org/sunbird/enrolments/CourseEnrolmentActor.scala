@@ -25,6 +25,7 @@ import org.sunbird.learner.util.{ContentSearchUtil, ContentUtil, CourseBatchSche
 import org.sunbird.models.course.batch.CourseBatch
 import org.sunbird.models.user.courses.UserCourses
 import org.sunbird.cache.util.RedisCacheUtil
+import org.sunbird.common.CassandraUtil
 import org.sunbird.telemetry.util.TelemetryUtil
 
 import scala.collection.JavaConversions._
@@ -44,6 +45,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         (ProjectUtil.getConfigValue("user_enrolments_response_cache_enable")).toBoolean else true
     val ttl: Int = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("user_enrolments_response_cache_ttl")))
         (ProjectUtil.getConfigValue("user_enrolments_response_cache_ttl")).toInt else 60
+    private val DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd")
 
 
     override def preStart { println("Starting CourseEnrolmentActor") }
@@ -199,10 +201,10 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         if(EnrolmentType.inviteOnly.getVal.equalsIgnoreCase(batchData.getEnrollmentType))
             ProjectCommonException.throwClientErrorException(ResponseCode.enrollmentTypeValidation, ResponseCode.enrollmentTypeValidation.getErrorMessage)
         
-        if((2 == batchData.getStatus) || (null != batchData.getEndDate && LocalDateTime.now().isAfter(batchData.getEndDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())))
+        if((2 == batchData.getStatus) || (null != batchData.getEndDate && LocalDateTime.now().isAfter(LocalDate.parse(DATE_FORMAT.format(batchData.getEnrollmentEndDate), DateTimeFormatter.ofPattern("yyyy-MM-dd")).atTime(LocalTime.MAX))))
             ProjectCommonException.throwClientErrorException(ResponseCode.courseBatchAlreadyCompleted, ResponseCode.courseBatchAlreadyCompleted.getErrorMessage)
         
-        if(isEnrol && null != batchData.getEnrollmentEndDate && LocalDateTime.now().isAfter(batchData.getEnrollmentEndDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()))
+        if(isEnrol && null != batchData.getEnrollmentEndDate && LocalDateTime.now().isAfter(LocalDate.parse(DATE_FORMAT.format(batchData.getEnrollmentEndDate), DateTimeFormatter.ofPattern("yyyy-MM-dd")).atTime(LocalTime.MAX)))
             ProjectCommonException.throwClientErrorException(ResponseCode.courseBatchEnrollmentDateEnded, ResponseCode.courseBatchEnrollmentDateEnded.getErrorMessage)
         
         if(isEnrol && null != enrolmentData && enrolmentData.isActive) ProjectCommonException.throwClientErrorException(ResponseCode.userAlreadyEnrolledCourse, ResponseCode.userAlreadyEnrolledCourse.getErrorMessage)
@@ -211,10 +213,11 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     }
 
     def upsertEnrollment(userId: String, courseId: String, batchId: String, data: java.util.Map[String, AnyRef], isNew: Boolean, requestContext: RequestContext): Unit = {
+        val dataMap = CassandraUtil.changeCassandraColumnMapping(data)
         if(isNew) {
-            userCoursesDao.insertV2(requestContext, data)
+            userCoursesDao.insertV2(requestContext, dataMap)
         } else {
-            userCoursesDao.updateV2(requestContext, userId, courseId, batchId, data)
+            userCoursesDao.updateV2(requestContext, userId, courseId, batchId, dataMap)
         }
     }
 

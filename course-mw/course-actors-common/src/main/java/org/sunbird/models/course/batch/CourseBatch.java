@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.learner.util.CustomDateSerializer;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -20,30 +21,32 @@ public class CourseBatch implements Serializable {
   private String courseId;
   private String createdBy;
 
+  private String oldCreatedDate;
+  private String oldEndDate;
+  private String oldEnrollmentEndDate;
+  private String oldStartDate;
+  private String oldUpdatedDate;
+
   @JsonSerialize(using = CustomDateSerializer.class)
   private Date createdDate;
+  @JsonSerialize(using = CustomDateSerializer.class)
+  private Date endDate;
+  @JsonSerialize(using = CustomDateSerializer.class)
+  private Date enrollmentEndDate;
+  @JsonSerialize(using = CustomDateSerializer.class)
+  private Date updatedDate;
+  @JsonSerialize(using = CustomDateSerializer.class)
+  private Date startDate;
 
   private List<String> createdFor;
   private String description;
-
-  @JsonSerialize(using = CustomDateSerializer.class)
-  private Date endDate;
-
-  @JsonSerialize(using = CustomDateSerializer.class)
-  private Date enrollmentEndDate;
 
   private String enrollmentType;
   private String hashTagId;
   private List<String> mentors;
   private String name;
 
-  @JsonSerialize(using = CustomDateSerializer.class)
-  private Date startDate;
-
   private Integer status;
-
-  @JsonSerialize(using = CustomDateSerializer.class)
-  private Date updatedDate;
 
   private Map<String, Object> certTemplates;
 
@@ -145,9 +148,7 @@ public class CourseBatch implements Serializable {
     this.name = name;
   }
 
-  public Date getStartDate() {
-    return startDate;
-  }
+  public Date getStartDate() { return startDate; }
 
   public void setStartDate(Date startDate) {
     this.startDate = startDate;
@@ -171,6 +172,7 @@ public class CourseBatch implements Serializable {
 
   public void setContentDetails(Map<String, Object> contentDetails, String createdBy) {
     this.setCreatedBy(createdBy);
+    this.setOldCreatedDate(ProjectUtil.getFormattedDate());
     this.setCreatedDate(new Date());
   }
 
@@ -198,4 +200,33 @@ public class CourseBatch implements Serializable {
     this.convertDateAsString = convert;
   }
 
+  // After deprecating the text dates remove the below
+  public String getOldCreatedDate() {
+    return oldCreatedDate;
+  }
+  public void setOldCreatedDate(String createdDate) {
+    this.oldCreatedDate = createdDate;
+  }
+  public String getOldEndDate() {
+    return oldEndDate;
+  }
+  public void setOldEndDate(String endDate) {
+    this.oldEndDate = endDate;
+  }
+  public String getOldEnrollmentEndDate() {
+    return oldEnrollmentEndDate;
+  }
+  public void setOldEnrollmentEndDate(String enrollmentEndDate) {
+    this.oldEnrollmentEndDate = enrollmentEndDate;
+  }
+  public String getOldStartDate() { return oldStartDate; }
+  public void setOldStartDate(String startDate) {
+    this.oldStartDate = startDate;
+  }
+  public String getOldUpdatedDate() {
+    return oldUpdatedDate;
+  }
+  public void setOldUpdatedDate(String updatedDate) {
+    this.oldUpdatedDate = updatedDate;
+  }
 }

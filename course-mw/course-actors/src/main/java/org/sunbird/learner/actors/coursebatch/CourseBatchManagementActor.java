@@ -704,8 +704,8 @@ public class CourseBatchManagementActor extends BaseActor {
     ContentUtil.updateCollection(requestContext, courseBatch.getCourseId(), new HashMap<String, Object>() {{ put("batches", batches);}});
   }
 
-  private Object getEnrollmentEndDate(String enrollmentEndDate, String endDate) {
-    return Optional.ofNullable(enrollmentEndDate).map(x -> x).orElse(Optional.ofNullable(endDate).map(y ->{
+  private Object getEnrollmentEndDate(Date enrollmentEndDate, Date endDate) {
+    return Optional.ofNullable(DATE_FORMAT.format(enrollmentEndDate)).map(x -> x).orElse(Optional.ofNullable(DATE_FORMAT.format(endDate)).map(y ->{
       Calendar cal = Calendar.getInstance();
       try {
         cal.setTime(DATE_FORMAT.parse(y));

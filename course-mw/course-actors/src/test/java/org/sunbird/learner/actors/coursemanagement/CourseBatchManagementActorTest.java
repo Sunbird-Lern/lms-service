@@ -31,17 +31,18 @@ import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.kafka.client.InstructionEventGenerator;
-import org.sunbird.kafka.client.KafkaClient;
 import org.sunbird.learner.actors.coursebatch.CourseBatchManagementActor;
 import org.sunbird.learner.constants.CourseJsonKey;
+import org.sunbird.learner.util.ContentUtil;
 import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.JsonUtil;
 import org.sunbird.learner.util.Util;
 
 @RunWith(PowerMockRunner.class)
-@SuppressStaticInitializationFor("org.sunbird.kafka.client.KafkaClient")
-@PrepareForTest({ServiceFactory.class, EsClientFactory.class, CourseBatchUtil.class, Util.class, InstructionEventGenerator.class, KafkaClient.class})
-@PowerMockIgnore({"javax.management.*"})
+@PrepareForTest({ServiceFactory.class, EsClientFactory.class, CourseBatchUtil.class, Util.class, ContentUtil.class})
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*", "jdk.internal.reflect.*",
+        "sun.security.ssl.*", "javax.net.ssl.*", "javax.crypto.*",
+        "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class CourseBatchManagementActorTest {
 
   public ActorSystem system = ActorSystem.create("system");
@@ -58,21 +59,11 @@ public class CourseBatchManagementActorTest {
   @Before
   public void setUp() throws Exception {
     mockCassandraOperation = mock(CassandraOperationImpl.class);
-    PowerMockito.mockStatic(InstructionEventGenerator.class);
-    PowerMockito.mockStatic(KafkaClient.class);
-    PowerMockito.doNothing()
-            .when(
-                    InstructionEventGenerator.class,
-                    "pushInstructionEvent",
-                    Mockito.anyString(),
-                    Mockito.anyMap());
-
-    PowerMockito.doNothing()
-            .when(KafkaClient.class, "send", Mockito.anyString(), Mockito.anyString());
     ActorRef actorRef = mock(ActorRef.class);
     PowerMockito.mockStatic(ServiceFactory.class);
     when(ServiceFactory.getInstance()).thenReturn(mockCassandraOperation);
     PowerMockito.mockStatic(CourseBatchUtil.class);
+    PowerMockito.mockStatic(ContentUtil.class);
   }
 
   private String calculateDate(int dayOffset) {
@@ -90,6 +81,7 @@ public class CourseBatchManagementActorTest {
     when(mockCassandraOperation.getRecordByIdentifier(
             Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
         .thenReturn(mockGetRecordByIdResponse);
+    mockCourseEnrollmentActor();
    
     TestKit probe = new TestKit(system);
     ActorRef subject = system.actorOf(props);
@@ -126,6 +118,8 @@ public class CourseBatchManagementActorTest {
 
     PowerMockito.doNothing().when(CourseBatchUtil.class);
     CourseBatchUtil.syncCourseBatchForeground(null, BATCH_ID, new HashMap<>());
+    PowerMockito.mockStatic(ContentUtil.class);
+    mockCourseEnrollmentActor();
 
     TestKit probe = new TestKit(system);
     ActorRef subject = system.actorOf(props);
@@ -503,5 +497,16 @@ public class CourseBatchManagementActorTest {
             "    }\n" +
             "}";
     return JsonUtil.deserialize(template, Map.class);
+  }
+
+  private void mockCourseEnrollmentActor(){
+    Map<String, Object> courseMap = new HashMap<String, Object>() {{
+      put("content", new HashMap<String, Object>() {{
+        put("contentType", "Course");
+        put("status", "Live");
+      }});
+    }};
+    when(ContentUtil.getContent(
+            Mockito.anyString(), Mockito.anyList())).thenReturn(courseMap);
   }
 }

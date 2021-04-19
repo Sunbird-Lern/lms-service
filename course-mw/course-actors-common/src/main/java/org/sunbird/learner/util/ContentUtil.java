@@ -16,7 +16,10 @@ import org.apache.http.HttpHeaders;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.HttpUtilResponse;
 import org.sunbird.common.models.util.*;
+import org.sunbird.common.request.Request;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.common.util.JsonUtil;
 
 /**
  * This class will make the call to EkStep content search
@@ -26,10 +29,18 @@ import org.sunbird.common.responsecode.ResponseCode;
 public final class ContentUtil {
 
   private static ObjectMapper mapper = new ObjectMapper();
+  public static Map<String, String> headerMap = new HashMap<>();
   private static String EKSTEP_COURSE_SEARCH_QUERY =
           "{\"request\": {\"filters\":{\"contentType\": [\"Course\"], \"identifier\": \"COURSE_ID_PLACEHOLDER\", \"status\": \"Live\", \"mimeType\": \"application/vnd.ekstep.content-collection\", \"trackable.enabled\": \"Yes\"},\"limit\": 1}}";
   private static LoggerUtil logger = new LoggerUtil(ContentUtil.class);
   private ContentUtil() {}
+
+  static {
+    String header = ProjectUtil.getConfigValue(JsonKey.EKSTEP_AUTHORIZATION);
+    header = JsonKey.BEARER + header;
+    headerMap.put(JsonKey.AUTHORIZATION, header);
+    headerMap.put("Content-Type", "application/json");
+  }
 
   /**
    * @param params String
@@ -113,11 +124,12 @@ public final class ContentUtil {
         "BaseMetricsActor:makePostRequest: Response from analytics store for metrics", null, new HashMap<>(){{put("result", result);}});
     return result;
   }
-  public static Map<String, Object> getContent(String courseId) {
+  public static Map<String, Object> getContent(String courseId, List<String> fields) {
     Map<String, Object> resMap = new HashMap<>();
     Map<String, String> headers = new HashMap<>();
     try {
-      String baseContentreadUrl = ProjectUtil.getConfigValue(JsonKey.EKSTEP_BASE_URL) + "/content/v3/read/" + courseId + "?fields=status";
+      String fieldsStr = StringUtils.join(fields, ",");
+      String baseContentreadUrl = ProjectUtil.getConfigValue(JsonKey.EKSTEP_BASE_URL) + "/content/v3/read/" + courseId + "?fields=" + fieldsStr;
       headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
       headers.put(JsonKey.AUTHORIZATION, PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_AUTHORIZATION));
 
@@ -166,5 +178,23 @@ public final class ContentUtil {
       }
     }
     return null;
+  }
+
+  public static boolean updateCollection(RequestContext requestContext, String collectionId, Map<String, Object> data) {
+    String response = "";
+    try {
+      String contentUpdateBaseUrl = ProjectUtil.getConfigValue(JsonKey.LEARNING_SERVICE_BASE_URL);
+      Request request = new Request();
+      request.put("content", data);
+      response =
+              HttpUtil.sendPatchRequest(
+                      contentUpdateBaseUrl
+                              + PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_CONTENT_UPDATE_URL)
+                              + collectionId, JsonUtil.serialize(request),
+                      headerMap);
+    } catch (Exception e) {
+      logger.error(requestContext, "Error while doing system update to collection " + e.getMessage(), e);
+    }
+    return JsonKey.SUCCESS.equalsIgnoreCase(response);
   }
 }

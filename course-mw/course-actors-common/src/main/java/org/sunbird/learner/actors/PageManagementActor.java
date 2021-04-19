@@ -11,6 +11,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.base.BaseActor;
 import org.sunbird.cassandra.CassandraOperation;
+import org.sunbird.common.CassandraUtil;
 import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.cacheloader.PageCacheLoaderService;
 import org.sunbird.common.exception.ProjectCommonException;
@@ -173,6 +174,7 @@ public class PageManagementActor extends BaseActor {
       }
     }
     sectionMap.put(JsonKey.UPDATED_DATE, ProjectUtil.getTimeStamp());
+    sectionMap = CassandraUtil.changeCassandraColumnMapping(sectionMap);
     Response response =
         cassandraOperation.updateRecord(
                 actorMessage.getRequestContext(), sectionDbInfo.getKeySpace(), sectionDbInfo.getTableName(), sectionMap);
@@ -217,6 +219,7 @@ public class PageManagementActor extends BaseActor {
     sectionMap.put(JsonKey.ID, uniqueId);
     sectionMap.put(JsonKey.STATUS, ProjectUtil.Status.ACTIVE.getValue());
     sectionMap.put(JsonKey.CREATED_DATE, ProjectUtil.getTimeStamp());
+    sectionMap = CassandraUtil.changeCassandraColumnMapping(sectionMap);
     Response response =
         cassandraOperation.insertRecord(
                 actorMessage.getRequestContext(), sectionDbInfo.getKeySpace(), sectionDbInfo.getTableName(), sectionMap);
@@ -469,6 +472,7 @@ public class PageManagementActor extends BaseActor {
         logger.error(actorMessage.getRequestContext(), "Exception occurred while updating app map data " + e.getMessage(), e);
       }
     }
+    pageMap = CassandraUtil.changeCassandraColumnMapping(pageMap);
     Response response =
         cassandraOperation.updateRecord(
                 actorMessage.getRequestContext(), pageDbInfo.getKeySpace(), pageDbInfo.getTableName(), pageMap);
@@ -532,6 +536,7 @@ public class PageManagementActor extends BaseActor {
         logger.error(actorMessage.getRequestContext(), "createPage: " + e.getMessage(), e);
       }
     }
+    pageMap = CassandraUtil.changeCassandraColumnMapping(pageMap);
     Response response =
         cassandraOperation.insertRecord(
                 actorMessage.getRequestContext(), pageDbInfo.getKeySpace(), pageDbInfo.getTableName(), pageMap);

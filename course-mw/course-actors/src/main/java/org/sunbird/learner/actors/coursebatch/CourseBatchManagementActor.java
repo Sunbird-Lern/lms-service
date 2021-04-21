@@ -695,10 +695,10 @@ public class CourseBatchManagementActor extends BaseActor {
     data.put("name", courseBatch.getOrDefault(JsonKey.NAME, ""));
     data.put("createdFor", courseBatch.getOrDefault(JsonKey.COURSE_CREATED_FOR, ""));
     data.put("startDate", courseBatch.getOrDefault(JsonKey.START_DATE, ""));
-    data.put("endDate", courseBatch.getOrDefault(JsonKey.END_DATE, ""));
+    data.put("endDate", courseBatch.getOrDefault(JsonKey.END_DATE, null));
     data.put("enrollmentType", courseBatch.getOrDefault(JsonKey.ENROLLMENT_TYPE, ""));
     data.put("status", courseBatch.getOrDefault(JsonKey.STATUS, ""));
-    data.put("enrollmentEndDate", getEnrollmentEndDate((String) courseBatch.getOrDefault(JsonKey.ENROLLMENT_END_DATE, ""), (String) courseBatch.getOrDefault(JsonKey.ENROLLMENT_END_DATE, "")));
+    data.put("enrollmentEndDate", getEnrollmentEndDate((String) courseBatch.getOrDefault(JsonKey.ENROLLMENT_END_DATE, null), (String) courseBatch.getOrDefault(JsonKey.END_DATE, null)));
     batches.removeIf(map -> StringUtils.equalsIgnoreCase((String) courseBatch.getOrDefault(JsonKey.BATCH_ID, ""), (String) map.get("batchId")));
     batches.add(data);
     ContentUtil.updateCollection(requestContext, (String) courseBatch.getOrDefault(JsonKey.COURSE_ID, ""), new HashMap<String, Object>() {{ put("batches", batches);}});

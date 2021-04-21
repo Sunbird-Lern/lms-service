@@ -134,7 +134,7 @@ public class CourseBatchManagementActor extends BaseActor {
     TelemetryUtil.telemetryProcessingCall(request, targetObject, correlatedObject, actorMessage.getContext());
 
   //  updateBatchCount(courseBatch);
-      updateCollection(actorMessage.getRequestContext(), courseBatch, contentDetails);
+      updateCollection(actorMessage.getRequestContext(), esCourseMap, contentDetails);
     if (courseNotificationActive()) {
       batchOperationNotifier(actorMessage, courseBatch, null);
     }
@@ -220,7 +220,7 @@ public class CourseBatchManagementActor extends BaseActor {
     rollUp.put("l1", courseBatch.getCourseId());
     TelemetryUtil.addTargetObjectRollUp(rollUp, targetObject);
     TelemetryUtil.telemetryProcessingCall(courseBatchMap, targetObject, correlatedObject, actorMessage.getContext());
-    updateCollection(actorMessage.getRequestContext(), courseBatch, contentDetails);
+    updateCollection(actorMessage.getRequestContext(), esCourseMap, contentDetails);
     if (courseNotificationActive()) {
       batchOperationNotifier(actorMessage, courseBatch, participantsMap);
     }
@@ -688,24 +688,24 @@ public class CourseBatchManagementActor extends BaseActor {
     return template;
   }
 
-  private void updateCollection(RequestContext requestContext, CourseBatch courseBatch, Map<String, Object> contentDetails) {
+  private void updateCollection(RequestContext requestContext, Map<String, Object> courseBatch, Map<String, Object> contentDetails) {
     List<Map<String, Object>> batches = (List<Map<String, Object>>) contentDetails.getOrDefault("batches", new ArrayList<>());
     Map<String, Object> data =  new HashMap<>();
-    data.put("batchId", courseBatch.getBatchId());
-    data.put("name", courseBatch.getName());
-    data.put("createdFor", courseBatch.getCreatedFor());
-    data.put("startDate", courseBatch.getStartDate());
-    data.put("endDate", courseBatch.getEndDate());
-    data.put("enrollmentType", courseBatch.getEnrollmentType());
-    data.put("status", courseBatch.getStatus());
-    data.put("enrollmentEndDate", getEnrollmentEndDate(courseBatch.getEnrollmentEndDate(), courseBatch.getEndDate()));
-    batches.removeIf(map -> StringUtils.equalsIgnoreCase(courseBatch.getBatchId(), (String)map.get("batchId")));
+    data.put("batchId", courseBatch.getOrDefault(JsonKey.BATCH_ID, ""));
+    data.put("name", courseBatch.getOrDefault(JsonKey.NAME, ""));
+    data.put("createdFor", courseBatch.getOrDefault(JsonKey.COURSE_CREATED_FOR, ""));
+    data.put("startDate", courseBatch.getOrDefault(JsonKey.START_DATE, ""));
+    data.put("endDate", courseBatch.getOrDefault(JsonKey.END_DATE, ""));
+    data.put("enrollmentType", courseBatch.getOrDefault(JsonKey.ENROLLMENT_TYPE, ""));
+    data.put("status", courseBatch.getOrDefault(JsonKey.STATUS, ""));
+    data.put("enrollmentEndDate", getEnrollmentEndDate((String) courseBatch.getOrDefault(JsonKey.ENROLLMENT_END_DATE, ""), (String) courseBatch.getOrDefault(JsonKey.ENROLLMENT_END_DATE, "")));
+    batches.removeIf(map -> StringUtils.equalsIgnoreCase((String) courseBatch.getOrDefault(JsonKey.BATCH_ID, ""), (String) map.get("batchId")));
     batches.add(data);
-    ContentUtil.updateCollection(requestContext, courseBatch.getCourseId(), new HashMap<String, Object>() {{ put("batches", batches);}});
+    ContentUtil.updateCollection(requestContext, (String) courseBatch.getOrDefault(JsonKey.COURSE_ID, ""), new HashMap<String, Object>() {{ put("batches", batches);}});
   }
 
-  private Object getEnrollmentEndDate(Date enrollmentEndDate, Date endDate) {
-    return Optional.ofNullable(DATE_FORMAT.format(enrollmentEndDate)).map(x -> x).orElse(Optional.ofNullable(DATE_FORMAT.format(endDate)).map(y ->{
+  private Object getEnrollmentEndDate(String enrollmentEndDate, String endDate) {
+    return Optional.ofNullable(enrollmentEndDate).map(x -> x).orElse(Optional.ofNullable(endDate).map(y ->{
       Calendar cal = Calendar.getInstance();
       try {
         cal.setTime(DATE_FORMAT.parse(y));

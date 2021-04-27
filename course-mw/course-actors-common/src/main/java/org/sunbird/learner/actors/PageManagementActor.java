@@ -41,9 +41,18 @@ import scala.concurrent.Promise;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.TimeZone;
 
 import static org.sunbird.common.models.util.JsonKey.ID;
 
@@ -176,22 +185,15 @@ public class PageManagementActor extends BaseActor {
     sectionMap.put(JsonKey.UPDATED_DATE, ProjectUtil.getTimeStamp());
     sectionMap = CassandraUtil.changeCassandraColumnMapping(sectionMap);
 
-    // Remove this implementation after deprecating text date
     if (!StringUtils.isBlank((String) sectionMap.get(JsonKey.ID))) {
       Map<String, Object> map = new HashMap<>();
       map.put(JsonKey.ID, (String) sectionMap.get(JsonKey.ID));
-      try {
-        Response res =
-                cassandraOperation.getRecordsByProperties(
-                        actorMessage.getRequestContext(), sectionDbInfo.getKeySpace(), sectionDbInfo.getTableName(), map);
-        if (!((List<Map<String, Object>>) res.get(JsonKey.RESPONSE)).isEmpty()) {
-          Map<String, Object> page = ((List<Map<String, Object>>) res.get(JsonKey.RESPONSE)).get(0);
-          if (page.containsKey(JsonKey.CREATED_DATE) && page.get(JsonKey.CREATED_DATE) == null) {
-            sectionMap.put(JsonKey.CREATED_DATE, DATE_FORMAT.parse((String) page.get(JsonKey.OLD_CREATED_DATE)));
-          }
-        }
-      } catch (ParseException e) {
-        logger.error(null, "PageManagementActor:updatePageSection: Exception occurred with error message = " + e.getMessage(), e);
+      Response res =
+              cassandraOperation.getRecordsByProperties(
+                      actorMessage.getRequestContext(), sectionDbInfo.getKeySpace(), sectionDbInfo.getTableName(), map);
+      if (!((List<Map<String, Object>>) res.get(JsonKey.RESPONSE)).isEmpty()) {
+        Map<String, Object> pageSection = ((List<Map<String, Object>>) res.get(JsonKey.RESPONSE)).get(0);
+        pageSection.put(JsonKey.CREATED_DATE, createdDateCheck(pageSection));
       }
     }
 
@@ -467,14 +469,7 @@ public class PageManagementActor extends BaseActor {
                   actorMessage.getRequestContext(), pageDbInfo.getKeySpace(), pageDbInfo.getTableName(), map);
       if (!((List<Map<String, Object>>) res.get(JsonKey.RESPONSE)).isEmpty()) {
         Map<String, Object> page = ((List<Map<String, Object>>) res.get(JsonKey.RESPONSE)).get(0);
-        // Remove this implementation after deprecating text date
-        try {
-          if (page.containsKey(JsonKey.CREATED_DATE) && page.get(JsonKey.CREATED_DATE) == null) {
-            pageMap.put(JsonKey.CREATED_DATE, DATE_FORMAT.parse((String) page.get(JsonKey.OLD_CREATED_DATE)));
-          }
-        } catch (ParseException e) {
-          logger.error(null, "PageManagementActor:updatePage: Exception occurred with error message = " + e.getMessage(), e);
-        }
+        pageMap.put(JsonKey.CREATED_DATE, createdDateCheck(page));
         if (!(((String) page.get(JsonKey.ID)).equals(pageMap.get(JsonKey.ID)))) {
           ProjectCommonException exception =
               new ProjectCommonException(
@@ -966,5 +961,17 @@ public class PageManagementActor extends BaseActor {
     } else {
       return Arrays.asList((String)obj);
     }
+  }
+
+  // Remove this implementation after deprecating text date columns
+  private Date createdDateCheck(Map<String, Object> page) {
+    try {
+      if (page.get(JsonKey.CREATED_DATE) == null) {
+        return DATE_FORMAT.parse((String) page.get(JsonKey.OLD_CREATED_DATE));
+      }
+    } catch (ParseException e) {
+      logger.error(null, "PageManagementActor:createdDateCheck: Exception occurred with error message = " + e.getMessage(), e);
+    }
+    return (Date) page.get(JsonKey.CREATED_DATE);
   }
 }

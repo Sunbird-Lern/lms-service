@@ -7,6 +7,7 @@ import com.google.i18n.phonenumbers.Phonenumber;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -16,6 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.UrlValidator;
+import org.apache.hadoop.util.Time;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
@@ -264,6 +266,15 @@ public class ProjectUtil {
    */
   public static String getFormattedDate() {
     return getDateFormatter().format(new Date());
+  }
+
+  /**
+   * This method will provide timestamp
+   *
+   * @return
+   */
+  public static Date getTimeStamp() {
+    return new Timestamp(System.currentTimeMillis());
   }
 
   /**

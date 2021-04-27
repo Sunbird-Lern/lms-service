@@ -3,9 +3,13 @@ package org.sunbird.models.course.batch;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.sunbird.common.models.util.ProjectUtil;
+import org.sunbird.learner.util.CustomDateSerializer;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -16,26 +20,37 @@ public class CourseBatch implements Serializable {
   private String courseCreator;
   private String courseId;
   private String createdBy;
-  private String createdDate;
+
+  private String oldCreatedDate;
+  private String oldEndDate;
+  private String oldEnrollmentEndDate;
+  private String oldStartDate;
+  private String oldUpdatedDate;
+
+  @JsonSerialize(using = CustomDateSerializer.class)
+  private Date createdDate;
+  @JsonSerialize(using = CustomDateSerializer.class)
+  private Date endDate;
+  @JsonSerialize(using = CustomDateSerializer.class)
+  private Date enrollmentEndDate;
+  @JsonSerialize(using = CustomDateSerializer.class)
+  private Date updatedDate;
+  @JsonSerialize(using = CustomDateSerializer.class)
+  private Date startDate;
+
   private List<String> createdFor;
   private String description;
-
-  @JsonInclude(JsonInclude.Include.ALWAYS)
-  private String endDate;
-
-  @JsonInclude(JsonInclude.Include.ALWAYS)
-  private String enrollmentEndDate;
 
   private String enrollmentType;
   private String hashTagId;
   private List<String> mentors;
   private String name;
-  private String startDate;
+
   private Integer status;
-  private String updatedDate;
 
-  private Map<String, Object> cert_templates;
+  private Map<String, Object> certTemplates;
 
+  private Boolean convertDateAsString;
 
   public String getCourseCreator() {
     return courseCreator;
@@ -61,11 +76,11 @@ public class CourseBatch implements Serializable {
     this.createdBy = createdBy;
   }
 
-  public String getCreatedDate() {
+  public Date getCreatedDate() {
     return createdDate;
   }
 
-  public void setCreatedDate(String createdDate) {
+  public void setCreatedDate(Date createdDate) {
     this.createdDate = createdDate;
   }
 
@@ -85,11 +100,11 @@ public class CourseBatch implements Serializable {
     this.description = description;
   }
 
-  public String getEndDate() {
+  public Date getEndDate() {
     return endDate;
   }
 
-  public void setEndDate(String endDate) {
+  public void setEndDate(Date endDate) {
     this.endDate = endDate;
   }
 
@@ -101,11 +116,11 @@ public class CourseBatch implements Serializable {
     this.enrollmentType = enrollmentType;
   }
 
-  public String getEnrollmentEndDate() {
+  public Date getEnrollmentEndDate() {
     return enrollmentEndDate;
   }
 
-  public void setEnrollmentEndDate(String enrollmentEndDate) {
+  public void setEnrollmentEndDate(Date enrollmentEndDate) {
     this.enrollmentEndDate = enrollmentEndDate;
   }
 
@@ -133,11 +148,9 @@ public class CourseBatch implements Serializable {
     this.name = name;
   }
 
-  public String getStartDate() {
-    return startDate;
-  }
+  public Date getStartDate() { return startDate; }
 
-  public void setStartDate(String startDate) {
+  public void setStartDate(Date startDate) {
     this.startDate = startDate;
   }
 
@@ -149,17 +162,18 @@ public class CourseBatch implements Serializable {
     this.status = status;
   }
 
-  public String getUpdatedDate() {
+  public Date getUpdatedDate() {
     return updatedDate;
   }
 
-  public void setUpdatedDate(String updatedDate) {
+  public void setUpdatedDate(Date updatedDate) {
     this.updatedDate = updatedDate;
   }
 
   public void setContentDetails(Map<String, Object> contentDetails, String createdBy) {
     this.setCreatedBy(createdBy);
-    this.setCreatedDate(ProjectUtil.getFormattedDate());
+    this.setOldCreatedDate(ProjectUtil.getFormattedDate());
+    this.setCreatedDate(new Date());
   }
 
   public String getBatchId() {
@@ -170,8 +184,49 @@ public class CourseBatch implements Serializable {
     this.batchId = batchId;
   }
 
-  public Map<String, Object> getCert_templates() {
-    return cert_templates;
+  public Map<String, Object> getCertTemplates() {
+    return certTemplates;
   }
 
+  public Map<String, Object> setCertTemplates(Map<String, Object> certTemplates) {
+    return this.certTemplates = certTemplates;
+  }
+
+  public Boolean getConvertDateAsString() {
+    return this.convertDateAsString;
+  }
+
+  public void setConvertDateAsString(boolean convert) {
+    this.convertDateAsString = convert;
+  }
+
+  // After deprecating the text dates remove the below
+  public String getOldCreatedDate() {
+    return oldCreatedDate;
+  }
+  public void setOldCreatedDate(String createdDate) {
+    this.oldCreatedDate = createdDate;
+  }
+  public String getOldEndDate() {
+    return oldEndDate;
+  }
+  public void setOldEndDate(String endDate) {
+    this.oldEndDate = endDate;
+  }
+  public String getOldEnrollmentEndDate() {
+    return oldEnrollmentEndDate;
+  }
+  public void setOldEnrollmentEndDate(String enrollmentEndDate) {
+    this.oldEnrollmentEndDate = enrollmentEndDate;
+  }
+  public String getOldStartDate() { return oldStartDate; }
+  public void setOldStartDate(String startDate) {
+    this.oldStartDate = startDate;
+  }
+  public String getOldUpdatedDate() {
+    return oldUpdatedDate;
+  }
+  public void setOldUpdatedDate(String updatedDate) {
+    this.oldUpdatedDate = updatedDate;
+  }
 }

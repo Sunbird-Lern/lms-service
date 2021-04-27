@@ -11,6 +11,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.base.BaseActor;
 import org.sunbird.cassandra.CassandraOperation;
+import org.sunbird.common.CassandraUtil;
 import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.cacheloader.PageCacheLoaderService;
 import org.sunbird.common.exception.ProjectCommonException;
@@ -25,6 +26,7 @@ import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.common.util.JsonUtil;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.util.ContentSearchUtil;
@@ -114,7 +116,7 @@ public class PageManagementActor extends BaseActor {
   }
 
   @SuppressWarnings("unchecked")
-  private void getSection(Request actorMessage) {
+  private void getSection(Request actorMessage) throws Exception {
     Response response = null;
     Map<String, Object> req = actorMessage.getRequest();
     String sectionId = (String) req.get(JsonKey.ID);
@@ -132,7 +134,7 @@ public class PageManagementActor extends BaseActor {
         Map<String, Object> map = result.get(0);
         removeUnwantedData(map, "");
         Response section = new Response();
-        section.put(JsonKey.SECTION, response.get(JsonKey.RESPONSE));
+        section.put(JsonKey.SECTION, JsonUtil.convertWithDateFormat(response.get(JsonKey.RESPONSE), Map.class));
         PageCacheLoaderService.putDataIntoCache(
             ActorOperations.GET_SECTION.getValue(), sectionId, response.get(JsonKey.RESPONSE));
         sender().tell(section, self());
@@ -142,7 +144,7 @@ public class PageManagementActor extends BaseActor {
       }
     } else {
       response = new Response();
-      response.put(JsonKey.SECTION, sectionMap);
+      response.put(JsonKey.SECTION, JsonUtil.convertWithDateFormat(sectionMap, Map.class));
     }
     sender().tell(response, self());
   }
@@ -171,7 +173,8 @@ public class PageManagementActor extends BaseActor {
         logger.error(actorMessage.getRequestContext(), "Exception occurred while processing display " + e.getMessage(), e);
       }
     }
-    sectionMap.put(JsonKey.UPDATED_DATE, ProjectUtil.getFormattedDate());
+    sectionMap.put(JsonKey.UPDATED_DATE, ProjectUtil.getTimeStamp());
+    sectionMap = CassandraUtil.changeCassandraColumnMapping(sectionMap);
     Response response =
         cassandraOperation.updateRecord(
                 actorMessage.getRequestContext(), sectionDbInfo.getKeySpace(), sectionDbInfo.getTableName(), sectionMap);
@@ -215,7 +218,8 @@ public class PageManagementActor extends BaseActor {
     }
     sectionMap.put(JsonKey.ID, uniqueId);
     sectionMap.put(JsonKey.STATUS, ProjectUtil.Status.ACTIVE.getValue());
-    sectionMap.put(JsonKey.CREATED_DATE, ProjectUtil.getFormattedDate());
+    sectionMap.put(JsonKey.CREATED_DATE, ProjectUtil.getTimeStamp());
+    sectionMap = CassandraUtil.changeCassandraColumnMapping(sectionMap);
     Response response =
         cassandraOperation.insertRecord(
                 actorMessage.getRequestContext(), sectionDbInfo.getKeySpace(), sectionDbInfo.getTableName(), sectionMap);
@@ -453,7 +457,7 @@ public class PageManagementActor extends BaseActor {
         }
       }
     }
-    pageMap.put(JsonKey.UPDATED_DATE, ProjectUtil.getFormattedDate());
+    pageMap.put(JsonKey.UPDATED_DATE, ProjectUtil.getTimeStamp());
     if (null != pageMap.get(JsonKey.PORTAL_MAP)) {
       try {
         pageMap.put(JsonKey.PORTAL_MAP, mapper.writeValueAsString(pageMap.get(JsonKey.PORTAL_MAP)));
@@ -468,6 +472,7 @@ public class PageManagementActor extends BaseActor {
         logger.error(actorMessage.getRequestContext(), "Exception occurred while updating app map data " + e.getMessage(), e);
       }
     }
+    pageMap = CassandraUtil.changeCassandraColumnMapping(pageMap);
     Response response =
         cassandraOperation.updateRecord(
                 actorMessage.getRequestContext(), pageDbInfo.getKeySpace(), pageDbInfo.getTableName(), pageMap);
@@ -516,7 +521,7 @@ public class PageManagementActor extends BaseActor {
       }
     }
     pageMap.put(JsonKey.ID, uniqueId);
-    pageMap.put(JsonKey.CREATED_DATE, ProjectUtil.getFormattedDate());
+    pageMap.put(JsonKey.CREATED_DATE, ProjectUtil.getTimeStamp());
     if (null != pageMap.get(JsonKey.PORTAL_MAP)) {
       try {
         pageMap.put(JsonKey.PORTAL_MAP, mapper.writeValueAsString(pageMap.get(JsonKey.PORTAL_MAP)));
@@ -531,6 +536,7 @@ public class PageManagementActor extends BaseActor {
         logger.error(actorMessage.getRequestContext(), "createPage: " + e.getMessage(), e);
       }
     }
+    pageMap = CassandraUtil.changeCassandraColumnMapping(pageMap);
     Response response =
         cassandraOperation.insertRecord(
                 actorMessage.getRequestContext(), pageDbInfo.getKeySpace(), pageDbInfo.getTableName(), pageMap);

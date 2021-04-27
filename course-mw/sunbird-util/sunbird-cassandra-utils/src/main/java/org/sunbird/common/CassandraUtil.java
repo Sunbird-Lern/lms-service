@@ -341,4 +341,10 @@ public final class CassandraUtil {
       where.and(QueryBuilder.eq(key, value));
     }
   }
+
+  public static Map<String, Object> changeCassandraColumnMapping(Map<String, Object> map) {
+    Map<String, Object> newMap = new HashMap<>();
+    map.entrySet().forEach(entry -> newMap.put(propertiesCache.readPropertyValue(entry.getKey()), entry.getValue()));
+    return newMap;
+  }
 }

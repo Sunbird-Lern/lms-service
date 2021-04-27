@@ -115,9 +115,7 @@ public class CourseBatchManagementActor extends BaseActor {
     Response result = courseBatchDao.create(actorMessage.getRequestContext(), courseBatch);
     result.put(JsonKey.BATCH_ID, courseBatchId);
 
-    courseBatch.setConvertDateAsString(true);
-    Map<String, Object> esCourseMap = JsonUtil.convert(courseBatch, Map.class);
-    esCourseMap.remove(JsonKey.CONVERT_DATE_AS_STRING);
+    Map<String, Object> esCourseMap = esCourseMapping(courseBatch);
     CourseBatchUtil.syncCourseBatchForeground(actorMessage.getRequestContext(),
         courseBatchId, esCourseMap);
     sender().tell(result, self());
@@ -208,9 +206,8 @@ public class CourseBatchManagementActor extends BaseActor {
         courseBatchDao.update(actorMessage.getRequestContext(), (String) request.get(JsonKey.COURSE_ID), batchId, courseBatchMap);
     CourseBatch updatedCourseObject = mapESFieldsToObject(courseBatch);
     sender().tell(result, self());
-    updatedCourseObject.setConvertDateAsString(true);
-    Map<String, Object> esCourseMap = JsonUtil.convert(updatedCourseObject, Map.class);
-    esCourseMap.remove(JsonKey.CONVERT_DATE_AS_STRING);
+    Map<String, Object> esCourseMap = esCourseMapping(updatedCourseObject);
+
     CourseBatchUtil.syncCourseBatchForeground(actorMessage.getRequestContext(), batchId, esCourseMap);
 
     targetObject =
@@ -715,6 +712,14 @@ public class CourseBatchManagementActor extends BaseActor {
         return null;
       }
     }).orElse(null));
+  }
+
+  // Remove the implementation after fixing the customDateSerializer
+  private Map<String, Object> esCourseMapping(CourseBatch courseBatch) throws Exception{
+    courseBatch.setConvertDateAsString(true);
+    Map<String, Object> esCourseMap = JsonUtil.convert(courseBatch, Map.class);
+    esCourseMap.remove(JsonKey.CONVERT_DATE_AS_STRING);
+    return esCourseMap;
   }
 
 }

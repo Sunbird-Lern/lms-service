@@ -2,17 +2,20 @@ package org.sunbird.enrolments
 
 import java.util
 import java.util.UUID
+import java.util.Date
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import javax.inject.Inject
 import org.apache.commons.collections4.{CollectionUtils, MapUtils}
 import org.apache.commons.lang3.StringUtils
 import org.sunbird.cassandra.CassandraOperation
+import org.sunbird.common.CassandraUtil
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
 import org.sunbird.common.models.util._
 import org.sunbird.common.request.{Request, RequestContext}
 import org.sunbird.common.responsecode.ResponseCode
+import org.sunbird.common.util.JsonUtil
 import org.sunbird.helper.ServiceFactory
 import org.sunbird.kafka.client.{InstructionEventGenerator, KafkaClient}
 import org.sunbird.learner.constants.{CourseJsonKey, InstructionEvent}
@@ -129,13 +132,13 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                             val existingContents = getContentsConsumption(userId, courseId, contentIds, batchId, defaultFields, request.getRequestContext).groupBy(x => x.get("contentId").asInstanceOf[String]).map(e => e._1 -> e._2.toList.head).toMap
                             val contents:List[java.util.Map[String, AnyRef]] = entry._2.toList.map(inputContent => {
                                 val existingContent = existingContents.getOrElse(inputContent.get("contentId").asInstanceOf[String], new java.util.HashMap[String, AnyRef])
-                                processContentConsumption(inputContent, existingContent, userId)
+                                CassandraUtil.changeCassandraColumnMapping(processContentConsumption(inputContent, existingContent, userId))
                             })
                             // First push the event to kafka and then update cassandra user_content_consumption table
                             pushInstructionEvent(request.getRequestContext, userId, batchId, courseId, contents.asJava)
                             cassandraOperation.batchInsertLogged(request.getRequestContext, consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, contents)
                             val updateData = getLatestReadDetails(userId, batchId, contents)
-                            cassandraOperation.updateRecordV2(request.getRequestContext, "sunbird_courses", "user_enrolments", updateData._1, updateData._2, true)
+                            cassandraOperation.updateRecordV2(request.getRequestContext, enrolmentDBInfo.getKeySpace, enrolmentDBInfo.getTableName, updateData._1, updateData._2, true)
                             contentIds.map(id => responseMessage.put(id,JsonKey.SUCCESS))
 
                         } else {
@@ -213,13 +216,13 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         val inputCompletedTime = parseDate(inputContent.getOrDefault(JsonKey.LAST_COMPLETED_TIME, "").asInstanceOf[String])
         val inputAccessTime = parseDate(inputContent.getOrDefault(JsonKey.LAST_ACCESS_TIME, "").asInstanceOf[String])
         if(MapUtils.isNotEmpty(existingContent)) {
-            val existingAccessTime = parseDate(existingContent.getOrDefault(JsonKey.LAST_ACCESS_TIME, "").asInstanceOf[String])
+            val existingAccessTime = if(parseDate(existingContent.get(JsonKey.LAST_ACCESS_TIME).asInstanceOf[Date]) == null) parseDate(existingContent.getOrDefault(JsonKey.OLD_LAST_ACCESS_TIME, "").asInstanceOf[String]) else parseDate(existingContent.get(JsonKey.LAST_ACCESS_TIME).asInstanceOf[Date])
             updatedContent.put(JsonKey.LAST_ACCESS_TIME, compareTime(existingAccessTime, inputAccessTime))
             val inputProgress = inputContent.getOrDefault(JsonKey.PROGRESS, 0.asInstanceOf[AnyRef]).asInstanceOf[Number].intValue()
             val existingProgress = Option(existingContent.getOrDefault(JsonKey.PROGRESS, 0.asInstanceOf[AnyRef]).asInstanceOf[Number]).getOrElse(0.asInstanceOf[Number]).intValue()
             updatedContent.put(JsonKey.PROGRESS, List(inputProgress, existingProgress).max.asInstanceOf[AnyRef])
             val existingStatus = Option(existingContent.getOrDefault(JsonKey.STATUS, 0.asInstanceOf[AnyRef]).asInstanceOf[Number]).getOrElse(0.asInstanceOf[Number]).intValue()
-            val existingCompletedTime = parseDate(existingContent.getOrDefault(JsonKey.LAST_COMPLETED_TIME, "").asInstanceOf[String])
+            val existingCompletedTime = if (parseDate(existingContent.get(JsonKey.LAST_COMPLETED_TIME).asInstanceOf[Date]) == null) parseDate(existingContent.getOrDefault(JsonKey.OLD_LAST_COMPLETED_TIME, "").asInstanceOf[String]) else parseDate(existingContent.get(JsonKey.LAST_COMPLETED_TIME).asInstanceOf[Date])
             if(inputStatus >= existingStatus) {
                 if(inputStatus >= 2) {
                     updatedContent.put(JsonKey.STATUS, 2.asInstanceOf[AnyRef])
@@ -238,7 +241,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             }
             updatedContent.put(JsonKey.LAST_ACCESS_TIME, compareTime(null, inputAccessTime))
         }
-        updatedContent.put(JsonKey.LAST_UPDATED_TIME, ProjectUtil.getFormattedDate)
+        updatedContent.put(JsonKey.LAST_UPDATED_TIME, ProjectUtil.getTimeStamp)
         updatedContent.put(JsonKey.USER_ID, userId)
         updatedContent
     }
@@ -249,27 +252,33 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         } else null
     }
 
-    def compareTime(existingTime: java.util.Date, inputTime: java.util.Date): String = {
-        if(null == existingTime && null == inputTime) {
-            ProjectUtil.getFormattedDate
-        } else if(null == existingTime) dateFormatter.format(inputTime)
-        else if(null == inputTime) dateFormatter.format(existingTime)
+    def parseDate(date: Date) = {
+        if(date != null) {
+            dateFormatter.parse(dateFormatter.format(date))
+        } else null
+    }
+
+    def compareTime(existingTime: java.util.Date, inputTime: java.util.Date): Date = {
+        if (null == existingTime && null == inputTime) {
+            ProjectUtil.getTimeStamp
+        } else if (null == existingTime) inputTime
+        else if (null == inputTime) existingTime
         else {
-            if(inputTime.after(existingTime)) dateFormatter.format(inputTime)
-            else dateFormatter.format(existingTime)
+            if (inputTime.after(existingTime)) inputTime
+            else existingTime
         }
     }
 
     def getLatestReadDetails(userId: String, batchId: String, contents: List[java.util.Map[String, AnyRef]]) = {
-       val lastAccessContent: java.util.Map[String, AnyRef] = contents.groupBy(x => x.getOrDefault(JsonKey.LAST_ACCESS_TIME, "").asInstanceOf[String]).maxBy(_._1)._2.get(0)
+       val lastAccessContent: java.util.Map[String, AnyRef] = contents.groupBy(x => x.getOrDefault(JsonKey.LAST_ACCESS_TIME_KEY, null).asInstanceOf[Date]).maxBy(_._1)._2.get(0)
        val updateMap = new java.util.HashMap[String, AnyRef] () {{
-            put("lastreadcontentid", lastAccessContent.get("contentId"))
+            put("lastreadcontentid", lastAccessContent.get(JsonKey.CONTENT_ID_KEY))
             put("lastreadcontentstatus", lastAccessContent.get("status"))
         }}
       val selectMap = new util.HashMap[String, AnyRef]() {{
         put("batchId", batchId)
         put("userId", userId)
-        put("courseId", lastAccessContent.get("courseId"))
+        put("courseId", lastAccessContent.get(JsonKey.COURSE_ID_KEY))
       }}
       (selectMap, updateMap)
     }
@@ -287,7 +296,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         }})
         data.put(CourseJsonKey.ACTION, InstructionEvent.BATCH_USER_STATE_UPDATE.getAction)
         val contentsMap = contents.map(c => new java.util.HashMap[String, AnyRef]() {{
-            put(JsonKey.CONTENT_ID, c.get(JsonKey.CONTENT_ID))
+            put(JsonKey.CONTENT_ID, c.get(JsonKey.CONTENT_ID_KEY))
             put(JsonKey.STATUS, c.get(JsonKey.STATUS))
         }}).asJava
         data.put(CourseJsonKey.E_DATA, new java.util.HashMap[String, AnyRef]() {{
@@ -321,9 +330,10 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                     if(fields.contains(field))
                         m.put(field, mapper.readTree(m.get(field).asInstanceOf[String]))
                 )
+                val formattedMap = JsonUtil.convertWithDateFormat(m, classOf[util.Map[String, Object]])
                 if (fields.contains(JsonKey.ASSESSMENT_SCORE))
-                    m.putAll(mapAsJavaMap(Map(JsonKey.ASSESSMENT_SCORE -> getScore(userId, courseId, m.get("contentId").asInstanceOf[String], batchId, request.getRequestContext))))
-                m
+                    formattedMap.putAll(mapAsJavaMap(Map(JsonKey.ASSESSMENT_SCORE -> getScore(userId, courseId, m.get("contentId").asInstanceOf[String], batchId, request.getRequestContext))))
+                formattedMap
             }).asJava
             response.put(JsonKey.RESPONSE, filteredContents)
         } else {

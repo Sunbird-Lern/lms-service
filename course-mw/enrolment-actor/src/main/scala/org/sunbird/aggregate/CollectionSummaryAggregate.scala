@@ -19,6 +19,7 @@ import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao
 import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl
 import org.sunbird.learner.util.{JsonUtil, Util}
 import java.math.BigDecimal
+import java.text.SimpleDateFormat
 
 import scala.collection.JavaConverters._
 
@@ -219,16 +220,17 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
 
   def getDate(requestContext: RequestContext, date: String, courseId: String, batchId: String): String = {
     val dateTimeFormate = DateTimeFormat.forPattern("yyyy-MM-dd")
+    val sd = new SimpleDateFormat("yyyy-MM-dd");
     // When endate is null in the table considering default date as 7
-    val defaultEndDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(7))
+    val defaultEndDate = sd.format(sd.parse(dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(7))))
     val nofDates = date.replaceAll("[^0-9]", "")
-    val endDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).plusDays(1)) // Adding 1 Day extra
-    val startDate: String = if (!StringUtils.equalsIgnoreCase(date, "ALL")) {
-      dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(nofDates.toInt))
+    val endDate = sd.format(sd.parse(dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).plusDays(1)))) // Adding 1 Day extra
+    val startDate = if (!StringUtils.equalsIgnoreCase(date, "ALL")) {
+      sd.format(sd.parse(dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(nofDates.toInt))))
     } else {
       val batchEndDate = courseBatchDao.readById(courseId, batchId, requestContext).getEndDate
       logger.debug(requestContext, s"BatchId: $batchId, CourseId: $courseId, EndDate" + batchEndDate)
-      Option(batchEndDate).map(date => if (date.isEmpty) defaultEndDate else date).getOrElse(defaultEndDate)
+      Option(batchEndDate).map(date => if (date == null) defaultEndDate else date).getOrElse(defaultEndDate)
     }
     s"$startDate/$endDate"
   }

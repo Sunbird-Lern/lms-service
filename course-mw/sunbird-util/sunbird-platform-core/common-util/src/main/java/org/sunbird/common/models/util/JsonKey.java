@@ -1,5 +1,8 @@
 package org.sunbird.common.models.util;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * This class will contains all the key related to request and response.
  *
@@ -1041,6 +1044,19 @@ public final class JsonKey {
   public static final String X_DEVICE_ID = "x-device-id";
   public static final String X_SESSION_ID = "x-session-id";
   public static final String X_TRACE_ID = "x-trace-id";
+  public static final String CONVERT_DATE_AS_STRING = "convertDateAsString";
+  public static final String USER_ENROLMENTS_DB = "user_enrolments";
+  public static final List<String> CHANGE_IN_DATE_FORMAT = new ArrayList<String>() {{add("startDate"); add("endDate"); add("enrollmentEndDate");}};
+  public static final String OLD_START_DATE = "oldStartDate";
+  public static final String OLD_END_DATE = "oldEndDate";
+  public static final String OLD_ENROLLMENT_END_DATE = "oldEnrollmentEndDate";
+  public static final String OLD_LAST_ACCESS_TIME = "oldLastAccessTime";
+  public static final String OLD_LAST_COMPLETED_TIME = "oldLastCompletedTime";
+  public static final String COURSE_ID_KEY = "courseid";
+  public static final String CONTENT_ID_KEY = "contentid";
+  public static final String LAST_ACCESS_TIME_KEY = "last_access_time";
+  public static final List<String> SET_END_OF_DAY = new ArrayList<String>() {{add("endDate"); add("enrollmentEndDate");}};
+
 
   private JsonKey() {}
 }

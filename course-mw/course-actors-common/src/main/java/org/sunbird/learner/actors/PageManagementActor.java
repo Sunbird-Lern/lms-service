@@ -966,7 +966,7 @@ public class PageManagementActor extends BaseActor {
   // Remove this implementation after deprecating text date columns
   private Date createdDateCheck(Map<String, Object> page) {
     try {
-      if (page.get(JsonKey.CREATED_DATE) == null) {
+      if (page.containsKey(JsonKey.CREATED_DATE) && page.get(JsonKey.CREATED_DATE) == null) {
         return DATE_FORMAT.parse((String) page.get(JsonKey.OLD_CREATED_DATE));
       }
     } catch (ParseException e) {

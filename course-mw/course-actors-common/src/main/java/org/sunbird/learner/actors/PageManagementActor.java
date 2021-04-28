@@ -143,7 +143,7 @@ public class PageManagementActor extends BaseActor {
         Map<String, Object> map = result.get(0);
         removeUnwantedData(map, "");
         Response section = new Response();
-        section.put(JsonKey.SECTION, JsonUtil.convertWithDateFormat(response.get(JsonKey.RESPONSE), Map.class));
+        section.put(JsonKey.SECTION, JsonUtil.convertWithDateFormat(response.get(JsonKey.RESPONSE), Map.class, DATE_FORMAT));
         PageCacheLoaderService.putDataIntoCache(
             ActorOperations.GET_SECTION.getValue(), sectionId, response.get(JsonKey.RESPONSE));
         sender().tell(section, self());
@@ -153,7 +153,7 @@ public class PageManagementActor extends BaseActor {
       }
     } else {
       response = new Response();
-      response.put(JsonKey.SECTION, JsonUtil.convertWithDateFormat(sectionMap, Map.class));
+      response.put(JsonKey.SECTION, JsonUtil.convertWithDateFormat(sectionMap, Map.class, DATE_FORMAT));
     }
     sender().tell(response, self());
   }

@@ -1052,6 +1052,7 @@ public final class JsonKey {
   public static final String OLD_ENROLLMENT_END_DATE = "oldEnrollmentEndDate";
   public static final String OLD_LAST_ACCESS_TIME = "oldLastAccessTime";
   public static final String OLD_LAST_COMPLETED_TIME = "oldLastCompletedTime";
+  public static final String OLD_LAST_UPDATED_TIME = "oldLastUpdatedTime";
   public static final String COURSE_ID_KEY = "courseid";
   public static final String CONTENT_ID_KEY = "contentid";
   public static final String LAST_ACCESS_TIME_KEY = "last_access_time";

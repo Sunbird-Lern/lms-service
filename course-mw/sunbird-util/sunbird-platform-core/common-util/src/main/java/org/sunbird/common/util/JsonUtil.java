@@ -31,9 +31,9 @@ public class JsonUtil {
 		return mapper.convertValue(value, clazz);
 	}
 
-	public static <T> T convertWithDateFormat(Object value, Class<T> clazz) throws Exception {
-		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSSZ");
-		mapperWithDateFormat.setDateFormat(simpleDateFormat);
+	// pass @dateFormat with timezone for serialization of dateType variables
+	public static <T> T convertWithDateFormat(Object value, Class<T> clazz, SimpleDateFormat dateFormat) throws Exception {
+		mapperWithDateFormat.setDateFormat(dateFormat);
 		return mapperWithDateFormat.convertValue(value, clazz);
 	}
 }

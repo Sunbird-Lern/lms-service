@@ -1,8 +1,7 @@
 package org.sunbird.enrolments
 
 import java.util
-import java.util.UUID
-import java.util.Date
+import java.util.{Date, TimeZone, UUID}
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import javax.inject.Inject
@@ -40,6 +39,9 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
 
     override def onReceive(request: Request): Unit = {
         Util.initializeContext(request, TelemetryEnvKey.BATCH, this.getClass.getName)
+
+        dateFormatter.setTimeZone(
+            TimeZone.getTimeZone(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TIMEZONE)))
 
         request.getOperation match {
             case "updateConsumption" => updateConsumption(request)
@@ -324,13 +326,13 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         val response = new Response
         if(CollectionUtils.isNotEmpty(contentsConsumed)) {
             val filteredContents = contentsConsumed.map(m => {
-                ProjectUtil.removeUnwantedFields(m, JsonKey.DATE_TIME, JsonKey.USER_ID, JsonKey.ADDED_BY, JsonKey.LAST_UPDATED_TIME)
+                ProjectUtil.removeUnwantedFields(m, JsonKey.DATE_TIME, JsonKey.USER_ID, JsonKey.ADDED_BY, JsonKey.LAST_UPDATED_TIME, JsonKey.OLD_LAST_ACCESS_TIME, JsonKey.OLD_LAST_UPDATED_TIME, JsonKey.OLD_LAST_COMPLETED_TIME)
                 m.put(JsonKey.COLLECTION_ID, m.getOrDefault(JsonKey.COURSE_ID, ""))
                 jsonFields.foreach(field =>
                     if(fields.contains(field))
                         m.put(field, mapper.readTree(m.get(field).asInstanceOf[String]))
                 )
-                val formattedMap = JsonUtil.convertWithDateFormat(m, classOf[util.Map[String, Object]])
+                val formattedMap = JsonUtil.convertWithDateFormat(m, classOf[util.Map[String, Object]], dateFormatter)
                 if (fields.contains(JsonKey.ASSESSMENT_SCORE))
                     formattedMap.putAll(mapAsJavaMap(Map(JsonKey.ASSESSMENT_SCORE -> getScore(userId, courseId, m.get("contentId").asInstanceOf[String], batchId, request.getRequestContext))))
                 formattedMap

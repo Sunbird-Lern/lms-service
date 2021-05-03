@@ -39,8 +39,11 @@ import scala.concurrent.Future;
 import scala.concurrent.Promise;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -49,6 +52,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.TimeZone;
 
 import static org.sunbird.common.models.util.JsonKey.ID;
 
@@ -69,7 +73,12 @@ public class PageManagementActor extends BaseActor {
   private static final String DYNAMIC_FILTERS = "dynamicFilters";
   private static List<String> userProfilePropList = Arrays.asList("board");
   private LoggerUtil logger = new LoggerUtil(PageManagementActor.class);
+  private static final SimpleDateFormat DATE_FORMAT = ProjectUtil.getDateFormatter();
 
+  static {
+    DATE_FORMAT.setTimeZone(
+            TimeZone.getTimeZone(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TIMEZONE)));
+  }
   @Override
   public void onReceive(Request request) throws Throwable {
     Util.initializeContext(request, TelemetryEnvKey.PAGE, this.getClass().getName());
@@ -134,7 +143,7 @@ public class PageManagementActor extends BaseActor {
         Map<String, Object> map = result.get(0);
         removeUnwantedData(map, "");
         Response section = new Response();
-        section.put(JsonKey.SECTION, JsonUtil.convertWithDateFormat(response.get(JsonKey.RESPONSE), Map.class));
+        section.put(JsonKey.SECTION, JsonUtil.convertWithDateFormat(response.get(JsonKey.RESPONSE), Map.class, DATE_FORMAT));
         PageCacheLoaderService.putDataIntoCache(
             ActorOperations.GET_SECTION.getValue(), sectionId, response.get(JsonKey.RESPONSE));
         sender().tell(section, self());
@@ -144,7 +153,7 @@ public class PageManagementActor extends BaseActor {
       }
     } else {
       response = new Response();
-      response.put(JsonKey.SECTION, JsonUtil.convertWithDateFormat(sectionMap, Map.class));
+      response.put(JsonKey.SECTION, JsonUtil.convertWithDateFormat(sectionMap, Map.class, DATE_FORMAT));
     }
     sender().tell(response, self());
   }
@@ -174,6 +183,20 @@ public class PageManagementActor extends BaseActor {
       }
     }
     sectionMap.put(JsonKey.UPDATED_DATE, ProjectUtil.getTimeStamp());
+    sectionMap = CassandraUtil.changeCassandraColumnMapping(sectionMap);
+
+    if (!StringUtils.isBlank((String) sectionMap.get(JsonKey.ID))) {
+      Map<String, Object> map = new HashMap<>();
+      map.put(JsonKey.ID, (String) sectionMap.get(JsonKey.ID));
+      Response res =
+              cassandraOperation.getRecordsByProperties(
+                      actorMessage.getRequestContext(), sectionDbInfo.getKeySpace(), sectionDbInfo.getTableName(), map);
+      if (!((List<Map<String, Object>>) res.get(JsonKey.RESPONSE)).isEmpty()) {
+        Map<String, Object> pageSection = ((List<Map<String, Object>>) res.get(JsonKey.RESPONSE)).get(0);
+        pageSection.put(JsonKey.CREATED_DATE, createdDateCheck(pageSection));
+      }
+    }
+
     sectionMap = CassandraUtil.changeCassandraColumnMapping(sectionMap);
     Response response =
         cassandraOperation.updateRecord(
@@ -446,6 +469,7 @@ public class PageManagementActor extends BaseActor {
                   actorMessage.getRequestContext(), pageDbInfo.getKeySpace(), pageDbInfo.getTableName(), map);
       if (!((List<Map<String, Object>>) res.get(JsonKey.RESPONSE)).isEmpty()) {
         Map<String, Object> page = ((List<Map<String, Object>>) res.get(JsonKey.RESPONSE)).get(0);
+        pageMap.put(JsonKey.CREATED_DATE, createdDateCheck(page));
         if (!(((String) page.get(JsonKey.ID)).equals(pageMap.get(JsonKey.ID)))) {
           ProjectCommonException exception =
               new ProjectCommonException(
@@ -937,5 +961,17 @@ public class PageManagementActor extends BaseActor {
     } else {
       return Arrays.asList((String)obj);
     }
+  }
+
+  // Remove this implementation after deprecating text date columns
+  private Date createdDateCheck(Map<String, Object> page) {
+    try {
+      if (page.containsKey(JsonKey.CREATED_DATE) && page.get(JsonKey.CREATED_DATE) == null) {
+        return DATE_FORMAT.parse((String) page.get(JsonKey.OLD_CREATED_DATE));
+      }
+    } catch (ParseException e) {
+      logger.error(null, "PageManagementActor:createdDateCheck: Exception occurred with error message = " + e.getMessage(), e);
+    }
+    return (Date) page.get(JsonKey.CREATED_DATE);
   }
 }

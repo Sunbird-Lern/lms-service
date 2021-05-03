@@ -1044,9 +1044,10 @@ public final class JsonKey {
   public static final String X_DEVICE_ID = "x-device-id";
   public static final String X_SESSION_ID = "x-session-id";
   public static final String X_TRACE_ID = "x-trace-id";
-  public static final String CONVERT_DATE_AS_STRING = "convertDateAsString";
   public static final String USER_ENROLMENTS_DB = "user_enrolments";
-  public static final List<String> CHANGE_IN_DATE_FORMAT = new ArrayList<String>() {{add("startDate"); add("endDate"); add("enrollmentEndDate");}};
+  public static final List<String> CHANGE_IN_SIMPLE_DATE_FORMAT = new ArrayList<String>() {{add("startDate"); add("endDate"); add("enrollmentEndDate");}};
+  public static final List<String> CHANGE_IN_DATE_FORMAT = new ArrayList<String>() {{add("createdDate"); add("updatedDate");}};
+  public static final List<String> CHANGE_IN_DATE_FORMAT_ALL = new ArrayList<String>() {{add("startDate"); add("endDate"); add("enrollmentEndDate"); add("createdDate"); add("updatedDate");}};
   public static final String OLD_START_DATE = "oldStartDate";
   public static final String OLD_END_DATE = "oldEndDate";
   public static final String OLD_ENROLLMENT_END_DATE = "oldEnrollmentEndDate";

@@ -17,10 +17,17 @@ import org.sunbird.common.models.util.ProjectUtil.EsType;
 import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.learner.constants.CourseJsonKey;
+import org.sunbird.models.course.batch.CourseBatch;
 import scala.concurrent.Future;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.Date;
+import java.util.Calendar;
+import java.util.TimeZone;
 
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static org.sunbird.common.exception.ProjectCommonException.throwClientErrorException;
@@ -34,6 +41,17 @@ public class CourseBatchUtil {
   private static ElasticSearchService esUtil = EsClientFactory.getInstance(JsonKey.REST);
   private static ObjectMapper mapper = new ObjectMapper();
   private static LoggerUtil logger = new LoggerUtil(CourseBatchUtil.class);
+  private static final SimpleDateFormat DATE_FORMAT = ProjectUtil.getDateFormatter();
+  private static final SimpleDateFormat DATE_FORMAT_SIMPLE = new SimpleDateFormat("yyyy-MM-dd");
+  private static final List<String> changeInDateFormat = JsonKey.CHANGE_IN_DATE_FORMAT;
+  private static final List<String> changeInSimpleDateFormat = JsonKey.CHANGE_IN_SIMPLE_DATE_FORMAT;
+  private static final List<String> changeInDateFormatAll = JsonKey.CHANGE_IN_DATE_FORMAT_ALL;
+  private static final List<String> setEndOfDay = JsonKey.SET_END_OF_DAY;
+
+  static {
+    DATE_FORMAT.setTimeZone(
+            TimeZone.getTimeZone(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TIMEZONE)));
+  }
 
   private CourseBatchUtil() {}
 
@@ -165,5 +183,53 @@ public class CourseBatchUtil {
     String certTempUrl = baseUrl + templateRelativeUrl + "/" + templateId + "?fields=certType,artifactUrl,issuer,signatoryList,name,data";
     logger.info(requestContext, "CourseBatchUtil:getTemplate certTempUrl : " + certTempUrl);
     return certTempUrl;
+  }
+
+  // Method will change the date variables into text with valid format
+  public static Map<String, Object> esCourseMapping(CourseBatch courseBatch) throws Exception {
+    Map<String, Object> esCourseMap = mapper.convertValue(courseBatch, Map.class);
+    changeInDateFormat.forEach(key -> {
+      if (esCourseMap.containsKey(key))
+        esCourseMap.put(key, DATE_FORMAT.format(esCourseMap.get(key)));
+    });
+    changeInSimpleDateFormat.forEach(key -> {
+      if (esCourseMap.containsKey(key))
+        esCourseMap.put(key, DATE_FORMAT_SIMPLE.format(esCourseMap.get(key)));
+    });
+    return esCourseMap;
+  }
+
+  // Method will change the timestamp (Long) into date with valid format
+  public static Map<String, Object> cassandraCourseMapping(CourseBatch courseBatch) {
+    Map<String, Object> courseBatchMap = mapper.convertValue(courseBatch, Map.class);
+    changeInDateFormatAll.forEach(key -> {
+      try {
+        if (courseBatchMap.containsKey(key))
+          courseBatchMap.put(key, setEndOfDay(key, DATE_FORMAT.parse(DATE_FORMAT.format(courseBatchMap.get(key)))));
+      } catch (ParseException e) {
+        logger.error(null, "CourseBatchUtil:cassandraCourseMapping: Exception occurred with message = " + e.getMessage(), e);
+      }
+    });
+    return courseBatchMap;
+  }
+
+  // Method will add endOfDay (23:59:59:999) in endDate and enrollmentEndDate
+  private static Date setEndOfDay(String key, Date value) {
+    try {
+      if (setEndOfDay.contains(key)) {
+        Calendar cal =
+                Calendar.getInstance(
+                        TimeZone.getTimeZone(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TIMEZONE)));
+        cal.setTime(DATE_FORMAT_SIMPLE.parse(DATE_FORMAT_SIMPLE.format(value)));
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        cal.set(Calendar.MILLISECOND, 999);
+        return cal.getTime();
+      }
+    } catch (ParseException e) {
+      logger.error(null, "CourseBatchUtil:setEndOfDay: Exception occurred with message = " + e.getMessage(), e);
+    }
+    return value;
   }
 }

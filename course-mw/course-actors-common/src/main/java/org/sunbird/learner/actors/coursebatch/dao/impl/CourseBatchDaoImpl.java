@@ -17,6 +17,7 @@ import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao;
 import org.sunbird.learner.constants.CourseJsonKey;
+import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.Util;
 import org.sunbird.models.course.batch.CourseBatch;
 
@@ -29,7 +30,7 @@ public class CourseBatchDaoImpl implements CourseBatchDao {
   
   @Override
   public Response create(RequestContext requestContext, CourseBatch courseBatch) {
-    Map<String, Object> map = mapper.convertValue(courseBatch, Map.class);
+    Map<String, Object> map = CourseBatchUtil.cassandraCourseMapping(courseBatch);
     map = CassandraUtil.changeCassandraColumnMapping(map);
     return cassandraOperation.insertRecord(
             requestContext, courseBatchDb.getKeySpace(), courseBatchDb.getTableName(), map);

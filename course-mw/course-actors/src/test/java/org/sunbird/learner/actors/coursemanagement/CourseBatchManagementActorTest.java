@@ -64,6 +64,7 @@ public class CourseBatchManagementActorTest {
     when(ServiceFactory.getInstance()).thenReturn(mockCassandraOperation);
     PowerMockito.mockStatic(CourseBatchUtil.class);
     PowerMockito.mockStatic(ContentUtil.class);
+    courseBatchUtilDateMethods();
   }
 
   private String calculateDate(int dayOffset) {
@@ -508,5 +509,11 @@ public class CourseBatchManagementActorTest {
     }};
     when(ContentUtil.getContent(
             Mockito.anyString(), Mockito.anyList())).thenReturn(courseMap);
+  }
+
+  private void courseBatchUtilDateMethods() throws Exception {
+    doCallRealMethod().when(CourseBatchUtil.class, "cassandraCourseMapping", Mockito.any());
+    doCallRealMethod().when(CourseBatchUtil.class, "setEndOfDay", Mockito.any(), Mockito.any());
+    doCallRealMethod().when(CourseBatchUtil.class, "esCourseMapping", Mockito.any());
   }
 }

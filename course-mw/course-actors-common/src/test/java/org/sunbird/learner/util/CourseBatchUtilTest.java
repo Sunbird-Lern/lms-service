@@ -25,7 +25,10 @@ import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.common.util.JsonUtil;
+import org.sunbird.models.course.batch.CourseBatch;
 
+import java.text.SimpleDateFormat;
 import java.util.Map;
 
 import static org.powermock.api.mockito.PowerMockito.when;
@@ -178,6 +181,20 @@ public class CourseBatchUtilTest {
     ElasticSearchHelper.getResponseFromFuture(Mockito.any());
   }
 
+  @Test
+  public void esCourseMappingTest() throws Exception {
+    Map<String, Object> esMap = CourseBatchUtil.esCourseMapping(getCourseBatch());
+    Assert.assertNotNull(esMap);
+    Assert.assertEquals(esMap.get(JsonKey.START_DATE), "2021-05-04");
+  }
+
+  @Test
+  public void cassandraCourseMappingTest() throws Exception {
+    Map<String, Object> cassandraMap = CourseBatchUtil.cassandraCourseMapping(getCourseBatch());
+    Assert.assertNotNull(cassandraMap);
+    Assert.assertEquals(cassandraMap.get(JsonKey.START_DATE), new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSSZ").parse("2021-05-04 14:36:39:706+0530"));
+  }
+
   private void mockResponseForTemplate(int status, String body) throws UnirestException {
     GetRequest http = Mockito.mock(GetRequest.class);
     RequestBodyEntity entity = Mockito.mock(RequestBodyEntity.class);
@@ -187,5 +204,10 @@ public class CourseBatchUtilTest {
     when(http.asString()).thenReturn(response);
     when(response.getStatus()).thenReturn(status);
     when(response.getBody()).thenReturn(body);
+  }
+
+  private CourseBatch getCourseBatch() throws Exception {
+    String courseBatchMap = "{\"createdFor\":[],\"endDate\":1620119199706,\"name\":\"batchName\",\"batchId\":\"12345\",\"courseId\":\"do_1234\",\"enrollmentEndDate\":1620119199706,\"startDate\":1620119199706,\"createdDate\":1620119199706,\"status\":1}";
+    return JsonUtil.deserialize(courseBatchMap, CourseBatch.class);
   }
 }

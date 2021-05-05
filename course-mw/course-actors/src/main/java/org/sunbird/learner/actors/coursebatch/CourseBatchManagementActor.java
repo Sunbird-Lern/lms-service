@@ -334,14 +334,14 @@ public class CourseBatchManagementActor extends BaseActor {
 
         for (String mentorId : mentors) {
           Map<String, Object> result = mentorDetails.getOrDefault(mentorId, new HashMap<>());
-          if (MapUtils.isEmpty(result) || (result.containsKey(JsonKey.IS_DELETED) && (Boolean) result.getOrDefault(JsonKey.IS_DELETED, false))) {
+          if (MapUtils.isEmpty(result) || Optional.ofNullable((Boolean) result.getOrDefault(JsonKey.IS_DELETED, false)).orElse(false)) {
             throw new ProjectCommonException(
                     ResponseCode.invalidUserId.getErrorCode(),
                     ResponseCode.invalidUserId.getErrorMessage(),
                     ResponseCode.CLIENT_ERROR.getResponseCode());
           } else {
             String mentorRootOrgId = getRootOrgFromUserMap(result);
-            if (!batchCreatorRootOrgId.equals(mentorRootOrgId)) {
+            if (StringUtils.isEmpty(batchCreatorRootOrgId) || !batchCreatorRootOrgId.equals(mentorRootOrgId)) {
               throw new ProjectCommonException(
                       ResponseCode.userNotAssociatedToRootOrg.getErrorCode(),
                       ResponseCode.userNotAssociatedToRootOrg.getErrorMessage(),

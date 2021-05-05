@@ -51,6 +51,7 @@ public class CourseBatchManagementActor extends BaseActor {
   private UserCoursesService userCoursesService = new UserCoursesService();
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
   private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+  private static final SimpleDateFormat DATE_TIMEZONE_FORMAT = ProjectUtil.getDateFormatter();
   private List<String> validCourseStatus = Arrays.asList("Live", "Unlisted");
 
   @Inject
@@ -60,6 +61,8 @@ public class CourseBatchManagementActor extends BaseActor {
   static {
     DATE_FORMAT.setTimeZone(
         TimeZone.getTimeZone(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TIMEZONE)));
+    DATE_TIMEZONE_FORMAT.setTimeZone(
+            TimeZone.getTimeZone(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TIMEZONE)));
   }
 
   @Override
@@ -115,7 +118,7 @@ public class CourseBatchManagementActor extends BaseActor {
     Response result = courseBatchDao.create(actorMessage.getRequestContext(), courseBatch);
     result.put(JsonKey.BATCH_ID, courseBatchId);
 
-    Map<String, Object> esCourseMap = CourseBatchUtil.esCourseMapping(courseBatch);
+    Map<String, Object> esCourseMap = CourseBatchUtil.esCourseMapping(courseBatch, DATE_TIMEZONE_FORMAT, DATE_FORMAT);
     CourseBatchUtil.syncCourseBatchForeground(actorMessage.getRequestContext(),
         courseBatchId, esCourseMap);
     sender().tell(result, self());
@@ -201,12 +204,12 @@ public class CourseBatchManagementActor extends BaseActor {
     validateContentOrg(actorMessage.getRequestContext(), courseBatch.getCreatedFor());
     validateMentors(courseBatch, (String) actorMessage.getContext().getOrDefault(JsonKey.X_AUTH_TOKEN, ""), actorMessage.getRequestContext());
     participantsMap = getMentorLists(participantsMap, oldBatch, courseBatch);
-    Map<String, Object> courseBatchMap = CourseBatchUtil.cassandraCourseMapping(courseBatch);
+    Map<String, Object> courseBatchMap = CourseBatchUtil.cassandraCourseMapping(courseBatch, DATE_TIMEZONE_FORMAT, DATE_FORMAT);
     Response result =
         courseBatchDao.update(actorMessage.getRequestContext(), (String) request.get(JsonKey.COURSE_ID), batchId, courseBatchMap);
     CourseBatch updatedCourseObject = mapESFieldsToObject(courseBatch);
     sender().tell(result, self());
-    Map<String, Object> esCourseMap = CourseBatchUtil.esCourseMapping(updatedCourseObject);
+    Map<String, Object> esCourseMap = CourseBatchUtil.esCourseMapping(updatedCourseObject, DATE_TIMEZONE_FORMAT, DATE_FORMAT);
 
     CourseBatchUtil.syncCourseBatchForeground(actorMessage.getRequestContext(), batchId, esCourseMap);
 
@@ -257,7 +260,7 @@ public class CourseBatchManagementActor extends BaseActor {
 
   @SuppressWarnings("unchecked")
   private CourseBatch getUpdateCourseBatch(RequestContext requestContext, Map<String, Object> request, CourseBatch oldBatch) throws Exception {
-    CourseBatch courseBatch = JsonUtil.deserialize(JsonUtil.serialize(oldBatch), CourseBatch.class);;
+    CourseBatch courseBatch = JsonUtil.deserialize(JsonUtil.serialize(oldBatch), CourseBatch.class);
     courseBatch.setEnrollmentType(
         getEnrollmentType(
             (String) request.get(JsonKey.ENROLLMENT_TYPE), courseBatch.getEnrollmentType()));
@@ -331,27 +334,20 @@ public class CourseBatchManagementActor extends BaseActor {
 
         for (String mentorId : mentors) {
           Map<String, Object> result = mentorDetails.getOrDefault(mentorId, new HashMap<>());
-          try {
-            if (MapUtils.isEmpty(result) || (result.containsKey(JsonKey.IS_DELETED) && (Boolean) result.get(JsonKey.IS_DELETED))) {
-              throw new ProjectCommonException(
-                      ResponseCode.invalidUserId.getErrorCode(),
-                      ResponseCode.invalidUserId.getErrorMessage(),
-                      ResponseCode.CLIENT_ERROR.getResponseCode());
-            } else {
-              String mentorRootOrgId = getRootOrgFromUserMap(result);
-              if (!batchCreatorRootOrgId.equals(mentorRootOrgId)) {
-                throw new ProjectCommonException(
-                        ResponseCode.userNotAssociatedToRootOrg.getErrorCode(),
-                        ResponseCode.userNotAssociatedToRootOrg.getErrorMessage(),
-                        ResponseCode.CLIENT_ERROR.getResponseCode(),
-                        mentorId);
-              }
-            }
-          } catch (NullPointerException e) {
+          if (MapUtils.isEmpty(result) || (result.containsKey(JsonKey.IS_DELETED) && (Boolean) result.getOrDefault(JsonKey.IS_DELETED, false))) {
             throw new ProjectCommonException(
                     ResponseCode.invalidUserId.getErrorCode(),
                     ResponseCode.invalidUserId.getErrorMessage(),
                     ResponseCode.CLIENT_ERROR.getResponseCode());
+          } else {
+            String mentorRootOrgId = getRootOrgFromUserMap(result);
+            if (!batchCreatorRootOrgId.equals(mentorRootOrgId)) {
+              throw new ProjectCommonException(
+                      ResponseCode.userNotAssociatedToRootOrg.getErrorCode(),
+                      ResponseCode.userNotAssociatedToRootOrg.getErrorMessage(),
+                      ResponseCode.CLIENT_ERROR.getResponseCode(),
+                      mentorId);
+            }
           }
         }
       } else {
@@ -382,7 +378,7 @@ public class CourseBatchManagementActor extends BaseActor {
 
   @SuppressWarnings("unchecked")
   private void updateCourseBatchDate(RequestContext requestContext, CourseBatch courseBatch, Map<String, Object> req) throws Exception {
-    Map<String, Object> courseBatchMap = CourseBatchUtil.cassandraCourseMapping(courseBatch);
+    Map<String, Object> courseBatchMap = CourseBatchUtil.cassandraCourseMapping(courseBatch, DATE_TIMEZONE_FORMAT, DATE_FORMAT);
     Date todayDate = getDate(requestContext, null, DATE_FORMAT, null);
     Date dbBatchStartDate = getDate(requestContext, JsonKey.START_DATE, DATE_FORMAT, courseBatchMap);
     Date dbBatchEndDate = getDate(requestContext, JsonKey.END_DATE, DATE_FORMAT, courseBatchMap);

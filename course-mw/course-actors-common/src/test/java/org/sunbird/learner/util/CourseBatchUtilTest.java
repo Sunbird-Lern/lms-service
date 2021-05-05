@@ -24,12 +24,14 @@ import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.common.util.JsonUtil;
 import org.sunbird.models.course.batch.CourseBatch;
 
 import java.text.SimpleDateFormat;
 import java.util.Map;
+import java.util.TimeZone;
 
 import static org.powermock.api.mockito.PowerMockito.when;
 
@@ -39,10 +41,16 @@ import static org.powermock.api.mockito.PowerMockito.when;
 public class CourseBatchUtilTest {
 
   private static MockerBuilder.MockersGroup group;
+  private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+  private static final SimpleDateFormat DATE_TIMEZONE_FORMAT = ProjectUtil.getDateFormatter();
 
   @Before
   public void setup() {
     group = MockerBuilder.getFreshMockerGroup().andStaticMock(Unirest.class);
+    DATE_FORMAT.setTimeZone(
+            TimeZone.getTimeZone(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TIMEZONE)));
+    DATE_TIMEZONE_FORMAT.setTimeZone(
+            TimeZone.getTimeZone(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TIMEZONE)));
   }
 
   @Test
@@ -183,14 +191,14 @@ public class CourseBatchUtilTest {
 
   @Test
   public void esCourseMappingTest() throws Exception {
-    Map<String, Object> esMap = CourseBatchUtil.esCourseMapping(getCourseBatch());
+    Map<String, Object> esMap = CourseBatchUtil.esCourseMapping(getCourseBatch(), DATE_TIMEZONE_FORMAT, DATE_FORMAT);
     Assert.assertNotNull(esMap);
     Assert.assertEquals(esMap.get(JsonKey.START_DATE), "2021-05-04");
   }
 
   @Test
   public void cassandraCourseMappingTest() throws Exception {
-    Map<String, Object> cassandraMap = CourseBatchUtil.cassandraCourseMapping(getCourseBatch());
+    Map<String, Object> cassandraMap = CourseBatchUtil.cassandraCourseMapping(getCourseBatch(), DATE_TIMEZONE_FORMAT, DATE_FORMAT);
     Assert.assertNotNull(cassandraMap);
     Assert.assertEquals(cassandraMap.get(JsonKey.START_DATE), new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSSZ").parse("2021-05-04 14:36:39:706+0530"));
   }

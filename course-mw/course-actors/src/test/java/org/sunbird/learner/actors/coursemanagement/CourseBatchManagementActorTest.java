@@ -512,8 +512,8 @@ public class CourseBatchManagementActorTest {
   }
 
   private void courseBatchUtilDateMethods() throws Exception {
-    doCallRealMethod().when(CourseBatchUtil.class, "cassandraCourseMapping", Mockito.any());
-    doCallRealMethod().when(CourseBatchUtil.class, "setEndOfDay", Mockito.any(), Mockito.any());
-    doCallRealMethod().when(CourseBatchUtil.class, "esCourseMapping", Mockito.any());
+    doCallRealMethod().when(CourseBatchUtil.class, "cassandraCourseMapping", Mockito.any(), Mockito.any(), Mockito.any());
+    doCallRealMethod().when(CourseBatchUtil.class, "setEndOfDay", Mockito.any(), Mockito.any(), Mockito.any());
+    doCallRealMethod().when(CourseBatchUtil.class, "esCourseMapping", Mockito.any(), Mockito.any(), Mockito.any());
   }
 }

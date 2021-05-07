@@ -178,11 +178,15 @@ public class CourseBatchUtil {
   }
 
   // Method will change the date variables into text with valid format
-  public static Map<String, Object> esCourseMapping(CourseBatch courseBatch, SimpleDateFormat dateFormatTimezone, SimpleDateFormat dateFormat) throws Exception {
+  public static Map<String, Object> esCourseMapping(CourseBatch courseBatch, String pattern) throws Exception {
+    SimpleDateFormat dateFormat = ProjectUtil.getDateFormatter(pattern);
+    SimpleDateFormat dateTimeFormat = ProjectUtil.getDateFormatter();
+    dateFormat.setTimeZone(TimeZone.getTimeZone(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TIMEZONE)));
+    dateTimeFormat.setTimeZone(TimeZone.getTimeZone(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TIMEZONE)));
     Map<String, Object> esCourseMap = mapper.convertValue(courseBatch, Map.class);
     changeInDateFormat.forEach(key -> {
       if (esCourseMap.containsKey(key))
-        esCourseMap.put(key, dateFormatTimezone.format(esCourseMap.get(key)));
+        esCourseMap.put(key, dateTimeFormat.format(esCourseMap.get(key)));
     });
     changeInSimpleDateFormat.forEach(key -> {
       if (esCourseMap.containsKey(key))
@@ -192,12 +196,16 @@ public class CourseBatchUtil {
   }
 
   // Method will change the timestamp (Long) into date with valid format
-  public static Map<String, Object> cassandraCourseMapping(CourseBatch courseBatch, SimpleDateFormat dateFormatTimezone, SimpleDateFormat dateFormat) {
+  public static Map<String, Object> cassandraCourseMapping(CourseBatch courseBatch, String pattern) {
+    SimpleDateFormat dateFormat = ProjectUtil.getDateFormatter(pattern);
+    SimpleDateFormat dateTimeFormat = ProjectUtil.getDateFormatter();
+    dateFormat.setTimeZone(TimeZone.getTimeZone(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TIMEZONE)));
+    dateTimeFormat.setTimeZone(TimeZone.getTimeZone(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TIMEZONE)));
     Map<String, Object> courseBatchMap = mapper.convertValue(courseBatch, Map.class);
     changeInDateFormatAll.forEach(key -> {
       try {
         if (courseBatchMap.containsKey(key))
-          courseBatchMap.put(key, setEndOfDay(key, dateFormatTimezone.parse(dateFormatTimezone.format(courseBatchMap.get(key))), dateFormat));
+          courseBatchMap.put(key, setEndOfDay(key, dateTimeFormat.parse(dateTimeFormat.format(courseBatchMap.get(key))), dateFormat));
       } catch (ParseException e) {
         logger.error(null, "CourseBatchUtil:cassandraCourseMapping: Exception occurred with message = " + e.getMessage(), e);
       }

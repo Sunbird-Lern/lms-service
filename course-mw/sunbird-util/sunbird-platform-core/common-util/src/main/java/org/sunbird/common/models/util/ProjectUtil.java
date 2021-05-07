@@ -502,11 +502,14 @@ public class ProjectUtil {
   }
 
   public static SimpleDateFormat getDateFormatter() {
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSSZ");
+    return getDateFormatter("yyyy-MM-dd HH:mm:ss:SSSZ");
+  }
+
+  public static SimpleDateFormat getDateFormatter(String pattern) {
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
     simpleDateFormat.setLenient(false);
     return simpleDateFormat;
   }
-
   /** @author Manzarul */
   public enum EnrolmentType {
     open("open"),

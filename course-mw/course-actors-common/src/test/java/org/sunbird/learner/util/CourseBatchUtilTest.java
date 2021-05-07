@@ -41,16 +41,11 @@ import static org.powermock.api.mockito.PowerMockito.when;
 public class CourseBatchUtilTest {
 
   private static MockerBuilder.MockersGroup group;
-  private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
-  private static final SimpleDateFormat DATE_TIMEZONE_FORMAT = ProjectUtil.getDateFormatter();
+  private static final String dateformat = "yyyy-MM-dd";
 
   @Before
   public void setup() {
     group = MockerBuilder.getFreshMockerGroup().andStaticMock(Unirest.class);
-    DATE_FORMAT.setTimeZone(
-            TimeZone.getTimeZone(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TIMEZONE)));
-    DATE_TIMEZONE_FORMAT.setTimeZone(
-            TimeZone.getTimeZone(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TIMEZONE)));
   }
 
   @Test
@@ -191,14 +186,14 @@ public class CourseBatchUtilTest {
 
   @Test
   public void esCourseMappingTest() throws Exception {
-    Map<String, Object> esMap = CourseBatchUtil.esCourseMapping(getCourseBatch(), DATE_TIMEZONE_FORMAT, DATE_FORMAT);
+    Map<String, Object> esMap = CourseBatchUtil.esCourseMapping(getCourseBatch(), dateformat);
     Assert.assertNotNull(esMap);
     Assert.assertEquals(esMap.get(JsonKey.START_DATE), "2021-05-04");
   }
 
   @Test
   public void cassandraCourseMappingTest() throws Exception {
-    Map<String, Object> cassandraMap = CourseBatchUtil.cassandraCourseMapping(getCourseBatch(), DATE_TIMEZONE_FORMAT, DATE_FORMAT);
+    Map<String, Object> cassandraMap = CourseBatchUtil.cassandraCourseMapping(getCourseBatch(), dateformat);
     Assert.assertNotNull(cassandraMap);
     Assert.assertEquals(cassandraMap.get(JsonKey.START_DATE), new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSSZ").parse("2021-05-04 14:36:39:706+0530"));
   }

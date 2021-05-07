@@ -1,18 +1,6 @@
 package org.sunbird.learner.actors.coursebatch;
 
-import static org.sunbird.common.models.util.JsonKey.ID;
-import static org.sunbird.common.models.util.JsonKey.NULL;
-import static org.sunbird.common.models.util.JsonKey.PARTICIPANTS;
-
 import akka.actor.ActorRef;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -22,18 +10,20 @@ import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.*;
+import org.sunbird.common.models.util.ActorOperations;
+import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.ProjectUtil.ProgressStatus;
+import org.sunbird.common.models.util.PropertiesCache;
+import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.common.util.JsonUtil;
-import org.sunbird.kafka.client.InstructionEventGenerator;
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao;
 import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl;
 import org.sunbird.learner.actors.coursebatch.service.UserCoursesService;
 import org.sunbird.learner.constants.CourseJsonKey;
-import org.sunbird.learner.constants.InstructionEvent;
 import org.sunbird.learner.util.ContentUtil;
 import org.sunbird.learner.util.CourseBatchSchedulerUtil;
 import org.sunbird.learner.util.CourseBatchUtil;
@@ -44,26 +34,37 @@ import org.sunbird.userorg.UserOrgService;
 import org.sunbird.userorg.UserOrgServiceImpl;
 import scala.concurrent.Future;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.TimeZone;
+import java.util.stream.Collectors;
+
+import static org.sunbird.common.models.util.JsonKey.ID;
+import static org.sunbird.common.models.util.JsonKey.PARTICIPANTS;
+
 public class CourseBatchManagementActor extends BaseActor {
 
   private CourseBatchDao courseBatchDao = new CourseBatchDaoImpl();
   private UserOrgService userOrgService = UserOrgServiceImpl.getInstance();
   private UserCoursesService userCoursesService = new UserCoursesService();
   private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
-  private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
-  private static final SimpleDateFormat DATE_TIMEZONE_FORMAT = ProjectUtil.getDateFormatter();
+  private String dateFormat = "yyyy-MM-dd";
   private List<String> validCourseStatus = Arrays.asList("Live", "Unlisted");
+  private String timeZone = ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TIMEZONE);
 
   @Inject
   @Named("course-batch-notification-actor")
   private ActorRef courseBatchNotificationActorRef;
-
-  static {
-    DATE_FORMAT.setTimeZone(
-        TimeZone.getTimeZone(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TIMEZONE)));
-    DATE_TIMEZONE_FORMAT.setTimeZone(
-            TimeZone.getTimeZone(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TIMEZONE)));
-  }
 
   @Override
   public void onReceive(Request request) throws Throwable {
@@ -118,7 +119,7 @@ public class CourseBatchManagementActor extends BaseActor {
     Response result = courseBatchDao.create(actorMessage.getRequestContext(), courseBatch);
     result.put(JsonKey.BATCH_ID, courseBatchId);
 
-    Map<String, Object> esCourseMap = CourseBatchUtil.esCourseMapping(courseBatch, DATE_TIMEZONE_FORMAT, DATE_FORMAT);
+    Map<String, Object> esCourseMap = CourseBatchUtil.esCourseMapping(courseBatch, dateFormat);
     CourseBatchUtil.syncCourseBatchForeground(actorMessage.getRequestContext(),
         courseBatchId, esCourseMap);
     sender().tell(result, self());
@@ -204,12 +205,12 @@ public class CourseBatchManagementActor extends BaseActor {
     validateContentOrg(actorMessage.getRequestContext(), courseBatch.getCreatedFor());
     validateMentors(courseBatch, (String) actorMessage.getContext().getOrDefault(JsonKey.X_AUTH_TOKEN, ""), actorMessage.getRequestContext());
     participantsMap = getMentorLists(participantsMap, oldBatch, courseBatch);
-    Map<String, Object> courseBatchMap = CourseBatchUtil.cassandraCourseMapping(courseBatch, DATE_TIMEZONE_FORMAT, DATE_FORMAT);
+    Map<String, Object> courseBatchMap = CourseBatchUtil.cassandraCourseMapping(courseBatch, dateFormat);
     Response result =
         courseBatchDao.update(actorMessage.getRequestContext(), (String) request.get(JsonKey.COURSE_ID), batchId, courseBatchMap);
     CourseBatch updatedCourseObject = mapESFieldsToObject(courseBatch);
     sender().tell(result, self());
-    Map<String, Object> esCourseMap = CourseBatchUtil.esCourseMapping(updatedCourseObject, DATE_TIMEZONE_FORMAT, DATE_FORMAT);
+    Map<String, Object> esCourseMap = CourseBatchUtil.esCourseMapping(updatedCourseObject, dateFormat);
 
     CourseBatchUtil.syncCourseBatchForeground(actorMessage.getRequestContext(), batchId, esCourseMap);
 
@@ -305,8 +306,10 @@ public class CourseBatchManagementActor extends BaseActor {
 
   private int setCourseBatchStatus(RequestContext requestContext, String startDate) {
     try {
-      Date todayDate = DATE_FORMAT.parse(DATE_FORMAT.format(new Date()));
-      Date requestedStartDate = DATE_FORMAT.parse(startDate);
+      SimpleDateFormat dateFormatter = ProjectUtil.getDateFormatter(dateFormat);
+      dateFormatter.setTimeZone(TimeZone.getTimeZone(timeZone));
+      Date todayDate = dateFormatter.parse(dateFormatter.format(new Date()));
+      Date requestedStartDate = dateFormatter.parse(startDate);
       logger.info(requestContext, "CourseBatchManagementActor:setCourseBatchStatus: todayDate="
               + todayDate + ", requestedStartDate=" + requestedStartDate);
       if (todayDate.compareTo(requestedStartDate) == 0) {
@@ -378,19 +381,19 @@ public class CourseBatchManagementActor extends BaseActor {
 
   @SuppressWarnings("unchecked")
   private void updateCourseBatchDate(RequestContext requestContext, CourseBatch courseBatch, Map<String, Object> req) throws Exception {
-    Map<String, Object> courseBatchMap = CourseBatchUtil.cassandraCourseMapping(courseBatch, DATE_TIMEZONE_FORMAT, DATE_FORMAT);
-    Date todayDate = getDate(requestContext, null, DATE_FORMAT, null);
-    Date dbBatchStartDate = getDate(requestContext, JsonKey.START_DATE, DATE_FORMAT, courseBatchMap);
-    Date dbBatchEndDate = getDate(requestContext, JsonKey.END_DATE, DATE_FORMAT, courseBatchMap);
-    Date dbEnrollmentEndDate = getDate(requestContext, JsonKey.ENROLLMENT_END_DATE, DATE_FORMAT, courseBatchMap);
-    Date requestedStartDate = getDate(requestContext, JsonKey.START_DATE, DATE_FORMAT, req);
-    Date requestedEndDate = getDate(requestContext, JsonKey.END_DATE, DATE_FORMAT, req);
-    Date requestedEnrollmentEndDate = getDate(requestContext, JsonKey.ENROLLMENT_END_DATE, DATE_FORMAT, req);
+    Map<String, Object> courseBatchMap = CourseBatchUtil.cassandraCourseMapping(courseBatch, dateFormat);
+    Date todayDate = getDate(requestContext, null, null);
+    Date dbBatchStartDate = getDate(requestContext, JsonKey.START_DATE, courseBatchMap);
+    Date dbBatchEndDate = getDate(requestContext, JsonKey.END_DATE,  courseBatchMap);
+    Date dbEnrollmentEndDate = getDate(requestContext, JsonKey.ENROLLMENT_END_DATE, courseBatchMap);
+    Date requestedStartDate = getDate(requestContext, JsonKey.START_DATE, req);
+    Date requestedEndDate = getDate(requestContext, JsonKey.END_DATE, req);
+    Date requestedEnrollmentEndDate = getDate(requestContext, JsonKey.ENROLLMENT_END_DATE, req);
 
     // After deprecating the text date remove below
-    dbBatchStartDate = dbBatchStartDate == null ? getDate(requestContext, JsonKey.OLD_START_DATE, DATE_FORMAT, courseBatchMap) : dbBatchStartDate;
-    dbBatchEndDate = dbBatchEndDate == null ? getDate(requestContext, JsonKey.OLD_END_DATE, DATE_FORMAT, courseBatchMap) : dbBatchEndDate;
-    dbEnrollmentEndDate = dbEnrollmentEndDate == null ? getDate(requestContext, JsonKey.OLD_ENROLLMENT_END_DATE, DATE_FORMAT, courseBatchMap) : dbEnrollmentEndDate;
+    dbBatchStartDate = dbBatchStartDate == null ? getDate(requestContext, JsonKey.OLD_START_DATE, courseBatchMap) : dbBatchStartDate;
+    dbBatchEndDate = dbBatchEndDate == null ? getDate(requestContext, JsonKey.OLD_END_DATE, courseBatchMap) : dbBatchEndDate;
+    dbEnrollmentEndDate = dbEnrollmentEndDate == null ? getDate(requestContext, JsonKey.OLD_ENROLLMENT_END_DATE, courseBatchMap) : dbEnrollmentEndDate;
 
     validateUpdateBatchStartDate(requestedStartDate);
     validateBatchStartAndEndDate(
@@ -407,17 +410,17 @@ public class CourseBatchManagementActor extends BaseActor {
         requestedEndDate,
         requestedEnrollmentEndDate,
         todayDate);
-    courseBatch.setStartDate(
-            requestedStartDate != null
-                    ? DATE_FORMAT.parse((String) req.get(JsonKey.START_DATE))
+    courseBatch.setStartDate( 
+            null != requestedStartDate
+                    ? requestedStartDate
                     : courseBatch.getStartDate());
-    courseBatch.setEndDate(
-            requestedEndDate != null
-                    ? DATE_FORMAT.parse((String) req.get(JsonKey.END_DATE))
+    courseBatch.setEndDate( 
+             null != requestedEndDate
+                    ? requestedEndDate
                     : courseBatch.getEndDate());
     courseBatch.setEnrollmentEndDate(
-            requestedEnrollmentEndDate != null
-                    ? DATE_FORMAT.parse((String) req.get(JsonKey.ENROLLMENT_END_DATE))
+            null != requestedEnrollmentEndDate
+                    ? requestedEnrollmentEndDate
                     : courseBatch.getEnrollmentEndDate());
   }
 
@@ -456,20 +459,11 @@ public class CourseBatchManagementActor extends BaseActor {
   }
 
   private void validateUpdateBatchStartDate(Date startDate) {
-    if (startDate != null) {
-      try {
-        DATE_FORMAT.format(startDate);
-      } catch (Exception e) {
-        throw new ProjectCommonException(
-            ResponseCode.dateFormatError.getErrorCode(),
-            ResponseCode.dateFormatError.getErrorMessage(),
-            ResponseCode.CLIENT_ERROR.getResponseCode());
-      }
-    } else {
+    if(null == startDate) {
       throw new ProjectCommonException(
-          ResponseCode.courseBatchStartDateRequired.getErrorCode(),
-          ResponseCode.courseBatchStartDateRequired.getErrorMessage(),
-          ResponseCode.CLIENT_ERROR.getResponseCode());
+              ResponseCode.courseBatchStartDateRequired.getErrorCode(),
+              ResponseCode.courseBatchStartDateRequired.getErrorMessage(),
+              ResponseCode.CLIENT_ERROR.getResponseCode());
     }
   }
 
@@ -479,8 +473,8 @@ public class CourseBatchManagementActor extends BaseActor {
       Date requestedStartDate,
       Date requestedEndDate,
       Date todayDate) {
-    Date startDate = requestedStartDate != null ? requestedStartDate : existingStartDate;
-    Date endDate = requestedEndDate != null ? requestedEndDate : existingEndDate;
+    Date startDate = null != requestedStartDate ? requestedStartDate : existingStartDate;
+    Date endDate = null != requestedEndDate ? requestedEndDate : existingEndDate;
 
     if ((existingStartDate.before(todayDate) || existingStartDate.equals(todayDate))
         && !(existingStartDate.equals(requestedStartDate))) {
@@ -513,8 +507,10 @@ public class CourseBatchManagementActor extends BaseActor {
     }
   }
 
-  private Date getDate(RequestContext requestContext, String key, SimpleDateFormat format, Map<String, Object> map) {
+  private Date getDate(RequestContext requestContext, String key, Map<String, Object> map) {
     try {
+      SimpleDateFormat format = ProjectUtil.getDateFormatter(dateFormat);
+      format.setTimeZone(TimeZone.getTimeZone(timeZone));
       if (MapUtils.isEmpty(map)) {
         return format.parse(format.format(new Date()));
       } else {
@@ -691,7 +687,7 @@ public class CourseBatchManagementActor extends BaseActor {
     Map<String, Object> data =  new HashMap<>();
     data.put("batchId", courseBatch.getOrDefault(JsonKey.BATCH_ID, ""));
     data.put("name", courseBatch.getOrDefault(JsonKey.NAME, ""));
-    data.put("createdFor", courseBatch.getOrDefault(JsonKey.COURSE_CREATED_FOR, ""));
+    data.put("createdFor", courseBatch.getOrDefault(JsonKey.COURSE_CREATED_FOR, new ArrayList<>()));
     data.put("startDate", courseBatch.getOrDefault(JsonKey.START_DATE, ""));
     data.put("endDate", courseBatch.getOrDefault(JsonKey.END_DATE, null));
     data.put("enrollmentType", courseBatch.getOrDefault(JsonKey.ENROLLMENT_TYPE, ""));
@@ -703,12 +699,14 @@ public class CourseBatchManagementActor extends BaseActor {
   }
 
   private Object getEnrollmentEndDate(String enrollmentEndDate, String endDate) {
+    SimpleDateFormat dateFormatter = ProjectUtil.getDateFormatter(dateFormat);
+    dateFormatter.setTimeZone(TimeZone.getTimeZone(timeZone));
     return Optional.ofNullable(enrollmentEndDate).map(x -> x).orElse(Optional.ofNullable(endDate).map(y ->{
       Calendar cal = Calendar.getInstance();
       try {
-        cal.setTime(DATE_FORMAT.parse(y));
+        cal.setTime(dateFormatter.parse(y));
         cal.add(Calendar.DAY_OF_MONTH, -1);
-        return DATE_FORMAT.format(cal.getTime());
+        return dateFormatter.format(cal.getTime());
       } catch (ParseException e) {
         return null;
       }

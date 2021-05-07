@@ -218,18 +218,21 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
   }
 
   def getDate(requestContext: RequestContext, date: String, courseId: String, batchId: String): String = {
-    val dateTimeFormate = DateTimeFormat.forPattern("yyyy-MM-dd")
-    // When endate is null in the table considering default date as 7
-    val defaultEndDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(7))
-    val nofDates = date.replaceAll("[^0-9]", "")
-    val endDate = dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).plusDays(1)) // Adding 1 Day extra
-    val startDate: String = if (!StringUtils.equalsIgnoreCase(date, "ALL")) {
-      dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(nofDates.toInt))
-    } else {
+    val dateTimeFormat = DateTimeFormat.forPattern("yyyy-MM-dd")
+    val defaultStartDate = dateTimeFormat.print(DateTime.now(DateTimeZone.UTC))
+    val defaultEndDate = dateTimeFormat.print(DateTime.now(DateTimeZone.UTC).plusDays(1)) // Adding 1 Day extra
+    // EX - intervals = ALL
+    if (StringUtils.equalsIgnoreCase(date, "ALL")) {
+      val batchStartDate = courseBatchDao.readById(courseId, batchId, requestContext).getStartDate
       val batchEndDate = courseBatchDao.readById(courseId, batchId, requestContext).getEndDate
-      logger.debug(requestContext, s"BatchId: $batchId, CourseId: $courseId, EndDate" + batchEndDate)
-      Option(batchEndDate).map(date => if (date.isEmpty) defaultEndDate else date).getOrElse(defaultEndDate)
+      val startDate: String = Option(batchStartDate).map(date => if (date.nonEmpty) date else defaultStartDate).getOrElse(defaultStartDate)
+      val endDate: String = Option(batchEndDate).map(date => if (date.nonEmpty) date else defaultEndDate).getOrElse(defaultEndDate)
+      s"$startDate/$endDate"
+    } else {
+      // EX - intervals = LAST_7DAYS
+      val nofDates = date.replaceAll("[^0-9]", "")
+      val batchStartDate: String = dateTimeFormat.print(DateTime.now(DateTimeZone.UTC).minusDays(nofDates.toInt))
+      s"$batchStartDate/$defaultEndDate"
     }
-    s"$startDate/$endDate"
   }
 }

@@ -6,6 +6,7 @@ import java.util.*;
 import modules.StartModule;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -38,6 +39,8 @@ import play.test.Helpers;
 @PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*", "jdk.internal.reflect.*",
         "sun.security.ssl.*", "javax.net.ssl.*", "javax.crypto.*",
         "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
+
+@Ignore
 public class RequestInterceptorTest {
 
   public Application application;

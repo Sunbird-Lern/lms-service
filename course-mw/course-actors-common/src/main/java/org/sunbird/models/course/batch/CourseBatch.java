@@ -7,9 +7,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.sunbird.common.models.util.ProjectUtil;
-import org.sunbird.learner.util.CustomDateSerializer;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -21,21 +19,17 @@ public class CourseBatch implements Serializable {
   private String courseId;
   private String createdBy;
 
+  // After deprecating the text type for date variables remove the below
   private String oldCreatedDate;
   private String oldEndDate;
   private String oldEnrollmentEndDate;
   private String oldStartDate;
   private String oldUpdatedDate;
 
-  @JsonSerialize(using = CustomDateSerializer.class)
   private Date createdDate;
-  @JsonSerialize(using = CustomDateSerializer.class)
   private Date endDate;
-  @JsonSerialize(using = CustomDateSerializer.class)
   private Date enrollmentEndDate;
-  @JsonSerialize(using = CustomDateSerializer.class)
   private Date updatedDate;
-  @JsonSerialize(using = CustomDateSerializer.class)
   private Date startDate;
 
   private List<String> createdFor;
@@ -49,8 +43,6 @@ public class CourseBatch implements Serializable {
   private Integer status;
 
   private Map<String, Object> certTemplates;
-
-  private Boolean convertDateAsString;
 
   public String getCourseCreator() {
     return courseCreator;
@@ -192,15 +184,7 @@ public class CourseBatch implements Serializable {
     return this.certTemplates = certTemplates;
   }
 
-  public Boolean getConvertDateAsString() {
-    return this.convertDateAsString;
-  }
-
-  public void setConvertDateAsString(boolean convert) {
-    this.convertDateAsString = convert;
-  }
-
-  // After deprecating the text dates remove the below
+  // After deprecating the text type for date variables remove the below
   public String getOldCreatedDate() {
     return oldCreatedDate;
   }

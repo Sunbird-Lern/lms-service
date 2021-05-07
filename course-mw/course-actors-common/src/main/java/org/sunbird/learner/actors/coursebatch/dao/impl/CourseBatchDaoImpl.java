@@ -1,9 +1,12 @@
 package org.sunbird.learner.actors.coursebatch.dao.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import org.sunbird.cassandra.CassandraOperation;
@@ -12,11 +15,13 @@ import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.CassandraPropertyReader;
 import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao;
 import org.sunbird.learner.constants.CourseJsonKey;
+import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.Util;
 import org.sunbird.models.course.batch.CourseBatch;
 
@@ -26,10 +31,19 @@ public class CourseBatchDaoImpl implements CourseBatchDao {
   private static final CassandraPropertyReader propertiesCache =
           CassandraPropertyReader.getInstance();
   private ObjectMapper mapper = new ObjectMapper();
-  
+  private SimpleDateFormat dateFormatTimezone = ProjectUtil.getDateFormatter();
+  private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+  public CourseBatchDaoImpl() {
+    dateFormat.setTimeZone(
+            TimeZone.getTimeZone(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TIMEZONE)));
+    dateFormatTimezone.setTimeZone(
+            TimeZone.getTimeZone(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TIMEZONE)));
+  }
+
   @Override
   public Response create(RequestContext requestContext, CourseBatch courseBatch) {
-    Map<String, Object> map = mapper.convertValue(courseBatch, Map.class);
+    Map<String, Object> map = CourseBatchUtil.cassandraCourseMapping(courseBatch, dateFormatTimezone, dateFormat);
     map = CassandraUtil.changeCassandraColumnMapping(map);
     return cassandraOperation.insertRecord(
             requestContext, courseBatchDb.getKeySpace(), courseBatchDb.getTableName(), map);

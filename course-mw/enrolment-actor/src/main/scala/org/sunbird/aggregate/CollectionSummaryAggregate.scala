@@ -1,9 +1,9 @@
 package org.sunbird.aggregate
 
 import java.util
-
 import com.google.gson.Gson
 import com.mashape.unirest.http.Unirest
+
 import javax.inject.Inject
 import javax.ws.rs.core.MediaType
 import org.apache.commons.lang3.StringUtils
@@ -18,9 +18,10 @@ import org.sunbird.common.request.{Request, RequestContext}
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao
 import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl
 import org.sunbird.learner.util.{JsonUtil, Util}
+
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
-
+import java.util.Date
 import scala.collection.JavaConverters._
 
 class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUtil) extends BaseActor {
@@ -224,10 +225,16 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     val defaultStartDate = sd.format(sd.parse(dateTimeFormate.print(DateTime.now(DateTimeZone.UTC))))
     val defaultEndDate = sd.format(sd.parse(dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).plusDays(1)))) // Adding 1 Day extra
     if (StringUtils.equalsIgnoreCase(date, "ALL")) {
-      val batchStartDate = courseBatchDao.readById(courseId, batchId, requestContext).getStartDate
-      val batchEndDate = courseBatchDao.readById(courseId, batchId, requestContext).getEndDate
-      val startDate: String = Option(batchStartDate).map(date => sd.format(date)).getOrElse(defaultStartDate)
-      val endDate: String = Option(batchEndDate).map(date => sd.format(date)).getOrElse(defaultEndDate)
+
+      val batchOldStartDate: String = Option(courseBatchDao.readById(courseId, batchId, requestContext).getOldStartDate).map(date => if (date.nonEmpty) date else defaultStartDate).getOrElse(defaultStartDate)
+      val batchOldEndDate: String = Option(courseBatchDao.readById(courseId, batchId, requestContext).getOldEndDate).map(date => if (date.nonEmpty) date else defaultEndDate).getOrElse(defaultEndDate)
+
+      val batchLatestStartDate: Date = courseBatchDao.readById(courseId, batchId, requestContext).getStartDate
+      val batchLatestEndDate: Date = courseBatchDao.readById(courseId, batchId, requestContext).getEndDate
+
+      val startDate: String = getLatestDateValue(batchLatestStartDate, batchOldStartDate)
+      val endDate: String = getLatestDateValue(batchLatestEndDate, batchOldEndDate)
+
       s"$startDate/$endDate"
     } else {
       val nofDates = date.replaceAll("[^0-9]", "")
@@ -235,4 +242,13 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
       s"$batchStartDate/$defaultEndDate"
     }
   }
+
+  def getLatestDateValue(latestVal: Date, oldVal: String): String = {
+    val sd = new SimpleDateFormat("yyyy-MM-dd");
+    Option(latestVal).map(date => {
+      val dateValues = sd.format(date)
+      if (dateValues.nonEmpty) dateValues else oldVal
+    }).getOrElse(oldVal)
+  }
+
 }

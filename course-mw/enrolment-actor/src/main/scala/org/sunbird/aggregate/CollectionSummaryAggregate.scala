@@ -221,17 +221,18 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
   def getDate(requestContext: RequestContext, date: String, courseId: String, batchId: String): String = {
     val dateTimeFormate = DateTimeFormat.forPattern("yyyy-MM-dd")
     val sd = new SimpleDateFormat("yyyy-MM-dd");
-    // When endate is null in the table considering default date as 7
-    val defaultEndDate = sd.format(sd.parse(dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(7))))
-    val nofDates = date.replaceAll("[^0-9]", "")
-    val endDate = sd.format(sd.parse(dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).plusDays(1)))) // Adding 1 Day extra
-    val startDate = if (!StringUtils.equalsIgnoreCase(date, "ALL")) {
-      sd.format(sd.parse(dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(nofDates.toInt))))
-    } else {
+    val defaultStartDate = sd.format(sd.parse(dateTimeFormate.print(DateTime.now(DateTimeZone.UTC))))
+    val defaultEndDate = sd.format(sd.parse(dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).plusDays(1)))) // Adding 1 Day extra
+    if (StringUtils.equalsIgnoreCase(date, "ALL")) {
+      val batchStartDate = courseBatchDao.readById(courseId, batchId, requestContext).getStartDate
       val batchEndDate = courseBatchDao.readById(courseId, batchId, requestContext).getEndDate
-      logger.debug(requestContext, s"BatchId: $batchId, CourseId: $courseId, EndDate" + batchEndDate)
-      Option(batchEndDate).map(date => if (date == null) defaultEndDate else date).getOrElse(defaultEndDate)
+      val startDate: String = Option(batchStartDate).map(date => sd.format(date)).getOrElse(defaultStartDate)
+      val endDate: String = Option(batchEndDate).map(date => sd.format(date)).getOrElse(defaultEndDate)
+      s"$startDate/$endDate"
+    } else {
+      val nofDates = date.replaceAll("[^0-9]", "")
+      val batchStartDate: String = sd.format(sd.parse(dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(nofDates.toInt))))
+      s"$batchStartDate/$defaultEndDate"
     }
-    s"$startDate/$endDate"
   }
 }

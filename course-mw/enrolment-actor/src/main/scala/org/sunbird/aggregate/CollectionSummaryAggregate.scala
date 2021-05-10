@@ -232,8 +232,8 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
       val batchLatestStartDate: Date = courseBatchDao.readById(courseId, batchId, requestContext).getStartDate
       val batchLatestEndDate: Date = courseBatchDao.readById(courseId, batchId, requestContext).getEndDate
 
-      val startDate: String = getLatestDateValue(batchLatestStartDate, batchOldStartDate)
-      val endDate: String = getLatestDateValue(batchLatestEndDate, batchOldEndDate)
+      val startDate: String = Option(batchLatestStartDate).map(date => sd.format(date)).getOrElse(batchOldStartDate)
+      val endDate: String = Option(batchLatestEndDate).map(date => sd.format(date)).getOrElse(batchOldEndDate)
 
       s"$startDate/$endDate"
     } else {
@@ -241,14 +241,6 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
       val batchStartDate: String = sd.format(sd.parse(dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(nofDates.toInt))))
       s"$batchStartDate/$defaultEndDate"
     }
-  }
-
-  def getLatestDateValue(latestVal: Date, oldVal: String): String = {
-    val sd = new SimpleDateFormat("yyyy-MM-dd");
-    Option(latestVal).map(date => {
-      val dateValues = sd.format(date)
-      if (dateValues.nonEmpty) dateValues else oldVal
-    }).getOrElse(oldVal)
   }
 
 }

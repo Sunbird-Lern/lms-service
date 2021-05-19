@@ -1,15 +1,9 @@
 package org.sunbird.learner.actors.coursemanagement;
 
-import static akka.testkit.JavaTestKit.duration;
-import static org.powermock.api.mockito.PowerMockito.*;
-
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.testkit.javadsl.TestKit;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +12,6 @@ import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.cassandraimpl.CassandraOperationImpl;
 import org.sunbird.common.exception.ProjectCommonException;
@@ -30,13 +23,26 @@ import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.helper.ServiceFactory;
-import org.sunbird.kafka.client.InstructionEventGenerator;
 import org.sunbird.learner.actors.coursebatch.CourseBatchManagementActor;
 import org.sunbird.learner.constants.CourseJsonKey;
 import org.sunbird.learner.util.ContentUtil;
 import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.JsonUtil;
 import org.sunbird.learner.util.Util;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static akka.testkit.JavaTestKit.duration;
+import static org.powermock.api.mockito.PowerMockito.doCallRealMethod;
+import static org.powermock.api.mockito.PowerMockito.doNothing;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ServiceFactory.class, EsClientFactory.class, CourseBatchUtil.class, Util.class, ContentUtil.class})
@@ -454,6 +460,46 @@ public class CourseBatchManagementActorTest {
             .getCode()
             .equals(ResponseCode.invalidBatchStartDateError.getErrorCode()));
   }
+
+    @Test
+    public void testUpdateCompletedCourseBatchSuccessWithEndDateNull() throws Exception {
+
+        int batchProgressStatus = ProjectUtil.ProgressStatus.COMPLETED.getValue();
+        Response mockGetRecordByIdResponse = getMockCassandraRecordByIdResponse(batchProgressStatus);
+        Response mockUpdateRecordResponse = getMockCassandraResult();
+        Response response =
+                performUpdateCourseBatchSuccessTest(
+                        existingStartDate, null, null, mockGetRecordByIdResponse, mockUpdateRecordResponse);
+        Assert.assertTrue(null != response && response.getResponseCode() == ResponseCode.OK);
+    }
+
+    @Test
+    public void testUpdateCompletedCourseBatchSuccessWithEndDateExtended() throws Exception {
+
+        int batchProgressStatus = ProjectUtil.ProgressStatus.COMPLETED.getValue();
+        Response mockGetRecordByIdResponse = getMockCassandraRecordByIdResponse(batchProgressStatus);
+        Response mockUpdateRecordResponse = getMockCassandraResult();
+        Response response =
+                performUpdateCourseBatchSuccessTest(
+                        existingStartDate, null, getOffsetDate(existingEndDate, 3), mockGetRecordByIdResponse, mockUpdateRecordResponse);
+        Assert.assertTrue(null != response && response.getResponseCode() == ResponseCode.OK);
+    }
+
+    @Test
+    public void testUpdateCompletedCourseBatchFailureWithEndDateExtended() throws Exception {
+
+        int batchProgressStatus = ProjectUtil.ProgressStatus.COMPLETED.getValue();
+        Response mockGetRecordByIdResponse = getMockCassandraRecordByIdResponse(batchProgressStatus);
+        Response mockUpdateRecordResponse = getMockCassandraResult();
+        ProjectCommonException exception =
+                performUpdateCourseBatchFailureTest(
+                        existingStartDate, null, getOffsetDate(existingEndDate, -1), mockGetRecordByIdResponse);
+        Assert.assertTrue(
+                ((ProjectCommonException) exception)
+                        .getCode()
+                        .equals(ResponseCode.courseBatchEndDateError.getErrorCode()));
+    }
+  
 
   @Test
   public void testUpdateCompletedCourseBatchFailureWithEndDate() throws Exception {

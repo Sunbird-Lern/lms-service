@@ -388,6 +388,12 @@ public class CourseBatchManagementActor extends BaseActor {
     validateBatchStartAndEndDate(
         dbBatchStartDate, dbBatchEndDate, requestedStartDate, requestedEndDate, todayDate);
     
+    /* Update the batch to In-Progress for below conditions
+    * 1. StartDate is greater than or equal to today's date
+    * 2. EndDate can be either NULL or 
+    *     EndDate can be greater than or equal to today's date or
+    *     EndDate can be greater than or equal to existing EndDate
+    * */
     Boolean batchStarted = (null != requestedStartDate && todayDate.compareTo(requestedStartDate) >=0)
             && ((null == requestedEndDate) 
                 || (null != requestedEndDate && null == dbBatchEndDate && todayDate.compareTo(requestedEndDate) <= 0) 

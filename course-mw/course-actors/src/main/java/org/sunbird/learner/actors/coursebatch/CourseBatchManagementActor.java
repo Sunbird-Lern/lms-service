@@ -25,7 +25,6 @@ import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl;
 import org.sunbird.learner.actors.coursebatch.service.UserCoursesService;
 import org.sunbird.learner.constants.CourseJsonKey;
 import org.sunbird.learner.util.ContentUtil;
-import org.sunbird.learner.util.CourseBatchSchedulerUtil;
 import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.Util;
 import org.sunbird.models.course.batch.CourseBatch;
@@ -199,7 +198,6 @@ public class CourseBatchManagementActor extends BaseActor {
         courseBatchDao.readById((String) request.get(JsonKey.COURSE_ID), batchId, actorMessage.getRequestContext());
     CourseBatch courseBatch = getUpdateCourseBatch(actorMessage.getRequestContext(), request, oldBatch);
     courseBatch.setUpdatedDate(ProjectUtil.getTimeStamp());
-    checkBatchStatus(courseBatch);
     Map<String, Object> contentDetails = getContentDetails(actorMessage.getRequestContext(),courseBatch.getCourseId(), headers);
     validateUserPermission(courseBatch, requestedBy);
     validateContentOrg(actorMessage.getRequestContext(), courseBatch.getCreatedFor());
@@ -248,15 +246,6 @@ public class CourseBatchManagementActor extends BaseActor {
     participantsMap.put(JsonKey.ADDED_MENTORS, addedMentors);
 
     return participantsMap;
-  }
-
-  private void checkBatchStatus(CourseBatch courseBatch) {
-    if (ProjectUtil.ProgressStatus.COMPLETED.getValue() == courseBatch.getStatus()) {
-      throw new ProjectCommonException(
-          ResponseCode.courseBatchEndDateError.getErrorCode(),
-          ResponseCode.courseBatchEndDateError.getErrorMessage(),
-          ResponseCode.CLIENT_ERROR.getResponseCode());
-    }
   }
 
   @SuppressWarnings("unchecked")
@@ -398,10 +387,15 @@ public class CourseBatchManagementActor extends BaseActor {
     validateUpdateBatchStartDate(requestedStartDate);
     validateBatchStartAndEndDate(
         dbBatchStartDate, dbBatchEndDate, requestedStartDate, requestedEndDate, todayDate);
-    if (null != requestedStartDate && todayDate.equals(requestedStartDate)) {
+    
+    Boolean batchStarted = (null != requestedStartDate && todayDate.compareTo(requestedStartDate) >=0)
+            && ((null == requestedEndDate) 
+                || (null != requestedEndDate && null == dbBatchEndDate && todayDate.compareTo(requestedEndDate) <= 0) 
+                || (null != requestedEndDate && null != dbBatchEndDate && requestedEndDate.compareTo(dbBatchEndDate) >=0));
+    
+    if(batchStarted)
       courseBatch.setStatus(ProgressStatus.STARTED.getValue());
-      CourseBatchSchedulerUtil.updateCourseBatchDbStatus(req, true, requestContext);
-    }
+    
     validateBatchEnrollmentEndDate(
         dbBatchStartDate,
         dbBatchEndDate,
@@ -497,13 +491,14 @@ public class CourseBatchManagementActor extends BaseActor {
           ResponseCode.invalidBatchEndDateError.getErrorMessage(),
           ResponseCode.CLIENT_ERROR.getResponseCode());
     }
-
-    if ((endDate != null && !endDate.after(todayDate))
-        || (existingEndDate != null && !existingEndDate.after(todayDate))) {
-      throw new ProjectCommonException(
-          ResponseCode.courseBatchEndDateError.getErrorCode(),
-          ResponseCode.courseBatchEndDateError.getErrorMessage(),
-          ResponseCode.CLIENT_ERROR.getResponseCode());
+    
+    if(null != existingEndDate && null != requestedEndDate 
+            && requestedEndDate.before(existingEndDate) 
+            && (null != existingEndDate && existingEndDate.before(todayDate))) {
+        throw new ProjectCommonException(
+                ResponseCode.courseBatchEndDateError.getErrorCode(),
+                ResponseCode.courseBatchEndDateError.getErrorMessage(),
+                ResponseCode.CLIENT_ERROR.getResponseCode());
     }
   }
 

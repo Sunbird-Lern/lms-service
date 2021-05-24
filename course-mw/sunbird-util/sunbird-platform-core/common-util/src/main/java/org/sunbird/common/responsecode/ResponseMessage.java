@@ -382,18 +382,23 @@ public interface ResponseMessage {
     String ERROR_PROCESSING_REQUEST = "Something went wrong while Processing Request";
     String ERROR_UNAVAILABLE_CERTIFICATE = "Certificate is unavailable";
     String INVALID_TEXTBOOK = "Invalid Textbook. Please Provide Valid Textbook Identifier.";
+    String INVALID_COLLECTION = "Invalid Collection. Please Provide Valid Collection Identifier.";
     String CSV_ROWS_EXCEEDS = "Number of rows in csv file is more than ";
     String INVALID_TEXTBOOK_NAME =
         "Textbook Name given in the file doesn’t match current Textbook name. Please check and upload again.";
+    String INVALID_COLLECTION_NAME =
+            "Collection Name given in the file doesn’t match current Collection name. Please check and upload again.";
     String DUPLICATE_ROWS =
-        "Duplicate Textbook node found. Please check and upload again. Row number ";
-    String REQUIRED_HEADER_MISSING = "Required set of header missing: ";
+        "Following Rows are duplicate: ";
+    String REQUIRED_HEADER_MISSING = "Following Columns are not found in the file: ";
     String REQUIRED_FIELD_MISSING =
-        "Required columns missing. Please check and upload again. Mandatory fields are: ";
+        "Following Rows have missing values: ";
     String BLANK_CSV_DATA =
         "Did not find any Table of Contents data. Please check and upload again.";
+    String ADDITIONAL_HEADER_FOUND = "Following additional Columns are found in the file: ";
     String EXCEEDS_MAX_CHILDREN = "Number of first level units is more than allowed.";
     String TEXTBOOK_CHILDREN_EXISTS = "Textbook is already having children.";
+    String COLLECTION_CHILDREN_EXISTS = "Collection is already having children.";
     String TEXTBOOK_UPDATE_FAILURE = "Textbook could not be updated.";
     String TEXTBOOK_CHILDREN_NOT_EXISTS = "No Children Exists for given TextBook.";
     String TEXTBOOK_NOT_FOUND = "Textbook not found.";
@@ -421,7 +426,8 @@ public interface ResponseMessage {
         "User type teacher is not supported for custodian organisation users";
     String ERROR_DUPLICATE_QR_CODE_ENTRY =
         "CSV file contains more than one entry for {0}. Correct the duplicate entry and try again.";
-    String ERROR_INVALID_TEXTBOOK_UNIT_ID = "Invalid textbook unit id {0} for texbook.";
+    String ERROR_INVALID_TEXTBOOK_UNIT_ID = "Invalid textbook unit id {0} for textbook.";
+    String ERROR_INVALID_COLLECTION_UNIT_ID = "Invalid collection unit id {0} for collection.";
     String INVALID_REQUEST_TIMEOUT = "Invalid request timeout value {0}.";
     String ERROR_USER_UPDATE_PASSWORD = "User is created but password couldn't be updated.";
     String ERROR_BGMS_MISMATCH = "Mismatch in {0} at row - {1}";
@@ -457,6 +463,24 @@ public interface ResponseMessage {
     String ACTIVITY_ID_MISSING = "ActivityId is mandatory.";
     String ACTIVITY_TYPE_MISSING = "ActivityType is mandatory.";
     String ERR_CALLING_GROUP_API = "Error while calling group api.";
+    String INVALID_HEADER_SEQ = "Found invalid sequence of columns. Please follow the order: ";
+    String INVALID_HEADERS_FOUND = "Found invalid headers. Please check following errors: ";
+    String ROW_MISSING_DATA_COLUMN = "Row {0} - column: {1}";
+    String ROW_NUM = "Row {0}";
+    String DUPLICATE_QR_CODE_ENTRY = "Following rows have duplicate QR Code entries: ";
+    String DUPLICATE_QR_ROW_NUM = "Row {0} - {1}";
+    String ERROR_QR_CODE_ENTRY = "Following rows have issues for QR Code entries: ";
+    String QR_REQD_YES_QR_CODE_BLANK = "Row {0} has column 'QR Code Required?' as 'Yes' but 'QR Code' is Blank";
+    String QR_REQD_NO_QR_CODE_FILLED = "Row {0} has column 'QR Code Required?' as 'No'/Blank but 'QR Code' is Filled";
+    String LINKED_CONTENTS_DATA_MISSING = "Following rows have linked contents data missing: ";
+    String CSV_RECORD_EXCEEDS_MAX_LENGTH = "Following rows have data exceeding maximum columns allowed: ";
+    String CSV_INVALID_COLLECTION_NAME = "Following rows have invalid Collection Name: ";
+    String CSV_INVALID_COLLECTION_NODE_ID = "Following rows have invalid folder identifier: ";
+    String CSV_INVALID_DIAL_CODES = "Following rows have invalid DIAL codes: ";
+    String CSV_INVALID_MAPPED_TOPICS = "Following rows have invalid Mapped Topics: ";
+    String CSV_INVALID_LINKED_CONTENTS = "Following rows have invalid contents linked: ";
+    String CSV_INVALID_LINKED_CONTENTS_CONTENT_TYPE = "Following contents are not allowed due to invalid content types: ";
+    String COLLECTION_UPDATE_ERROR = "Error occurred while updating collection: ";
   }
 
   interface Key {
@@ -782,8 +806,10 @@ public interface ResponseMessage {
     String ERROR_PROCESSING_REQUEST = "ERROR_PROCESSING_REQUEST";
     String ERROR_UNAVAILABLE_CERTIFICATE = "ERROR_UNAVAILABLE_CERTIFICATE";
     String INVALID_TEXTBOOK = "INVALID_TEXTBOOK";
+    String INVALID_COLLECTION = "INVALID_COLLECTION";
     String CSV_ROWS_EXCEEDS = "CSV_ROWS_EXCEEDS";
     String INVALID_TEXTBOOK_NAME = "INVALID_TEXTBOOK_NAME";
+    String INVALID_COLLECTION_NAME = "INVALID_COLLECTION_NAME";
     String DUPLICATE_ROWS = "DUPLICATE_ROWS";
     String ERROR_INVALID_OTP = "ERROR_INVALID_OTP";
     String REQUIRED_HEADER_MISSING = "REQUIRED_HEADER_MISSING";
@@ -791,6 +817,7 @@ public interface ResponseMessage {
     String BLANK_CSV_DATA = "BLANK_CSV_DATA";
     String EXCEEDS_MAX_CHILDREN = "EXCEEDS_MAX_CHILDREN";
     String TEXTBOOK_CHILDREN_EXISTS = "TEXTBOOK_CHILDREN_EXISTS";
+    String COLLECTION_CHILDREN_EXISTS = "COLLECTION_CHILDREN_EXISTS";
     String TEXTBOOK_UPDATE_FAILURE = "TEXTBOOK_UPDATE_FAILURE";
     String TEXTBOOK_CHILDREN_NOT_EXISTS = "TEXTBOOK_CHILDREN_NOT_EXISTS";
     String TEXTBOOK_NOT_FOUND = "TEXTBOOK_NOT_FOUND";
@@ -813,6 +840,7 @@ public interface ResponseMessage {
     String TEACHER_CANNOT_BELONG_TO_CUSTODIAN_ORG = "TEACHER_CANNOT_BELONG_TO_CUSTODIAN_ORG";
     String ERROR_DUPLICATE_QR_CODE_ENTRY = "ERROR_DUPLICATE_QR_CODE_ENTRY";
     String ERROR_INVALID_TEXTBOOK_UNIT_ID = "ERROR_INVALID_TEXTBOOK_UNIT_ID";
+    String ERROR_INVALID_COLLECTION_UNIT_ID = "ERROR_INVALID_COLLECTION_UNIT_ID";
     String INVALID_REQUEST_TIMEOUT = "INVALID_REQUEST_TIMEOUT";
     String ERROR_BGMS_MISMATCH = "ERROR_BGMS_MISMATCH";
     String ERROR_USER_MIGRATION_FAILED = "ERROR_USER_MIGRATION_FAILED";
@@ -842,5 +870,24 @@ public interface ResponseMessage {
     String ACTIVITY_ID_MISSING = "ACTIVITY_ID_MISSING";
     String ACTIVITY_TYPE_MISSING = "ACTIVITY_TYPE_MISSING";
     String ERR_CALLING_GROUP_API = "ERR_CALLING_GROUOP_API";
+    String INVALID_HEADER_SEQ = "INVALID_HEADER_SEQ";
+    String ADDITIONAL_HEADER_FOUND = "ADDITIONAL_HEADER_FOUND";
+    String INVALID_HEADERS_FOUND = "INVALID_HEADERS_FOUND";
+    String ROW_MISSING_DATA_COLUMN = "ROW_MISSING_DATA_COLUMN";
+    String ROW_NUM = "ROW_NUM";
+    String DUPLICATE_QR_CODE_ENTRY = "DUPLICATE_QR_CODE_ENTRY";
+    String QR_REQD_YES_QR_CODE_BLANK = "QR_REQD_YES_QR_CODE_BLANK";
+    String QR_REQD_NO_QR_CODE_FILLED = "QR_REQD_NO_QR_CODE_FILLED";
+    String DUPLICATE_QR_ROW_NUM = "DUPLICATE_QR_ROW_NUM";
+    String ERROR_QR_CODE_ENTRY = "ERROR_QR_CODE_ENTRY";
+    String LINKED_CONTENTS_DATA_MISSING = "LINKED_CONTENTS_DATA_MISSING";
+    String CSV_RECORD_EXCEEDS_MAX_LENGTH = "CSV_RECORD_EXCEEDS_MAX_LENGTH";
+    String CSV_INVALID_DIAL_CODES = "CSV_INVALID_DIAL_CODES";
+    String CSV_INVALID_MAPPED_TOPICS = "CSV_INVALID_MAPPED_TOPICS";
+    String CSV_INVALID_COLLECTION_NAME = "CSV_INVALID_COLLECTION_NAME";
+    String CSV_INVALID_COLLECTION_NODE_ID = "CSV_INVALID_COLLECTION_NODE_ID";
+    String CSV_INVALID_LINKED_CONTENTS = "CSV_INVALID_LINKED_CONTENTS";
+    String CSV_INVALID_LINKED_CONTENTS_CONTENT_TYPE = "CSV_INVALID_LINKED_CONTENTS_CONTENT_TYPE";
+    String COLLECTION_UPDATE_ERROR = "COLLECTION_UPDATE_ERROR";
   }
 }

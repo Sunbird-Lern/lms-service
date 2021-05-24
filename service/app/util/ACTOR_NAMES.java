@@ -20,6 +20,7 @@ import org.sunbird.learner.actors.qrcodedownload.QRCodeDownloadManagementActor;
 import org.sunbird.learner.actors.search.SearchHandlerActor;
 import org.sunbird.learner.actors.syncjobmanager.EsSyncActor;
 import org.sunbird.learner.actors.textbook.TextbookTocActor;
+import org.sunbird.collectionhierarchy.actors.CollectionTOCActor;
 
 public enum ACTOR_NAMES {
   COURSE_BATCH_MANAGEMENT_ACTOR(CourseBatchManagementActor.class, "course-batch-management-actor"),
@@ -28,6 +29,7 @@ public enum ACTOR_NAMES {
   PAGE_MANAGEMENT_ACTOR(PageManagementActor.class, "page-management-actor"),
   SEARCH_HANDLER_ACTOR(SearchHandlerActor.class, "search-handler-actor"),
   TEXTBOOK_TOC_ACTOR(TextbookTocActor.class, "textbook-toc-actor"),
+  COLLECTION_TOC_ACTOR(CollectionTOCActor.class, "collection-toc-actor"),
   HEALTH_ACTOR(HealthActor.class, "health-actor"),
   COURSEBATCH_CERTIFICATE_ACTOR(
       CourseBatchCertificateActor.class, "course-batch-certificate-actor"),

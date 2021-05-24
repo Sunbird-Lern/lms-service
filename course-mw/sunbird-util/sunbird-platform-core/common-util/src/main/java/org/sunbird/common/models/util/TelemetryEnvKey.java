@@ -10,4 +10,5 @@ public class TelemetryEnvKey {
   public static final String REQUEST_UPPER_CAMEL = "Request";
   public static final String QR_CODE_DOWNLOAD = "QRCodeDownload";
   public static final String COURSE_CREATE = "COURSE_CREATE";
+  public static final String COLLECTION_CSV_HIERARCHY = "COLLECTION_CSV_HIERARCHY";
 }

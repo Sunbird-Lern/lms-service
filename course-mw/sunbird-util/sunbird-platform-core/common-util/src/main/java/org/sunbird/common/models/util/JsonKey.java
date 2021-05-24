@@ -1063,6 +1063,36 @@ public final class JsonKey {
   public static final String USER_ID_KEY = "userid";
   public static final String OLD_CREATED_DATE = "oldCreatedDate";
 
+  //Collection CSV Hierarchy API constants
+  public static final String COLLECTION_CSV_TOC_UPLOAD = "collectionTOCUpload";
+  public static final String COLLECTION_CSV_TOC_DOWNLOAD = "collectionTOCUrl";
+  public static final String COLLECTION = "collection";
+  public static final String COLLECTION_TOC_CSV_TTL = "sunbird_collection_toc_csv_ttl";
+  public static final String COLLECTION_TOC_ALLOWED_MIMETYPE = "application/vnd.ekstep.content-collection";
+  public static final String COLLECTION_TOC_ALLOWED_CONTENT_TYPES = "collection_toc_allowed_content_types";
+  public static final String COLLECTION_TOC_MAX_CSV_ROWS = "collection_toc_max_csv_rows";
+
+
+  public static final String COLLECTION_CREATION_CSV_TOC_HEADERS = "collection_create_csv_toc_headers";
+  public static final String COLLECTION_CSV_IDENTIFIER_HEADER = "csv_folder_identifier_col_header";
+  public static final String COLLECTION_UPDATE_CSV_TOC_HEADERS = "collection_update_csv_toc_headers";
+  public static final String COLLECTION_TOC_CREATE_CSV_MANDATORY_FIELDS = "collection_toc_create_csv_mandatory_fields";
+  public static final String COLLECTION_TOC_UPDATE_CSV_MANDATORY_FIELDS = "collection_toc_update_csv_mandatory_fields";
+  public static final String FOLDER_HIERARCHY_COLUMNS = "collection_csv_hierarchy_headers";
+  public static final String COLLECTION_CSV_QR_COLUMNS = "collection_csv_qr_headers";
+  public static final String COLLECTION_CSV_LINKED_CONTENT_FIELDS = "collection_csv_linked_content_fields";
+  public static final String COLLECTION_CSV_LINKED_CONTENT_SEQ = "collection_csv_linked_content_seq";
+  public static final String COMMA_SEPARATOR = ", ";
+  public static final String X_CHANNEL_ID = "X-Channel-Id";
+  public static final String DIALCODE = "dialcode";
+  public static final String DIALCODES = "dialcodes";
+  public static final String MAPPED_TOPICS_HEADER = "collection_csv_mapped_topics_header";
+  public static final String CSV_COLLECTION_NAME_HEADER = "collection_csv_collection_name";
+  public static final String COLLECTION_CSV_FILE_EXTENSION = ".csv";
+  public static final String COLLECTION_TYPE_TO_UNIT_TYPE = "collection_content_type_unit_type";
+  public static final String CHILD_NODES = "childNodes";
+  public static final String DEPTH = "depth";
+  public static final String COLLECTION_OUTPUT_TOC_HEADERS = "collection_output_toc_headers";
 
   private JsonKey() {}
 }

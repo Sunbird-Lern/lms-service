@@ -701,15 +701,21 @@ public enum ResponseCode {
       ResponseMessage.Key.ERROR_UNAVAILABLE_CERTIFICATE,
       ResponseMessage.Message.ERROR_UNAVAILABLE_CERTIFICATE),
   invalidTextbook(ResponseMessage.Key.INVALID_TEXTBOOK, ResponseMessage.Message.INVALID_TEXTBOOK),
+  invalidCollection(ResponseMessage.Key.INVALID_COLLECTION, ResponseMessage.Message.INVALID_COLLECTION),
   csvRowsExceeds(ResponseMessage.Key.CSV_ROWS_EXCEEDS, ResponseMessage.Message.CSV_ROWS_EXCEEDS),
   invalidTextbookName(
       ResponseMessage.Key.INVALID_TEXTBOOK_NAME, ResponseMessage.Message.INVALID_TEXTBOOK_NAME),
+  invalidCollectionName(
+          ResponseMessage.Key.INVALID_COLLECTION_NAME, ResponseMessage.Message.INVALID_COLLECTION_NAME),
   duplicateRows(ResponseMessage.Key.DUPLICATE_ROWS, ResponseMessage.Message.DUPLICATE_ROWS),
   requiredHeaderMissing(
       ResponseMessage.Key.REQUIRED_HEADER_MISSING, ResponseMessage.Message.REQUIRED_HEADER_MISSING),
   requiredFieldMissing(
       ResponseMessage.Key.REQUIRED_FIELD_MISSING, ResponseMessage.Message.REQUIRED_FIELD_MISSING),
   blankCsvData(ResponseMessage.Key.BLANK_CSV_DATA, ResponseMessage.Message.BLANK_CSV_DATA),
+  additionalHeaderFound(ResponseMessage.Key.ADDITIONAL_HEADER_FOUND, ResponseMessage.Message.ADDITIONAL_HEADER_FOUND),
+  invalidHeadersFound(ResponseMessage.Key.INVALID_HEADERS_FOUND, ResponseMessage.Message.INVALID_HEADERS_FOUND),
+
   exceedMaxChildren(
       ResponseMessage.Key.EXCEEDS_MAX_CHILDREN, ResponseMessage.Message.EXCEEDS_MAX_CHILDREN),
   textbookChildrenExist(
@@ -765,6 +771,9 @@ public enum ResponseCode {
   errorInvalidTextbookUnitId(
       ResponseMessage.Key.ERROR_INVALID_TEXTBOOK_UNIT_ID,
       ResponseMessage.Message.ERROR_INVALID_TEXTBOOK_UNIT_ID),
+  errorInvalidCollectionUnitId(
+          ResponseMessage.Key.ERROR_INVALID_COLLECTION_UNIT_ID,
+          ResponseMessage.Message.ERROR_INVALID_COLLECTION_UNIT_ID),
   invalidRequestTimeout(
       ResponseMessage.Key.INVALID_REQUEST_TIMEOUT, ResponseMessage.Message.INVALID_REQUEST_TIMEOUT),
   errorBGMSMismatch(
@@ -826,7 +835,24 @@ public enum ResponseCode {
   activityIdMismatch(ResponseMessage.Key.ACTIVITY_ID_MISSING, ResponseMessage.Message.ACTIVITY_ID_MISSING),
   activityTypeMismatch(ResponseMessage.Key.ACTIVITY_TYPE_MISSING, ResponseMessage.Message.ACTIVITY_TYPE_MISSING),
   erroCallGrooupAPI(ResponseMessage.Key.ERR_CALLING_GROUP_API, ResponseMessage.Message.ERR_CALLING_GROUP_API),
-
+  invalidHeaderOrder(ResponseMessage.Key.INVALID_HEADER_SEQ, ResponseMessage.Message.INVALID_HEADER_SEQ),
+  rowMissingDataColumn(ResponseMessage.Key.ROW_MISSING_DATA_COLUMN, ResponseMessage.Message.ROW_MISSING_DATA_COLUMN),
+  rowNum(ResponseMessage.Key.ROW_NUM, ResponseMessage.Message.ROW_NUM),
+  duplicateQRCodeEntry(ResponseMessage.Key.DUPLICATE_QR_CODE_ENTRY, ResponseMessage.Message.DUPLICATE_QR_CODE_ENTRY),
+  duplicateQRRowNum(ResponseMessage.Key.DUPLICATE_QR_ROW_NUM, ResponseMessage.Message.DUPLICATE_QR_ROW_NUM),
+  errorQRCodeEntry(ResponseMessage.Key.ERROR_QR_CODE_ENTRY, ResponseMessage.Message.ERROR_QR_CODE_ENTRY),
+  qrReqdYesQRCodeBlank(ResponseMessage.Key.QR_REQD_YES_QR_CODE_BLANK, ResponseMessage.Message.QR_REQD_YES_QR_CODE_BLANK),
+  qrReqdNoQRCodeFilled(ResponseMessage.Key.QR_REQD_NO_QR_CODE_FILLED, ResponseMessage.Message.QR_REQD_NO_QR_CODE_FILLED),
+  linkedContentsMissing(ResponseMessage.Key.LINKED_CONTENTS_DATA_MISSING, ResponseMessage.Message.LINKED_CONTENTS_DATA_MISSING),
+  csvRecordDataExceedsMaxLength(ResponseMessage.Key.CSV_RECORD_EXCEEDS_MAX_LENGTH, ResponseMessage.Message.CSV_RECORD_EXCEEDS_MAX_LENGTH),
+  csvInvalidCollectionName(ResponseMessage.Key.CSV_INVALID_COLLECTION_NAME, ResponseMessage.Message.CSV_INVALID_COLLECTION_NAME),
+  csvInvalidCollectionNodeIdentifier(ResponseMessage.Key.CSV_INVALID_COLLECTION_NODE_ID, ResponseMessage.Message.CSV_INVALID_COLLECTION_NODE_ID),
+  csvInvalidDIALCodes(ResponseMessage.Key.CSV_INVALID_DIAL_CODES, ResponseMessage.Message.CSV_INVALID_DIAL_CODES),
+  csvInvalidMappedTopics(ResponseMessage.Key.CSV_INVALID_MAPPED_TOPICS, ResponseMessage.Message.CSV_INVALID_MAPPED_TOPICS),
+  csvInvalidLinkedContents(ResponseMessage.Key.CSV_INVALID_LINKED_CONTENTS, ResponseMessage.Message.CSV_INVALID_LINKED_CONTENTS),
+  csvInvalidLinkedContentsContentTypes(ResponseMessage.Key.CSV_INVALID_LINKED_CONTENTS_CONTENT_TYPE, ResponseMessage.Message.CSV_INVALID_LINKED_CONTENTS_CONTENT_TYPE),
+  collectionChildrenExist(ResponseMessage.Key.COLLECTION_CHILDREN_EXISTS, ResponseMessage.Message.COLLECTION_CHILDREN_EXISTS),
+  collectionUpdateError(ResponseMessage.Key.COLLECTION_UPDATE_ERROR, ResponseMessage.Message.COLLECTION_UPDATE_ERROR),
   OK(200),
   CLIENT_ERROR(400),
   SERVER_ERROR(500),

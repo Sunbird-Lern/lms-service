@@ -224,7 +224,7 @@ object CollectionCSVValidator {
 
   }
 
-  def validateCSVRecordsDataAuthenticity(csvRecords: util.List[CSVRecord], collectionHierarchy: Map[String, AnyRef], request: Request) {
+  def validateCSVRecordsDataAuthenticity(csvRecords: util.List[CSVRecord], collectionHierarchy: Map[String, AnyRef], request: Request): List[Map[String, AnyRef]] = {
     // validate collection name column in CSV - START
     val invalidCollectionNameErrorMessage = csvRecords.flatMap(csvRecord => {
       csvRecord.toMap.asScala.toMap.map(colData => {
@@ -327,7 +327,7 @@ object CollectionCSVValidator {
     }).filter(msg => msg.nonEmpty).toList
 
     if (csvLinkedContentsList.nonEmpty) {
-      val returnedLinkedContentsResult = searchLinkedContents(csvLinkedContentsList, request)
+      val returnedLinkedContentsResult: List[Map[String, AnyRef]] = searchLinkedContents(csvLinkedContentsList, request)
       val returnedLinkedContentsIdentifierList = returnedLinkedContentsResult.map(_.getOrElse(JsonKey.IDENTIFIER, "")).asInstanceOf[List[String]]
 
       val invalidLinkedContentsErrorMessage = csvRecords.flatMap(csvRecord => {
@@ -354,9 +354,12 @@ object CollectionCSVValidator {
           throwClientErrorException(ResponseCode.csvInvalidLinkedContentsContentTypes, ResponseCode.csvInvalidLinkedContentsContentTypes.getErrorMessage
             + invalidContentTypeLinkedContentsList)
       }
+      logger.info(request.getRequestContext,"CollectionTOCActor --> validateCSVRecordsDataAuthenticity --> after validating Linked Contents")
+      returnedLinkedContentsResult
     }
+    else List.empty[Map[String, AnyRef]]
     // Validate Linked Contents authenticity - END
-    logger.info(request.getRequestContext,"CollectionTOCActor --> validateCSVRecordsDataAuthenticity --> after validating Linked Contents")
+
   }
 
 }

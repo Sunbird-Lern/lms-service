@@ -73,7 +73,7 @@ object CollectionCSVManager {
     }
   }
 
-  def updateCollection(collectionHierarchy: Map[String, AnyRef], csvRecords: util.List[CSVRecord], mode: String, request: Request): Response = {
+  def updateCollection(collectionHierarchy: Map[String, AnyRef], csvRecords: util.List[CSVRecord], mode: String, linkedContentsDetails: List[Map[String, AnyRef]], request: Request): Response = {
 
     val folderInfoMap = scala.collection.mutable.Map.empty[String, AnyRef]
 
@@ -107,43 +107,27 @@ object CollectionCSVManager {
         }
         else {
           val nodeInfo = {
-            if (folderData._1.equalsIgnoreCase(sortedFolderHierarchyMap.max._1)) {
+            if(folderData._1.equalsIgnoreCase(sortedFolderHierarchyMap.max._1)) {
               if(mode.equals(JsonKey.UPDATE)) {
                 val keywordsList = csvRecord.toMap.asScala.toMap.map(colData => {
-                  if (JsonKey.KEYWORDS.equalsIgnoreCase(colData._1) && colData._2.nonEmpty)
+                  if(JsonKey.KEYWORDS.equalsIgnoreCase(colData._1) && colData._2.nonEmpty)
                     colData._2.trim.split(",").toList.map(x => x.trim)
-                  else
-                    List.empty
+                  else List.empty
                 }).filter(msg => msg.nonEmpty).flatten.toList
 
                 val mappedTopicsList = csvRecord.toMap.asScala.toMap.map(colData => {
-                  if (mappedTopicsHeader.contains(colData._1) && colData._2.nonEmpty)
+                  if(mappedTopicsHeader.contains(colData._1) && colData._2.nonEmpty)
                     colData._2.trim.split(",").toList.map(x => x.trim)
-                  else
-                    List.empty
+                  else List.empty
                 }).filter(msg => msg.nonEmpty).flatten.toList
 
-                val dialCodeRequired = {
-                  if (csvRecordMap(JsonKey.QR_CODE_REQUIRED).nonEmpty && csvRecordMap(JsonKey.QR_CODE_REQUIRED).equalsIgnoreCase(JsonKey.YES)) {
-                    JsonKey.YES
-                  }
-                  else
-                    JsonKey.NO
-                }
+                val dialCodeRequired = if(csvRecordMap(JsonKey.QR_CODE_REQUIRED).nonEmpty && csvRecordMap(JsonKey.QR_CODE_REQUIRED)
+                    .equalsIgnoreCase(JsonKey.YES)) JsonKey.YES else JsonKey.NO
 
-                val dialCode = {
-                  if (csvRecordMap(JsonKey.QR_CODE).nonEmpty) {
-                    csvRecordMap(JsonKey.QR_CODE).trim
-                  }
-                  else
-                    ""
-                }
+                val dialCode = if(csvRecordMap(JsonKey.QR_CODE).nonEmpty) csvRecordMap(JsonKey.QR_CODE).trim else ""
 
                 val csvLinkedContentsList: Set[String] = csvRecord.toMap.asScala.toMap.map(colData => {
-                  if (linkedContentHdrColumnsList.contains(colData._1) && colData._2.nonEmpty)
-                    colData._2.trim.toLowerCase()
-                  else
-                    ""
+                  if(linkedContentHdrColumnsList.contains(colData._1) && colData._2.nonEmpty) colData._2.trim.toLowerCase() else ""
                 }).filter(msg => msg.nonEmpty).toSet[String]
 
                 scala.collection.mutable.Map(JsonKey.IDENTIFIER -> csvRecordMap(collectionNodeIdentifierHeader.head), JsonKey.NAME -> folderData._2,
@@ -159,8 +143,7 @@ object CollectionCSVManager {
               val childrenList = {
                 if((sortedFoldersDataKey.indexOf(folderData._1)+1) != sortedFoldersDataList.size)
                   Set(getCode(sortedFoldersDataList.get(sortedFoldersDataKey.indexOf(folderData._1)+1)))
-                else
-                  Set.empty[String]
+                else Set.empty[String]
               }
               scala.collection.mutable.Map(JsonKey.NAME -> folderData._2, JsonKey.CHILDREN -> childrenList, JsonKey.LEVEL -> folderData._1)
             }
@@ -219,11 +202,9 @@ object CollectionCSVManager {
           (createCSVMandatoryHeaderCols.head)) {
           if (mode.equals(JsonKey.UPDATE))
             nodeData._2.asInstanceOf[scala.collection.mutable.Map[String, AnyRef]](JsonKey.IDENTIFIER).toString
-          else
-            nodeData._1
+          else nodeData._1
         }
-        else
-          ""
+        else ""
       }).filter(node => node.nonEmpty).mkString("[\"","\",\"","\"]")
     }
 
@@ -239,6 +220,15 @@ object CollectionCSVManager {
       }).mkString(",")
     }
     else {
+      val linkedContentsInfoMap: Map[String, Map[String, String]] = if(linkedContentsDetails.nonEmpty) {
+        linkedContentsDetails.flatMap(linkedContentRecord => {
+          Map(linkedContentRecord(JsonKey.IDENTIFIER).toString ->
+            Map(JsonKey.IDENTIFIER -> linkedContentRecord(JsonKey.IDENTIFIER).toString,
+              JsonKey.NAME -> linkedContentRecord(JsonKey.NAME).toString,
+              JsonKey.CONTENT_TYPE -> linkedContentRecord(JsonKey.CONTENT_TYPE).toString))
+        }).toMap
+      } else Map.empty[String, Map[String, String]]
+
       folderInfoMap.map(record => {
         val nodeInfo = record._2.asInstanceOf[scala.collection.mutable.Map[String, AnyRef]]
         val childrenFolders = {
@@ -248,20 +238,15 @@ object CollectionCSVManager {
             allChildrenSet.map(childFolder => {
               if(folderInfoMap.contains(childFolder))
                 folderInfoMap(childFolder).asInstanceOf[scala.collection.mutable.Map[String,AnyRef]](JsonKey.IDENTIFIER).toString
-              else
-                childFolder
+              else childFolder
             }).mkString("[\"","\",\"","\"]")
           }
           else if(nodeInfo.contains(JsonKey.CHILDREN) &&  nodeInfo(JsonKey.CHILDREN).asInstanceOf[Set[String]].nonEmpty)
-          {
             nodeInfo(JsonKey.CHILDREN).asInstanceOf[Set[String]].map(childFolder => {
               folderInfoMap(childFolder).asInstanceOf[scala.collection.mutable.Map[String,AnyRef]](JsonKey.IDENTIFIER).toString
             }).mkString("[\"","\",\"","\"]")
-          }
           else if(nodeInfo.contains(JsonKey.LINKED_CONTENT) && nodeInfo(JsonKey.LINKED_CONTENT).asInstanceOf[Set[String]].nonEmpty)
-          {
             nodeInfo(JsonKey.LINKED_CONTENT).asInstanceOf[Set[String]].mkString("[\"","\",\"","\"]")
-          }
           else "[]"
         }
 
@@ -269,26 +254,23 @@ object CollectionCSVManager {
           .replaceAll("unitType", collectionUnitType).replaceAll("nodeName", nodeInfo("name").toString).replaceAll("childrenArray", childrenFolders)
 
         val contentsNode = {
-          if(nodeInfo.contains(JsonKey.LINKED_CONTENT) && nodeInfo(JsonKey.LINKED_CONTENT).asInstanceOf[Set[String]].nonEmpty)
+          if(nodeInfo.contains(JsonKey.LINKED_CONTENT) && nodeInfo(JsonKey.LINKED_CONTENT).asInstanceOf[Set[String]].nonEmpty && linkedContentsInfoMap.nonEmpty)
           {
-            val returnedLinkedContentsResult = searchLinkedContents(nodeInfo(JsonKey.LINKED_CONTENT).asInstanceOf[Set[String]].toList, request)
-            val LinkedContentInfo = returnedLinkedContentsResult.map(content => {
-              hierarchyChildNode.replaceAll("nodeID",content(JsonKey.IDENTIFIER).toString)
-                .replaceAll("unitType", content(JsonKey.CONTENT_TYPE).toString).replaceAll("nodeName", content(JsonKey.NAME).toString)
+            val LinkedContentInfo = nodeInfo(JsonKey.LINKED_CONTENT).asInstanceOf[Set[String]].map(contentId => {
+              val linkedContentDtls: Map[String, String] = linkedContentsInfoMap(contentId)
+              hierarchyChildNode.replaceAll("nodeID",linkedContentDtls(JsonKey.IDENTIFIER))
+                .replaceAll("unitType", linkedContentDtls(JsonKey.CONTENT_TYPE))
+                .replaceAll("nodeName", linkedContentDtls(JsonKey.NAME))
                 .replaceAll("childrenArray", "[]")
             }).mkString(",")
             LinkedContentInfo
-          }
-          else
-            ""
+          } else ""
         }
 
-        if(contentsNode.isEmpty)
-          folderNodeHierarchy
-        else
-          folderNodeHierarchy + "," + contentsNode
+        if(contentsNode.isEmpty) folderNodeHierarchy else folderNodeHierarchy + "," + contentsNode
       }).mkString(",")
     }
+
     val hierarchyMetadata = hierarchyRootNode + "," + hierarchyChildNodesMetadata
 
     val createHierarchyRequestObjString = s"""{"request": {"data": {"nodesModified": { $nodesMetadata }, "hierarchy": { $hierarchyMetadata }}}}"""
@@ -299,19 +281,14 @@ object CollectionCSVManager {
       val linkDIALCodeReqMap = folderInfoMap.map(record => {
         val nodeInfo = record._2.asInstanceOf[scala.collection.mutable.Map[String, AnyRef]]
         if(nodeInfo(JsonKey.DIALCODES) != null && nodeInfo(JsonKey.DIALCODES).toString.nonEmpty)
-        {
           Map(JsonKey.IDENTIFIER -> nodeInfo(JsonKey.IDENTIFIER).toString, JsonKey.DIALCODE -> nodeInfo(JsonKey.DIALCODES).toString)
-        }
-        else
-          Map.empty
+        else  Map.empty
       }).filter(record => record.nonEmpty).toList.asInstanceOf[List[Map[String,String]]]
 
-      if(linkDIALCodeReqMap.nonEmpty)
-        linkDIALCode(channelID, collectionID, linkDIALCodeReqMap, request)
+      if(linkDIALCodeReqMap.nonEmpty) linkDIALCode(channelID, collectionID, linkDIALCodeReqMap, request)
     }
 
     updateHierarchyResponse
-
   }
 
   def getCloudPath(request: Request, collectionHierarchy: Map[String, AnyRef]): String = {
@@ -470,10 +447,8 @@ object CollectionCSVManager {
           JsonKey.QR_CODE -> nodeDIALCode, JsonKey.DEPTH -> nodeDepth, JsonKey.INDEX -> nodeIndex, JsonKey.LINKED_CONTENT -> linkedContents)
 
         val appendedMap = {
-          if(nodeDepth == 1)
-            nodesInfoMap ++ Map(nodeDepth + "."+ nodeIndex -> nodeInfo)
-          else
-            nodesInfoMap ++ Map(parentDepthIndex + ":" + nodeDepth + "."+ nodeIndex -> nodeInfo)
+          if(nodeDepth == 1) nodesInfoMap ++ Map(nodeDepth + "."+ nodeIndex -> nodeInfo)
+          else nodesInfoMap ++ Map(parentDepthIndex + ":" + nodeDepth + "."+ nodeIndex -> nodeInfo)
         }
 
         val fetchedList = {
@@ -483,8 +458,7 @@ object CollectionCSVManager {
             else
               prepareNodeInfo(collectionUnitType, record(JsonKey.CHILDREN).asInstanceOf[List[Map[String, AnyRef]]], appendedMap, parentDepthIndex + ":"
                 + nodeDepth + "."+ nodeIndex)
-          else
-            List(appendedMap)
+          else List(appendedMap)
         }
         fetchedList
       })

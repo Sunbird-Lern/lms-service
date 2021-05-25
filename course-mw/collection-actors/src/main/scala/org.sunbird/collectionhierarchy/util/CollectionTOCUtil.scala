@@ -160,10 +160,9 @@ object CollectionTOCUtil {
         put(JsonKey.REQUEST, new util.HashMap[String, AnyRef]() {
           {
             put(JsonKey.FILTERS, new util.HashMap[String, AnyRef]() {
-              {
                 put(JsonKey.IDENTIFIER, linkedContents.distinct.asJava)
-              }
             })
+            put(JsonKey.LIMIT, linkedContents.size.asInstanceOf[AnyRef])
           }
         })
       }

@@ -69,17 +69,19 @@ class CollectionTOCActor @Inject() extends BaseActor
         logger.info(request.getRequestContext,"CollectionTOCActor --> uploadTOC --> after validating CSV Records data format: "
           + (Instant.now.toEpochMilli - startTime.toEpochMilli))
 
-        if(mode.equals(JsonKey.UPDATE))
-        {
+        val linkedContentsDetails: List[Map[String, AnyRef]] = {
+          if(mode.equals(JsonKey.UPDATE)) {
           // validate the data authenticity of the input CSV records' - Mapped Topics, QR Codes, Linked Contents
           validateCSVRecordsDataAuthenticity(csvRecords, collectionHierarchy, request)
-          logger.info(request.getRequestContext,
-            "CollectionTOCActor --> uploadTOC --> after validating the data authenticity of the input CSV records' - Mapped Topics, QR Codes, Linked Contents: "
-              + (Instant.now.toEpochMilli - startTime.toEpochMilli))
+          }
+          else List.empty[Map[String, AnyRef]]
         }
+        logger.info(request.getRequestContext,
+          "CollectionTOCActor --> uploadTOC --> after validating the data authenticity of the input CSV records' - Mapped Topics, QR Codes, Linked Contents: "
+            + (Instant.now.toEpochMilli - startTime.toEpochMilli))
 
         // update the collection hierarchy
-        val updateHierarchyResponse: Response = updateCollection(collectionHierarchy, csvRecords, mode, request)
+        val updateHierarchyResponse: Response = updateCollection(collectionHierarchy, csvRecords, mode, linkedContentsDetails, request)
         val identifierData = updateHierarchyResponse.getResult.getOrElse("identifiers", Map[String,String]()).asInstanceOf[Map[String,String]].asJava
         updateHierarchyResponse.getResult.put("identifiers", identifierData)
         sender.tell(updateHierarchyResponse, self)

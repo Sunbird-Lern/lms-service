@@ -138,15 +138,17 @@ public class CourseBatchCertificateActor extends BaseActor {
   private Map<String, Object> mapESFieldsToObject(Map<String, Object> courseBatch) {
     Map<String, Map<String, Object>> certificateTemplates =
         (Map<String, Map<String, Object>>)
-            courseBatch.get(CourseJsonKey.CERTIFICATE_TEMPLATES_COLUMN);
-    certificateTemplates
-        .entrySet()
-        .stream()
-        .forEach(
-            cert_template ->
-                certificateTemplates.put(
-                    cert_template.getKey(), mapToObject(cert_template.getValue())));
-    courseBatch.put(CourseJsonKey.CERTIFICATE_TEMPLATES_COLUMN, certificateTemplates);
+            courseBatch.getOrDefault(CourseJsonKey.CERT_TEMPLATES, null);
+    if(MapUtils.isNotEmpty(certificateTemplates)){
+      certificateTemplates
+              .entrySet()
+              .stream()
+              .forEach(
+                      cert_template ->
+                              certificateTemplates.put(
+                                      cert_template.getKey(), mapToObject(cert_template.getValue())));
+      courseBatch.put(CourseJsonKey.CERTIFICATE_TEMPLATES_COLUMN, certificateTemplates);
+    }
     return courseBatch;
   }
 

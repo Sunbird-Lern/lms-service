@@ -16,6 +16,7 @@ import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.ProjectUtil.EsType;
 import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.learner.constants.CourseJsonKey;
 import org.sunbird.models.course.batch.CourseBatch;
 import scala.concurrent.Future;
 
@@ -192,6 +193,7 @@ public class CourseBatchUtil {
       if (esCourseMap.containsKey(key))
         esCourseMap.put(key, dateFormat.format(esCourseMap.get(key)));
     });
+    esCourseMap.put(CourseJsonKey.CERTIFICATE_TEMPLATES_COLUMN, courseBatch.getCertTemplates());
     return esCourseMap;
   }
 

@@ -63,20 +63,10 @@
         <appender-ref ref="customLoggerAppender"/>
     </logger>
 
-    <logger name="org.sunbird" level="DEBUG">
-        <appender-ref ref="customLoggerAppender"/>
-    </logger>
-
-    <logger name="org.sunbird" level="WARN">
-        <appender-ref ref="customLoggerAppender"/>
-    </logger>
-
-    <logger name="org.sunbird" level="ERROR">
-        <appender-ref ref="customLoggerAppender"/>
-    </logger>
-
     <logger name="play" level="INFO" />
-    <logger name="defaultLogger" level="INFO" />
+    <logger name="defaultLogger" level="INFO">
+        <appender-ref ref = "defaultLoggerAppender" />
+    </logger>
     <!-- Telemetry Loggers-->
     <logger name="TelemetryEventLogger" level="INFO" />
     <logger name="queryLogger" level="DEBUG">

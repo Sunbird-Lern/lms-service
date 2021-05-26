@@ -21,17 +21,19 @@ public class LoggerUtil {
     private String debugLevel = "DEBUG";
     private String errorLevel = "ERROR";
     private String warnLevel = "WARN";
+    private Logger defaultLogger;
     private final ObjectMapper mapper = new ObjectMapper();
 
     public LoggerUtil(Class c) {
         logger = LoggerFactory.getLogger(c);
+        defaultLogger = LoggerFactory.getLogger("defaultLogger");
     }
 
     public void info(RequestContext requestContext, String message, Map<String, Object> object, Map<String, Object> param) {
         if (requestContext != null) {
             requestContext.setLoggerLevel(infoLevel);
             logger.info(jsonMapper(requestContext, message, object, param));
-        } else logger.info(message);
+        } else defaultLogger.info(message);
     }
 
     public void info(RequestContext requestContext, String message) {
@@ -42,7 +44,7 @@ public class LoggerUtil {
         if (isDebugEnabled(requestContext)) {
             requestContext.setLoggerLevel(debugLevel);
             logger.info(jsonMapper(requestContext, message, object, param));
-        } else logger.debug(message);
+        } else defaultLogger.debug(message);
     }
 
     public void debug(RequestContext requestContext, String message) {
@@ -53,14 +55,14 @@ public class LoggerUtil {
         if (requestContext != null) {
             requestContext.setLoggerLevel(errorLevel);
             logger.error(jsonMapper(requestContext, message, object, param), e);
-        } else logger.error(message, e);
+        } else defaultLogger.error(message, e);
     }
 
     public void error(RequestContext requestContext, String message, Map<String, Object> object, Map<String, Object> param, Throwable e, Map<String, Object> telemetryInfo) {
         if (requestContext != null) {
             requestContext.setLoggerLevel(errorLevel);
             logger.error(jsonMapper(requestContext, message, object, param), e);
-        } else logger.error(message, e);
+        } else defaultLogger.error(message, e);
         telemetryProcess(requestContext, telemetryInfo, e);
     }
 
@@ -76,7 +78,7 @@ public class LoggerUtil {
         if (requestContext != null) {
             requestContext.setLoggerLevel(warnLevel);
             logger.warn((jsonMapper(requestContext, message, object, param)), e);
-        } else logger.warn(message, e);
+        } else defaultLogger.warn(message, e);
     }
 
     public void warn(RequestContext requestContext, String message, Throwable e) {

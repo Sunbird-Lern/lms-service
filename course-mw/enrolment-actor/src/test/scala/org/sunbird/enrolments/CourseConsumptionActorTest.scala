@@ -7,17 +7,17 @@ import akka.testkit.TestKit
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FlatSpec, Matchers}
 import org.sunbird.cassandra.CassandraOperation
-import org.sunbird.common.Constants
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.inf.ElasticSearchService
 import org.sunbird.common.models.response.Response
-import org.sunbird.common.models.util.{JsonKey, ProjectUtil}
 import org.sunbird.common.request.{Request, RequestContext}
 import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.dto.SearchDTO
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
+import scala.collection.JavaConverters._
+import scala.collection.JavaConversions._
 
 class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory {
     implicit val ec: ExecutionContext = ExecutionContext.global
@@ -223,14 +223,6 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
                 put("courseId", "do_123")
                 put("batchId", "0123")
                 put("contentId", "do_456")
-                put("score", new java.util.ArrayList[java.util.Map[String, Object]](){{
-                    add(new java.util.HashMap[String, AnyRef](){{
-                        put("totalMaxScore", 1.asInstanceOf[AnyRef])
-                        put("lastAttemptedOn", "2019-05-13 16:08:45:125+0530")
-                        put("totalScore", 1.asInstanceOf[AnyRef])
-                        put("attemptId", "do_123")
-                    }})
-                }})
             }})
             add(new java.util.HashMap[String, AnyRef] {{
                 put("userId", "user1")
@@ -239,8 +231,17 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
                 put("contentId", "do_789")
             }})
         }})
+        val score = new Response()
+        score.put("response", new java.util.ArrayList[java.util.Map[String, AnyRef]] {{
+            add(new java.util.HashMap[String, AnyRef] {{
+                put("agg", new java.util.HashMap[String, AnyRef] {{
+                    put("max_score:do_789", 10.asInstanceOf[AnyRef])
+                    put("score:do_789", 1.asInstanceOf[AnyRef])
+                }})
+            }})
+        }})
         (cassandraOperation.getRecords(_:RequestContext, _: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.List[String])).expects(*,*,*,*,*).returns(response)
-        (cassandraOperation.getRecordsWithLimit(_: RequestContext, _: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.List[String], _: Int)).expects(*, *, *, *, *, *).returns(response).anyNumberOfTimes()
+        (cassandraOperation.getRecordByIdentifier(_: RequestContext, _: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.List[String])).expects(*, *, *, *, *).returns(score).anyNumberOfTimes()
         val result = callActor(getStateReadRequestWithFields(), Props(new ContentConsumptionActor().setCassandraOperation(cassandraOperation, false)))
         println("result : " + result)
         assert(null!= result)

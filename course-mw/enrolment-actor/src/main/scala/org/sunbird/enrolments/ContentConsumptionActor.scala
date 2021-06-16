@@ -22,13 +22,14 @@ import org.sunbird.learner.util.Util
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     private val mapper = new ObjectMapper
     private var cassandraOperation = ServiceFactory.getInstance
     private var pushTokafkaEnabled: Boolean = true //TODO: to be removed once all are in scala
     private val consumptionDBInfo = Util.dbInfoMap.get(JsonKey.LEARNER_CONTENT_DB)
-    private val assessmentAggregatorDBInfo = Util.dbInfoMap.get(JsonKey.ASSESSMENT_AGGREGATOR_DB)
+    private val groupDBInfo = Util.dbInfoMap.get(JsonKey.GROUP_ACTIVITY_DB)
     private val enrolmentDBInfo = Util.dbInfoMap.get(JsonKey.LEARNER_COURSE_DB)
     val dateFormatter = ProjectUtil.getDateFormatter
 
@@ -314,6 +315,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         val contentIds = request.getRequest.getOrDefault(JsonKey.CONTENT_IDS, new java.util.ArrayList[String]()).asInstanceOf[java.util.List[String]]
         val fields = request.getRequest.getOrDefault(JsonKey.FIELDS, new java.util.ArrayList[String](){{ add(JsonKey.PROGRESS) }}).asInstanceOf[java.util.List[String]]
         val contentsConsumed = getContentsConsumption(userId, courseId, contentIds, batchId, request.getRequestContext)
+        val scores = if (fields.contains(JsonKey.ASSESSMENT_SCORE)) getScoreAgg(request.getRequestContext, userId, courseId, batchId) else mutable.Map[String, AnyRef]()
         val response = new Response
         if(CollectionUtils.isNotEmpty(contentsConsumed)) {
             val filteredContents = contentsConsumed.map(m => {
@@ -321,7 +323,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                 m.put(JsonKey.COLLECTION_ID, m.getOrDefault(JsonKey.COURSE_ID, ""))
                 val formattedMap = JsonUtil.convertWithDateFormat(m, classOf[util.Map[String, Object]], dateFormatter)
                 if (fields.contains(JsonKey.ASSESSMENT_SCORE))
-                    formattedMap.putAll(mapAsJavaMap(Map(JsonKey.ASSESSMENT_SCORE -> getScore(userId, courseId, m.get("contentId").asInstanceOf[String], batchId, request.getRequestContext))))
+                    formattedMap.putAll(mapAsJavaMap(Map(JsonKey.ASSESSMENT_SCORE -> mapAsJavaMap(Map("totalScore" -> scores.getOrElse(("score:" +m.get("contentId").asInstanceOf[String]),0d), "totalMaxScore" -> scores.getOrElse(("max_score:" +m.get("contentId").asInstanceOf[String]),0d))))))
                 formattedMap
             }).asJava
             response.put(JsonKey.RESPONSE, filteredContents)
@@ -337,26 +339,12 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         cassandraOperation = cassandraOps
         this
     }
-
-    def getScore(userId: String, courseId: String, contentId: String, batchId: String, requestContext: RequestContext): util.List[util.Map[String, AnyRef]] = {
-        val filters = new java.util.HashMap[String, AnyRef]() {
-            {
-                put("user_id", userId)
-                put("course_id", courseId)
-                put("batch_id", batchId)
-                put("content_id", contentId)
-            }
-        }
-        val fieldsToGet = new java.util.ArrayList[String](){{
-            add("attempt_id")
-            add("last_attempted_on")
-            add("total_max_score")
-            add("total_score")
-        }}
-        val limit = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("assessment.attempts.limit")))
-            (ProjectUtil.getConfigValue("assessment.attempts.limit")).asInstanceOf[Integer] else 25.asInstanceOf[Integer]
-        val response = cassandraOperation.getRecordsWithLimit(requestContext, assessmentAggregatorDBInfo.getKeySpace, assessmentAggregatorDBInfo.getTableName, filters, fieldsToGet, limit)
-        response.getResult.getOrDefault(JsonKey.RESPONSE, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
+    
+    def getScoreAgg(requestContext: RequestContext, userId: String, courseId: String, batchId: String) = {
+        val primaryKeys = Map[String, AnyRef]("activity_type" -> "Course", "activity_id" -> courseId, "user_id" -> userId, "context_id" -> ("cb:" + batchId)).asJava
+        val response = cassandraOperation.getRecordByIdentifier(requestContext, groupDBInfo.getKeySpace, groupDBInfo.getTableName, primaryKeys, List[String]("agg").asJava)
+        val result = response.getResult.getOrDefault(JsonKey.RESPONSE, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
+        result.asScala.head.asScala.getOrElse("agg", new java.util.HashMap[String, AnyRef]()).asInstanceOf[java.util.Map[String, AnyRef]].asScala
     }
 
     def processEnrolmentSync(request: Request, requestedBy: String, requestedFor: String): Unit = {

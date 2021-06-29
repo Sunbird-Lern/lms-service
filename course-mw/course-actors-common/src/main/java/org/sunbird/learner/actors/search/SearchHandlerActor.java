@@ -115,7 +115,7 @@ public class SearchHandlerActor extends BaseActor {
   private void populateCreatorDetails(Map<String, Object> context, Map<String, Object> result, RequestContext requestContext) {
     List<Map<String, Object>> content = (List<Map<String, Object>>) result.getOrDefault("content", new ArrayList<Map<String, Object>>());
     if (CollectionUtils.isNotEmpty(content)) {
-      List<String> creatorIds = content.stream().filter(map -> map.containsKey(CREATED_BY)).map(map -> (String) map.get(CREATED_BY)).collect(Collectors.toList());
+      List<String> creatorIds = content.stream().filter(map -> map.containsKey(CREATED_BY)).map(map -> (String) map.get(CREATED_BY)).distinct().collect(Collectors.toList());
       List<Map<String, Object>> userDetails = userOrgService.getUsersByIds(creatorIds, (String) context.getOrDefault(JsonKey.X_AUTH_TOKEN, ""));
       logger.info(requestContext, "SearchHandlerActor::populateCreatorDetails::userDetails : " + userDetails);
       if(CollectionUtils.isNotEmpty(userDetails)) {

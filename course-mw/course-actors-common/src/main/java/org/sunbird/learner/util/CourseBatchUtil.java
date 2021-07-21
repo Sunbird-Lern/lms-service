@@ -186,12 +186,16 @@ public class CourseBatchUtil {
     dateTimeFormat.setTimeZone(TimeZone.getTimeZone(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TIMEZONE)));
     Map<String, Object> esCourseMap = mapper.convertValue(courseBatch, Map.class);
     changeInDateFormat.forEach(key -> {
-      if (esCourseMap.containsKey(key))
+      if (null != esCourseMap.get(key))
         esCourseMap.put(key, dateTimeFormat.format(esCourseMap.get(key)));
+      else 
+        esCourseMap.put(key, null);
     });
     changeInSimpleDateFormat.forEach(key -> {
-      if (esCourseMap.containsKey(key))
+      if (null != esCourseMap.get(key))
         esCourseMap.put(key, dateFormat.format(esCourseMap.get(key)));
+      else 
+        esCourseMap.put(key, null);
     });
     esCourseMap.put(CourseJsonKey.CERTIFICATE_TEMPLATES_COLUMN, courseBatch.getCertTemplates());
     return esCourseMap;

@@ -73,7 +73,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                 consumption.put("status", 2.asInstanceOf[AnyRef])
                 consumption
               })
-              (contentList ++ assessmentConsumptions).asJava
+              if (CollectionUtils.isNotEmpty(contentList)) (contentList ++ assessmentConsumptions).asJava else assessmentConsumptions.asJava
             } else contentList
             logger.info(requestContext, "Final content-consumption data: " + finalContentList)
             // Update consumption first and then push the assessment events if there are any. This will help us handling failures of max attempts (for assessment content).

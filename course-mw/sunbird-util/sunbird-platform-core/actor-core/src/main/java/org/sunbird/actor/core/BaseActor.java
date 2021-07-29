@@ -31,11 +31,11 @@ public abstract class BaseActor extends UntypedAbstractActor {
     if (message instanceof Request) {
       Request request = (Request) message;
       String operation = request.getOperation();
-      logger.info(request.getRequestContext(), "BaseActor: onReceive called for operation: " + operation);
+      logger.debug(request.getRequestContext(), "BaseActor: onReceive called for operation: " + operation);
       try {
         onReceive(request);
       } catch (Exception e) {
-        logger.info(request.getRequestContext(), "BaseActor: FAILED onReceive called for operation: " + operation);
+        logger.debug(request.getRequestContext(), "BaseActor: FAILED onReceive called for operation: " + operation);
         onReceiveException(operation, e);
       }
     }

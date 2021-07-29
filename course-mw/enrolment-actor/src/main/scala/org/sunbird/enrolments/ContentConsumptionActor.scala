@@ -62,7 +62,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             val assessmentEvents = request.getRequest.getOrDefault(JsonKey.ASSESSMENT_EVENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
             val contentList = request.getRequest.getOrDefault(JsonKey.CONTENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
             val finalContentList = if(CollectionUtils.isNotEmpty(assessmentEvents)) {
-              logger.info(requestContext, "Assessment Consumption events exist. " + assessmentEvents.size())
+              logger.info(requestContext, "Assessment Consumption events exist: " + assessmentEvents.size())
               val assessmentConsumptions = assessmentEvents.map(e => {
                 InternalContentConsumption(e.get("courseId").asInstanceOf[String], e.get("batchId").asInstanceOf[String], e.get("contentId").asInstanceOf[String])
               }).filter(cc => cc.validConsumption()).map(cc => {

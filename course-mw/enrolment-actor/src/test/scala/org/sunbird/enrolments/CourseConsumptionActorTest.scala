@@ -122,6 +122,8 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
         val response = new Response()
         response.put("response", new java.util.ArrayList[java.util.Map[String, AnyRef]]())
         (cassandraOperation.getRecords(_:RequestContext, _: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.List[String])).expects(*,*,*,*,*).returns(response)
+        (cassandraOperation.batchInsertLogged(_:RequestContext, _: String, _: String, _: java.util.List[java.util.Map[String, AnyRef]])).expects(*,*,*,*)
+        (cassandraOperation.updateRecordV2(_:RequestContext, _: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.Map[String, AnyRef], _: Boolean)).expects(*,"sunbird_courses", "user_enrolments",*,*,true)
         val result = callActorForFailure(getAssementUpdateRequest(), Props(new ContentConsumptionActor().setCassandraOperation(cassandraOperation, false).setEsService(esService)))
         assert(result.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
     }

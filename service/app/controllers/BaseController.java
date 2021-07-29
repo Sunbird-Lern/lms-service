@@ -728,7 +728,7 @@ public class BaseController extends Controller {
     } else {
       OnRequestHandler.isServiceHealthy = false;
     }
-    logger.info(null,
+    logger.debug(null,
         "BaseController:setGlobalHealthFlag: isServiceHealthy = "
             + OnRequestHandler.isServiceHealthy);
   }

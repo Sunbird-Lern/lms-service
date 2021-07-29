@@ -24,7 +24,6 @@ import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 
 case class InternalContentConsumption(courseId: String, batchId: String, contentId: String) {
-  def getIdentifier() = s"$courseId:$batchId:$contentId"
   def validConsumption() = StringUtils.isNotBlank(courseId) && StringUtils.isNotBlank(batchId) && StringUtils.isNotBlank(contentId)
 }
 
@@ -66,7 +65,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
               val assessmentConsumptions = assessmentEvents.map(e => {
                 InternalContentConsumption(e.get("courseId").asInstanceOf[String], e.get("batchId").asInstanceOf[String], e.get("contentId").asInstanceOf[String])
               }).filter(cc => cc.validConsumption()).map(cc => {
-                var consumption = new util.HashMap[String, AnyRef]()
+                var consumption: util.Map[String, AnyRef] = new util.HashMap[String, AnyRef]()
                 consumption.put("courseId", cc.courseId)
                 consumption.put("batchId", cc.batchId)
                 consumption.put("contentId", cc.contentId)

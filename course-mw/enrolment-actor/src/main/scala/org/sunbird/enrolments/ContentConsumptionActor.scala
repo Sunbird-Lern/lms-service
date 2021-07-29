@@ -23,6 +23,11 @@ import org.sunbird.learner.util.Util
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 
+case class InternalContentConsumption(courseId: String, batchId: String, contentId: String) {
+  def getIdentifier() = s"$courseId:$batchId:$contentId"
+  def validConsumption() = StringUtils.isNotBlank(courseId) && StringUtils.isNotBlank(batchId) && StringUtils.isNotBlank(contentId)
+}
+
 class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     private val mapper = new ObjectMapper
     private var cassandraOperation = ServiceFactory.getInstance
@@ -55,10 +60,18 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         } else {
             val requestContext = request.getRequestContext
             val assessmentEvents = request.getRequest.getOrDefault(JsonKey.ASSESSMENT_EVENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
-            val assessmentResponse = processAssessments(assessmentEvents, requestContext, requestBy, requestedFor)
             val contentList = request.getRequest.getOrDefault(JsonKey.CONTENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
-            // TODO: create and set contentList too...
-            val contentConsumptionResponse = processContents(contentList, requestContext, requestBy, requestedFor)
+            val finalContentList = if(CollectionUtils.isNotEmpty(assessmentEvents)) {
+              logger.info(requestContext, "Assessment Consumption events exist. " + assessmentEvents.size())
+              val assessmentConsumptions = assessmentEvents.map(e => {
+                InternalContentConsumption(e.get("courseId").asInstanceOf[String], e.get("batchId").asInstanceOf[String], e.get("contentId").asInstanceOf[String])
+              }).filter(cc => cc.validConsumption()).map(cc => Map[String, AnyRef]("courseId" -> cc.courseId, "batchId" -> cc.batchId,"contentId" -> cc.contentId, "status" -> 2.asInstanceOf[Integer]).asJava).asJava
+              (contentList ++ assessmentConsumptions).asJava
+            } else contentList
+            logger.info(requestContext, "Final content-consumption data: " + finalContentList)
+            // Update consumption first and then push the assessment events if there are any. This will help us handling failures of max attempts (for assessment content).
+            val contentConsumptionResponse = processContents(finalContentList, requestContext, requestBy, requestedFor)
+            val assessmentResponse = processAssessments(assessmentEvents, requestContext, requestBy, requestedFor)
             val finalResponse = assessmentResponse.getOrElse(new Response())
             finalResponse.putAll(contentConsumptionResponse.getOrElse(new Response()).getResult)
             sender().tell(finalResponse, self)
@@ -130,7 +143,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                         if(validUserIds.contains(userId)) {
                             val courseId = if (entry._2.head.containsKey(JsonKey.COURSE_ID)) entry._2.head.getOrDefault(JsonKey.COURSE_ID, "").asInstanceOf[String] else entry._2.head.getOrDefault(JsonKey.COLLECTION_ID, "").asInstanceOf[String]
                             if(entry._2.head.containsKey(JsonKey.COLLECTION_ID)) entry._2.head.remove(JsonKey.COLLECTION_ID)
-                            val contentIds = entry._2.map(e => e.getOrDefault(JsonKey.CONTENT_ID, "").asInstanceOf[String]).asJava
+                            val contentIds = entry._2.map(e => e.getOrDefault(JsonKey.CONTENT_ID, "").asInstanceOf[String]).distinct.asJava
                             val existingContents = getContentsConsumption(userId, courseId, contentIds, batchId, requestContext).groupBy(x => x.get("contentId").asInstanceOf[String]).map(e => e._1 -> e._2.toList.head).toMap
                             val contents:List[java.util.Map[String, AnyRef]] = entry._2.toList.map(inputContent => {
                                 val existingContent = existingContents.getOrElse(inputContent.get("contentId").asInstanceOf[String], new java.util.HashMap[String, AnyRef])

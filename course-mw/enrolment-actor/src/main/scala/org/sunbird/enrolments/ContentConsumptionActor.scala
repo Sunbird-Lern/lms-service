@@ -65,7 +65,14 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
               logger.info(requestContext, "Assessment Consumption events exist. " + assessmentEvents.size())
               val assessmentConsumptions = assessmentEvents.map(e => {
                 InternalContentConsumption(e.get("courseId").asInstanceOf[String], e.get("batchId").asInstanceOf[String], e.get("contentId").asInstanceOf[String])
-              }).filter(cc => cc.validConsumption()).map(cc => Map[String, AnyRef]("courseId" -> cc.courseId, "batchId" -> cc.batchId,"contentId" -> cc.contentId, "status" -> 2.asInstanceOf[Integer]).asJava).asJava
+              }).filter(cc => cc.validConsumption()).map(cc => {
+                var consumption = new util.HashMap[String, AnyRef]()
+                consumption.put("courseId", cc.courseId)
+                consumption.put("batchId", cc.batchId)
+                consumption.put("contentId", cc.contentId)
+                consumption.put("status", 2.asInstanceOf[AnyRef])
+                consumption
+              })
               (contentList ++ assessmentConsumptions).asJava
             } else contentList
             logger.info(requestContext, "Final content-consumption data: " + finalContentList)

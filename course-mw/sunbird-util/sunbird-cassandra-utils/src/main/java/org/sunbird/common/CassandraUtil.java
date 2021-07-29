@@ -85,7 +85,7 @@ public final class CassandraUtil {
               .forEach(entry -> rowMap.put(entry.getKey(), row.getObject(entry.getValue())));
           responseList.add(rowMap);
         });
-    logger.info(null, responseList.toString());
+    logger.info(null, "Total rows fetched from cassandra: " + responseList.size());
     response.put(Constants.RESPONSE, responseList);
     return response;
   }

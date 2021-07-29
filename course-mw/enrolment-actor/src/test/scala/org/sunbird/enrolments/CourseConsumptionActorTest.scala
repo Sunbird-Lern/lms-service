@@ -115,10 +115,15 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
         assert(ResponseCode.CLIENT_ERROR.getResponseCode == result.getResponseCode)
     }
 
-    "update AssementScore " should "return success on updating the progress" in {
+    "update AssessmentScore" should "return success on updating the progress" in {
         val cassandraOperation = mock[CassandraOperation]
         val esService = mock[ElasticSearchService]
-        ((requestContext: RequestContext, searchDTO: _root_.org.sunbird.dto.SearchDTO, index: _root_.scala.Predef.String) => esService.search(requestContext, searchDTO, index)).expects(*,*,*).returns(concurrent.Future{validBatchData()})
+        ((requestContext: RequestContext, searchDTO: _root_.org.sunbird.dto.SearchDTO, index: _root_.scala.Predef.String) => esService.search(requestContext, searchDTO, index)).expects(*,*,*).returns(concurrent.Future{validBatchData()}).anyNumberOfTimes()
+        val response = new Response()
+        response.put("response", new java.util.ArrayList[java.util.Map[String, AnyRef]]())
+        (cassandraOperation.getRecords(_:RequestContext, _: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.List[String])).expects(*,*,*,*,*).returns(response)
+        (cassandraOperation.batchInsertLogged(_:RequestContext, _: String, _: String, _: java.util.List[java.util.Map[String, AnyRef]])).expects(*,*,*,*)
+        (cassandraOperation.updateRecordV2(_:RequestContext, _: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.Map[String, AnyRef], _: Boolean)).expects(*,"sunbird_courses", "user_enrolments",*,*,true)
         val result = callActorForFailure(getAssementUpdateRequest(), Props(new ContentConsumptionActor().setCassandraOperation(cassandraOperation, false).setEsService(esService)))
         assert(result.getResponseCode == ResponseCode.CLIENT_ERROR.getResponseCode)
     }

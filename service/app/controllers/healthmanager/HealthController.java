@@ -62,7 +62,7 @@ public class HealthController extends BaseController {
    * @return CompletionStage<Result>
    */
   public CompletionStage<Result> getServiceHealth(Http.Request httpRequest) {
-   logger.info(null, "Call to get play service health for service.");
+   logger.debug(null, "Call to get play service health for service.");
     Map<String, Object> finalResponseMap = new HashMap<>();
     List<Map<String, Object>> responseList = new ArrayList<>();
     responseList.add(ProjectUtil.createCheckResponse(JsonKey.LEARNER_SERVICE, false, null));

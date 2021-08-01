@@ -85,12 +85,12 @@ public class LearnerController extends BaseController {
       CompletionStage<Result> result = actorResponseHandler(contentConsumptionActor, reqObj, timeout, null, httpRequest);
       return result.thenApply(r -> {
         int status =  r.status();
-        logger.info(null,"UpdateContentState Request: " + requestData.asText() + " :: ResponseStatus: " + status);
+        logger.info(null,"UpdateContentState Request: " + requestData.toString() + " :: ResponseStatus: " + status);
         return r;
       });
     } catch (Exception e) {
         Result errResult = createCommonExceptionResponse(e, httpRequest);
-        logger.info(null,"UpdateContentState Request: " + requestData.asText() + " :: ResponseStatus: 500" +  "ErrMessage: " + e.getMessage() );
+        logger.info(null,"UpdateContentState Request: " + requestData.toString() + " :: ResponseStatus: 500" +  "ErrMessage: " + e.getMessage() );
         return CompletableFuture.completedFuture(errResult);
     }
   }

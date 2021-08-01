@@ -61,9 +61,8 @@ public class LearnerController extends BaseController {
    * @return Result
    */
   public CompletionStage<Result> updateContentState(Http.Request httpRequest) {
+    JsonNode requestData = httpRequest.body().asJson();
     try {
-      JsonNode requestData = httpRequest.body().asJson();
-      logger.info(null, " updateContentState request data", null, new HashMap<>(){{put("requestData", requestData);}});
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
       RequestValidator.validateUpdateContent(reqObj);
       reqObj = transformUserId(reqObj);
@@ -83,9 +82,16 @@ public class LearnerController extends BaseController {
       }
       innerMap.put(JsonKey.USER_ID, reqObj.getRequest().get(JsonKey.USER_ID));
       reqObj.setRequest(innerMap);
-      return actorResponseHandler(contentConsumptionActor, reqObj, timeout, null, httpRequest);
+      CompletionStage<Result> result = actorResponseHandler(contentConsumptionActor, reqObj, timeout, null, httpRequest);
+      return result.thenApply(r -> {
+        int status =  r.status();
+        logger.info(null,"UpdateContentState Request: " + requestData.toString() + " :: ResponseStatus: " + status);
+        return r;
+      });
     } catch (Exception e) {
-      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
+        Result errResult = createCommonExceptionResponse(e, httpRequest);
+        logger.info(null,"UpdateContentState Request: " + requestData.toString() + " :: ResponseStatus: 500" +  "ErrMessage: " + e.getMessage() );
+        return CompletableFuture.completedFuture(errResult);
     }
   }
 

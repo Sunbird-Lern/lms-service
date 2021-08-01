@@ -130,6 +130,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     }
 
     def processContents(contentList: java.util.List[java.util.Map[String, AnyRef]], requestContext: RequestContext, requestedBy: String, requestedFor: String): Option[Response] = {
+        println("Thread name: " + Thread.currentThread().getName)
         if(CollectionUtils.isNotEmpty(contentList)) {
             val batchContentList: Map[String, List[java.util.Map[String, AnyRef]]] = contentList.filter(event => StringUtils.isNotBlank(event.getOrDefault(JsonKey.BATCH_ID, "").asInstanceOf[String])).toList.groupBy(event => event.get(JsonKey.BATCH_ID).asInstanceOf[String])
             val batchIds = batchContentList.keySet.toList.asJava

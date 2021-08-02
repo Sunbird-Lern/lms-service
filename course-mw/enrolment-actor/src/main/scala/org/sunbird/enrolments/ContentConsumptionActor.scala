@@ -37,8 +37,6 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     val dateFormatter = ProjectUtil.getDateFormatter
 
     override def onReceive(request: Request): Unit = {
-      println("Dispatcher name in CCActor: " + this.getContext.getDispatcher)
-      println("Thread name in CCActor: " + Thread.currentThread.getName)
         Util.initializeContext(request, TelemetryEnvKey.BATCH, this.getClass.getName)
 
         dateFormatter.setTimeZone(
@@ -132,7 +130,6 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     }
 
     def processContents(contentList: java.util.List[java.util.Map[String, AnyRef]], requestContext: RequestContext, requestedBy: String, requestedFor: String): Option[Response] = {
-        println("Dispatcher name: " + this.getContext().dispatcher.toString)
         if(CollectionUtils.isNotEmpty(contentList)) {
             val batchContentList: Map[String, List[java.util.Map[String, AnyRef]]] = contentList.filter(event => StringUtils.isNotBlank(event.getOrDefault(JsonKey.BATCH_ID, "").asInstanceOf[String])).toList.groupBy(event => event.get(JsonKey.BATCH_ID).asInstanceOf[String])
             val batchIds = batchContentList.keySet.toList.asJava

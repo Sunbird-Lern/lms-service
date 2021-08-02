@@ -38,6 +38,8 @@ public class HealthActor extends BaseActor {
 
   @Override
   public void onReceive(Request message) throws Throwable {
+      System.out.println("Dispatcher name: " + this.getContext().getDispatcher());
+      System.out.println("Thread name: " + Thread.currentThread().getName());
     if (message instanceof Request) {
       try {
         Request actorMessage = message;

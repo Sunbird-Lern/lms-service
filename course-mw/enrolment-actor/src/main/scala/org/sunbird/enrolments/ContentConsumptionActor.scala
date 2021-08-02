@@ -37,6 +37,8 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     val dateFormatter = ProjectUtil.getDateFormatter
 
     override def onReceive(request: Request): Unit = {
+      println("Dispatcher name in CCActor: " + this.getContext.getDispatcher)
+      println("Thread name in CCActor: " + Thread.currentThread.getName)
         Util.initializeContext(request, TelemetryEnvKey.BATCH, this.getClass.getName)
 
         dateFormatter.setTimeZone(

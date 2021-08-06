@@ -62,6 +62,7 @@ public class LearnerController extends BaseController {
    */
   public CompletionStage<Result> updateContentState(Http.Request httpRequest) {
     JsonNode requestData = httpRequest.body().asJson();
+    String loggingHeaders =  httpRequest.attrs().getOptional(Attrs.X_LOGGING_HEADERS).orElse(null);
     try {
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
       RequestValidator.validateUpdateContent(reqObj);
@@ -83,15 +84,16 @@ public class LearnerController extends BaseController {
       innerMap.put(JsonKey.USER_ID, reqObj.getRequest().get(JsonKey.USER_ID));
       reqObj.setRequest(innerMap);
       CompletionStage<Result> result = actorResponseHandler(contentConsumptionActor, reqObj, timeout, null, httpRequest);
-      return result.thenApply(r -> {
+      return result.thenApplyAsync(r -> {
         int status =  r.status();
-        logger.info(null,"UpdateContentState Request: " + requestData.toString() + " :: ResponseStatus: " + status);
+        logger.info(null,"UpdateContentState Request: " + requestData.toString() + " :: ResponseStatus: " + status + " Headers: " + loggingHeaders);
         return r;
       });
     } catch (Exception e) {
-        Result errResult = createCommonExceptionResponse(e, httpRequest);
-        logger.info(null,"UpdateContentState Request: " + requestData.toString() + " :: ResponseStatus: 500" +  "ErrMessage: " + e.getMessage() );
-        return CompletableFuture.completedFuture(errResult);
+        return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest)).thenApplyAsync(r -> {
+            logger.info(null,"UpdateContentState Request: " + requestData.toString() + " :: ResponseStatus: " + r.status() + " Headers: " + loggingHeaders +  " ErrMessage: " + e.getMessage());
+            return r;
+        });
     }
   }
 

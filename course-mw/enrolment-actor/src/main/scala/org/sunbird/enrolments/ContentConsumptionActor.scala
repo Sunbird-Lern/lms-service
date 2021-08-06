@@ -83,6 +83,26 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             sender().tell(finalResponse, self)
         }
     }
+    def updateAssessEventUserid(data: List[java.util.Map[String, AnyRef]], requestedBy: String, requestedFor: String): Map[String, List[util.Map[String, AnyRef]]] = {
+        val primaryUserId = if(StringUtils.isNotBlank(requestedFor)) requestedFor else requestedBy
+        val updatedData: java.util.List[java.util.Map[String, AnyRef]] = data.map(assess => {
+            assess.put(JsonKey.USER_ID, primaryUserId)
+            val assessEvents = assess.getOrDefault(JsonKey.ASSESSMENT_EVENT_ID, new java.util.ArrayList[java.util.Map[String, AnyRef]])
+              .asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
+            val assessData :java.util.List[java.util.Map[String, AnyRef]]= assessEvents.map(event=> {
+                val actorEvent = event.getOrDefault(JsonKey.ASSESSMENT_ACTOR,
+                    new java.util.HashMap[String,AnyRef]).asInstanceOf[java.util.Map[String,AnyRef]]
+                if(!actorEvent.isEmpty) {
+                    actorEvent.put("id",primaryUserId)
+                    event.put("actor",actorEvent)
+                }
+                event
+            }).toList
+            assess.put("events",assessData)
+            assess
+        })
+        updatedData.toList.groupBy(d => d.get(JsonKey.USER_ID).asInstanceOf[String])
+    }
 
     def processAssessments(assessmentEvents: java.util.List[java.util.Map[String, AnyRef]], requestContext: RequestContext, requestedBy: String, requestedFor: String): Option[Response] = {
         if(CollectionUtils.isNotEmpty(assessmentEvents)) {
@@ -98,7 +118,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             batchAssessmentList.foreach(input => {
                 val batchId = input._1
                 if(!invalidBatchIds.contains(batchId) && !completedBatchIds.contains(batchId)) {
-                    val userAssessments = getDataGroupedByUserId(input._2, requestedBy, requestedFor)
+                    val userAssessments = updateAssessEventUserid(input._2, requestedBy, requestedFor)
                     userAssessments.foreach(assessments => {
                         val userId = assessments._1
                         if(validUserIds.contains(userId)){

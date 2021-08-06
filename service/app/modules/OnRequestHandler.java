@@ -267,7 +267,7 @@ public class OnRequestHandler implements ActionCreator {
     protected String getLoggingHeaders(Http.Request httpRequest) {
         try {
             Map<String, List<String>> headers = httpRequest.getHeaders().toMap();
-            Map<String, List<String>>  filteredHeaders = headers.entrySet().stream().filter(e -> clientAppHeaderKeys.contains(e.getKey().toString())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            Map<String, List<String>>  filteredHeaders = headers.entrySet().stream().filter(e -> clientAppHeaderKeys.contains(e.getKey().toLowerCase())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
             return JsonUtil.serialize(filteredHeaders);
         } catch (Exception e) {
             return "Exception in serializing headers= " + e.getMessage();

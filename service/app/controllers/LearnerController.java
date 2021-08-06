@@ -63,7 +63,10 @@ public class LearnerController extends BaseController {
   public CompletionStage<Result> updateContentState(Http.Request httpRequest) {
     JsonNode requestData = httpRequest.body().asJson();
     String loggingHeaders =  httpRequest.attrs().getOptional(Attrs.X_LOGGING_HEADERS).orElse(null);
-    try {
+    String requestedBy = httpRequest.attrs().getOptional(Attrs.USER_ID).orElse(null);
+    String requestedFor = httpRequest.attrs().getOptional(Attrs.REQUESTED_FOR).orElse(null);
+    String apiDebugLog = "UpdateContentState Request: " + requestData.toString() + " RequestedBy: " + requestedBy + " RequestedFor: " + requestedFor + " ";
+      try {
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
       RequestValidator.validateUpdateContent(reqObj);
       reqObj = transformUserId(reqObj);
@@ -71,9 +74,9 @@ public class LearnerController extends BaseController {
       reqObj.setRequestId(httpRequest.attrs().getOptional(Attrs.REQUEST_ID).orElse(null));
       reqObj.setEnv(getEnvironment());
       HashMap<String, Object> innerMap = new HashMap<>();
-      innerMap.put(JsonKey.REQUESTED_BY, httpRequest.attrs().getOptional(Attrs.USER_ID).orElse(null));
-      if (StringUtils.isNotBlank(httpRequest.attrs().getOptional(Attrs.REQUESTED_FOR).orElse(null)))
-        innerMap.put(SunbirdKey.REQUESTED_FOR, httpRequest.attrs().getOptional(Attrs.REQUESTED_FOR).orElse(null));
+      innerMap.put(JsonKey.REQUESTED_BY, requestedBy);
+      if (StringUtils.isNotBlank(requestedFor))
+        innerMap.put(SunbirdKey.REQUESTED_FOR, requestedFor);
       if(!reqObj.contains(JsonKey.CONTENTS) && !reqObj.contains(JsonKey.ASSESSMENT_EVENTS)) {
         innerMap.put(JsonKey.COURSE_ID, reqObj.getOrDefault(JsonKey.COURSE_ID, ""));
         innerMap.put(JsonKey.BATCH_ID, reqObj.getOrDefault(JsonKey.BATCH_ID, ""));
@@ -85,13 +88,12 @@ public class LearnerController extends BaseController {
       reqObj.setRequest(innerMap);
       CompletionStage<Result> result = actorResponseHandler(contentConsumptionActor, reqObj, timeout, null, httpRequest);
       return result.thenApplyAsync(r -> {
-        int status =  r.status();
-        logger.info(null,"UpdateContentState Request: " + requestData.toString() + " :: ResponseStatus: " + status + " Headers: " + loggingHeaders);
+        logger.info(null,apiDebugLog + ":: ResponseStatus: " + r.status() + " Headers: " + loggingHeaders);
         return r;
       });
     } catch (Exception e) {
         return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest)).thenApplyAsync(r -> {
-            logger.info(null,"UpdateContentState Request: " + requestData.toString() + " :: ResponseStatus: " + r.status() + " Headers: " + loggingHeaders +  " ErrMessage: " + e.getMessage());
+            logger.info(null,apiDebugLog + ":: ResponseStatus: " + r.status() + " Headers: " + loggingHeaders +  " ErrMessage: " + e.getMessage());
             return r;
         });
     }

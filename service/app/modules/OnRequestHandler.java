@@ -5,16 +5,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import controllers.BaseController;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.auth.verifier.AccessTokenValidator;
+import org.sunbird.cache.platform.Platform;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerUtil;
-import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.HeaderParam;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.common.util.JsonUtil;
-import org.sunbird.keys.SunbirdKey;
 import play.http.ActionCreator;
 import play.libs.Json;
 import play.mvc.Action;
@@ -44,7 +43,7 @@ public class OnRequestHandler implements ActionCreator {
   private final List<String> USER_UNAUTH_STATES =
       Arrays.asList(JsonKey.UNAUTHORIZED, JsonKey.ANONYMOUS);
   public LoggerUtil logger = new LoggerUtil(this.getClass());
-  private static final List<String> clientAppHeaderKeys = Arrays.asList("x-app-id", "x-device-id", "x-channel-id");
+  private static final List<String> clientAppHeaderKeys = Platform.getStringList("request_headers_logging", Arrays.asList("x-app-id", "x-device-id", "x-channel-id"));
 
 
     @Override

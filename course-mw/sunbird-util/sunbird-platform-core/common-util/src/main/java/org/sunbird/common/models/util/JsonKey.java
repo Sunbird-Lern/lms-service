@@ -79,7 +79,7 @@ public final class JsonKey {
   public static final String ASSESSMENT_STATUS = "assessmentStatus";
   public static final String ASSESSMENT_TYPE = "assessmentType";
   public static final String ATTEMPT_ID = "attemptId";
-  public static final String ASSESSMENT_EVENT_ID = "events";
+  public static final String ASSESSMENT_EVENTS_KEY = "events";
   public static final String ASSESSMENT_ACTOR = "actor";
   public static final String ATTEMPTED_COUNT = "attemptedCount";
   public static final String AUTH_TOKEN = "authToken";

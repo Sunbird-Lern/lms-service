@@ -87,9 +87,9 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         val primaryUserId = if(StringUtils.isNotBlank(requestedFor)) requestedFor else requestedBy
         val updatedData: java.util.List[java.util.Map[String, AnyRef]] = data.map(assess => {
             assess.put(JsonKey.USER_ID, primaryUserId)
-            val assessEvents = assess.getOrDefault(JsonKey.ASSESSMENT_EVENT_ID, new java.util.ArrayList[java.util.Map[String, AnyRef]])
+            val assessEvents = assess.getOrDefault(JsonKey.ASSESSMENT_EVENTS_KEY, new java.util.ArrayList[java.util.Map[String, AnyRef]])
               .asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
-            val assessData :java.util.List[java.util.Map[String, AnyRef]]= assessEvents.map(event=> {
+            val assessEventData :java.util.List[java.util.Map[String, AnyRef]]= assessEvents.map(event=> {
                 val actorEvent = event.getOrDefault(JsonKey.ASSESSMENT_ACTOR,
                     new java.util.HashMap[String,AnyRef]).asInstanceOf[java.util.Map[String,AnyRef]]
                 if(!actorEvent.isEmpty) {
@@ -98,7 +98,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                 }
                 event
             }).toList
-            assess.put("events",assessData)
+            assess.put("events",assessEventData)
             assess
         })
         updatedData.toList.groupBy(d => d.get(JsonKey.USER_ID).asInstanceOf[String])

@@ -23,6 +23,10 @@ import org.sunbird.learner.util.Util
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 
+case class InternalContentConsumption(courseId: String, batchId: String, contentId: String) {
+  def validConsumption() = StringUtils.isNotBlank(courseId) && StringUtils.isNotBlank(batchId) && StringUtils.isNotBlank(contentId)
+}
+
 class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     private val mapper = new ObjectMapper
     private var cassandraOperation = ServiceFactory.getInstance
@@ -53,17 +57,58 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         if(CollectionUtils.isEmpty(contentList) && CollectionUtils.isEmpty(assessmentEvents)) {
             processEnrolmentSync(request, requestBy, requestedFor)
         } else {
-            processAssessments(request, requestBy, requestedFor)
-            processContents(request, requestBy, requestedFor)
+            val requestContext = request.getRequestContext
+            val assessmentEvents = request.getRequest.getOrDefault(JsonKey.ASSESSMENT_EVENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
+            val contentList = request.getRequest.getOrDefault(JsonKey.CONTENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
+            val finalContentList = if(CollectionUtils.isNotEmpty(assessmentEvents)) {
+              logger.info(requestContext, "Assessment Consumption events exist: " + assessmentEvents.size())
+              val assessmentConsumptions = assessmentEvents.map(e => {
+                InternalContentConsumption(e.get("courseId").asInstanceOf[String], e.get("batchId").asInstanceOf[String], e.get("contentId").asInstanceOf[String])
+              }).filter(cc => cc.validConsumption()).map(cc => {
+                var consumption: util.Map[String, AnyRef] = new util.HashMap[String, AnyRef]()
+                consumption.put("courseId", cc.courseId)
+                consumption.put("batchId", cc.batchId)
+                consumption.put("contentId", cc.contentId)
+                consumption.put("status", 2.asInstanceOf[AnyRef])
+                consumption
+              })
+              if (CollectionUtils.isNotEmpty(contentList)) (contentList ++ assessmentConsumptions).asJava else assessmentConsumptions.asJava
+            } else contentList
+            logger.info(requestContext, "Final content-consumption data: " + finalContentList)
+            // Update consumption first and then push the assessment events if there are any. This will help us handling failures of max attempts (for assessment content).
+            val contentConsumptionResponse = processContents(finalContentList, requestContext, requestBy, requestedFor)
+            val assessmentResponse = processAssessments(assessmentEvents, requestContext, requestBy, requestedFor)
+            val finalResponse = assessmentResponse.getOrElse(new Response())
+            finalResponse.putAll(contentConsumptionResponse.getOrElse(new Response()).getResult)
+            sender().tell(finalResponse, self)
         }
     }
+    def updateAssessEventUserid(data: List[java.util.Map[String, AnyRef]], requestedBy: String, requestedFor: String): Map[String, List[util.Map[String, AnyRef]]] = {
+        val primaryUserId = if(StringUtils.isNotBlank(requestedFor)) requestedFor else requestedBy
+        val updatedData: java.util.List[java.util.Map[String, AnyRef]] = data.map(assess => {
+            assess.put(JsonKey.USER_ID, primaryUserId)
+            val assessEvents = assess.getOrDefault(JsonKey.ASSESSMENT_EVENTS_KEY, new java.util.ArrayList[java.util.Map[String, AnyRef]])
+              .asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
+            val assessEventData :java.util.List[java.util.Map[String, AnyRef]]= assessEvents.map(event=> {
+                val actorEvent = event.getOrDefault(JsonKey.ASSESSMENT_ACTOR,
+                    new java.util.HashMap[String,AnyRef]).asInstanceOf[java.util.Map[String,AnyRef]]
+                if(!actorEvent.isEmpty) {
+                    actorEvent.put("id",primaryUserId)
+                    event.put("actor",actorEvent)
+                }
+                event
+            }).toList
+            assess.put("events",assessEventData)
+            assess
+        })
+        updatedData.toList.groupBy(d => d.get(JsonKey.USER_ID).asInstanceOf[String])
+    }
 
-    def processAssessments(request: Request, requestedBy: String, requestedFor: String) = {
-        val assessmentEvents = request.getRequest.getOrDefault(JsonKey.ASSESSMENT_EVENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
+    def processAssessments(assessmentEvents: java.util.List[java.util.Map[String, AnyRef]], requestContext: RequestContext, requestedBy: String, requestedFor: String): Option[Response] = {
         if(CollectionUtils.isNotEmpty(assessmentEvents)) {
             val batchAssessmentList: Map[String, List[java.util.Map[String, AnyRef]]] = assessmentEvents.filter(event => StringUtils.isNotBlank(event.getOrDefault(JsonKey.BATCH_ID, "").asInstanceOf[String])).toList.groupBy(event => event.get(JsonKey.BATCH_ID).asInstanceOf[String])
             val batchIds = batchAssessmentList.keySet.toList.asJava
-            val batches:Map[String, List[java.util.Map[String, AnyRef]]] = getBatches(request.getRequestContext ,new java.util.ArrayList[String](batchIds), null).toList.groupBy(batch => batch.get(JsonKey.BATCH_ID).asInstanceOf[String])
+            val batches:Map[String, List[java.util.Map[String, AnyRef]]] = getBatches(requestContext ,new java.util.ArrayList[String](batchIds), null).toList.groupBy(batch => batch.get(JsonKey.BATCH_ID).asInstanceOf[String])
             val invalidBatchIds = batchAssessmentList.keySet.diff(batches.keySet).toList.asJava
             val validBatches:Map[String, List[java.util.Map[String, AnyRef]]]  = batches.filterKeys(key => batchIds.contains(key))
             val completedBatchIds = validBatches.filter(batch => 1 != batch._2.head.get(JsonKey.STATUS).asInstanceOf[Integer]).keys.toList.asJava
@@ -73,7 +118,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             batchAssessmentList.foreach(input => {
                 val batchId = input._1
                 if(!invalidBatchIds.contains(batchId) && !completedBatchIds.contains(batchId)) {
-                    val userAssessments = getDataGroupedByUserId(input._2, requestedBy, requestedFor)
+                    val userAssessments = updateAssessEventUserid(input._2, requestedBy, requestedFor)
                     userAssessments.foreach(assessments => {
                         val userId = assessments._1
                         if(validUserIds.contains(userId)){
@@ -96,20 +141,19 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                     put("invalidAssessments", invalidAssessments)
                     put("ets", System.currentTimeMillis.asInstanceOf[AnyRef])
                 }}
-                pushInvalidDataToKafka(request.getRequestContext, map, "Assessments")
+                pushInvalidDataToKafka(requestContext, map, "Assessments")
             }
             val response = new Response()
             response.putAll(responseMessage)
-            sender().tell(response, self)
-        }
+            Option(response)
+        } else None
     }
 
-    def processContents(request: Request, requestedBy: String, requestedFor: String): Unit = {
-        val contentList = request.getRequest.getOrDefault(JsonKey.CONTENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
+    def processContents(contentList: java.util.List[java.util.Map[String, AnyRef]], requestContext: RequestContext, requestedBy: String, requestedFor: String): Option[Response] = {
         if(CollectionUtils.isNotEmpty(contentList)) {
             val batchContentList: Map[String, List[java.util.Map[String, AnyRef]]] = contentList.filter(event => StringUtils.isNotBlank(event.getOrDefault(JsonKey.BATCH_ID, "").asInstanceOf[String])).toList.groupBy(event => event.get(JsonKey.BATCH_ID).asInstanceOf[String])
             val batchIds = batchContentList.keySet.toList.asJava
-            val batches:Map[String, List[java.util.Map[String, AnyRef]]] = getBatches(request.getRequestContext ,new java.util.ArrayList[String](batchIds), null).toList.groupBy(batch => batch.get(JsonKey.BATCH_ID).asInstanceOf[String])
+            val batches:Map[String, List[java.util.Map[String, AnyRef]]] = getBatches(requestContext ,new java.util.ArrayList[String](batchIds), null).toList.groupBy(batch => batch.get(JsonKey.BATCH_ID).asInstanceOf[String])
             val invalidBatchIds = batchContentList.keySet.diff(batches.keySet).toList.asJava
             val validBatches:Map[String, List[java.util.Map[String, AnyRef]]]  = batches.filterKeys(key => batchIds.contains(key))
             val completedBatchIds = validBatches.filter(batch => 1 != batch._2.head.get(JsonKey.STATUS).asInstanceOf[Integer]).keys.toList.asJava
@@ -125,21 +169,21 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                         if(validUserIds.contains(userId)) {
                             val courseId = if (entry._2.head.containsKey(JsonKey.COURSE_ID)) entry._2.head.getOrDefault(JsonKey.COURSE_ID, "").asInstanceOf[String] else entry._2.head.getOrDefault(JsonKey.COLLECTION_ID, "").asInstanceOf[String]
                             if(entry._2.head.containsKey(JsonKey.COLLECTION_ID)) entry._2.head.remove(JsonKey.COLLECTION_ID)
-                            val contentIds = entry._2.map(e => e.getOrDefault(JsonKey.CONTENT_ID, "").asInstanceOf[String]).asJava
-                            val existingContents = getContentsConsumption(userId, courseId, contentIds, batchId, request.getRequestContext).groupBy(x => x.get("contentId").asInstanceOf[String]).map(e => e._1 -> e._2.toList.head).toMap
+                            val contentIds = entry._2.map(e => e.getOrDefault(JsonKey.CONTENT_ID, "").asInstanceOf[String]).distinct.asJava
+                            val existingContents = getContentsConsumption(userId, courseId, contentIds, batchId, requestContext).groupBy(x => x.get("contentId").asInstanceOf[String]).map(e => e._1 -> e._2.toList.head).toMap
                             val contents:List[java.util.Map[String, AnyRef]] = entry._2.toList.map(inputContent => {
                                 val existingContent = existingContents.getOrElse(inputContent.get("contentId").asInstanceOf[String], new java.util.HashMap[String, AnyRef])
                                 CassandraUtil.changeCassandraColumnMapping(processContentConsumption(inputContent, existingContent, userId))
                             })
                             // First push the event to kafka and then update cassandra user_content_consumption table
-                            pushInstructionEvent(request.getRequestContext, userId, batchId, courseId, contents.asJava)
-                            cassandraOperation.batchInsertLogged(request.getRequestContext, consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, contents)
+                            pushInstructionEvent(requestContext, userId, batchId, courseId, contents.asJava)
+                            cassandraOperation.batchInsertLogged(requestContext, consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, contents)
                             val updateData = getLatestReadDetails(userId, batchId, contents)
-                            cassandraOperation.updateRecordV2(request.getRequestContext, enrolmentDBInfo.getKeySpace, enrolmentDBInfo.getTableName, updateData._1, updateData._2, true)
+                            cassandraOperation.updateRecordV2(requestContext, enrolmentDBInfo.getKeySpace, enrolmentDBInfo.getTableName, updateData._1, updateData._2, true)
                             contentIds.map(id => responseMessage.put(id,JsonKey.SUCCESS))
 
                         } else {
-                            logger.info(request.getRequestContext, "ContentConsumptionActor: addContent : User Id is invalid : " + userId)
+                            logger.info(requestContext, "ContentConsumptionActor: addContent : User Id is invalid : " + userId)
                             invalidContents.addAll(entry._2.asJava)
                         }
                     })
@@ -154,16 +198,16 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                     put("invalidContents", invalidContents)
                     put("ets", System.currentTimeMillis.asInstanceOf[AnyRef])
                 }}
-                pushInvalidDataToKafka(request.getRequestContext, map, "Contents")
+                pushInvalidDataToKafka(requestContext, map, "Contents")
             }
             val response = new Response()
             response.putAll(responseMessage)
-            sender().tell(response, self)
-        }
+            Option(response)
+        } else None
     }
 
-    def getDataGroupedByUserId(data: List[java.util.Map[String, AnyRef]], requstedBy: String, requestedFor: String) = {
-        val primaryUserId = if(StringUtils.isNotBlank(requestedFor)) requestedFor else requstedBy
+    def getDataGroupedByUserId(data: List[java.util.Map[String, AnyRef]], requestedBy: String, requestedFor: String) = {
+        val primaryUserId = if(StringUtils.isNotBlank(requestedFor)) requestedFor else requestedBy
         val updatedData: List[java.util.Map[String, AnyRef]] = data.map(f => {
             val userId = f.getOrDefault(JsonKey.USER_ID, "").asInstanceOf[String]
             if(StringUtils.isBlank(userId))

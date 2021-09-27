@@ -13,15 +13,28 @@ POST /v1/data/sync                          @controllers.search.SearchController
 DELETE /v1/cache/clear/:mapName @controllers.cache.CacheController.clearCache(mapName:String, request: play.mvc.Http.Request)
 
 # Course Management APIs
-GET      /v1/user/courses/list/:uid	    @controllers.courseenrollment.CourseEnrollmentController.getEnrolledCourses(uid:String, request: play.mvc.Http.Request)
-POST     /v2/user/courses/list	    @controllers.courseenrollment.CourseEnrollmentController.getUserEnrolledCourses(request: play.mvc.Http.Request)
-POST     /v1/course/enroll	    		@controllers.courseenrollment.CourseEnrollmentController.enrollCourse(request: play.mvc.Http.Request)
-POST     /v1/course/unenroll             @controllers.courseenrollment.CourseEnrollmentController.unenrollCourse(request: play.mvc.Http.Request)
+GET      /v1/user/courses/list/:uid	    @controllers.enrollment.CourseEnrollmentController.getEnrolledCourses(uid:String, request: play.mvc.Http.Request)
+POST     /v2/user/courses/list	    @controllers.enrollment.CourseEnrollmentController.getUserEnrolledCourses(request: play.mvc.Http.Request)
+POST     /v1/course/enroll	    		@controllers.enrollment.CourseEnrollmentController.enrollCourse(request: play.mvc.Http.Request)
+POST     /v1/course/unenroll             @controllers.enrollment.CourseEnrollmentController.unenrollCourse(request: play.mvc.Http.Request)
 POST /v1/batch/bulk/enrollment          @controllers.bulkapimanagement.BulkUploadController.batchEnrollmentBulkUpload(request: play.mvc.Http.Request)
 POST /v1/batch/bulk/unenrollment          @controllers.bulkapimanagement.BulkUploadController.batchUnEnrollmentBulkUpload(request: play.mvc.Http.Request)
 POST     /v1/content/state/read	        @controllers.LearnerController.getContentState(request: play.mvc.Http.Request)
 PATCH    /v1/user/content/state     	@controllers.LearnerController.updateContentState(request: play.mvc.Http.Request)
 PATCH    /v1/content/state/update     	@controllers.LearnerController.updateContentState(request: play.mvc.Http.Request)
+
+# Event Management APIs
+GET     /v1/user/event/list/:uid            @controllers.enrollment.CourseEnrollmentController.getEnrolledCourses(uid: String, request: play.mvc.Http.Request)
+POST    /v1/event/enroll	    		    @controllers.enrollment.CourseEnrollmentController.enrollCourse(request: play.mvc.Http.Request)
+POST    /v1/event/unenroll                  @controllers.enrollment.CourseEnrollmentController.unenrollCourse(request: play.mvc.Http.Request)
+GET     /v1/event/participants/list         @controllers.enrollment.CourseEnrollmentController.getParticipantsForFixedBatch(request: play.mvc.Http.Request)
+POST    /v1/eventset/enroll	    		    @controllers.enrollment.EventSetEnrollmentController.enroll(request: play.mvc.Http.Request)
+POST    /v1/eventset/unenroll               @controllers.enrollment.EventSetEnrollmentController.unenroll(request: play.mvc.Http.Request)
+PATCH   /v1/eventset/update                 @controllers.eventmanagement.EventSetController.update(request: play.mvc.Http.Request)
+DELETE  /v1/eventset/discard/:id            @controllers.eventmanagement.EventSetController.discard(id: String, request: play.mvc.Http.Request)
+DELETE  /v1/event/discard/:id               @controllers.eventmanagement.EventController.discard(id: String, request: play.mvc.Http.Request)
+POST    /v1/user/event/state/read           @controllers.eventmanagement.EventConsumptionController.getUserEventState(request: play.mvc.Http.Request)
+PATCH   /v1/user/event/state/update     	@controllers.eventmanagement.EventConsumptionController.updateUserEventState(request: play.mvc.Http.Request)
 
 # Upload Job Management APIs - Check with Krisha  - TODO
 GET  /v1/upload/status/:pid             @controllers.bulkapimanagement.BulkUploadController.getUploadStatus(pid:String, request: play.mvc.Http.Request)

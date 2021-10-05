@@ -219,10 +219,10 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         if(EnrolmentType.inviteOnly.getVal.equalsIgnoreCase(batchData.getEnrollmentType))
             ProjectCommonException.throwClientErrorException(ResponseCode.enrollmentTypeValidation, ResponseCode.enrollmentTypeValidation.getErrorMessage)
 
-        if((2 == batchData.getStatus) || (null != batchData.getEndDate && LocalDateTime.now().isAfter(LocalDate.parse(batchData.getEndDate.asInstanceOf[String], dateTimeFormatter).atTime(LocalTime.MAX))))
+        if((2 == batchData.getStatus) || (null != batchData.getEndDate && new Date().after(batchData.getEndDate)))
             ProjectCommonException.throwClientErrorException(ResponseCode.courseBatchAlreadyCompleted, ResponseCode.courseBatchAlreadyCompleted.getErrorMessage)
 
-        if(isEnrol && null != batchData.getEnrollmentEndDate && LocalDateTime.now().isAfter(LocalDate.parse(batchData.getEnrollmentEndDate.asInstanceOf[String], dateTimeFormatter).atTime(LocalTime.MAX)))
+        if(isEnrol && null != batchData.getEnrollmentEndDate && new Date().after(batchData.getEnrollmentEndDate))
             ProjectCommonException.throwClientErrorException(ResponseCode.courseBatchEnrollmentDateEnded, ResponseCode.courseBatchEnrollmentDateEnded.getErrorMessage)
         
         if(isEnrol && null != enrolmentData && enrolmentData.isActive) ProjectCommonException.throwClientErrorException(ResponseCode.userAlreadyEnrolledCourse, ResponseCode.userAlreadyEnrolledCourse.getErrorMessage)

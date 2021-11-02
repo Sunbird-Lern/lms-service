@@ -1,5 +1,7 @@
 package org.sunbird.learner.actors.coursebatch.dao;
 
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.request.RequestContext;
@@ -62,4 +64,12 @@ public interface CourseBatchDao {
    * @param templateId
    */
   void removeCertificateTemplateFromCourseBatch(RequestContext requestContext, String courseId, String batchId, String templateId);
+
+  /**
+   * Get all user enrolments between given date range
+   * @param requestContext
+   * @param fromDate from date
+   * @param toDate to date
+   */
+  List<Map<String, Object>> listBatchesBetweenDateRange(RequestContext requestContext, Date fromDate, Date toDate);
 }

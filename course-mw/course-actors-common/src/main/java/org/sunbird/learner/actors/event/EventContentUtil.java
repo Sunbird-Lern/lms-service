@@ -88,5 +88,14 @@ public class EventContentUtil {
         return response;
     }
 
+    public static Map<String, Object> readEvent(Request request, String eventId) throws JsonProcessingException, UnirestException {
+        Response response = getContent(request, JsonKey.IDENTIFIER, eventId, new HashMap<>(), "/event/v4/read/{identifier}");
+        if (response != null && response.getResponseCode().getResponseCode() == ResponseCode.OK.getResponseCode()) {
+            return (Map<String, Object>) response.getResult().getOrDefault(SunbirdKey.EVENT, new HashMap<String, Object>());
+        }
+        else
+            return new HashMap<>();
+    }
+
 
 }

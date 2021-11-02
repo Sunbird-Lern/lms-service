@@ -28,6 +28,8 @@ GET     /v1/user/event/list/:uid            @controllers.enrollment.CourseEnroll
 POST    /v1/event/enroll	    		    @controllers.enrollment.CourseEnrollmentController.enrollCourse(request: play.mvc.Http.Request)
 POST    /v1/event/unenroll                  @controllers.enrollment.CourseEnrollmentController.unenrollCourse(request: play.mvc.Http.Request)
 GET     /v1/event/participants/list         @controllers.enrollment.CourseEnrollmentController.getParticipantsForFixedBatch(request: play.mvc.Http.Request)
+POST    /v1/event/attendance/create	        @controllers.enrollment.CourseEnrollmentController.createAttendance(request: play.mvc.Http.Request)
+POST    /v1/event/attendance/read	        @controllers.enrollment.CourseEnrollmentController.getAttendance(request: play.mvc.Http.Request)
 POST    /v1/eventset/enroll	    		    @controllers.enrollment.EventSetEnrollmentController.enroll(request: play.mvc.Http.Request)
 POST    /v1/eventset/unenroll               @controllers.enrollment.EventSetEnrollmentController.unenroll(request: play.mvc.Http.Request)
 PATCH   /v1/eventset/update                 @controllers.eventmanagement.EventSetController.update(request: play.mvc.Http.Request)

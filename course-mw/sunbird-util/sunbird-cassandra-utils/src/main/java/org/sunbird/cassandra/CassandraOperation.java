@@ -290,4 +290,23 @@ public interface CassandraOperation {
    */
   Response batchInsertLogged(RequestContext requestContext, String keyspaceName, String tableName, List<Map<String, Object>> records);
 
+  /**
+   * Fetch records with specified columns (select all if null) for the given range of the column name and value.
+   *
+   * @param requestContext
+   * @param keyspaceName Keyspace name
+   * @param tableName Table name
+   * @param propertyName Column name
+   * @param propertyValueOne Column value
+   * @param propertyValueTwo Column value
+   * @param fields List of columns to be returned in each record
+   * @return Response consisting of fetched records
+   */
+  public Response getRecordsByRangeProperty(
+          RequestContext requestContext, String keyspaceName,
+          String tableName,
+          String propertyName,
+          Object propertyValueOne,
+          Object propertyValueTwo,
+          List<String> fields);
 }

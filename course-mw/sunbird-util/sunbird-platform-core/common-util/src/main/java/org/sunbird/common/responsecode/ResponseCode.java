@@ -832,6 +832,8 @@ public enum ResponseCode {
   activityIdMismatch(ResponseMessage.Key.ACTIVITY_ID_MISSING, ResponseMessage.Message.ACTIVITY_ID_MISSING),
   activityTypeMismatch(ResponseMessage.Key.ACTIVITY_TYPE_MISSING, ResponseMessage.Message.ACTIVITY_TYPE_MISSING),
   erroCallGrooupAPI(ResponseMessage.Key.ERR_CALLING_GROUP_API, ResponseMessage.Message.ERR_CALLING_GROUP_API),
+  onlineProviderMissing(
+          ResponseMessage.Key.ONLINE_PROVIDER_MISSING, ResponseMessage.Message.ONLINE_PROVIDER_MISSING),
 
   OK(200),
   CLIENT_ERROR(400),

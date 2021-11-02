@@ -3,6 +3,7 @@ package controllers.enrollment;
 import akka.actor.ActorRef;
 import controllers.BaseController;
 import controllers.enrollment.validator.CourseEnrollmentRequestValidator;
+import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
@@ -131,6 +132,34 @@ public class CourseEnrollmentController extends BaseController {
                     return null;
                 },
                 getAllRequestHeaders((httpRequest)),
+                httpRequest);
+    }
+
+    public CompletionStage<Result> createAttendance(Http.Request httpRequest) {
+        return handleRequest(courseEnrolmentActor, "createAttendance",
+                httpRequest.body().asJson(),
+                (request) -> {
+                    Request req = (Request) request;
+//                    Common.handleFixedBatchIdRequest(req);
+//                    new CourseEnrollmentRequestValidator().validateEnrollCourse(req);
+                    return null;
+                },
+                getAllRequestHeaders(httpRequest),
+                httpRequest);
+    }
+
+    public CompletionStage<Result> getAttendance(Http.Request httpRequest) {
+        return handleRequest(
+                courseEnrolmentActor,
+                "getAttendance",
+                httpRequest.body().asJson(),
+                (request) -> {
+                    Request req = (Request) request;
+//                    Common.handleFixedBatchIdRequest(req);
+//                    new CourseEnrollmentRequestValidator().validateEnrollCourse(req);
+                    return null;
+                },
+                getAllRequestHeaders(httpRequest),
                 httpRequest);
     }
 }

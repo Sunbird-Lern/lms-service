@@ -1068,7 +1068,16 @@ public final class JsonKey {
   public static final String USER_ID_KEY = "userid";
   public static final String OLD_CREATED_DATE = "oldCreatedDate";
   public static final String X_LOGGING_HEADERS = "X_LOGGING_HEADERS";
-
+  public static final String EVENT_ATTENDANCE_DB = "eventAttendanceDB";
+  public static final String FROM_DATE = "fromDate";
+  public static final String TO_DATE = "toDate";
+  public static final String ONLINE_PROVIDER = "onlineProvider";
+  public static final String ENROLLED_DATE_DB = "enrolled_date";
+  public static final String ENROLLED_DATE = "enrolledDate";
+  public static final String END_DATE_DB = "end_date";
+  public static final String DAY_START_TIME = " 00:00:00.000";
+  public static final String DAY_END_TIME = " 23:59:59.999";
+  public static final String FULL_NAME = "fullName";
 
   private JsonKey() {}
 }

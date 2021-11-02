@@ -1,6 +1,7 @@
 package org.sunbird.learner.actors.coursebatch.dao.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.collections.CollectionUtils;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.CassandraUtil;
 import org.sunbird.common.exception.ProjectCommonException;
@@ -16,6 +17,7 @@ import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.Util;
 import org.sunbird.models.course.batch.CourseBatch;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -119,4 +121,16 @@ public class CourseBatchDaoImpl implements CourseBatchDao {
         CourseJsonKey.CERTIFICATE_TEMPLATES_COLUMN,
         templateId);
   }
+
+  @Override
+  public List<Map<String, Object>> listBatchesBetweenDateRange(RequestContext requestContext, Date fromDate, Date toDate) {
+    Response response = cassandraOperation.getRecordsByRangeProperty(requestContext, courseBatchDb.getKeySpace(), courseBatchDb.getTableName(), JsonKey.END_DATE_DB, fromDate, toDate,null);
+    List<Map<String, Object>> courseBatchList = (List<Map<String, Object>>) response.get(JsonKey.RESPONSE);
+    if (CollectionUtils.isEmpty(courseBatchList)) {
+      return null;
+    } else {
+      return courseBatchList;
+    }
+  }
+
 }

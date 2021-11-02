@@ -11,6 +11,7 @@ import org.sunbird.common.request.RequestContext;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.actors.coursebatch.dao.UserCoursesDao;
 import org.sunbird.learner.util.Util;
+import org.sunbird.models.event.attendance.EventAttendance;
 import org.sunbird.models.user.courses.UserCourses;
 
 public class UserCoursesDaoImpl implements UserCoursesDao {
@@ -145,5 +146,23 @@ public class UserCoursesDaoImpl implements UserCoursesDao {
     } else {
       return userCoursesList;
     }
+  }
+
+  @Override
+  public List<UserCourses> read(String courseId, String batchId, RequestContext requestContext) {
+    Map<String, Object> primaryKey = new HashMap<>();
+    primaryKey.put(JsonKey.BATCH_ID, batchId);
+    primaryKey.put(JsonKey.COURSE_ID, courseId);
+    Response response = cassandraOperation.getRecordsByProperties(requestContext, KEYSPACE_NAME, TABLE_NAME, primaryKey);
+    List<Map<String, Object>> userCoursesList =
+            (List<Map<String, Object>>) response.get(JsonKey.RESPONSE);
+    if (CollectionUtils.isEmpty(userCoursesList)) {
+      return null;
+    }
+    try {
+      return userCoursesList.stream().map(el -> mapper.convertValue(el, UserCourses.class)).collect(Collectors.toList());
+    } catch (Exception e) {
+    }
+    return null;
   }
 }

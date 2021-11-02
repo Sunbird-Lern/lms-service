@@ -55,6 +55,8 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     val ttl: Int = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("user_enrolments_response_cache_ttl")))
         (ProjectUtil.getConfigValue("user_enrolments_response_cache_ttl")).toInt else 60
     val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    val dateFormatWithTime : DateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
+    val dateFormat : DateFormat = new SimpleDateFormat("yyyy-MM-dd")
     private val mapper = new ObjectMapper
 
 
@@ -440,8 +442,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
      * @return Date in java.util.Date format.
      */
     def stringToDateConverter(dateString: String): java.util.Date = {
-        val dateFormat : DateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
-        dateFormat.parse(dateString)
+        dateFormatWithTime.parse(dateString)
     }
 
     def getAttendance(request: Request): Unit = {
@@ -461,7 +462,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
                 if (null != eventAttendance) {
                     eventAttendanceMap.putAll(mapper.convertValue(eventAttendance, classOf[util.Map[String, Object]]))
                 }
-                eventAttendanceMap.put(JsonKey.ENROLLED_DATE, userCourse.getEnrolledDate)
+                eventAttendanceMap.put(JsonKey.ENROLLED_DATE, dateFormat.format(userCourse.getEnrolledDate))
                 eventAttendanceMap.put(JsonKey.STATUS, userCourse.getStatus)
                 eventAttendanceMapList.add(eventAttendanceMap)
             }

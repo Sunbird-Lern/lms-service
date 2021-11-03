@@ -451,25 +451,29 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val batchId: String = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
         val userCourses: util.List[UserCourses] = userCoursesDao.read(contentId, batchId, request.getRequestContext)
         val userIds : List[String] = userCourses.map{el => el.getUserId}.toList
+        logger.info(request.getRequestContext, "CourseEnrolmentActor::getAttendance::userIds : " + userIds)
         val userDetails : List[Map[String, Object]] = userOrgService.getPrivateUsers(userIds)
         logger.info(request.getRequestContext, "CourseEnrolmentActor::getAttendance::userDetails : " + userDetails)
         val eventAttendanceMapList = new util.ArrayList[java.util.Map[String, Any]]()
-        if (CollectionUtils.isNotEmpty(userIds)) {
-            for (userId <- userIds) {
+        if (CollectionUtils.isNotEmpty(userDetails)) {
+            for (userDetail <- userDetails) {
                 val eventAttendanceMap = new util.HashMap[String, Any]
+                // User Data
+                val userId = userDetail.get(JsonKey.USER_ID).asInstanceOf[String]
+                eventAttendanceMap.put(JsonKey.USER_ID, userId)
+                eventAttendanceMap.put(JsonKey.FULL_NAME, userDetail.getOrDefault(JsonKey.FIRST_NAME, "").asInstanceOf[String].concat(" ").concat(userDetail.getOrDefault(JsonKey.LAST_NAME, "").asInstanceOf[String]))
+                eventAttendanceMap.put(JsonKey.EMAIL, userDetail.getOrDefault(JsonKey.EMAIL, "").asInstanceOf[String])
+                // Event Attendance Data
                 val eventAttendance : EventAttendance= eventAttendanceDao.readById(contentId, batchId, userId, request.getRequestContext)
                 if (null != eventAttendance) {
                     eventAttendanceMap.putAll(mapper.convertValue(eventAttendance, classOf[util.Map[String, Object]]))
                 }
-                if (null != userDetails) {
-                    val userMetadata = userDetails.filter{(userDetail: Map[String, Object]) => userId eq userDetail.get(JsonKey.USER_ID).asInstanceOf[String]}.get(0)
-                    eventAttendanceMap.put(JsonKey.FULL_NAME, userMetadata.getOrDefault(JsonKey.FIRST_NAME, "").asInstanceOf[String].concat(" ").concat(userMetadata.getOrDefault(JsonKey.LAST_NAME, "").asInstanceOf[String]))
-                    eventAttendanceMap.put(JsonKey.EMAIL, userMetadata.getOrDefault(JsonKey.EMAIL, "").asInstanceOf[String])
+                // User Enrolment Data
+                if(userCourses.exists(userCourses => userId == userCourses.getUserId)) {
+                    val userCourse: UserCourses = userCourses.filter(userCourses => userId == userCourses.getUserId).get(0)
+                    eventAttendanceMap.put(JsonKey.ENROLLED_DATE, dateFormat.format(userCourse.getEnrolledDate))
+                    eventAttendanceMap.put(JsonKey.STATUS, userCourse.getStatus)
                 }
-                val userCourse : UserCourses = userCourses.filter(userCourses => userId == userCourses.getUserId).get(0)
-                eventAttendanceMap.put(JsonKey.USER_ID, userId)
-                eventAttendanceMap.put(JsonKey.ENROLLED_DATE, dateFormat.format(userCourse.getEnrolledDate))
-                eventAttendanceMap.put(JsonKey.STATUS, userCourse.getStatus)
                 eventAttendanceMapList.add(eventAttendanceMap)
             }
         }

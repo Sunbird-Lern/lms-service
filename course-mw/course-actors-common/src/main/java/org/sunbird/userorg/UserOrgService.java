@@ -16,4 +16,6 @@ public interface UserOrgService {
   List<Map<String, Object>> getUsers(Map<String, Object> request, String authToken);
 
   void sendEmailNotification(Map<String, Object> request, String authToken);
+
+  List<Map<String, Object>> getPrivateUsers(List<String> userIds);
 }

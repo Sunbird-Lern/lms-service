@@ -32,6 +32,7 @@ import java.text.{DateFormat, MessageFormat, SimpleDateFormat}
 import java.time.format.DateTimeFormatter
 import java.time.{LocalDate, LocalDateTime, LocalTime}
 import java.util
+import java.util.stream.Collectors
 import java.util.{ArrayList, Date, HashMap, List, Map}
 import javax.inject.{Inject, Named}
 import scala.collection.JavaConversions._
@@ -49,7 +50,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     var eventAttendanceDao: EventAttendanceDao = new EventAttendanceDaoImpl()
     val userCoursesService = new UserCoursesService
     var groupDao: GroupDaoImpl = new GroupDaoImpl()
-//    private val userOrgService = UserOrgServiceImpl.getInstance
+    private val userOrgService = UserOrgServiceImpl.getInstance
     val isCacheEnabled = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("user_enrolments_response_cache_enable")))
         (ProjectUtil.getConfigValue("user_enrolments_response_cache_enable")).toBoolean else true
     val ttl: Int = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("user_enrolments_response_cache_ttl")))
@@ -449,19 +450,24 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val contentId: String = request.get(JsonKey.CONTENT_ID).asInstanceOf[String]
         val batchId: String = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
         val userCourses: util.List[UserCourses] = userCoursesDao.read(contentId, batchId, request.getRequestContext)
+        val userIds : List[String] = userCourses.map{el => el.getUserId}.toList
+        val userDetails : List[Map[String, Object]] = userOrgService.getPrivateUsers(userIds)
+        logger.info(request.getRequestContext, "CourseEnrolmentActor::getAttendance::userDetails : " + userDetails)
         val eventAttendanceMapList = new util.ArrayList[java.util.Map[String, Any]]()
-        if (CollectionUtils.isNotEmpty(userCourses)) {
-            for (userCourse <- userCourses) {
-                val userId: String = userCourse.getUserId
-//                val userDetails : util.Map[String, AnyRef]  = userOrgService.getUserById(userId, request.getContext.getOrDefault(JsonKey.X_AUTH_TOKEN, "").asInstanceOf[String])
-                val eventAttendance : EventAttendance= eventAttendanceDao.readById(contentId, batchId, userId, request.getRequestContext)
+        if (CollectionUtils.isNotEmpty(userIds)) {
+            for (userId <- userIds) {
                 val eventAttendanceMap = new util.HashMap[String, Any]
-                eventAttendanceMap.put(JsonKey.USER_ID, userId)
-//                eventAttendanceMap.put(JsonKey.FULL_NAME, userDetails.get(JsonKey.FIRST_NAME).asInstanceOf[String].concat(userDetails.get(JsonKey.LAST_NAME).asInstanceOf[String]))
-//                eventAttendanceMap.put(JsonKey.EMAIL, userDetails.get(JsonKey.EMAIL).asInstanceOf[String])
+                val eventAttendance : EventAttendance= eventAttendanceDao.readById(contentId, batchId, userId, request.getRequestContext)
                 if (null != eventAttendance) {
                     eventAttendanceMap.putAll(mapper.convertValue(eventAttendance, classOf[util.Map[String, Object]]))
                 }
+                if (null != userDetails) {
+                    val userMetadata = userDetails.filter{(userDetail: Map[String, Object]) => userId eq userDetail.get(JsonKey.USER_ID).asInstanceOf[String]}.get(0)
+                    eventAttendanceMap.put(JsonKey.FULL_NAME, userMetadata.getOrDefault(JsonKey.FIRST_NAME, "").asInstanceOf[String].concat(" ").concat(userMetadata.getOrDefault(JsonKey.LAST_NAME, "").asInstanceOf[String]))
+                    eventAttendanceMap.put(JsonKey.EMAIL, userMetadata.getOrDefault(JsonKey.EMAIL, "").asInstanceOf[String])
+                }
+                val userCourse : UserCourses = userCourses.filter(userCourses => userId == userCourses.getUserId).get(0)
+                eventAttendanceMap.put(JsonKey.USER_ID, userId)
                 eventAttendanceMap.put(JsonKey.ENROLLED_DATE, dateFormat.format(userCourse.getEnrolledDate))
                 eventAttendanceMap.put(JsonKey.STATUS, userCourse.getStatus)
                 eventAttendanceMapList.add(eventAttendanceMap)

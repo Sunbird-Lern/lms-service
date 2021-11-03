@@ -10,35 +10,44 @@ import org.sunbird.models.event.attendance.EventAttendance;
 public interface EventAttendanceDao {
 
     /**
-     * Create event attendance.
+     * Create event attendance
      *
-     * @param requestContext
+     * @param requestContext the request context
      * @param eventAttendanceMap Event attendance information to be created
      * @return Response containing identifier of created event attendance
      */
     Response create(RequestContext requestContext, Map<String, Object> eventAttendanceMap);
 
     /**
-     * Update event attendance.
+     * Update event attendance
      *
-     * @param eventAttendanceMap Event attendance information to be updated
-     * @return Response containing status of event attendance update
+     * @param contentId the content id
+     * @param batchId the batch id
+     * @param userId the user id
+     * @param requestContext the request context
+     * @param updateAttributes Event attendance information to be updated
+     * @return The event attendance data
      */
-    Response update(RequestContext requestContext, String contentId, String batchId, String userId, Map<String, Object> eventAttendanceMap);
+    Response update(RequestContext requestContext, String contentId, String batchId, String userId, Map<String, Object> updateAttributes);
 
     /**
-     * Read event attendace for given identifier.
+     * Reads event attendance for given identifier
      *
-     * @param contentId Event identifier
-     * @return Event attendance information
+     * @param contentId the content id
+     * @param batchId the batch id
+     * @param userId the user id
+     * @param requestContext the request context
+     * @return The event attendance data
      */
     EventAttendance readById(String contentId, String batchId, String userId, RequestContext requestContext);
 
     /**
-     * Read event attendances for given identifier.
+     * Reads event attendance for given identifier
      *
-     * @param contentId Event identifier
-     * @return Course batch information
+     * @param contentId the content id
+     * @param batchId the batch id
+     * @param requestContext the request context
+     * @return The event attendance data
      */
     List<EventAttendance> readById(String contentId, String batchId, RequestContext requestContext);
 

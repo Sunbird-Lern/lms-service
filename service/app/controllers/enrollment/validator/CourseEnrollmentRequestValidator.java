@@ -60,4 +60,20 @@ public class CourseEnrollmentRequestValidator extends BaseRequestValidator {
             ResponseCode.mandatoryParamsMissing,
             JsonKey.USER_ID);
   }
+
+  /**
+   * Validates the attendance request DTO for batchId and contentId
+   *
+   * @param attendanceRequestDto
+   */
+  public void validateGetAttendance(Request attendanceRequestDto) {
+    validateParam(
+            (String) attendanceRequestDto.getRequest().get(JsonKey.BATCH_ID),
+            ResponseCode.mandatoryParamsMissing,
+            JsonKey.BATCH_ID);
+    validateParam(
+            (String) attendanceRequestDto.getRequest().get(JsonKey.CONTENT_ID),
+            ResponseCode.mandatoryParamsMissing,
+            JsonKey.CONTENT_ID);
+  }
 }

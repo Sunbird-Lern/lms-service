@@ -19,6 +19,14 @@ public interface UserCoursesDao {
 
   UserCourses read(RequestContext requestContext, String userId, String courseId, String batchId);
 
+  /**
+   * Gets user courses data
+   *
+   * @param courseId the course id
+   * @param batchId the batch id
+   * @param requestContext the request context
+   * @return List of user courses
+   */
   List<UserCourses> read(String courseId, String batchId, RequestContext requestContext);
 
   /**

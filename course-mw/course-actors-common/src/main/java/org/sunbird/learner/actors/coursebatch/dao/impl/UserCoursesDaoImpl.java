@@ -148,6 +148,14 @@ public class UserCoursesDaoImpl implements UserCoursesDao {
     }
   }
 
+  /**
+   * Gets user courses data
+   *
+   * @param courseId the course id
+   * @param batchId the batch id
+   * @param requestContext the request context
+   * @return List of user courses
+   */
   @Override
   public List<UserCourses> read(String courseId, String batchId, RequestContext requestContext) {
     Map<String, Object> primaryKey = new HashMap<>();

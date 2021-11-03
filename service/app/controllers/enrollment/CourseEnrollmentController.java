@@ -148,6 +148,11 @@ public class CourseEnrollmentController extends BaseController {
                 httpRequest);
     }
 
+    /**
+     * Gets the attendance of the users enrolled in provided event and batch
+     *
+     * @param httpRequest the http request
+     */
     public CompletionStage<Result> getAttendance(Http.Request httpRequest) {
         return handleRequest(
                 courseEnrolmentActor,
@@ -155,8 +160,7 @@ public class CourseEnrollmentController extends BaseController {
                 httpRequest.body().asJson(),
                 (request) -> {
                     Request req = (Request) request;
-//                    Common.handleFixedBatchIdRequest(req);
-//                    new CourseEnrollmentRequestValidator().validateEnrollCourse(req);
+                    new CourseEnrollmentRequestValidator().validateGetAttendance(req);
                     return null;
                 },
                 getAllRequestHeaders(httpRequest),

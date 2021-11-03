@@ -17,5 +17,11 @@ public interface UserOrgService {
 
   void sendEmailNotification(Map<String, Object> request, String authToken);
 
-  List<Map<String, Object>> getPrivateUsers(List<String> userIds);
+  /**
+   * Gets the users' data containing name, email and userId
+   *
+   * @param userIds the list of user ids
+   * @return The users' data containing name, email and userId
+   */
+  List<Map<String, Object>> getUsersByIds(List<String> userIds);
 }

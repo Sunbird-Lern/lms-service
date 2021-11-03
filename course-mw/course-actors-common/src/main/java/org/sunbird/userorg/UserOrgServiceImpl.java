@@ -242,18 +242,29 @@ public class UserOrgServiceImpl implements UserOrgService {
     });
   }
 
+  /**
+   * Gets the users' data containing name, email and userId
+   *
+   * @param userIds the list of user ids
+   * @return The users' data containing name, email and userId
+   */
   @Override
-  public List<Map<String, Object>> getPrivateUsers(List<String> userIds) {
+  public List<Map<String, Object>> getUsersByIds(List<String> userIds) {
     Map<String, Object> filterList = new HashMap<>();
     filterList.put(JsonKey.USER_ID, userIds);
     Map<String, Object> requestMap = getRequestMap(filterList);
     requestMap.put(JsonKey.FIELDS, Arrays.asList(JsonKey.USER_ID, JsonKey.FIRST_NAME, JsonKey.LAST_NAME, JsonKey.EMAIL));
     requestMap.put(JsonKey.LIMIT, 500);
-    System.out.println("requestMap ::: --- "+ requestMap);
-    return getPrivateUsersResponse(requestMap);
+    return getUsersResponse(requestMap);
   }
 
-  private List<Map<String, Object>> getPrivateUsersResponse(Map<String, Object> requestMap) {
+  /**
+   * Gets the users' data containing name, email and userId
+   *
+   * @param requestMap the request map
+   * @return The users' data containing name, email and userId
+   */
+  private List<Map<String, Object>> getUsersResponse(Map<String, Object> requestMap) {
     Map<String, String> headers = getdefaultHeaders();
     Response response = getUserOrgResponse("/private/user/v1/search", HttpMethod.POST, requestMap, headers);
     if (response != null) {

@@ -44,6 +44,20 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         val response = callActor(getEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         assert("Success".equalsIgnoreCase(response.get("response").asInstanceOf[String]))
     }
+    
+    "On invalid user enrol" should "return client error" in {
+        val request = getEnrolRequest()
+        request.getRequest.put("requestedBy", "invalid")
+        val response = callActorForFailure(request, Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
+        assert(ResponseCode.UNAUTHORIZED.getResponseCode == response.getResponseCode)
+    }
+
+    "On invalid user un-enrol" should "return client error" in {
+        val request = getUnEnrolRequest()
+        request.getRequest.put("requestedBy", "invalid")
+        val response = callActorForFailure(request, Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
+        assert(ResponseCode.UNAUTHORIZED.getResponseCode == response.getResponseCode)
+    }
 
     "On invalid course batch" should "return client error" in  {
         (courseDao.readById(_: String, _: String,_: RequestContext)).expects(*,*,*).returns(null)
@@ -249,6 +263,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
     def getEnrolRequest(): Request = {
         val request = new Request
         request.setOperation("enrol")
+        request.put("requestedBy", "user1")
         request.put("userId", "user1")
         request.put("courseId", "do_123")
         request.put("batchId", "0123")
@@ -257,6 +272,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
     def getUnEnrolRequest(): Request = {
         val request = new Request
         request.setOperation("unenrol")
+        request.put("requestedBy", "user1")
         request.put("userId", "user1")
         request.put("courseId", "do_123")
         request.put("batchId", "0123")

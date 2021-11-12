@@ -77,8 +77,6 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val courseId: String = request.get(JsonKey.COURSE_ID).asInstanceOf[String]
         val userId: String = request.get(JsonKey.USER_ID).asInstanceOf[String]
         val batchId: String = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
-        val requestedBy: String = request.get(JsonKey.REQUESTED_BY).asInstanceOf[String]
-        validateUserPermission(userId, requestedBy)
         val batchData: CourseBatch = courseBatchDao.readById( courseId, batchId, request.getRequestContext)
         val enrolmentData: UserCourses = userCoursesDao.read(request.getRequestContext, userId, courseId, batchId)
         validateEnrolment(batchData, enrolmentData, true)
@@ -96,8 +94,6 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val courseId: String = request.get(JsonKey.COURSE_ID).asInstanceOf[String]
         val userId: String = request.get(JsonKey.USER_ID).asInstanceOf[String]
         val batchId: String = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
-        val requestedBy: String = request.get(JsonKey.REQUESTED_BY).asInstanceOf[String]
-        validateUserPermission(userId, requestedBy)
         val batchData: CourseBatch = courseBatchDao.readById(courseId, batchId, request.getRequestContext)
         val enrolmentData: UserCourses = userCoursesDao.read(request.getRequestContext, userId, courseId, batchId)
         getUpdatedStatus(enrolmentData)
@@ -340,12 +336,6 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         enrolmentData.setStatus(getCompletionStatus(enrolmentData.getProgress, leafNodesCount))
     }
 
-    def validateUserPermission(userId: String, requestedBy: String) = {
-        if(!userId.contentEquals(requestedBy))
-            throw new ProjectCommonException(ResponseCode.unAuthorized.getErrorCode,
-                ResponseCode.unAuthorized.getErrorMessage,
-                ResponseCode.UNAUTHORIZED.getResponseCode)
-    }
 }
 
 

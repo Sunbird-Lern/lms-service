@@ -491,4 +491,12 @@ public class BaseRequestValidator {
           ResponseCode.CLIENT_ERROR.getResponseCode());
     }
   }
+  
+  public void validateRequestedBy(String requestedBy) {
+    if(StringUtils.isBlank(requestedBy) || JsonKey.ANONYMOUS.contentEquals(requestedBy)) {
+      throw new ProjectCommonException(ResponseCode.unAuthorized.getErrorCode(),
+              ResponseCode.unAuthorized.getErrorMessage(),
+              ResponseCode.UNAUTHORIZED.getResponseCode());
+    }
+  }
 }

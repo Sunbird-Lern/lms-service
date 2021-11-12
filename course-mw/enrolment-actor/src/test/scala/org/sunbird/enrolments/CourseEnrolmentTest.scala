@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
-
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.TestKit
 import org.codehaus.jackson.map.ObjectMapper
@@ -45,20 +44,6 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         assert("Success".equalsIgnoreCase(response.get("response").asInstanceOf[String]))
     }
     
-    "On invalid user enrol" should "return client error" in {
-        val request = getEnrolRequest()
-        request.getRequest.put("requestedBy", "invalid")
-        val response = callActorForFailure(request, Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
-        assert(ResponseCode.UNAUTHORIZED.getResponseCode == response.getResponseCode)
-    }
-
-    "On invalid user un-enrol" should "return client error" in {
-        val request = getUnEnrolRequest()
-        request.getRequest.put("requestedBy", "invalid")
-        val response = callActorForFailure(request, Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
-        assert(ResponseCode.UNAUTHORIZED.getResponseCode == response.getResponseCode)
-    }
-
     "On invalid course batch" should "return client error" in  {
         (courseDao.readById(_: String, _: String,_: RequestContext)).expects(*,*,*).returns(null)
         (userDao.read(_: RequestContext, _: String,_: String,_: String)).expects(*,*,*,*).returns(null)

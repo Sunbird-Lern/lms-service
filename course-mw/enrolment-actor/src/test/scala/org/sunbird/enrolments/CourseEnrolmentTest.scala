@@ -248,7 +248,6 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
     def getEnrolRequest(): Request = {
         val request = new Request
         request.setOperation("enrol")
-        request.put("requestedBy", "user1")
         request.put("userId", "user1")
         request.put("courseId", "do_123")
         request.put("batchId", "0123")
@@ -257,7 +256,6 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
     def getUnEnrolRequest(): Request = {
         val request = new Request
         request.setOperation("unenrol")
-        request.put("requestedBy", "user1")
         request.put("userId", "user1")
         request.put("courseId", "do_123")
         request.put("batchId", "0123")

@@ -550,7 +550,8 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     private def getAttendanceData(contentId: String, batchId: String, userId: String, requestContext: RequestContext, eventAttendanceMap: java.util.Map[String, Any]): java.util.Map[String, Any] = {
         val eventAttendance: EventAttendance = eventAttendanceDao.readById(contentId, batchId, userId, requestContext)
         if (null != eventAttendance) {
-            eventAttendanceMap.putAll(createEventAttendanceMap(eventAttendance))
+            mapper.setDateFormat(dateFormatWithTime)
+            eventAttendanceMap.putAll(mapper.convertValue(eventAttendance, classOf[util.Map[String, Object]]))
         }
         eventAttendanceMap
     }

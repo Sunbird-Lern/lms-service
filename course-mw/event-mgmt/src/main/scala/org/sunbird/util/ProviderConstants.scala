@@ -64,4 +64,5 @@ object ProviderConstants {
   val BBB_DATA = "data"
   val BBB_MODERATOR = "moderator"
   val BBB_VIEWER = "viewer"
+  val TRUE = "true"
 }

@@ -31,7 +31,7 @@ class BbbApi extends Meet {
           attendanceMap.put(JsonKey.ROLE, JsonKey.VIEWER)
       }
       val isPresenter = attendee.get(ProviderConstants.BBB_PRESENTER).asInstanceOf[String]
-      if ("true" == isPresenter) attendanceMap.put(JsonKey.ROLE, JsonKey.PRESENTER)
+      if (ProviderConstants.TRUE == isPresenter) attendanceMap.put(JsonKey.ROLE, JsonKey.PRESENTER)
       attendanceMap.put(ProviderConstants.BBB_PRESENTER, attendee.get(ProviderConstants.BBB_PRESENTER).asInstanceOf[String])
       val eventTimestamp = meetingData.get(ProviderConstants.BBB_EVENT).asInstanceOf[util.Map[String, Any]].get(ProviderConstants.BBB_TIMESTAMP).asInstanceOf[Long]
       bbbEventId match {

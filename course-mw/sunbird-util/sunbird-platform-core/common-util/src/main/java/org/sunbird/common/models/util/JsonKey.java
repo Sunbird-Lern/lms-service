@@ -1093,6 +1093,7 @@ public final class JsonKey {
   public static final String ORGANIZER = "Organizer";
   public static final String PRESENTER = "Presenter";
   public static final String VIEWER = "Viewer";
+  public static final String BBB_WEBHOOK_RESP_BODY_EVENT = "event";
 
   private JsonKey() {}
 }

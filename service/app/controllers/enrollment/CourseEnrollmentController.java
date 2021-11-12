@@ -143,7 +143,7 @@ public class CourseEnrollmentController extends BaseController {
     public CompletionStage<Result> createAttendance(String onlineProvider, Http.Request httpRequest) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         return handleRequest(courseEnrolmentActor, "createAttendance",
-                (Http.MimeTypes.FORM.equalsIgnoreCase(httpRequest.contentType().get())) ? mapper.readTree(JsonKey.START_CURLY_BRACE.concat("\"request\"").concat(JsonKey.COLON).concat(httpRequest.body().asFormUrlEncoded().get("event")[0]).concat(JsonKey.END_CURLY_BRACE)) : httpRequest.body().asJson(),
+                (Http.MimeTypes.FORM.equalsIgnoreCase(httpRequest.contentType().get())) ? mapper.readTree(JsonKey.START_CURLY_BRACE.concat("\"request\"").concat(JsonKey.COLON).concat(httpRequest.body().asFormUrlEncoded().get(JsonKey.BBB_WEBHOOK_RESP_BODY_EVENT)[0]).concat(JsonKey.END_CURLY_BRACE)) : httpRequest.body().asJson(),
                 (request) -> {
                     new CourseEnrollmentRequestValidator().validateCreateAttendance(onlineProvider);
                     return null;

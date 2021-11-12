@@ -335,7 +335,6 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         } else 0}
         enrolmentData.setStatus(getCompletionStatus(enrolmentData.getProgress, leafNodesCount))
     }
-
 }
 
 

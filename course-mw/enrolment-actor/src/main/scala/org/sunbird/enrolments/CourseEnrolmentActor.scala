@@ -2,7 +2,7 @@ package org.sunbird.enrolments
 
 import akka.actor.ActorRef
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.apache.commons.collections4.{CollectionUtils, MapUtils}
+import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang3.StringUtils
 import org.sunbird.cache.util.RedisCacheUtil
 import org.sunbird.common.exception.ProjectCommonException
@@ -22,18 +22,17 @@ import org.sunbird.models.course.batch.CourseBatch
 import org.sunbird.models.user.courses.UserCourses
 import org.sunbird.models.event.attendance.EventAttendance
 import org.sunbird.common.CassandraUtil
-import org.sunbird.learner.actors.event.EventContentUtil
 import org.sunbird.telemetry.util.TelemetryUtil
 import org.sunbird.provider.Provider
-import org.sunbird.userorg.{UserOrgService, UserOrgServiceImpl}
+import org.sunbird.userorg.UserOrgServiceImpl
 
 import java.sql.Timestamp
-import java.text.{DateFormat, MessageFormat, SimpleDateFormat}
+import java.text.{DateFormat, SimpleDateFormat}
 import java.time.format.DateTimeFormatter
-import java.time.{LocalDate, LocalDateTime, LocalTime}
+import java.time.LocalDate
 import java.util
-import java.util.stream.Collectors
-import java.util.{ArrayList, Date, HashMap, List, Map}
+import java.util.concurrent.TimeUnit
+import java.util.{Date, List, Map}
 import javax.inject.{Inject, Named}
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
@@ -383,53 +382,78 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         batch
     }
 
-    //  TODO - Have to change the flow according to the Web hooks working
+    /**
+     * Creates the attendance of the users enrolled in provided event and batch
+     *
+     * @param request the request
+     */
     def createAttendance(request: Request): Unit = {
-//        val fromDate: Date = stringToDateConverter(request.get(JsonKey.FROM_DATE).asInstanceOf[String].concat(JsonKey.DAY_START_TIME))
-//        val toDate: Date = stringToDateConverter(request.get(JsonKey.TO_DATE).asInstanceOf[String].concat(JsonKey.DAY_END_TIME))
-//        val batches: java.util.List[java.util.Map[String, AnyRef]] = courseBatchDao.listBatchesBetweenDateRange(request.getRequestContext, fromDate, toDate)
-//        if (CollectionUtils.isNotEmpty(batches)) {
-//            for (batch <- batches) {
-//              val eventId : String = batch.getOrDefault(JsonKey.COURSE_ID, "").asInstanceOf[String]
-////              val userId : String = batch.getOrDefault(JsonKey.USER_ID, "").asInstanceOf[String]
-//              val batchId : String = batch.getOrDefault(JsonKey.BATCH_ID, "").asInstanceOf[String]
-//              val event : util.Map[String, AnyRef] = EventContentUtil.readEvent(request, eventId)
-//              val onlineProvider : String = event.getOrDefault(JsonKey.ONLINE_PROVIDER, "").asInstanceOf[String]
-//              // Check Online provider and do the get meeting info call
-//              val eventMeetingInfo : util.Map[String, Any] = Provider.getEventMeetingInfo(onlineProvider, eventId)
-//              println("eventMeetingInfo ::::: ", eventMeetingInfo)
-//
-////                // foreach attendees from event meet
-////              // Set data to event attendance
-////              val eventAttendance: EventAttendance = eventAttendanceDao.readById(eventId, batchId, userId, request.getRequestContext)
-//////              val eventAttendance : EventAttendance  = new EventAttendance
-////              eventAttendance.setUserId(userId)
-////              eventAttendance.setContentId(eventId)
-////              eventAttendance.setBatchId(batchId)
-////              eventAttendance.setProvider(onlineProvider)
-////                // save attendance
-////                upsertEventAttendance(eventAttendance, (null == eventAttendance), request.getRequestContext);
-////                // update user enroll
-////                val enrolmentData: UserCourses = userCoursesDao.read(request.getRequestContext, userId, eventId, batchId)
-////                enrolmentData.setProgress(2) // 2 : Attended
-////                enrolmentData.setStatus(2) // 2 : Attended
-////                val data: java.util.Map[String, AnyRef] = createUserEnrolmentMap(userId, eventId, batchId, enrolmentData, request.getContext.getOrDefault(JsonKey.REQUEST_ID, "").asInstanceOf[String])
-////                upsertEnrollment(userId, eventId, batchId, data, (null == enrolmentData), request.getRequestContext)
-//
-//                // return success
-//            }
-//        } else new java.util.ArrayList[java.util.Map[String, AnyRef]]()
-
+        val eventAttendanceInfo: util.Map[String, Any] = Provider.getAttendanceInfo(request)
+        val eventId = eventAttendanceInfo.get(JsonKey.EVENT_ID).asInstanceOf[String]
+        val userId = eventAttendanceInfo.get(JsonKey.USER_ID).asInstanceOf[String]
+        val userCourse: UserCourses = userCoursesDao.read(eventId, request.getRequestContext, userId)
+        if (null != userCourse) {
+            val batchId = userCourse.getBatchId
+            // Set data to event attendance
+            val eventAttendanceResponse: EventAttendance = eventAttendanceDao.readById(eventId, batchId, userId, request.getRequestContext)
+            val joinedDateTimeStr = eventAttendanceInfo.get(JsonKey.JOINED_DATE_TIME).asInstanceOf[String]
+            val leftDateTimeStr = eventAttendanceInfo.get(JsonKey.LEFT_DATE_TIME).asInstanceOf[String]
+            val eventAttendance: EventAttendance = if (null != eventAttendanceResponse && null != eventAttendanceResponse.getFirstLeft) {
+                if (null != joinedDateTimeStr) eventAttendanceResponse.setLastJoined(stringToDateConverter(joinedDateTimeStr)) // Last Joined
+                if (null != leftDateTimeStr) { // Last Left
+                    val joinedDateTime = eventAttendanceResponse.getLastJoined
+                    val leftDateTime = stringToDateConverter(leftDateTimeStr)
+                    eventAttendanceResponse.setLastLeft(leftDateTime)
+                    val oldDuration = eventAttendanceResponse.getDuration
+                    val duration = leftDateTime.getTime - joinedDateTime.getTime
+                    val diffInSeconds = TimeUnit.MILLISECONDS.toSeconds(duration)
+                    eventAttendanceResponse.setDuration(java.lang.Long.sum(oldDuration, diffInSeconds))
+                }
+                eventAttendanceResponse
+            } else {
+                val eventAttendance: EventAttendance = new EventAttendance
+                eventAttendance.setUserId(userId)
+                eventAttendance.setContentId(eventId)
+                eventAttendance.setBatchId(batchId)
+                if (null != joinedDateTimeStr) { // First Joined
+                    eventAttendance.setFirstJoined(stringToDateConverter(joinedDateTimeStr))
+                    // Update user enroll in first joined
+                    val enrolmentData: UserCourses = userCoursesDao.read(request.getRequestContext, userId, eventId, batchId)
+                    val enrolmentDataMap: java.util.Map[String, AnyRef] = createUserEnrolmentMap(userId, eventId, batchId, enrolmentData, request.getContext.getOrDefault(JsonKey.REQUEST_ID, "").asInstanceOf[String])
+                    enrolmentDataMap.put(JsonKey.STATUS, ProjectUtil.ProgressStatus.COMPLETED.getValue.asInstanceOf[AnyRef])
+                    enrolmentDataMap.put(JsonKey.COURSE_PROGRESS, 2.asInstanceOf[AnyRef]) // 2 : Attended
+                    upsertEnrollment(userId, eventId, batchId, enrolmentDataMap, false, request.getRequestContext)
+                }
+                if (null != leftDateTimeStr) { // First Left
+                    val joinedDateTime = eventAttendanceResponse.getFirstJoined
+                    val leftDateTime = stringToDateConverter(leftDateTimeStr)
+                    eventAttendance.setFirstLeft(leftDateTime)
+                    val duration = leftDateTime.getTime - joinedDateTime.getTime
+                    val diffInSeconds = TimeUnit.MILLISECONDS.toSeconds(duration)
+                    eventAttendance.setDuration(diffInSeconds)
+                }
+                eventAttendance
+            }
+            eventAttendance.setProvider(eventAttendanceInfo.get(JsonKey.ONLINE_PROVIDER).asInstanceOf[String])
+            eventAttendance.setRole(eventAttendanceInfo.get(JsonKey.ROLE).asInstanceOf[String])
+            // save attendance
+            upsertEventAttendance(eventAttendance, (null == eventAttendanceResponse), request.getRequestContext)
+        }
         sender().tell(successResponse(), self)
-//        generateTelemetryAudit(userId, courseId, batchId, data, "enrol", JsonKey.CREATE, request.getContext)
-//        notifyUser(userId, batchData, JsonKey.ADD)
     }
 
-    def upsertEventAttendance(eventAttendance: EventAttendance, isNew: Boolean, requestContext: RequestContext): Unit = {
-        var eventAttendanceMap = mapper.convertValue(eventAttendance, classOf[util.Map[String, Object]])
-        println("eventAttendanceMap ::::: ", eventAttendanceMap)
+    /**
+     * Inserts or updates Event Attendance
+     *
+     * @param eventAttendance the event attendance
+     * @param isNew           is event attendace new
+     * @param requestContext  the request context
+     */
+    private def upsertEventAttendance(eventAttendance: EventAttendance, isNew: Boolean, requestContext: RequestContext): Unit = {
+        var eventAttendanceMap = createEventAttendanceMap(eventAttendance)
+        logger.info(requestContext, "CourseEnrolmentActor::createAttendance::eventAttendanceMap : " + eventAttendanceMap)
         eventAttendanceMap = CassandraUtil.changeCassandraColumnMapping(eventAttendanceMap)
-        if(isNew) {
+        if (isNew) {
             eventAttendanceDao.create(requestContext, eventAttendanceMap)
         } else {
             eventAttendanceDao.update(requestContext, eventAttendance.getContentId, eventAttendance.getBatchId, eventAttendance.getUserId, eventAttendanceMap)
@@ -437,12 +461,36 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     }
 
     /**
+     * Creates Event Attendance map from EventAttendance object
+     *
+     * @param eventAttendance the event attendance
+     * @return Event Attendance map
+     */
+    private def createEventAttendanceMap(eventAttendance: EventAttendance): java.util.Map[String, AnyRef] =
+        new java.util.HashMap[String, AnyRef]() {
+            {
+                put(JsonKey.USER_ID, eventAttendance.getUserId)
+                put(JsonKey.CONTENT_ID, eventAttendance.getContentId)
+                put(JsonKey.BATCH_ID, eventAttendance.getBatchId)
+                if (null != eventAttendance) {
+                    if (null != eventAttendance.getRole) put(JsonKey.ROLE, eventAttendance.getRole)
+                    if (null != eventAttendance.getFirstJoined) put(JsonKey.FIRST_JOINED_DATE_TIME, new Timestamp(eventAttendance.getFirstJoined.getTime))
+                    if (null != eventAttendance.getFirstLeft) put(JsonKey.FIRST_LEFT_DATE_TIME, new Timestamp(eventAttendance.getFirstLeft.getTime))
+                    if (null != eventAttendance.getLastJoined) put(JsonKey.LAST_JOINED_DATE_TIME, new Timestamp(eventAttendance.getLastJoined.getTime))
+                    if (null != eventAttendance.getLastLeft) put(JsonKey.LAST_LEFT_DATE_TIME, new Timestamp(eventAttendance.getLastLeft.getTime))
+                    if (null != eventAttendance.getDuration) put(JsonKey.DURATION, eventAttendance.getDuration)
+                    if (null != eventAttendance.getProvider) put(JsonKey.PROVIDER, eventAttendance.getProvider)
+                }
+            }
+        }
+
+    /**
      * Converts String to Date object.
      *
      * @param dateString the date in String format.
      * @return Date in java.util.Date format.
      */
-    def stringToDateConverter(dateString: String): java.util.Date = {
+    private def stringToDateConverter(dateString: String): java.util.Date = {
         dateFormatWithTime.parse(dateString)
     }
 
@@ -455,13 +503,12 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val contentId: String = request.get(JsonKey.CONTENT_ID).asInstanceOf[String]
         val batchId: String = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
         val userCourses: util.List[UserCourses] = userCoursesDao.read(contentId, batchId, request.getRequestContext)
-        val userIds : List[String] = userCourses.map{el => el.getUserId}.toList
+        val userIds: List[String] = userCourses.map { el => el.getUserId }.toList
         logger.info(request.getRequestContext, "CourseEnrolmentActor::getAttendance::userIds : " + userIds)
-        val userDetails : List[Map[String, Object]] = userOrgService.getUsersByIds(userIds)
-        logger.info(request.getRequestContext, "CourseEnrolmentActor::getAttendance::userDetails : " + userDetails)
+        val userDetails: List[Map[String, Object]] = userOrgService.getUsersByIds(userIds)
         val eventAttendanceMapList = new util.ArrayList[java.util.Map[String, Any]]()
         if (CollectionUtils.isNotEmpty(userDetails)) {
-            userDetails.foreach{userDetail =>
+            userDetails.foreach { userDetail =>
                 val eventAttendanceMap = new util.HashMap[String, Any]
                 val userId = userDetail.get(JsonKey.USER_ID).asInstanceOf[String]
                 getUserData(userDetail, eventAttendanceMap)
@@ -479,11 +526,11 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     /**
      * Gets the user data
      *
-     * @param userDetail user meta data
+     * @param userDetail         user meta data
      * @param eventAttendanceMap event attendance map
      * @return Event attendance map with the user details set
      */
-    private def getUserData(userDetail : Map[String, Object], eventAttendanceMap : java.util.Map[String, Any]) : java.util.Map[String, Any] = {
+    private def getUserData(userDetail: Map[String, Object], eventAttendanceMap: java.util.Map[String, Any]): java.util.Map[String, Any] = {
         eventAttendanceMap.put(JsonKey.USER_ID, userDetail.get(JsonKey.USER_ID).asInstanceOf[String])
         eventAttendanceMap.put(JsonKey.FULL_NAME, userDetail.getOrDefault(JsonKey.FIRST_NAME, "").asInstanceOf[String].concat(" ").concat(userDetail.getOrDefault(JsonKey.LAST_NAME, "").asInstanceOf[String]))
         eventAttendanceMap.put(JsonKey.EMAIL, userDetail.getOrDefault(JsonKey.EMAIL, "").asInstanceOf[String])
@@ -493,17 +540,17 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     /**
      * Gets the event attendance details
      *
-     * @param contentId the content id
-     * @param batchId the batch id
-     * @param userId the user id
-     * @param requestContext the request context
+     * @param contentId          the content id
+     * @param batchId            the batch id
+     * @param userId             the user id
+     * @param requestContext     the request context
      * @param eventAttendanceMap the event attendance map
      * @return The event attendance map
      */
-    private def getAttendanceData(contentId: String, batchId: String, userId: String, requestContext: RequestContext, eventAttendanceMap : java.util.Map[String, Any]) : java.util.Map[String, Any] = {
-        val eventAttendance : EventAttendance = eventAttendanceDao.readById(contentId, batchId, userId, requestContext)
+    private def getAttendanceData(contentId: String, batchId: String, userId: String, requestContext: RequestContext, eventAttendanceMap: java.util.Map[String, Any]): java.util.Map[String, Any] = {
+        val eventAttendance: EventAttendance = eventAttendanceDao.readById(contentId, batchId, userId, requestContext)
         if (null != eventAttendance) {
-            eventAttendanceMap.putAll(mapper.convertValue(eventAttendance, classOf[util.Map[String, Object]]))
+            eventAttendanceMap.putAll(createEventAttendanceMap(eventAttendance))
         }
         eventAttendanceMap
     }
@@ -511,13 +558,13 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     /**
      * Gets the user enrolment data
      *
-     * @param userId the user id
-     * @param userCourses the list of user courses
+     * @param userId             the user id
+     * @param userCourses        the list of user courses
      * @param eventAttendanceMap the event attendance map
      * @return The event attendance map
      */
-    private def getUserEnrolmentData(userId : String, userCourses : util.List[UserCourses], eventAttendanceMap : java.util.Map[String, Any]) : java.util.Map[String, Any] = {
-        if(userCourses.exists(userCourse => userId == userCourse.getUserId)) {
+    private def getUserEnrolmentData(userId: String, userCourses: util.List[UserCourses], eventAttendanceMap: java.util.Map[String, Any]): java.util.Map[String, Any] = {
+        if (userCourses.exists(userCourse => userId == userCourse.getUserId)) {
             val userCourse: UserCourses = userCourses.filter(userCourses => userId == userCourses.getUserId).get(0)
             eventAttendanceMap.put(JsonKey.ENROLLED_DATE, dateFormat.format(userCourse.getEnrolledDate))
             eventAttendanceMap.put(JsonKey.STATUS, userCourse.getStatus)

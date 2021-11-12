@@ -76,4 +76,13 @@ public class CourseEnrollmentRequestValidator extends BaseRequestValidator {
             ResponseCode.mandatoryParamsMissing,
             JsonKey.CONTENT_ID);
   }
+
+  /**
+   * Validates the param for create attendance
+   *
+   * @param onlineProvider the online provider
+   */
+  public void validateCreateAttendance(String onlineProvider) {
+    validateParam(onlineProvider, ResponseCode.mandatoryParamsMissing, JsonKey.ONLINE_PROVIDER);
+  }
 }

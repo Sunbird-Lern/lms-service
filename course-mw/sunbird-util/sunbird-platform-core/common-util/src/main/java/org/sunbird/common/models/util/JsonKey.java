@@ -1078,6 +1078,21 @@ public final class JsonKey {
   public static final String DAY_START_TIME = " 00:00:00.000";
   public static final String DAY_END_TIME = " 23:59:59.999";
   public static final String FULL_NAME = "fullName";
+  public static final String EVENT_ID = "eventId";
+  public static final String JOINED_DATE_TIME = "joinedDateTime";
+  public static final String LEFT_DATE_TIME = "leftDateTime";
+  public static final String FIRST_JOINED_DATE_TIME = "firstJoined";
+  public static final String FIRST_LEFT_DATE_TIME = "firstLeft";
+  public static final String LAST_JOINED_DATE_TIME = "lastJoined";
+  public static final String LAST_LEFT_DATE_TIME = "lastLeft";
+  public static final String START_CURLY_BRACE = "{";
+  public static final String END_CURLY_BRACE = "}";
+  public static final String COLON = ":";
+  public static final String ESCAPE_CHAR_FOR_DOUBLE_QUOTE = "\"";
+  public static final String CONTENT_TYPE_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
+  public static final String ORGANIZER = "Organizer";
+  public static final String PRESENTER = "Presenter";
+  public static final String VIEWER = "Viewer";
 
   private JsonKey() {}
 }

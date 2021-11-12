@@ -173,4 +173,22 @@ public class UserCoursesDaoImpl implements UserCoursesDao {
     }
     return null;
   }
+
+  @Override
+  public UserCourses read(String courseId, RequestContext requestContext, String userId) {
+    Map<String, Object> primaryKey = new HashMap<>();
+    primaryKey.put(JsonKey.COURSE_ID, courseId);
+    primaryKey.put(JsonKey.USER_ID, userId);
+    Response response = cassandraOperation.getRecordsByProperties(requestContext, KEYSPACE_NAME, TABLE_NAME, primaryKey);
+    List<Map<String, Object>> userCoursesList =
+            (List<Map<String, Object>>) response.get(JsonKey.RESPONSE);
+    if (CollectionUtils.isEmpty(userCoursesList)) {
+      return null;
+    }
+    try {
+      return mapper.convertValue((Map<String, Object>) userCoursesList.get(0), UserCourses.class);
+    } catch (Exception e) {
+    }
+    return null;
+  }
 }

@@ -1,9 +1,10 @@
 package controllers.enrollment;
 
 import akka.actor.ActorRef;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import controllers.BaseController;
 import controllers.enrollment.validator.CourseEnrollmentRequestValidator;
-import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
@@ -13,11 +14,7 @@ import org.sunbird.common.Common;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletionStage;
 
 public class CourseEnrollmentController extends BaseController {
@@ -27,7 +24,7 @@ public class CourseEnrollmentController extends BaseController {
   private ActorRef courseEnrolmentActor;
 
   public CompletionStage<Result> getEnrolledCourses(String uid, Http.Request httpRequest) {
-    return handleRequest(courseEnrolmentActor, "listEnrol", 
+    return handleRequest(courseEnrolmentActor, "listEnrol",
         httpRequest.body().asJson(),
         (req) -> {
           Request request = (Request) req;
@@ -135,16 +132,26 @@ public class CourseEnrollmentController extends BaseController {
                 httpRequest);
     }
 
-    public CompletionStage<Result> createAttendance(Http.Request httpRequest) {
+    /**
+     * Creates the attendance
+     *
+     * @param onlineProvider the online provider
+     * @param httpRequest    the http request
+     * @return the result
+     * @throws JsonProcessingException the json processing exception
+     */
+    public CompletionStage<Result> createAttendance(String onlineProvider, Http.Request httpRequest) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
         return handleRequest(courseEnrolmentActor, "createAttendance",
-                httpRequest.body().asJson(),
+                (Http.MimeTypes.FORM.equalsIgnoreCase(httpRequest.contentType().get())) ? mapper.readTree(JsonKey.START_CURLY_BRACE.concat("\"request\"").concat(JsonKey.COLON).concat(httpRequest.body().asFormUrlEncoded().get("event")[0]).concat(JsonKey.END_CURLY_BRACE)) : httpRequest.body().asJson(),
                 (request) -> {
-                    Request req = (Request) request;
-//                    Common.handleFixedBatchIdRequest(req);
-//                    new CourseEnrollmentRequestValidator().validateEnrollCourse(req);
+                    new CourseEnrollmentRequestValidator().validateCreateAttendance(onlineProvider);
                     return null;
                 },
+                onlineProvider,
+                JsonKey.ONLINE_PROVIDER,
                 getAllRequestHeaders(httpRequest),
+                true,
                 httpRequest);
     }
 
@@ -152,6 +159,7 @@ public class CourseEnrollmentController extends BaseController {
      * Gets the attendance of the users enrolled in provided event and batch
      *
      * @param httpRequest the http request
+     * @return the result
      */
     public CompletionStage<Result> getAttendance(Http.Request httpRequest) {
         return handleRequest(

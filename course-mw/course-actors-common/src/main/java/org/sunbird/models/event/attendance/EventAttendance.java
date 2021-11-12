@@ -20,7 +20,7 @@ public class EventAttendance implements Serializable {
     private Date lastJoined;
     private Date firstLeft;
     private Date lastLeft;
-    private Date duration;
+    private Long duration;
     private String provider;
 
     public String getUserId() {
@@ -87,11 +87,11 @@ public class EventAttendance implements Serializable {
         this.lastLeft = lastLeft;
     }
 
-    public Date getDuration() {
+    public Long getDuration() {
         return duration;
     }
 
-    public void setDuration(Date duration) {
+    public void setDuration(Long duration) {
         this.duration = duration;
     }
 

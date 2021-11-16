@@ -43,6 +43,7 @@ public class CourseEnrollmentController extends BaseController {
 
               validator.validateRequestedBy((String) request.getRequest().get(JsonKey.REQUESTED_BY));
               request.getContext().put(JsonKey.USER_ID, request.getRequest().get(JsonKey.REQUESTED_BY));
+              request.getRequest().put(JsonKey.USER_ID, request.getRequest().get(JsonKey.REQUESTED_BY));
 
               request
                   .getContext()
@@ -150,6 +151,7 @@ public class CourseEnrollmentController extends BaseController {
                             .put(JsonKey.BATCH_DETAILS, httpRequest.queryString().get(JsonKey.BATCH_DETAILS));
                     validator.validateRequestedBy((String) request.getRequest().get(JsonKey.REQUESTED_BY));
                     request.getContext().put(JsonKey.USER_ID, request.getRequest().get(JsonKey.REQUESTED_BY));
+                    request.getRequest().put(JsonKey.USER_ID, request.getRequest().get(JsonKey.REQUESTED_BY));
                     return null;
                 },
                 getAllRequestHeaders((httpRequest)),
@@ -177,6 +179,7 @@ public class CourseEnrollmentController extends BaseController {
                     .put(JsonKey.BATCH_DETAILS, httpRequest.queryString().get(JsonKey.BATCH_DETAILS));
                 validator.validateUserEnrolledCourse(request);
                 request.getContext().put(JsonKey.USER_ID, request.get(JsonKey.USER_ID));
+                request.getRequest().put(JsonKey.USER_ID, request.get(JsonKey.USER_ID));
                 return null;
             },
             getAllRequestHeaders((httpRequest)),

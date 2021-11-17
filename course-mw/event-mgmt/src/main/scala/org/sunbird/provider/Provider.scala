@@ -17,8 +17,6 @@ object Provider {
         new BbbApi()
       // Set response of other onlineProviders
     }
-    val meetingInfo = providerApiObject.getAttendanceInfo(request)
-    meetingInfo.put(JsonKey.ONLINE_PROVIDER, onlineProvider)
-    meetingInfo
+    providerApiObject.getAttendanceInfo(request)
   }
 }

@@ -2,7 +2,7 @@ package org.sunbird.enrolments
 
 import akka.actor.ActorRef
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.apache.commons.collections4.CollectionUtils
+import org.apache.commons.collections4.{CollectionUtils, MapUtils}
 import org.apache.commons.lang3.StringUtils
 import org.sunbird.cache.util.RedisCacheUtil
 import org.sunbird.common.exception.ProjectCommonException
@@ -389,55 +389,57 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
      */
     def createAttendance(request: Request): Unit = {
         val eventAttendanceInfo: util.Map[String, Any] = Provider.getAttendanceInfo(request)
-        val eventId = eventAttendanceInfo.get(JsonKey.EVENT_ID).asInstanceOf[String]
-        val userId = eventAttendanceInfo.get(JsonKey.USER_ID).asInstanceOf[String]
-        val userCourse: UserCourses = userCoursesDao.read(eventId, request.getRequestContext, userId)
-        if (null != userCourse) {
-            val batchId = userCourse.getBatchId
-            // Set data to event attendance
-            val eventAttendanceResponse: EventAttendance = eventAttendanceDao.readById(eventId, batchId, userId, request.getRequestContext)
-            val joinedDateTimeStr = eventAttendanceInfo.get(JsonKey.JOINED_DATE_TIME).asInstanceOf[String]
-            val leftDateTimeStr = eventAttendanceInfo.get(JsonKey.LEFT_DATE_TIME).asInstanceOf[String]
-            val eventAttendance: EventAttendance = if (null != eventAttendanceResponse && null != eventAttendanceResponse.getFirstLeft) {
-                if (null != joinedDateTimeStr) eventAttendanceResponse.setLastJoined(stringToDateConverter(joinedDateTimeStr)) // Last Joined
-                if (null != leftDateTimeStr) { // Last Left
-                    val joinedDateTime = eventAttendanceResponse.getLastJoined
-                    val leftDateTime = stringToDateConverter(leftDateTimeStr)
-                    eventAttendanceResponse.setLastLeft(leftDateTime)
-                    val oldDuration = eventAttendanceResponse.getDuration
-                    val duration = leftDateTime.getTime - joinedDateTime.getTime
-                    val diffInSeconds = TimeUnit.MILLISECONDS.toSeconds(duration)
-                    eventAttendanceResponse.setDuration(java.lang.Long.sum(oldDuration, diffInSeconds))
+        if (MapUtils.isNotEmpty(eventAttendanceInfo)) {
+            val eventId = eventAttendanceInfo.get(JsonKey.EVENT_ID).asInstanceOf[String]
+            val userId = eventAttendanceInfo.get(JsonKey.USER_ID).asInstanceOf[String]
+            val userCourse: UserCourses = userCoursesDao.read(eventId, request.getRequestContext, userId)
+            if (null != userCourse) {
+                val batchId = userCourse.getBatchId
+                // Set data to event attendance
+                val eventAttendanceResponse: EventAttendance = eventAttendanceDao.readById(eventId, batchId, userId, request.getRequestContext)
+                val joinedDateTimeStr = eventAttendanceInfo.get(JsonKey.JOINED_DATE_TIME).asInstanceOf[String]
+                val leftDateTimeStr = eventAttendanceInfo.get(JsonKey.LEFT_DATE_TIME).asInstanceOf[String]
+                val eventAttendance: EventAttendance = if (null != eventAttendanceResponse && null != eventAttendanceResponse.getFirstLeft) {
+                    if (null != joinedDateTimeStr) eventAttendanceResponse.setLastJoined(stringToDateConverter(joinedDateTimeStr)) // Last Joined
+                    if (null != leftDateTimeStr) { // Last Left
+                        val joinedDateTime = eventAttendanceResponse.getLastJoined
+                        val leftDateTime = stringToDateConverter(leftDateTimeStr)
+                        eventAttendanceResponse.setLastLeft(leftDateTime)
+                        val oldDuration = eventAttendanceResponse.getDuration
+                        val duration = leftDateTime.getTime - joinedDateTime.getTime
+                        val diffInSeconds = TimeUnit.MILLISECONDS.toSeconds(duration)
+                        eventAttendanceResponse.setDuration(java.lang.Long.sum(oldDuration, diffInSeconds))
+                    }
+                    eventAttendanceResponse
+                } else {
+                    val eventAttendance: EventAttendance = new EventAttendance
+                    eventAttendance.setUserId(userId)
+                    eventAttendance.setContentId(eventId)
+                    eventAttendance.setBatchId(batchId)
+                    if (null != joinedDateTimeStr) { // First Joined
+                        eventAttendance.setFirstJoined(stringToDateConverter(joinedDateTimeStr))
+                        // Update user enroll in first joined
+                        val enrolmentData: UserCourses = userCoursesDao.read(request.getRequestContext, userId, eventId, batchId)
+                        val enrolmentDataMap: java.util.Map[String, AnyRef] = createUserEnrolmentMap(userId, eventId, batchId, enrolmentData, request.getContext.getOrDefault(JsonKey.REQUEST_ID, "").asInstanceOf[String])
+                        enrolmentDataMap.put(JsonKey.STATUS, ProjectUtil.ProgressStatus.COMPLETED.getValue.asInstanceOf[AnyRef])
+                        enrolmentDataMap.put(JsonKey.COURSE_PROGRESS, 2.asInstanceOf[AnyRef]) // 2 : Attended
+                        upsertEnrollment(userId, eventId, batchId, enrolmentDataMap, false, request.getRequestContext)
+                    }
+                    if (null != leftDateTimeStr) { // First Left
+                        val joinedDateTime = eventAttendanceResponse.getFirstJoined
+                        val leftDateTime = stringToDateConverter(leftDateTimeStr)
+                        eventAttendance.setFirstLeft(leftDateTime)
+                        val duration = leftDateTime.getTime - joinedDateTime.getTime
+                        val diffInSeconds = TimeUnit.MILLISECONDS.toSeconds(duration)
+                        eventAttendance.setDuration(diffInSeconds)
+                    }
+                    eventAttendance
                 }
-                eventAttendanceResponse
-            } else {
-                val eventAttendance: EventAttendance = new EventAttendance
-                eventAttendance.setUserId(userId)
-                eventAttendance.setContentId(eventId)
-                eventAttendance.setBatchId(batchId)
-                if (null != joinedDateTimeStr) { // First Joined
-                    eventAttendance.setFirstJoined(stringToDateConverter(joinedDateTimeStr))
-                    // Update user enroll in first joined
-                    val enrolmentData: UserCourses = userCoursesDao.read(request.getRequestContext, userId, eventId, batchId)
-                    val enrolmentDataMap: java.util.Map[String, AnyRef] = createUserEnrolmentMap(userId, eventId, batchId, enrolmentData, request.getContext.getOrDefault(JsonKey.REQUEST_ID, "").asInstanceOf[String])
-                    enrolmentDataMap.put(JsonKey.STATUS, ProjectUtil.ProgressStatus.COMPLETED.getValue.asInstanceOf[AnyRef])
-                    enrolmentDataMap.put(JsonKey.COURSE_PROGRESS, 2.asInstanceOf[AnyRef]) // 2 : Attended
-                    upsertEnrollment(userId, eventId, batchId, enrolmentDataMap, false, request.getRequestContext)
-                }
-                if (null != leftDateTimeStr) { // First Left
-                    val joinedDateTime = eventAttendanceResponse.getFirstJoined
-                    val leftDateTime = stringToDateConverter(leftDateTimeStr)
-                    eventAttendance.setFirstLeft(leftDateTime)
-                    val duration = leftDateTime.getTime - joinedDateTime.getTime
-                    val diffInSeconds = TimeUnit.MILLISECONDS.toSeconds(duration)
-                    eventAttendance.setDuration(diffInSeconds)
-                }
-                eventAttendance
+                eventAttendance.setProvider(request.get(JsonKey.ONLINE_PROVIDER).asInstanceOf[String])
+                eventAttendance.setRole(eventAttendanceInfo.get(JsonKey.ROLE).asInstanceOf[String])
+                // save attendance
+                upsertEventAttendance(eventAttendance, (null == eventAttendanceResponse), request.getRequestContext)
             }
-            eventAttendance.setProvider(eventAttendanceInfo.get(JsonKey.ONLINE_PROVIDER).asInstanceOf[String])
-            eventAttendance.setRole(eventAttendanceInfo.get(JsonKey.ROLE).asInstanceOf[String])
-            // save attendance
-            upsertEventAttendance(eventAttendance, (null == eventAttendanceResponse), request.getRequestContext)
         }
         sender().tell(successResponse(), self)
     }

@@ -55,7 +55,7 @@ object ProviderConstants {
   val BBB_ATTRIBUTES = "attributes"
   val BBB_MEETING = "meeting"
   val BBB_EXTERNAL_MEETING_ID = "external-meeting-id"
-  val BBB_ATTENDEE = "attendee"
+  val BBB_USER = "user"
   val BBB_EXTERNAL_USER_ID = "external-user-id"
   val BBB_ROLE = "role"
   val BBB_PRESENTER = "presenter"

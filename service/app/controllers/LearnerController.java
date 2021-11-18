@@ -46,8 +46,9 @@ public class LearnerController extends BaseController {
       JsonNode requestJson = httpRequest.body().asJson();
       Request request =
           createAndInitRequest("getConsumption", requestJson, httpRequest);
-      validator.validateRequestedBy((String) request.getRequest().get(JsonKey.REQUESTED_BY));
-      request.getRequest().put(JsonKey.USER_ID, request.getRequest().get(JsonKey.REQUESTED_BY));
+      String userId = (String) request.getContext().getOrDefault(JsonKey.REQUESTED_FOR, request.getContext().get(JsonKey.REQUESTED_BY));
+      validator.validateRequestedBy(userId);
+      request.getRequest().put(JsonKey.USER_ID, userId);
       validator.validateGetContentState(request);
       request = transformUserId(request);
       return actorResponseHandler(

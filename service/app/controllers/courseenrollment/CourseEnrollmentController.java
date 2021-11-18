@@ -40,10 +40,10 @@ public class CourseEnrollmentController extends BaseController {
                   fields.addAll(Arrays.asList(JsonKey.NAME, JsonKey.DESCRIPTION, JsonKey.LEAF_NODE_COUNT, JsonKey.APP_ICON));
                   queryParams.put("fields", fields.toArray(new String[0]));
               }
-
-              validator.validateRequestedBy((String) request.getRequest().get(JsonKey.REQUESTED_BY));
-              request.getContext().put(JsonKey.USER_ID, request.getRequest().get(JsonKey.REQUESTED_BY));
-              request.getRequest().put(JsonKey.USER_ID, request.getRequest().get(JsonKey.REQUESTED_BY));
+              String userId = (String) request.getContext().getOrDefault(JsonKey.REQUESTED_FOR, request.getContext().get(JsonKey.REQUESTED_BY));
+              validator.validateRequestedBy(userId);
+              request.getContext().put(JsonKey.USER_ID, userId);
+              request.getRequest().put(JsonKey.USER_ID, userId);
 
               request
                   .getContext()
@@ -104,8 +104,9 @@ public class CourseEnrollmentController extends BaseController {
           Map<String, String[]> queryParams = new HashMap<>(httpRequest.queryString());
           String courseId = req.getRequest().containsKey(JsonKey.COURSE_ID) ? JsonKey.COURSE_ID : JsonKey.COLLECTION_ID;
           req.getRequest().put(JsonKey.COURSE_ID, req.getRequest().get(courseId));
-          validator.validateRequestedBy((String) req.getRequest().get(JsonKey.REQUESTED_BY));
-          req.getRequest().put(JsonKey.USER_ID, req.getRequest().get(JsonKey.REQUESTED_BY));
+          String userId = (String) req.getContext().getOrDefault(JsonKey.REQUESTED_FOR, req.getContext().get(JsonKey.REQUESTED_BY));
+          validator.validateRequestedBy(userId);
+          req.getRequest().put(JsonKey.USER_ID, userId);
           validator.validateEnrollCourse(req);
           return null;
         },
@@ -122,8 +123,9 @@ public class CourseEnrollmentController extends BaseController {
           Map<String, String[]> queryParams = new HashMap<>(httpRequest.queryString());
           String courseId = req.getRequest().containsKey(JsonKey.COURSE_ID) ? JsonKey.COURSE_ID : JsonKey.COLLECTION_ID;
           req.getRequest().put(JsonKey.COURSE_ID, req.getRequest().get(courseId));
-          validator.validateRequestedBy((String) req.getRequest().get(JsonKey.REQUESTED_BY));
-          req.getRequest().put(JsonKey.USER_ID, req.getRequest().get(JsonKey.REQUESTED_BY));
+          String userId = (String) req.getContext().getOrDefault(JsonKey.REQUESTED_FOR, req.getContext().get(JsonKey.REQUESTED_BY));
+          validator.validateRequestedBy(userId);
+          req.getRequest().put(JsonKey.USER_ID, userId);
           validator.validateUnenrollCourse(req);
           return null;
         },
@@ -149,9 +151,10 @@ public class CourseEnrollmentController extends BaseController {
                     request
                             .getContext()
                             .put(JsonKey.BATCH_DETAILS, httpRequest.queryString().get(JsonKey.BATCH_DETAILS));
-                    validator.validateRequestedBy((String) request.getRequest().get(JsonKey.REQUESTED_BY));
-                    request.getContext().put(JsonKey.USER_ID, request.getRequest().get(JsonKey.REQUESTED_BY));
-                    request.getRequest().put(JsonKey.USER_ID, request.getRequest().get(JsonKey.REQUESTED_BY));
+                    String userId = (String) request.getContext().getOrDefault(JsonKey.REQUESTED_FOR, request.getContext().get(JsonKey.REQUESTED_BY));
+                    validator.validateRequestedBy(userId);
+                    request.getContext().put(JsonKey.USER_ID, userId);
+                    request.getRequest().put(JsonKey.USER_ID, userId);
                     return null;
                 },
                 getAllRequestHeaders((httpRequest)),

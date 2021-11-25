@@ -146,8 +146,10 @@ public class CourseEnrollmentController extends BaseController {
         JsonNode requestBodyJson = null;
         System.out.println("********** httpRequest.contentType().get() --:-- " + httpRequest.contentType().get());
         if (Http.MimeTypes.FORM.equalsIgnoreCase(httpRequest.contentType().get()) && JsonKey.BIG_BLUE_BUTTON.equalsIgnoreCase(onlineProvider)) {
-            System.out.println("********** httpRequest.body() --:-- " + httpRequest.body());
-            System.out.println("********** httpRequest.body().asFormUrlEncoded() --:-- " + httpRequest.body().asFormUrlEncoded());
+            System.out.println("********** httpRequest.body() --:-- " + httpRequest.body().asText());
+            System.out.println("********** httpRequest.body().asFormUrlEncoded().containsKey(JsonKey.BBB_WEBHOOK_RESP_BODY_EVENT) --:-- " + httpRequest.body().asFormUrlEncoded().containsKey(JsonKey.BBB_WEBHOOK_RESP_BODY_EVENT));
+            Set<String> keys = httpRequest.body().asFormUrlEncoded().keySet();
+            keys.forEach(System.out :: println);
             System.out.println("********** httpRequest.body().asFormUrlEncoded().get(JsonKey.BBB_WEBHOOK_RESP_BODY_EVENT)[0] --:-- " + httpRequest.body().asFormUrlEncoded().get(JsonKey.BBB_WEBHOOK_RESP_BODY_EVENT)[0]);
             String bbbEventStr = httpRequest.body().asFormUrlEncoded().get(JsonKey.BBB_WEBHOOK_RESP_BODY_EVENT)[0];
             bbbEventStr = bbbEventStr.substring(1, bbbEventStr.length() - 1); // To remove starting "[" and trailing "]"

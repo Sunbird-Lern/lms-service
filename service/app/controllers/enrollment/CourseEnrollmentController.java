@@ -144,7 +144,11 @@ public class CourseEnrollmentController extends BaseController {
     public CompletionStage<Result> createAttendance(String onlineProvider, Http.Request httpRequest) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode requestBodyJson = null;
+        System.out.println("********** httpRequest.contentType().get() --:-- " + httpRequest.contentType().get());
         if (Http.MimeTypes.FORM.equalsIgnoreCase(httpRequest.contentType().get()) && JsonKey.BIG_BLUE_BUTTON.equalsIgnoreCase(onlineProvider)) {
+            System.out.println("********** httpRequest.body() --:-- " + httpRequest.body());
+            System.out.println("********** httpRequest.body().asFormUrlEncoded() --:-- " + httpRequest.body().asFormUrlEncoded());
+            System.out.println("********** httpRequest.body().asFormUrlEncoded().get(JsonKey.BBB_WEBHOOK_RESP_BODY_EVENT)[0] --:-- " + httpRequest.body().asFormUrlEncoded().get(JsonKey.BBB_WEBHOOK_RESP_BODY_EVENT)[0]);
             String bbbEventStr = httpRequest.body().asFormUrlEncoded().get(JsonKey.BBB_WEBHOOK_RESP_BODY_EVENT)[0];
             bbbEventStr = bbbEventStr.substring(1, bbbEventStr.length() - 1); // To remove starting "[" and trailing "]"
             requestBodyJson = mapper.readTree(JsonKey.START_CURLY_BRACE.concat("\"request\"").concat(JsonKey.COLON).concat(bbbEventStr).concat(JsonKey.END_CURLY_BRACE));

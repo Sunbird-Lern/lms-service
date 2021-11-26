@@ -253,8 +253,8 @@ public class UserOrgServiceImpl implements UserOrgService {
     Map<String, Object> filterList = new HashMap<>();
     filterList.put(JsonKey.USER_ID, userIds);
     Map<String, Object> requestMap = getRequestMap(filterList);
-    requestMap.put(JsonKey.FIELDS, Arrays.asList(JsonKey.USER_ID, JsonKey.FIRST_NAME, JsonKey.LAST_NAME, JsonKey.EMAIL));
-    requestMap.put(JsonKey.LIMIT, 500);
+    ((Map<String, Object>) requestMap.get(JsonKey.REQUEST)).put(JsonKey.FIELDS, Arrays.asList(JsonKey.USER_ID, JsonKey.FIRST_NAME, JsonKey.LAST_NAME, JsonKey.EMAIL));
+    ((Map<String, Object>) requestMap.get(JsonKey.REQUEST)).put(JsonKey.LIMIT, 500);
     return getUsersResponse(requestMap);
   }
 

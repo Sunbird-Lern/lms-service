@@ -19,4 +19,14 @@ object Provider {
     }
     providerApiObject.getAttendanceInfo(request)
   }
+
+  def getRecordingInfo(request: Request): util.Map[String, Any] = {
+    val onlineProvider = request.get(JsonKey.ONLINE_PROVIDER).asInstanceOf[String]
+    val providerApiObject = onlineProvider toLowerCase match {
+      case ProviderConstants.BIG_BLUE_BUTTON =>
+        new BbbApi()
+      // Set response of other onlineProviders
+    }
+    providerApiObject.getRecordingInfo(request)
+  }
 }

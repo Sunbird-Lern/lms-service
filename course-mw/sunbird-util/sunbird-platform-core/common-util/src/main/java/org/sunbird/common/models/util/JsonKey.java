@@ -1095,6 +1095,10 @@ public final class JsonKey {
   public static final String VIEWER = "Viewer";
   public static final String BBB_WEBHOOK_RESP_BODY_EVENT = "event";
   public static final String BIG_BLUE_BUTTON = "bigbluebutton";
+  public static final String RECORD_ID = "recordId";
+  public static final String ONLINE_PROVIDER_DATA = "onlineProviderData";
+  public static final String RECORDING_URLS = "recordingUrls";
+  public static final String RECORDING_URL = "recordingUrl";
 
   private JsonKey() {}
 }

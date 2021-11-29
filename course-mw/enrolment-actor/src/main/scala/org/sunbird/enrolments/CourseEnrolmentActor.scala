@@ -421,7 +421,9 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
                     eventAttendance.setContentId(eventId)
                     eventAttendance.setBatchId(batchId)
                     if (null != joinedDateTimeStr) { // First Joined
-                        eventAttendance.setFirstJoined(stringToDateConverter(joinedDateTimeStr))
+                        val joinedDateTime : java.util.Date = stringToDateConverter(joinedDateTimeStr)
+                        eventAttendance.setFirstJoined(joinedDateTime)
+                        eventAttendance.setLastJoined(joinedDateTime)
                         // Update user enroll in first joined
                         val enrolmentData: UserCourses = userCoursesDao.read(request.getRequestContext, userId, eventId, batchId)
                         val enrolmentDataMap: java.util.Map[String, AnyRef] = createUserEnrolmentMap(userId, eventId, batchId, enrolmentData, request.getContext.getOrDefault(JsonKey.REQUEST_ID, "").asInstanceOf[String])
@@ -433,6 +435,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
                         val joinedDateTime = eventAttendanceResponse.getFirstJoined
                         val leftDateTime = stringToDateConverter(leftDateTimeStr)
                         eventAttendance.setFirstLeft(leftDateTime)
+                        eventAttendance.setLastLeft(leftDateTime)
                         val duration = leftDateTime.getTime - joinedDateTime.getTime
                         val diffInSeconds = TimeUnit.MILLISECONDS.toSeconds(duration)
                         eventAttendance.setDuration(diffInSeconds)

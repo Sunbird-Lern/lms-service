@@ -62,6 +62,7 @@ class BbbApi extends Meet {
 
   private def getWebhookInfo(request: Request, callbackEvent: String): util.Map[String, Any] = {
     val meetingData = request.get(ProviderConstants.BBB_EVENT_DATA).asInstanceOf[util.Map[String, Any]]
+    logger.info(request.getRequestContext, "BBBApi::getWebhookInfo::meetingData : " + meetingData)
     val attendanceMap = new java.util.HashMap[String, Any]
     if (null != meetingData) {
       val bbbEventId = meetingData.get(ProviderConstants.BBB_EVENT_DATA_ID).asInstanceOf[String]
@@ -96,6 +97,7 @@ class BbbApi extends Meet {
         getAttendeeAttributes(attendanceMap, attendee, bbbEventId)
       }
     }
+    logger.info(request.getRequestContext, "BBBApi::getWebhookInfo::attendanceMap : " + attendanceMap)
     attendanceMap
   }
 

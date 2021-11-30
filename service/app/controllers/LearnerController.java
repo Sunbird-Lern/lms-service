@@ -59,6 +59,26 @@ public class LearnerController extends BaseController {
   }
 
   /**
+   * This method will provide list of user content state. Content refer user activity {started,half
+   * completed ,completed} against TOC (table of content).
+   *
+   * @return Result
+   */
+  public CompletionStage<Result> privateGetContentState(Http.Request httpRequest) {
+    try {
+      JsonNode requestJson = httpRequest.body().asJson();
+      Request request =
+          createAndInitRequest("getConsumption", requestJson, httpRequest);
+      validator.validateGetContentState(request);
+      request = transformUserId(request);
+      return actorResponseHandler(
+          contentConsumptionActor, request, timeout, JsonKey.CONTENT_LIST, httpRequest);
+    } catch (Exception e) {
+      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
+    }
+  }
+
+  /**
    * This method will update learner current state with last store state.
    *
    * @return Result

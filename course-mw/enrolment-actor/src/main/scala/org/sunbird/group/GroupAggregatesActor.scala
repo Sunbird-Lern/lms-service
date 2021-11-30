@@ -103,7 +103,9 @@ class GroupAggregatesActor @Inject()(implicit val cacheUtil: RedisCacheUtil) ext
       val membersMap = groupMembers.asScala.toList.filter(x => StringUtils.isNotBlank(x.getOrDefault("userId", "").asInstanceOf[String]))
         .map(obj => (obj.getOrDefault("userId", "").asInstanceOf[String], obj)).toMap.asJava
       usersAggs.map(dbAggRecord => {
-        val dbAgg = dbAggRecord.get("agg").asInstanceOf[java.util.Map[String, AnyRef]]
+        val aggregates: Map[String, Double] = dbAggRecord.get("aggregates").asInstanceOf[java.util.Map[String, AnyRef]].asScala.map(e => e._1 -> e._2.asInstanceOf[java.lang.Double].toDouble).toMap
+        val aggs: Map[String, Double] = dbAggRecord.get("agg").asInstanceOf[java.util.Map[String, AnyRef]].asScala.map(e => e._1 -> e._2.asInstanceOf[java.lang.Integer].toDouble).toMap
+        val dbAgg: Map[String, Double] = aggs ++ aggregates
         val aggLastUpdated = dbAggRecord.get("agg_last_updated").asInstanceOf[java.util.Map[String, AnyRef]]
         val agg = dbAgg.map(aggregate => Map("metric"-> aggregate._1, "value" -> aggregate._2, "lastUpdatedOn" -> aggLastUpdated.get(aggregate._1)).asJava).toList.asJava
         val userId = dbAggRecord.get("user_id").asInstanceOf[String]

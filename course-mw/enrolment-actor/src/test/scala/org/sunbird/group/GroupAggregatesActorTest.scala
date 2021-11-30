@@ -101,6 +101,9 @@ class GroupAggregatesActorTest extends FlatSpec with Matchers with MockFactory {
         put("agg", new util.HashMap[String, AnyRef](){{
           put("completedCount", 1.asInstanceOf[AnyRef])
         }})
+        put("aggregates", new util.HashMap[String, AnyRef](){{
+          put("completedCount", 1.toDouble.asInstanceOf[AnyRef])
+        }})
         put("agg_last_updated", new util.HashMap[String, AnyRef](){{
           put("completedCount", new java.util.Date())
         }})

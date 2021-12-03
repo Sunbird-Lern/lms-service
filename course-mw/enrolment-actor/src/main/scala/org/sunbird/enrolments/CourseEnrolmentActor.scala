@@ -86,7 +86,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             case "getParticipantsForFixedBatch" => fetchParticipantsForFixedBatch(request)
             case "createAttendance" => createAttendance(request)
             case "getAttendance" => getAttendance(request)
-//            case "getRecording" => getRecording(request)
+            case "getRecording" => getRecording(request)
             case _ => ProjectCommonException.throwClientErrorException(ResponseCode.invalidRequestData,
                 ResponseCode.invalidRequestData.getErrorMessage)
         }
@@ -582,71 +582,53 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         eventAttendanceMap
     }
 
-//    Todo - Uncommenting after update event with recording details issue due to updating "Live" event gets resolved
-//    /**
-//     * Gets the recording of the provided event
-//     *
-//     * @param request the request
-//     */
-//    def getRecording(request: Request): Unit = {
-//        val recordingInfo: util.Map[String, Any] = Provider.getRecordingInfo(request)
-//        if (MapUtils.isNotEmpty(recordingInfo)) {
-//            println("--------- recordingInfo : ", recordingInfo)
-//            val eventId = recordingInfo.get(JsonKey.EVENT_ID).asInstanceOf[String]
-//            val event: util.Map[String, AnyRef] = EventContentUtil.readEvent(request, eventId)
-//            println("--------- event : ", event)
-//            val onlineProviderData = event.get(JsonKey.ONLINE_PROVIDER_DATA).asInstanceOf[util.Map[String, AnyRef]]
-//            val existingRecordingUrlList = if (MapUtils.isNotEmpty(onlineProviderData)) onlineProviderData.get(JsonKey.RECORDING_URLS).asInstanceOf[util.List[String]] else null
-//            if (CollectionUtils.isNotEmpty(existingRecordingUrlList)) {
-//                existingRecordingUrlList.add(recordingInfo.get(JsonKey.RECORDING_URL).asInstanceOf[String])
-//                println("--------- event : ", event)
-//                println("--------- existingRecordingUrls : ", existingRecordingUrlList)
-//                val tmp = event.get(JsonKey.ONLINE_PROVIDER_DATA).asInstanceOf[util.Map[String, AnyRef]].get(JsonKey.RECORDING_URLS).asInstanceOf[util.List[String]].add(recordingInfo.get(JsonKey.RECORDING_URL).asInstanceOf[String])
-//                println("--------- linked onlineProviderData : ", tmp)
-//                println("--------- event : ", event)
-//                //                event.putAll(tmp)
-//            } else {
-//                val newRecordingUrlList: util.List[String] = new util.ArrayList[String]()
-//                newRecordingUrlList.add(recordingInfo.get(JsonKey.RECORDING_URL).asInstanceOf[String])
-//                onlineProviderData.put(JsonKey.RECORDING_URLS, newRecordingUrlList)
-//            }
-//            event.remove("status")
-//            //            event.put("version",request.getRequest.getOrDefault("versionKey", "").asInstanceOf[String])
-//            println("--------- event_version : ", event.get("version"))
-//            println("--------- event_versionKey : ", event.get("versionKey"))
-//            println("--------- event : ", event)
-//            val response = EventContentUtil.postContent(request, SunbirdKey.EVENT, "/event/v4/update/{identifier}", event, JsonKey.IDENTIFIER, eventId)
-//            println("---------- RESPONSE : ", response)
-//            logger.info(request.getRequestContext, "CourseEnrolmentActor::getRecording::response : " + response)
-//            if (null != response) {
-//                if (response.getResponseCode.getResponseCode == ResponseCode.OK.getResponseCode) sender.tell(successResponse(), self)
-//                else {
-//                    val message = formErrorDetailsMessage(response, "Event update failed ")
-//                    logger.info(request.getRequestContext, s"${ResponseCode.customServerError} : ${message}")
-//                    //                ProjectCommonException.throwClientErrorException(ResponseCode.customServerError, MessageFormat.format(ResponseCode.customServerError.getErrorMessage, message))
-//                }
-//            }
-//            else {
-//                logger.info(request.getRequestContext, ResponseCode.CLIENT_ERROR.name())
-//                //                ProjectCommonException.throwClientErrorException(ResponseCode.CLIENT_ERROR)
-//            }
-//        }
-//        //        val response: Response = new Response()
-//        //        response.put(JsonKey.CONTENT, recordingInfo)
-//        //        sender().tell(response, self)
-//        sender().tell(successResponse(), self)
-//    }
-//
-//    private def formErrorDetailsMessage(response: Response, message: String): String = {
-//        val resultMap = Optional.ofNullable(response.getResult).orElse(new util.HashMap[String, AnyRef])
-//        if (MapUtils.isNotEmpty(resultMap)) {
-//            val obj = Optional.ofNullable(resultMap.get(SunbirdKey.TB_MESSAGES)).orElse("")
-//            return if (obj.isInstanceOf[util.List[_]]) message.concat(obj.asInstanceOf[List[String]].stream.collect(Collectors.joining(";")))
-//            else if (StringUtils.isNotEmpty(response.getParams.getErrmsg)) message.concat(response.getParams.getErrmsg)
-//            else message.concat(String.valueOf(obj))
-//        }
-//        message
-//    }
+  /**
+   * Gets the recording of the provided event
+   *
+   * @param request the request
+   */
+  def getRecording(request: Request): Unit = {
+    val recordingInfo: util.Map[String, Any] = Provider.getRecordingInfo(request)
+    if (MapUtils.isNotEmpty(recordingInfo)) {
+      val eventId = recordingInfo.get(JsonKey.EVENT_ID).asInstanceOf[String]
+      val event: util.Map[String, AnyRef] = EventContentUtil.readEvent(request, eventId)
+      val onlineProviderData = event.get(JsonKey.ONLINE_PROVIDER_DATA).asInstanceOf[util.Map[String, AnyRef]]
+      val existingRecordingUrlList = if (MapUtils.isNotEmpty(onlineProviderData)) onlineProviderData.get(JsonKey.RECORDING_URLS).asInstanceOf[util.List[String]] else null
+      if (CollectionUtils.isNotEmpty(existingRecordingUrlList)) {
+        existingRecordingUrlList.add(recordingInfo.get(JsonKey.RECORDING_URL).asInstanceOf[String])
+      } else {
+        val newRecordingUrlList: util.List[String] = new util.ArrayList[String]()
+        newRecordingUrlList.add(recordingInfo.get(JsonKey.RECORDING_URL).asInstanceOf[String])
+        onlineProviderData.put(JsonKey.RECORDING_URLS, newRecordingUrlList)
+      }
+      logger.info(request.getRequestContext, "CourseEnrolmentActor::getRecording::eventRequest : " + event)
+      event.remove("status")
+      val response = EventContentUtil.postContent(request, SunbirdKey.CONTENT, "/content/v4/system/update/{identifier}", event, JsonKey.IDENTIFIER, eventId)
+      logger.info(request.getRequestContext, "CourseEnrolmentActor::getRecording::eventResponse : " + response)
+      if (null != response) {
+        if (response.getResponseCode.getResponseCode == ResponseCode.OK.getResponseCode) sender.tell(successResponse(), self)
+        else {
+          val message = formErrorDetailsMessage(response, "Event update failed ")
+          logger.info(request.getRequestContext, s"${ResponseCode.customServerError} : ${message}")
+        }
+      }
+      else {
+        logger.info(request.getRequestContext, ResponseCode.CLIENT_ERROR.name())
+      }
+    }
+    sender().tell(successResponse(), self)
+  }
+
+  private def formErrorDetailsMessage(response: Response, message: String): String = {
+    val resultMap = Optional.ofNullable(response.getResult).orElse(new util.HashMap[String, AnyRef])
+    if (MapUtils.isNotEmpty(resultMap)) {
+      val obj = Optional.ofNullable(resultMap.get(SunbirdKey.TB_MESSAGES)).orElse("")
+      return if (obj.isInstanceOf[util.List[_]]) message.concat(obj.asInstanceOf[List[String]].stream.collect(Collectors.joining(";")))
+      else if (StringUtils.isNotEmpty(response.getParams.getErrmsg)) message.concat(response.getParams.getErrmsg)
+      else message.concat(String.valueOf(obj))
+    }
+    message
+  }
 }
 
 

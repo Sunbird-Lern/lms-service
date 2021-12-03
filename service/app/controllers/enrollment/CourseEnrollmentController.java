@@ -184,35 +184,34 @@ public class CourseEnrollmentController extends BaseController {
                 httpRequest);
     }
 
-//    Todo - Uncommenting after update event with recording details issue due to updating "Live" event gets resolved
-//    /**
-//     * Gets the recording
-//     *
-//     * @param onlineProvider the online provider
-//     * @param httpRequest    the http request
-//     * @return the result
-//     * @throws JsonProcessingException the json processing exception
-//     */
-//    public CompletionStage<Result> getRecording(String onlineProvider, Http.Request httpRequest) throws JsonProcessingException {
-//        ObjectMapper mapper = new ObjectMapper();
-//        JsonNode requestBodyJson = null;
-//        if (Http.MimeTypes.FORM.equalsIgnoreCase(httpRequest.contentType().get()) && JsonKey.BIG_BLUE_BUTTON.equalsIgnoreCase(onlineProvider)) {
-//            String bbbEventStr = httpRequest.body().asFormUrlEncoded().get(JsonKey.BBB_WEBHOOK_RESP_BODY_EVENT)[0];
-//            bbbEventStr = bbbEventStr.substring(1, bbbEventStr.length() - 1); // To remove starting "[" and trailing "]"
-//            requestBodyJson = mapper.readTree(JsonKey.START_CURLY_BRACE.concat("\"request\"").concat(JsonKey.COLON).concat(bbbEventStr).concat(JsonKey.END_CURLY_BRACE));
-//        } else {
-//            requestBodyJson = httpRequest.body().asJson();
-//        }
-//        return handleRequest(courseEnrolmentActor, "getRecording",
-//                requestBodyJson,
-//                (request) -> {
-//                    new CourseEnrollmentRequestValidator().validateCreateAttendance(onlineProvider);
-//                    return null;
-//                },
-//                onlineProvider,
-//                JsonKey.ONLINE_PROVIDER,
-//                getAllRequestHeaders(httpRequest),
-//                true,
-//                httpRequest);
-//    }
+    /**
+     * Gets the recording
+     *
+     * @param onlineProvider the online provider
+     * @param httpRequest    the http request
+     * @return the result
+     * @throws JsonProcessingException the json processing exception
+     */
+    public CompletionStage<Result> getRecording(String onlineProvider, Http.Request httpRequest) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode requestBodyJson = null;
+        if (Http.MimeTypes.FORM.equalsIgnoreCase(httpRequest.contentType().get()) && JsonKey.BIG_BLUE_BUTTON.equalsIgnoreCase(onlineProvider)) {
+            String bbbEventStr = httpRequest.body().asFormUrlEncoded().get(JsonKey.BBB_WEBHOOK_RESP_BODY_EVENT)[0];
+            bbbEventStr = bbbEventStr.substring(1, bbbEventStr.length() - 1); // To remove starting "[" and trailing "]"
+            requestBodyJson = mapper.readTree(JsonKey.START_CURLY_BRACE.concat("\"request\"").concat(JsonKey.COLON).concat(bbbEventStr).concat(JsonKey.END_CURLY_BRACE));
+        } else {
+            requestBodyJson = httpRequest.body().asJson();
+        }
+        return handleRequest(courseEnrolmentActor, "getRecording",
+                requestBodyJson,
+                (request) -> {
+                    new CourseEnrollmentRequestValidator().validateCreateAttendance(onlineProvider);
+                    return null;
+                },
+                onlineProvider,
+                JsonKey.ONLINE_PROVIDER,
+                getAllRequestHeaders(httpRequest),
+                true,
+                httpRequest);
+    }
 }

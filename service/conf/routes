@@ -30,7 +30,7 @@ POST    /v1/event/unenroll                  @controllers.enrollment.CourseEnroll
 GET     /v1/event/participants/list         @controllers.enrollment.CourseEnrollmentController.getParticipantsForFixedBatch(request: play.mvc.Http.Request)
 POST    /v1/event/attendance/webhook/:onlineProvider	        @controllers.enrollment.CourseEnrollmentController.createAttendance(onlineProvider: String, request: play.mvc.Http.Request)
 POST    /v1/event/attendance/read	        @controllers.enrollment.CourseEnrollmentController.getAttendance(request: play.mvc.Http.Request)
-#POST    /v1/event/recording/webhook/:onlineProvider	        @controllers.enrollment.CourseEnrollmentController.getRecording(onlineProvider: String, request: play.mvc.Http.Request)
+POST    /v1/event/recording/webhook/:onlineProvider	        @controllers.enrollment.CourseEnrollmentController.getRecording(onlineProvider: String, request: play.mvc.Http.Request)
 POST    /v1/eventset/enroll	    		    @controllers.enrollment.EventSetEnrollmentController.enroll(request: play.mvc.Http.Request)
 POST    /v1/eventset/unenroll               @controllers.enrollment.EventSetEnrollmentController.unenroll(request: play.mvc.Http.Request)
 PATCH   /v1/eventset/update                 @controllers.eventmanagement.EventSetController.update(request: play.mvc.Http.Request)

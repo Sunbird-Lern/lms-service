@@ -41,7 +41,6 @@ class BbbApi extends Meet {
   def getRecordingInfo(request: Request): util.Map[String, Any] = {
     val response: util.Map[String, Any] = new util.HashMap[String, Any]()
     val bbbResponse: util.Map[String, Any] = getWebhookInfo(request, ProviderConstants.CALLBACK_EVENT_RECORDING)
-    println("----------- bbbResponse : ", bbbResponse)
     if (MapUtils.isNotEmpty(bbbResponse)) {
       val recordingList = bbbResponse.get(ProviderConstants.BBB_RESPONSE_RECORDINGS).asInstanceOf[util.List[util.Map[String, AnyRef]]]
       if (CollectionUtils.isNotEmpty(recordingList)) {

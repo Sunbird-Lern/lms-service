@@ -45,6 +45,7 @@ public class RequestInterceptor {
     apiHeaderIgnoreMap.put("/v2/user/courses/list", var);
     apiHeaderIgnoreMap.put("/v1/collection/summary", var);
     apiHeaderIgnoreMap.put("/v1/event/attendance/webhook", var);
+    apiHeaderIgnoreMap.put("/v1/event/recording/webhook", var);
   }
 
   /**

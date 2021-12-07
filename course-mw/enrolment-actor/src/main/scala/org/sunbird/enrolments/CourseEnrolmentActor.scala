@@ -512,18 +512,24 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val contentId: String = request.get(JsonKey.CONTENT_ID).asInstanceOf[String]
         val batchId: String = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
         val userCourses: util.List[UserCourses] = userCoursesDao.read(contentId, batchId, request.getRequestContext)
-        val userIds: List[String] = userCourses.map { el => el.getUserId }.toList
+        val activeUserCourses: util.List[UserCourses] = if (CollectionUtils.isNotEmpty(userCourses))
+            userCourses.filter(userCourse => userCourse.isActive).toList.asJava
+        else
+            new util.ArrayList[UserCourses]()
+        val userIds: List[String] = activeUserCourses.map { el => el.getUserId }.toList
         logger.info(request.getRequestContext, "CourseEnrolmentActor::getAttendance::userIds : " + userIds)
-        val userDetails: List[Map[String, Object]] = userOrgService.getUsersByIds(userIds)
         val eventAttendanceMapList = new util.ArrayList[java.util.Map[String, Any]]()
-        if (CollectionUtils.isNotEmpty(userDetails)) {
-            userDetails.foreach { userDetail =>
-                val eventAttendanceMap = new util.HashMap[String, Any]
-                val userId = userDetail.get(JsonKey.USER_ID).asInstanceOf[String]
-                getUserData(userDetail, eventAttendanceMap)
-                getAttendanceData(contentId, batchId, userId, request.getRequestContext, eventAttendanceMap)
-                getUserEnrolmentData(userId, userCourses, eventAttendanceMap)
-                eventAttendanceMapList.add(eventAttendanceMap)
+        if (CollectionUtils.isNotEmpty(userIds)) {
+            val userDetails: List[Map[String, Object]] = userOrgService.getUsersByIds(userIds)
+            if (CollectionUtils.isNotEmpty(userDetails)) {
+                userDetails.foreach { userDetail =>
+                    val eventAttendanceMap = new util.HashMap[String, Any]
+                    val userId = userDetail.get(JsonKey.USER_ID).asInstanceOf[String]
+                    getUserData(userDetail, eventAttendanceMap)
+                    getAttendanceData(contentId, batchId, userId, request.getRequestContext, eventAttendanceMap)
+                    getUserEnrolmentData(userId, userCourses, eventAttendanceMap)
+                    eventAttendanceMapList.add(eventAttendanceMap)
+                }
             }
         }
         val response: Response = new Response()

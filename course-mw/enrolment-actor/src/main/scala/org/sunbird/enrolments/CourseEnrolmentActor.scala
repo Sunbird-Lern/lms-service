@@ -152,7 +152,9 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     }
 
     def getActiveEnrollments(userId: String, requestContext: RequestContext): java.util.List[java.util.Map[String, AnyRef]] = {
+        logger.info(requestContext,"CourseEnrolmentActor :: getActiveEnrollments :: UserId = " + userId)
         val enrolments: java.util.List[java.util.Map[String, AnyRef]] = userCoursesDao.listEnrolments(requestContext, userId)
+        logger.info(requestContext,"CourseEnrolmentActor :: getActiveEnrollments :: enrolments = " + enrolments)
         if (CollectionUtils.isNotEmpty(enrolments))
             enrolments.filter(e => e.getOrDefault(JsonKey.ACTIVE, false.asInstanceOf[AnyRef]).asInstanceOf[Boolean]).toList.asJava
         else
@@ -340,14 +342,19 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     def getEnrolmentList(request: Request, userId: String): Response = {
         logger.info(request.getRequestContext,"CourseEnrolmentActor :: getCachedEnrolmentList :: fetching data from cassandra with userId " + userId)
         val activeEnrolments: java.util.List[java.util.Map[String, AnyRef]] = getActiveEnrollments( userId, request.getRequestContext)
+        logger.info(request.getRequestContext,"CourseEnrolmentActor :: getEnrolmentList :: activeEnrolments = " + activeEnrolments)
         val enrolments: java.util.List[java.util.Map[String, AnyRef]] = {
             if (CollectionUtils.isNotEmpty(activeEnrolments)) {
               val courseIds: java.util.List[String] = activeEnrolments.map(e => e.getOrDefault(JsonKey.COURSE_ID, "").asInstanceOf[String]).distinct.filter(id => StringUtils.isNotBlank(id)).toList.asJava
+                logger.info(request.getRequestContext,"CourseEnrolmentActor :: getEnrolmentList :: courseIds = " + courseIds)
                 val enrolmentList: java.util.List[java.util.Map[String, AnyRef]] = addCourseDetails(activeEnrolments, courseIds, request)
+                logger.info(request.getRequestContext,"CourseEnrolmentActor :: getEnrolmentList :: enrolmentList = " + enrolmentList)
                 val updatedEnrolmentList = updateProgressData(enrolmentList, userId, courseIds, request.getRequestContext)
+                logger.info(request.getRequestContext,"CourseEnrolmentActor :: getEnrolmentList :: updatedEnrolmentList = " + updatedEnrolmentList)
                 addBatchDetails(updatedEnrolmentList, request)
             } else new java.util.ArrayList[java.util.Map[String, AnyRef]]()
         }
+        logger.info(request.getRequestContext,"CourseEnrolmentActor :: getEnrolmentList :: enrolments = " + enrolments)
         val resp: Response = new Response()
         resp.put(JsonKey.COURSES, enrolments)
         resp

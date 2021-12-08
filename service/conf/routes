@@ -22,7 +22,7 @@ POST     /v1/course/unenroll             @controllers.courseenrollment.CourseEnr
 POST /v1/batch/bulk/enrollment          @controllers.bulkapimanagement.BulkUploadController.batchEnrollmentBulkUpload(request: play.mvc.Http.Request)
 POST /v1/batch/bulk/unenrollment          @controllers.bulkapimanagement.BulkUploadController.batchUnEnrollmentBulkUpload(request: play.mvc.Http.Request)
 POST     /v1/content/state/read	        @controllers.LearnerController.getContentState(request: play.mvc.Http.Request)
-POST     /private/v1/content/state/read	        @controllers.LearnerController.getContentState(request: play.mvc.Http.Request)
+POST     /private/v1/content/state/read	        @controllers.LearnerController.privateGetContentState(request: play.mvc.Http.Request)
 PATCH    /v1/user/content/state     	@controllers.LearnerController.updateContentState(request: play.mvc.Http.Request)
 PATCH    /v1/content/state/update     	@controllers.LearnerController.updateContentState(request: play.mvc.Http.Request)
 

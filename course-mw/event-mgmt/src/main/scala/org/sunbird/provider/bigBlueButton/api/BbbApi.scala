@@ -49,9 +49,15 @@ class BbbApi extends Meet {
         if (CollectionUtils.isNotEmpty(formatList)) {
           if (formatList.exists(format => ProviderConstants.BBB_RESPONSE_PRESENTATION.equalsIgnoreCase(format.get(ProviderConstants.BBB_RESPONSE_TYPE).asInstanceOf[String]))) {
             val format = formatList.filter(format => ProviderConstants.BBB_RESPONSE_PRESENTATION.equalsIgnoreCase(format.get(ProviderConstants.BBB_RESPONSE_TYPE).asInstanceOf[String])).get(0)
-            response.put(JsonKey.RECORDING_URL, format.get(ProviderConstants.BBB_RESPONSE_URL))
             response.put(JsonKey.EVENT_ID, bbbResponse.get(JsonKey.EVENT_ID))
             response.put(JsonKey.RECORD_ID, recording.get(ProviderConstants.BBB_RESPONSE_RECORD_ID).asInstanceOf[String])
+            val recordingResponse: util.Map[String, Any] = new util.HashMap[String, Any]()
+            recordingResponse.put(JsonKey.RECORDING_URL, format.get(ProviderConstants.BBB_RESPONSE_URL))
+            val startTimeStr = recording.get(ProviderConstants.BBB_RESPONSE_START_TIME).asInstanceOf[String]
+            recordingResponse.put(JsonKey.RECORDING_START_TIME, dateFormatWithTime.format(new Date(startTimeStr.toLong)))
+            val endTimeStr = recording.get(ProviderConstants.BBB_RESPONSE_END_TIME).asInstanceOf[String]
+            recordingResponse.put(JsonKey.RECORDING_END_TIME, dateFormatWithTime.format(new Date(endTimeStr.toLong)))
+            response.put(JsonKey.RECORDING, recordingResponse)
           }
         }
       }

@@ -595,53 +595,55 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         eventAttendanceMap
     }
 
-  /**
-   * Gets the recording of the provided event
-   *
-   * @param request the request
-   */
-  def getRecording(request: Request): Unit = {
-    val recordingInfo: util.Map[String, Any] = Provider.getRecordingInfo(request)
-    if (MapUtils.isNotEmpty(recordingInfo)) {
-      val eventId = recordingInfo.get(JsonKey.EVENT_ID).asInstanceOf[String]
-      val event: util.Map[String, AnyRef] = EventContentUtil.readEvent(request, eventId)
-      val onlineProviderData = event.get(JsonKey.ONLINE_PROVIDER_DATA).asInstanceOf[util.Map[String, AnyRef]]
-      val existingRecordingUrlList = if (MapUtils.isNotEmpty(onlineProviderData)) onlineProviderData.get(JsonKey.RECORDING_URLS).asInstanceOf[util.List[String]] else null
-      if (CollectionUtils.isNotEmpty(existingRecordingUrlList)) {
-        existingRecordingUrlList.add(recordingInfo.get(JsonKey.RECORDING_URL).asInstanceOf[String])
-      } else {
-        val newRecordingUrlList: util.List[String] = new util.ArrayList[String]()
-        newRecordingUrlList.add(recordingInfo.get(JsonKey.RECORDING_URL).asInstanceOf[String])
-        onlineProviderData.put(JsonKey.RECORDING_URLS, newRecordingUrlList)
-      }
-      logger.info(request.getRequestContext, "CourseEnrolmentActor::getRecording::eventRequest : " + event)
-      event.remove("status")
-      val response = EventContentUtil.postContent(request, SunbirdKey.CONTENT, "/content/v4/system/update/{identifier}", event, JsonKey.IDENTIFIER, eventId)
-      logger.info(request.getRequestContext, "CourseEnrolmentActor::getRecording::eventResponse : " + response)
-      if (null != response) {
-        if (response.getResponseCode.getResponseCode == ResponseCode.OK.getResponseCode) sender.tell(successResponse(), self)
-        else {
-          val message = formErrorDetailsMessage(response, "Event update failed ")
-          logger.info(request.getRequestContext, s"${ResponseCode.customServerError} : ${message}")
+    /**
+     * Gets the recording of the provided event
+     *
+     * @param request the request
+     */
+    def getRecording(request: Request): Unit = {
+        val recordingInfo: util.Map[String, Any] = Provider.getRecordingInfo(request)
+        if (MapUtils.isNotEmpty(recordingInfo)) {
+            val eventId = recordingInfo.get(JsonKey.EVENT_ID).asInstanceOf[String]
+            val event: util.Map[String, AnyRef] = EventContentUtil.readEvent(request, eventId)
+            if (MapUtils.isNotEmpty(event)) {
+                val onlineProviderData = event.get(JsonKey.ONLINE_PROVIDER_DATA).asInstanceOf[util.Map[String, AnyRef]]
+                val existingRecordingUrlList = if (MapUtils.isNotEmpty(onlineProviderData)) onlineProviderData.get(JsonKey.RECORDINGS).asInstanceOf[util.List[util.Map[String, Any]]] else null
+                if (CollectionUtils.isNotEmpty(existingRecordingUrlList)) {
+                    existingRecordingUrlList.add(recordingInfo.get(JsonKey.RECORDING).asInstanceOf[util.Map[String, Any]])
+                } else {
+                    val newRecordingUrlList: util.List[util.Map[String, Any]] = new util.ArrayList[util.Map[String, Any]]()
+                    newRecordingUrlList.add(recordingInfo.get(JsonKey.RECORDING).asInstanceOf[util.Map[String, Any]])
+                    onlineProviderData.put(JsonKey.RECORDINGS, newRecordingUrlList)
+                }
+                logger.info(request.getRequestContext, "CourseEnrolmentActor::getRecording::eventRequest : " + event)
+                event.remove("status")
+                val response = EventContentUtil.postContent(request, SunbirdKey.CONTENT, "/content/v4/system/update/{identifier}", event, JsonKey.IDENTIFIER, eventId)
+                logger.info(request.getRequestContext, "CourseEnrolmentActor::getRecording::eventResponse : " + response)
+                if (null != response) {
+                    if (response.getResponseCode.getResponseCode == ResponseCode.OK.getResponseCode) sender.tell(successResponse(), self)
+                    else {
+                        val message = formErrorDetailsMessage(response, "Event update failed ")
+                        logger.info(request.getRequestContext, s"${ResponseCode.customServerError} : ${message}")
+                    }
+                }
+                else {
+                    logger.info(request.getRequestContext, ResponseCode.CLIENT_ERROR.name())
+                }
+            }
         }
-      }
-      else {
-        logger.info(request.getRequestContext, ResponseCode.CLIENT_ERROR.name())
-      }
+        sender().tell(successResponse(), self)
     }
-    sender().tell(successResponse(), self)
-  }
 
-  private def formErrorDetailsMessage(response: Response, message: String): String = {
-    val resultMap = Optional.ofNullable(response.getResult).orElse(new util.HashMap[String, AnyRef])
-    if (MapUtils.isNotEmpty(resultMap)) {
-      val obj = Optional.ofNullable(resultMap.get(SunbirdKey.TB_MESSAGES)).orElse("")
-      return if (obj.isInstanceOf[util.List[_]]) message.concat(obj.asInstanceOf[List[String]].stream.collect(Collectors.joining(";")))
-      else if (StringUtils.isNotEmpty(response.getParams.getErrmsg)) message.concat(response.getParams.getErrmsg)
-      else message.concat(String.valueOf(obj))
+    private def formErrorDetailsMessage(response: Response, message: String): String = {
+        val resultMap = Optional.ofNullable(response.getResult).orElse(new util.HashMap[String, AnyRef])
+        if (MapUtils.isNotEmpty(resultMap)) {
+            val obj = Optional.ofNullable(resultMap.get(SunbirdKey.TB_MESSAGES)).orElse("")
+            return if (obj.isInstanceOf[util.List[_]]) message.concat(obj.asInstanceOf[List[String]].stream.collect(Collectors.joining(";")))
+            else if (StringUtils.isNotEmpty(response.getParams.getErrmsg)) message.concat(response.getParams.getErrmsg)
+            else message.concat(String.valueOf(obj))
+        }
+        message
     }
-    message
-  }
 }
 
 

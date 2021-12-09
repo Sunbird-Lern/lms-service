@@ -75,6 +75,8 @@ object ProviderConstants {
   val BBB_EVENT_ATTRIBUTE_RECORD_ID = "record-id"
   val BBB_RESPONSE_RECORD_ID = "recordID"
   val BBB_RESPONSE_RECORDINGS = "recordings"
+  val BBB_RESPONSE_START_TIME = "startTime"
+  val BBB_RESPONSE_END_TIME = "endTime"
   val BBB_RESPONSE_PLAYBACK = "playback"
   val BBB_RESPONSE_PRESENTATION = "presentation"
   val BBB_RESPONSE_TYPE = "type"

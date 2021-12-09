@@ -1097,8 +1097,11 @@ public final class JsonKey {
   public static final String BIG_BLUE_BUTTON = "bigbluebutton";
   public static final String RECORD_ID = "recordId";
   public static final String ONLINE_PROVIDER_DATA = "onlineProviderData";
-  public static final String RECORDING_URLS = "recordingUrls";
+  public static final String RECORDINGS = "recordings";
   public static final String RECORDING_URL = "recordingUrl";
+  public static final String RECORDING_START_TIME = "startTime";
+  public static final String RECORDING_END_TIME = "endTime";
+  public static final String RECORDING = "recording";
 
   private JsonKey() {}
 }

@@ -12,4 +12,4 @@ USER sunbird
 COPY ./service/target/lms-service-1.0-SNAPSHOT-dist.zip /home/sunbird/lms/
 RUN unzip /home/sunbird/lms/lms-service-1.0-SNAPSHOT-dist.zip -d /home/sunbird/lms/
 WORKDIR /home/sunbird/lms/
-CMD java -XX:+PrintFlagsFinal $JAVA_OPTIONS -Dplay.server.http.idleTimeout=180s -cp '/home/sunbird/lms/lms-service-1.0-SNAPSHOT/lib/*' -Dlogger.file=/home/sunbird/lms/lms-service-1.0-SNAPSHOT/config/logback.xml play.core.server.ProdServerStart  /home/sunbird/lms/lms-service-1.0-SNAPSHOT -Dlog4j2.formatMsgNoLookups=true 
+CMD java -XX:+PrintFlagsFinal $JAVA_OPTIONS -Dplay.server.http.idleTimeout=180s -Dlog4j2.formatMsgNoLookups=true -cp '/home/sunbird/lms/lms-service-1.0-SNAPSHOT/lib/*' -Dlogger.file=/home/sunbird/lms/lms-service-1.0-SNAPSHOT/config/logback.xml play.core.server.ProdServerStart  /home/sunbird/lms/lms-service-1.0-SNAPSHOT 

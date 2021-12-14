@@ -2,6 +2,7 @@ package org.sunbird.learner.actors.eventAttendance.dao;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.request.RequestContext;
@@ -25,10 +26,11 @@ public interface EventAttendanceDao {
      * @param batchId the batch id
      * @param userId the user id
      * @param requestContext the request context
+     * @param id the uuid
      * @param updateAttributes Event attendance information to be updated
      * @return The event attendance data
      */
-    Response update(RequestContext requestContext, String contentId, String batchId, String userId, Map<String, Object> updateAttributes);
+    Response update(RequestContext requestContext, String contentId, String batchId, String userId, UUID id, Map<String, Object> updateAttributes);
 
     /**
      * Reads event attendance for given identifier
@@ -46,9 +48,10 @@ public interface EventAttendanceDao {
      *
      * @param contentId the content id
      * @param batchId the batch id
+     * @param userId the user id
      * @param requestContext the request context
      * @return The event attendance data
      */
-    List<EventAttendance> readById(String contentId, String batchId, RequestContext requestContext);
+    List<EventAttendance> readById(RequestContext requestContext, String contentId, String batchId, String userId);
 
 }

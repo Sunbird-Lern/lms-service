@@ -35,7 +35,7 @@ import java.time.LocalDate
 import java.util
 import java.util.concurrent.TimeUnit
 import java.util.stream.Collectors
-import java.util.{Date, List, Map, Optional}
+import java.util.{Date, List, Map, Optional, UUID}
 import javax.inject.{Inject, Named}
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
@@ -403,59 +403,77 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         if (MapUtils.isNotEmpty(eventAttendanceInfo)) {
             val eventId = eventAttendanceInfo.get(JsonKey.EVENT_ID).asInstanceOf[String]
             val userId = eventAttendanceInfo.get(JsonKey.USER_ID).asInstanceOf[String]
-            val userCourse: UserCourses = userCoursesDao.read(eventId, request.getRequestContext, userId)
+            val joinedDateTimeStr = eventAttendanceInfo.get(JsonKey.JOINED_DATE_TIME).asInstanceOf[String]
+            val leftDateTimeStr = eventAttendanceInfo.get(JsonKey.LEFT_DATE_TIME).asInstanceOf[String]
+            val userCourse: UserCourses = if (null != userId && null != eventId) userCoursesDao.read(eventId, request.getRequestContext, userId) else null
             if (null != userCourse) {
                 val batchId = userCourse.getBatchId
                 // Set data to event attendance
-                val eventAttendanceResponse: EventAttendance = eventAttendanceDao.readById(eventId, batchId, userId, request.getRequestContext)
-                val joinedDateTimeStr = eventAttendanceInfo.get(JsonKey.JOINED_DATE_TIME).asInstanceOf[String]
-                val leftDateTimeStr = eventAttendanceInfo.get(JsonKey.LEFT_DATE_TIME).asInstanceOf[String]
-                val eventAttendance: EventAttendance = if (null != eventAttendanceResponse && null != eventAttendanceResponse.getFirstLeft) {
-                    if (null != joinedDateTimeStr) eventAttendanceResponse.setLastJoined(stringToDateConverter(joinedDateTimeStr)) // Last Joined
-                    if (null != leftDateTimeStr) { // Last Left
-                        val joinedDateTime = eventAttendanceResponse.getLastJoined
-                        val leftDateTime = stringToDateConverter(leftDateTimeStr)
-                        eventAttendanceResponse.setLastLeft(leftDateTime)
-                        val oldDuration = eventAttendanceResponse.getDuration
-                        val duration = leftDateTime.getTime - joinedDateTime.getTime
-                        val diffInSeconds = TimeUnit.MILLISECONDS.toSeconds(duration)
-                        eventAttendanceResponse.setDuration(java.lang.Long.sum(oldDuration, diffInSeconds))
-                    }
-                    eventAttendanceResponse
-                } else {
+                if (null != joinedDateTimeStr && JsonKey.ONLINE_PROVIDER_EVENT_USER_JOINED.equalsIgnoreCase(eventAttendanceInfo.get(JsonKey.ONLINE_PROVIDER_CALLBACK_EVENT).asInstanceOf[String])) { // Last Joined
                     val eventAttendance: EventAttendance = new EventAttendance
                     eventAttendance.setUserId(userId)
                     eventAttendance.setContentId(eventId)
                     eventAttendance.setBatchId(batchId)
-                    if (null != joinedDateTimeStr) { // First Joined
-                        val joinedDateTime : java.util.Date = stringToDateConverter(joinedDateTimeStr)
-                        eventAttendance.setFirstJoined(joinedDateTime)
-                        eventAttendance.setLastJoined(joinedDateTime)
-                        // Update user enroll in first joined
-                        val enrolmentData: UserCourses = userCoursesDao.read(request.getRequestContext, userId, eventId, batchId)
-                        val enrolmentDataMap: java.util.Map[String, AnyRef] = createUserEnrolmentMap(userId, eventId, batchId, enrolmentData, request.getContext.getOrDefault(JsonKey.REQUEST_ID, "").asInstanceOf[String])
-                        enrolmentDataMap.put(JsonKey.STATUS, ProjectUtil.ProgressStatus.COMPLETED.getValue.asInstanceOf[AnyRef])
-                        enrolmentDataMap.put(JsonKey.COURSE_PROGRESS, 2.asInstanceOf[AnyRef]) // 2 : Attended
-                        upsertEnrollment(userId, eventId, batchId, enrolmentDataMap, false, request.getRequestContext)
-                    }
-                    if (null != leftDateTimeStr) { // First Left
-                        val joinedDateTime = eventAttendanceResponse.getFirstJoined
-                        val leftDateTime = stringToDateConverter(leftDateTimeStr)
-                        eventAttendance.setFirstLeft(leftDateTime)
-                        eventAttendance.setLastLeft(leftDateTime)
-                        val duration = leftDateTime.getTime - joinedDateTime.getTime
-                        val diffInSeconds = TimeUnit.MILLISECONDS.toSeconds(duration)
-                        eventAttendance.setDuration(diffInSeconds)
-                    }
-                    eventAttendance
+                    val joinedDateTime: java.util.Date = stringToDateConverter(joinedDateTimeStr)
+                    eventAttendance.setJoinedDateTime(joinedDateTime)
+                    // Update user enroll in first joined
+                    val enrolmentData: UserCourses = userCoursesDao.read(request.getRequestContext, userId, eventId, batchId)
+                    val enrolmentDataMap: java.util.Map[String, AnyRef] = createUserEnrolmentMap(userId, eventId, batchId, enrolmentData, request.getContext.getOrDefault(JsonKey.REQUEST_ID, "").asInstanceOf[String])
+                    enrolmentDataMap.put(JsonKey.STATUS, ProjectUtil.ProgressStatus.COMPLETED.getValue.asInstanceOf[AnyRef])
+                    enrolmentDataMap.put(JsonKey.COURSE_PROGRESS, 2.asInstanceOf[AnyRef]) // 2 : Attended
+                    upsertEnrollment(userId, eventId, batchId, enrolmentDataMap, false, request.getRequestContext)
+                    eventAttendance.setProvider(request.get(JsonKey.ONLINE_PROVIDER).asInstanceOf[String])
+                    eventAttendance.setRole(eventAttendanceInfo.get(JsonKey.ROLE).asInstanceOf[String])
+                    eventAttendance.setId(UUID.randomUUID())
+                    upsertEventAttendance(eventAttendance, true, request.getRequestContext)
                 }
-                eventAttendance.setProvider(request.get(JsonKey.ONLINE_PROVIDER).asInstanceOf[String])
-                eventAttendance.setRole(eventAttendanceInfo.get(JsonKey.ROLE).asInstanceOf[String])
-                // save attendance
-                upsertEventAttendance(eventAttendance, (null == eventAttendanceResponse), request.getRequestContext)
+                if (null != leftDateTimeStr && JsonKey.ONLINE_PROVIDER_EVENT_USER_LEFT.equalsIgnoreCase(eventAttendanceInfo.get(JsonKey.ONLINE_PROVIDER_CALLBACK_EVENT).asInstanceOf[String])) { // Last Left
+                    val eventAttendanceResponseList: List[EventAttendance] = eventAttendanceDao.readById(request.getRequestContext, eventId, batchId, userId)
+                    if (CollectionUtils.isNotEmpty(eventAttendanceResponseList)) {
+                        if (eventAttendanceResponseList.exists(ea => null == ea.getLeftDateTime || ea.getLeftDateTime.before(ea.getJoinedDateTime))) {
+                            val eventAttendanceResponse: EventAttendance = eventAttendanceResponseList.filter(ea => null == ea.getLeftDateTime || ea.getLeftDateTime.before(ea.getJoinedDateTime)).get(0)
+                            if (null != eventAttendanceResponse) calculateDurationAndUpdate(eventAttendanceResponse, leftDateTimeStr, request.getRequestContext)
+                        }
+                    }
+                }
+            }
+            if (null != leftDateTimeStr && JsonKey.ONLINE_PROVIDER_EVENT_MEETING_ENDED.equalsIgnoreCase(eventAttendanceInfo.get(JsonKey.ONLINE_PROVIDER_CALLBACK_EVENT).asInstanceOf[String])) { // Meeting Ended
+                val eventAttendanceResponseList: List[EventAttendance] = eventAttendanceDao.readById(request.getRequestContext, eventId, null, null)
+                if (CollectionUtils.isNotEmpty(eventAttendanceResponseList)) {
+                    eventAttendanceResponseList.filter(ea => null == ea.getLeftDateTime || ea.getLeftDateTime.before(ea.getJoinedDateTime)).foreach {
+                        eventAttendanceResponse => calculateDurationAndUpdate(eventAttendanceResponse, leftDateTimeStr, request.getRequestContext)
+                    }
+                }
             }
         }
         sender().tell(successResponse(), self)
+    }
+
+    /**
+     * Calculates duration and updates the Event attendance
+     *
+     * @param eventAttendanceResponse the Event Attendance response
+     * @param leftDateTimeStr         the left date and time string
+     * @param requestContext          the requestContext
+     */
+    private def calculateDurationAndUpdate(eventAttendanceResponse: EventAttendance, leftDateTimeStr: String, requestContext: RequestContext): Unit = {
+        val joinedDateTime = eventAttendanceResponse.getJoinedDateTime
+        val leftDateTime = stringToDateConverter(leftDateTimeStr)
+        eventAttendanceResponse.setLeftDateTime(leftDateTime)
+        eventAttendanceResponse.setDuration(calculateDuration(joinedDateTime, leftDateTime))
+        upsertEventAttendance(eventAttendanceResponse, false, requestContext)
+    }
+
+    /**
+     * Calculates duration or difference between two given dates in seconds
+     *
+     * @param joinedDateTime the joined date time
+     * @param leftDateTime the left date time
+     * @return the duration
+     */
+    private def calculateDuration(joinedDateTime : Date, leftDateTime : Date): Long = {
+        val duration = leftDateTime.getTime - joinedDateTime.getTime
+        TimeUnit.MILLISECONDS.toSeconds(duration)
     }
 
     /**
@@ -472,7 +490,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         if (isNew) {
             eventAttendanceDao.create(requestContext, eventAttendanceMap)
         } else {
-            eventAttendanceDao.update(requestContext, eventAttendance.getContentId, eventAttendance.getBatchId, eventAttendance.getUserId, eventAttendanceMap)
+            eventAttendanceDao.update(requestContext, eventAttendance.getContentId, eventAttendance.getBatchId, eventAttendance.getUserId, eventAttendance.getId, eventAttendanceMap)
         }
     }
 
@@ -485,15 +503,14 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     private def createEventAttendanceMap(eventAttendance: EventAttendance): java.util.Map[String, AnyRef] =
         new java.util.HashMap[String, AnyRef]() {
             {
+                put(JsonKey.ID, eventAttendance.getId)
                 put(JsonKey.USER_ID, eventAttendance.getUserId)
                 put(JsonKey.CONTENT_ID, eventAttendance.getContentId)
                 put(JsonKey.BATCH_ID, eventAttendance.getBatchId)
                 if (null != eventAttendance) {
                     if (null != eventAttendance.getRole) put(JsonKey.ROLE, eventAttendance.getRole)
-                    if (null != eventAttendance.getFirstJoined) put(JsonKey.FIRST_JOINED_DATE_TIME, new Timestamp(eventAttendance.getFirstJoined.getTime))
-                    if (null != eventAttendance.getFirstLeft) put(JsonKey.FIRST_LEFT_DATE_TIME, new Timestamp(eventAttendance.getFirstLeft.getTime))
-                    if (null != eventAttendance.getLastJoined) put(JsonKey.LAST_JOINED_DATE_TIME, new Timestamp(eventAttendance.getLastJoined.getTime))
-                    if (null != eventAttendance.getLastLeft) put(JsonKey.LAST_LEFT_DATE_TIME, new Timestamp(eventAttendance.getLastLeft.getTime))
+                    if (null != eventAttendance.getJoinedDateTime) put(JsonKey.JOINED_DATE_TIME, new Timestamp(eventAttendance.getJoinedDateTime.getTime))
+                    if (null != eventAttendance.getLeftDateTime) put(JsonKey.LEFT_DATE_TIME, new Timestamp(eventAttendance.getLeftDateTime.getTime))
                     if (null != eventAttendance.getDuration) put(JsonKey.DURATION, eventAttendance.getDuration)
                     if (null != eventAttendance.getProvider) put(JsonKey.PROVIDER, eventAttendance.getProvider)
                 }
@@ -570,9 +587,27 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
      * @return The event attendance map
      */
     private def getAttendanceData(contentId: String, batchId: String, userId: String, requestContext: RequestContext, eventAttendanceMap: java.util.Map[String, Any]): java.util.Map[String, Any] = {
-        val eventAttendance: EventAttendance = eventAttendanceDao.readById(contentId, batchId, userId, requestContext)
-        if (null != eventAttendance) {
+        val eventAttendanceResponseList: List[EventAttendance] = eventAttendanceDao.readById(requestContext, contentId, batchId, userId)
+        if (CollectionUtils.isNotEmpty(eventAttendanceResponseList)) {
+            val leftJoinedHistoryList: util.List[util.Map[String, Any]] = new util.ArrayList[util.Map[String, Any]]()
+            eventAttendanceResponseList.foreach { ea =>
+                val leftJoinedHistory = new util.HashMap[String, Any]
+                leftJoinedHistory.put(JsonKey.JOINED_DATE_TIME, ea.getJoinedDateTime)
+                leftJoinedHistory.put(JsonKey.LEFT_DATE_TIME, ea.getLeftDateTime)
+                leftJoinedHistory.put(JsonKey.DURATION, ea.getDuration)
+                leftJoinedHistoryList.add(leftJoinedHistory)
+            }
             mapper.setDateFormat(dateFormatWithTime)
+            eventAttendanceMap.put(JsonKey.JOINED_LEFT_HISTORY, mapper.convertValue(leftJoinedHistoryList, classOf[util.List[util.Map[String, Object]]]))
+            val eventAttendance = eventAttendanceResponseList.get(0)
+            val totalDuration: Long = eventAttendanceResponseList.filter(ea => null != ea.getDuration && ea.getJoinedDateTime.before(ea.getLeftDateTime)).foldLeft(0L)((totalDuration, ea) => ea.getDuration + totalDuration)
+            val joinedDateTimeList: java.util.List[Date] = eventAttendanceResponseList.filter(ea => null != ea.getJoinedDateTime).map(ea => ea.getJoinedDateTime).toList.asJava
+            val joinedDateTime = if(CollectionUtils.isNotEmpty(joinedDateTimeList)) joinedDateTimeList.min else null
+            val leftDateTimeList: java.util.List[Date] = eventAttendanceResponseList.filter(ea => null != ea.getLeftDateTime && ea.getJoinedDateTime.before(ea.getLeftDateTime)).map(ea => ea.getLeftDateTime).toList.asJava
+            val leftDateTime = if (CollectionUtils.isNotEmpty(leftDateTimeList)) leftDateTimeList.max else null
+            eventAttendance.setDuration(totalDuration)
+            eventAttendance.setJoinedDateTime(joinedDateTime)
+            eventAttendance.setLeftDateTime(leftDateTime)
             eventAttendanceMap.putAll(mapper.convertValue(eventAttendance, classOf[util.Map[String, Object]]))
         }
         eventAttendanceMap

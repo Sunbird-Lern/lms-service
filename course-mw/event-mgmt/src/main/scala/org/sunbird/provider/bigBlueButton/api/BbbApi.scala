@@ -77,8 +77,13 @@ class BbbApi extends Meet {
       callbackEvent match {
         case ProviderConstants.CALLBACK_EVENT_ATTENDANCE => bbbEventId match {
           case ProviderConstants.BBB_EVENT_USER_JOINED =>
+            attendanceMap.put(JsonKey.ONLINE_PROVIDER_CALLBACK_EVENT, JsonKey.ONLINE_PROVIDER_EVENT_USER_JOINED)
             attendanceMap.put(JsonKey.JOINED_DATE_TIME, dateFormatWithTime.format(new Date(eventTimestamp)))
           case ProviderConstants.BBB_EVENT_USER_LEFT =>
+            attendanceMap.put(JsonKey.ONLINE_PROVIDER_CALLBACK_EVENT, JsonKey.ONLINE_PROVIDER_EVENT_USER_LEFT)
+            attendanceMap.put(JsonKey.LEFT_DATE_TIME, dateFormatWithTime.format(new Date(eventTimestamp)))
+          case ProviderConstants.BBB_EVENT_MEETING_ENDED =>
+            attendanceMap.put(JsonKey.ONLINE_PROVIDER_CALLBACK_EVENT, JsonKey.ONLINE_PROVIDER_EVENT_MEETING_ENDED)
             attendanceMap.put(JsonKey.LEFT_DATE_TIME, dateFormatWithTime.format(new Date(eventTimestamp)))
           case _ =>
             logger.info(request.getRequestContext, s"Event $bbbEventId is other than ${ProviderConstants.BBB_EVENT_USER_JOINED} and ${ProviderConstants.BBB_EVENT_USER_LEFT}")

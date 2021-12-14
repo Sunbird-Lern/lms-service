@@ -1102,6 +1102,12 @@ public final class JsonKey {
   public static final String RECORDING_START_TIME = "startTime";
   public static final String RECORDING_END_TIME = "endTime";
   public static final String RECORDING = "recording";
+  public static final String ID_KEY = "id";
+  public static final String ONLINE_PROVIDER_EVENT_USER_JOINED = "userJoined";
+  public static final String ONLINE_PROVIDER_EVENT_USER_LEFT = "userLeft";
+  public static final String ONLINE_PROVIDER_EVENT_MEETING_ENDED = "meetingEnded";
+  public static final String ONLINE_PROVIDER_CALLBACK_EVENT = "callbackEvent";
+  public static final String JOINED_LEFT_HISTORY = "joinedLeftHistory";
 
   private JsonKey() {}
 }

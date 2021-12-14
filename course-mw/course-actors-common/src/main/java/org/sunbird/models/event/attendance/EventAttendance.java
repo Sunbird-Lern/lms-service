@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.UUID;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -12,14 +13,13 @@ public class EventAttendance implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    private UUID id;
     private String userId;
     private String batchId;
     private String contentId;
     private String role;
-    private Date firstJoined;
-    private Date lastJoined;
-    private Date firstLeft;
-    private Date lastLeft;
+    private Date joinedDateTime;
+    private Date leftDateTime;
     private Long duration;
     private String provider;
 
@@ -55,36 +55,20 @@ public class EventAttendance implements Serializable {
         this.role = role;
     }
 
-    public Date getFirstJoined() {
-        return firstJoined;
+    public Date getJoinedDateTime() {
+        return joinedDateTime;
     }
 
-    public void setFirstJoined(Date firstJoined) {
-        this.firstJoined = firstJoined;
+    public void setJoinedDateTime(Date joinedDateTime) {
+        this.joinedDateTime = joinedDateTime;
     }
 
-    public Date getLastJoined() {
-        return lastJoined;
+    public Date getLeftDateTime() {
+        return leftDateTime;
     }
 
-    public void setLastJoined(Date lastJoined) {
-        this.lastJoined = lastJoined;
-    }
-
-    public Date getFirstLeft() {
-        return firstLeft;
-    }
-
-    public void setFirstLeft(Date firstLeft) {
-        this.firstLeft = firstLeft;
-    }
-
-    public Date getLastLeft() {
-        return lastLeft;
-    }
-
-    public void setLastLeft(Date lastLeft) {
-        this.lastLeft = lastLeft;
+    public void setLeftDateTime(Date leftDateTime) {
+        this.leftDateTime = leftDateTime;
     }
 
     public Long getDuration() {
@@ -101,5 +85,13 @@ public class EventAttendance implements Serializable {
 
     public void setProvider(String provider) {
         this.provider = provider;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
     }
 }

@@ -54,6 +54,7 @@ object ProviderConstants {
   // BBB web hook events
   val BBB_EVENT_USER_JOINED = "user-joined"
   val BBB_EVENT_USER_LEFT = "user-left"
+  val BBB_EVENT_MEETING_ENDED = "meeting-ended"
   val BBB_EVENT_RECORDING = "rap-post-publish-ended"
   // BBB web hook data
   val BBB_EVENT_DATA = "data"

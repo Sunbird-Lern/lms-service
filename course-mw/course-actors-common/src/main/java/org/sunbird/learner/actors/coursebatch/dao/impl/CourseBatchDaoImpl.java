@@ -17,6 +17,8 @@ import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.Util;
 import org.sunbird.models.course.batch.CourseBatch;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +31,6 @@ public class CourseBatchDaoImpl implements CourseBatchDao {
           CassandraPropertyReader.getInstance();
   private ObjectMapper mapper = new ObjectMapper();
   private String dateFormat = "yyyy-MM-dd";
-
 
   @Override
   public Response create(RequestContext requestContext, CourseBatch courseBatch) {
@@ -130,6 +131,22 @@ public class CourseBatchDaoImpl implements CourseBatchDao {
       return null;
     } else {
       return courseBatchList;
+    }
+  }
+
+  @Override
+  public List<Map<String, Object>> readById(String courseId, RequestContext requestContext) {
+    Map<String, Object> primaryKey = new HashMap<>();
+    primaryKey.put(JsonKey.COURSE_ID, courseId);
+    Response courseBatchResult =
+            cassandraOperation.getRecordsByProperties(
+                    requestContext, courseBatchDb.getKeySpace(), courseBatchDb.getTableName(), primaryKey);
+    List<Map<String, Object>> courseList =
+            (List<Map<String, Object>>) courseBatchResult.get(JsonKey.RESPONSE);
+    if (CollectionUtils.isEmpty(courseList)) {
+      return null;
+    } else {
+      return courseList;
     }
   }
 

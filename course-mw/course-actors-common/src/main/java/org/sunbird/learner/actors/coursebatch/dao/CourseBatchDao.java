@@ -72,4 +72,13 @@ public interface CourseBatchDao {
    * @param toDate to date
    */
   List<Map<String, Object>> listBatchesBetweenDateRange(RequestContext requestContext, Date fromDate, Date toDate);
+
+  /**
+   * Get course batches for given courseId
+   *
+   * @param courseId the course id
+   * @param requestContext the request context
+   * @return the course batches
+   */
+  List<Map<String, Object>> readById(String courseId, RequestContext requestContext);
 }

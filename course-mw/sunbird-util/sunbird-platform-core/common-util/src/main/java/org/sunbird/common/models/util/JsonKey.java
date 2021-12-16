@@ -1108,6 +1108,16 @@ public final class JsonKey {
   public static final String ONLINE_PROVIDER_EVENT_MEETING_ENDED = "meetingEnded";
   public static final String ONLINE_PROVIDER_CALLBACK_EVENT = "callbackEvent";
   public static final String JOINED_LEFT_HISTORY = "joinedLeftHistory";
+  public static final String SE_BOARDS = "se_boards";
+  public static final String SE_MEDIUMS = "se_mediums";
+  public static final String SE_GRADE_LEVELS = "se_gradeLevels";
+  public static final String SE_SUBJECTS = "se_subjects";
+  public static final String PRIMARY_CATEGORY = "primaryCategory";
+  public static final String TOTAL_ENROLLED = "totalEnrolled";
+  public static final String TOTAL_COMPLETED = "totalCompleted";
+  public static final String COURSE_KEY = "Course";
+  public static final String EVENT_KEY = "Event";
+  public static final String EVENT = "event";
 
   private JsonKey() {}
 }

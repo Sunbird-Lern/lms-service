@@ -24,7 +24,7 @@ public class CourseEnrollmentController extends BaseController {
   @Named("course-enrolment-actor")
   private ActorRef courseEnrolmentActor;
 
-  public CompletionStage<Result> getEnrolledCourses(String uid, Http.Request httpRequest) {
+  public CompletionStage<Result> getEnrolledCourses(String uid, String contentType, Http.Request httpRequest) {
     return handleRequest(courseEnrolmentActor, "listEnrol",
         httpRequest.body().asJson(),
         (req) -> {
@@ -41,6 +41,7 @@ public class CourseEnrollmentController extends BaseController {
           request
               .getContext()
               .put(JsonKey.BATCH_DETAILS, httpRequest.queryString().get(JsonKey.BATCH_DETAILS));
+          request.getRequest().put(JsonKey.CONTENT_TYPE, contentType);
             if (queryParams.containsKey("cache")) {
                 request.getContext().put("cache", Boolean.parseBoolean(queryParams.get("cache")[0]));
             } else
@@ -107,7 +108,7 @@ public class CourseEnrollmentController extends BaseController {
                 httpRequest);
     }
 
-    public CompletionStage<Result> getUserEnrolledCourses(Http.Request httpRequest) {
+    public CompletionStage<Result> getUserEnrolledCourses(String contentType, Http.Request httpRequest) {
         return handleRequest(
                 courseEnrolmentActor, "listEnrol",
                 httpRequest.body().asJson(),
@@ -129,7 +130,10 @@ public class CourseEnrollmentController extends BaseController {
                     request.getContext().put(JsonKey.USER_ID, request.get(JsonKey.USER_ID));
                     return null;
                 },
+                contentType,
+                JsonKey.CONTENT_TYPE,
                 getAllRequestHeaders((httpRequest)),
+                true,
                 httpRequest);
     }
 
@@ -212,6 +216,42 @@ public class CourseEnrollmentController extends BaseController {
                 JsonKey.ONLINE_PROVIDER,
                 getAllRequestHeaders(httpRequest),
                 true,
+                httpRequest);
+    }
+
+    /**
+     * Gets the Course summary
+     *
+     * @param httpRequest the request
+     */
+    public CompletionStage<Result> getCourseSummary(Http.Request httpRequest) {
+        return handleRequest(courseEnrolmentActor, "getCourseSummary",
+                (req) -> {
+                    Request request = (Request) req;
+                    Map<String, String[]> queryParams = new HashMap<>(httpRequest.queryString());
+                    request
+                            .getContext()
+                            .put(JsonKey.URL_QUERY_STRING, getQueryString(queryParams));
+                    return null;
+                },
+                httpRequest);
+    }
+
+    /**
+     * Gets the Event summary
+     *
+     * @param httpRequest the request
+     */
+    public CompletionStage<Result> getEventSummary(Http.Request httpRequest) {
+        return handleRequest(courseEnrolmentActor, "getEventSummary",
+                (req) -> {
+                    Request request = (Request) req;
+                    Map<String, String[]> queryParams = new HashMap<>(httpRequest.queryString());
+                    request
+                            .getContext()
+                            .put(JsonKey.URL_QUERY_STRING, getQueryString(queryParams));
+                    return null;
+                },
                 httpRequest);
     }
 }

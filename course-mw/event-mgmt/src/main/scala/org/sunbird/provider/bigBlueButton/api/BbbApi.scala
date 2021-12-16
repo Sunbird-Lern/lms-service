@@ -19,6 +19,7 @@ import java.text.{DateFormat, SimpleDateFormat}
 import javax.xml.parsers.{DocumentBuilder, DocumentBuilderFactory, ParserConfigurationException}
 import java.util
 import java.util.Date
+import java.util.concurrent.TimeUnit
 
 class BbbApi extends Meet {
 
@@ -54,9 +55,13 @@ class BbbApi extends Meet {
             val recordingResponse: util.Map[String, Any] = new util.HashMap[String, Any]()
             recordingResponse.put(JsonKey.RECORDING_URL, format.get(ProviderConstants.BBB_RESPONSE_URL))
             val startTimeStr = recording.get(ProviderConstants.BBB_RESPONSE_START_TIME).asInstanceOf[String]
-            recordingResponse.put(JsonKey.RECORDING_START_TIME, dateFormatWithTime.format(new Date(startTimeStr.toLong)))
+            val startDateTime: Date = new Date(startTimeStr.toLong)
+            recordingResponse.put(JsonKey.RECORDING_START_TIME, dateFormatWithTime.format(startDateTime))
             val endTimeStr = recording.get(ProviderConstants.BBB_RESPONSE_END_TIME).asInstanceOf[String]
-            recordingResponse.put(JsonKey.RECORDING_END_TIME, dateFormatWithTime.format(new Date(endTimeStr.toLong)))
+            val endDateTime: Date = new Date(endTimeStr.toLong)
+            recordingResponse.put(JsonKey.RECORDING_END_TIME, dateFormatWithTime.format(endDateTime))
+            val duration = endDateTime.getTime - startDateTime.getTime
+            recordingResponse.put(JsonKey.DURATION, TimeUnit.MILLISECONDS.toSeconds(duration))
             response.put(JsonKey.RECORDING, recordingResponse)
           }
         }

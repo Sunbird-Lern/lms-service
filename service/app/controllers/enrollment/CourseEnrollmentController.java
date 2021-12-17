@@ -148,7 +148,7 @@ public class CourseEnrollmentController extends BaseController {
     public CompletionStage<Result> createAttendance(String onlineProvider, Http.Request httpRequest) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode requestBodyJson = null;
-        if (Http.MimeTypes.FORM.equalsIgnoreCase(httpRequest.contentType().get()) && JsonKey.BIG_BLUE_BUTTON.equalsIgnoreCase(onlineProvider)) {
+        if (Http.MimeTypes.FORM.equalsIgnoreCase(httpRequest.contentType().orElse("")) && JsonKey.BIG_BLUE_BUTTON.equalsIgnoreCase(onlineProvider)) {
             String bbbEventStr = httpRequest.body().asFormUrlEncoded().get(JsonKey.BBB_WEBHOOK_RESP_BODY_EVENT)[0];
             bbbEventStr = bbbEventStr.substring(1, bbbEventStr.length() - 1); // To remove starting "[" and trailing "]"
             requestBodyJson = mapper.readTree(JsonKey.START_CURLY_BRACE.concat("\"request\"").concat(JsonKey.COLON).concat(bbbEventStr).concat(JsonKey.END_CURLY_BRACE));
@@ -199,7 +199,7 @@ public class CourseEnrollmentController extends BaseController {
     public CompletionStage<Result> getRecording(String onlineProvider, Http.Request httpRequest) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode requestBodyJson = null;
-        if (Http.MimeTypes.FORM.equalsIgnoreCase(httpRequest.contentType().get()) && JsonKey.BIG_BLUE_BUTTON.equalsIgnoreCase(onlineProvider)) {
+        if (Http.MimeTypes.FORM.equalsIgnoreCase(httpRequest.contentType().orElse("")) && JsonKey.BIG_BLUE_BUTTON.equalsIgnoreCase(onlineProvider)) {
             String bbbEventStr = httpRequest.body().asFormUrlEncoded().get(JsonKey.BBB_WEBHOOK_RESP_BODY_EVENT)[0];
             bbbEventStr = bbbEventStr.substring(1, bbbEventStr.length() - 1); // To remove starting "[" and trailing "]"
             requestBodyJson = mapper.readTree(JsonKey.START_CURLY_BRACE.concat("\"request\"").concat(JsonKey.COLON).concat(bbbEventStr).concat(JsonKey.END_CURLY_BRACE));

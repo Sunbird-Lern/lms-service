@@ -21,7 +21,6 @@ public class EventAttendanceDaoImpl implements EventAttendanceDao {
     private static final String KEYSPACE_NAME = eventAttendanceDb.getKeySpace();
     private static final String TABLE_NAME = eventAttendanceDb.getTableName();
     private ObjectMapper mapper = new ObjectMapper();
-    private String dateFormat = "yyyy-MM-dd";
 
 
     /**

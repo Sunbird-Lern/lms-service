@@ -11,7 +11,6 @@ import org.sunbird.common.request.RequestContext;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.actors.coursebatch.dao.UserCoursesDao;
 import org.sunbird.learner.util.Util;
-import org.sunbird.models.event.attendance.EventAttendance;
 import org.sunbird.models.user.courses.UserCourses;
 
 public class UserCoursesDaoImpl implements UserCoursesDao {

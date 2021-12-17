@@ -162,7 +162,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             new util.ArrayList[java.util.Map[String, AnyRef]]()
     }
 
-    def addCourseDetails(activeEnrolments: java.util.List[java.util.Map[String, AnyRef]], courseIds: java.util.List[String] , request:Request): java.util.List[java.util.Map[String, AnyRef]] = {
+    def addCourseDetails(activeEnrolments: java.util.List[java.util.Map[String, AnyRef]], courseIds: java.util.List[String], request: Request): java.util.List[java.util.Map[String, AnyRef]] = {
         logger.info(request.getRequestContext, "CourseEnrolmentActor::addCourseDetails::contentType : " + request.get(JsonKey.CONTENT_TYPE).asInstanceOf[String])
         val coursesList: java.util.List[java.util.Map[String, AnyRef]] = if (JsonKey.EVENT.equalsIgnoreCase(request.get(JsonKey.CONTENT_TYPE).asInstanceOf[String])) {
             val requestBody: String = prepareSearchRequest(courseIds, request, JsonKey.EVENT)
@@ -171,11 +171,14 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         } else {
             val requestBody: String = prepareSearchRequest(courseIds, request, null)
             val searchResult: java.util.Map[String, AnyRef] = ContentSearchUtil.searchContentSync(request.getRequestContext, request.getContext.getOrDefault(JsonKey.URL_QUERY_STRING, "").asInstanceOf[String], requestBody, request.get(JsonKey.HEADER).asInstanceOf[java.util.Map[String, String]])
-            val coursesEventsList: java.util.List[java.util.Map[String, AnyRef]] = searchResult.getOrDefault(JsonKey.CONTENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
-            coursesEventsList.addAll(searchResult.getOrDefault(JsonKey.EVENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]])
-            coursesEventsList
+            val coursesList: java.util.List[java.util.Map[String, AnyRef]] = searchResult.getOrDefault(JsonKey.CONTENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
+            val eventsList: java.util.List[java.util.Map[String, AnyRef]] = searchResult.getOrDefault(JsonKey.EVENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
+            if (CollectionUtils.isNotEmpty(coursesList)) {
+                coursesList.addAll(eventsList)
+                coursesList
+            } else
+                eventsList
         }
-        logger.info(request.getRequestContext, "CourseEnrolmentActor::addCourseDetails::coursesList : " + coursesList)
         val coursesMap = if (CollectionUtils.isNotEmpty(coursesList)) {
             coursesList.map(ev => ev.get(JsonKey.IDENTIFIER).asInstanceOf[String] -> ev).toMap
         } else courseIds.map(c => c -> new util.HashMap[String, AnyRef]()).toMap

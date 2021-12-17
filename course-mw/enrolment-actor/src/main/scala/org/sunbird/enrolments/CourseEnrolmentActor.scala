@@ -206,7 +206,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             put(JsonKey.REQUEST, new java.util.HashMap[String, AnyRef](){{
                 put(JsonKey.FILTERS, filters)
                 if (JsonKey.EVENT.equalsIgnoreCase(contentType) || JsonKey.COURSE.equalsIgnoreCase(contentType))
-                    put(JsonKey.LIMIT, 200)
+                    put(JsonKey.LIMIT, 200.asInstanceOf[AnyRef])
                 else
                     put(JsonKey.LIMIT, courseIds.size().asInstanceOf[AnyRef])
             }})

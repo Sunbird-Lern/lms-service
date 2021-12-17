@@ -129,6 +129,7 @@ public class ContentSearchUtil {
         param.put(JsonKey.RES_MSG_ID, resmsgId);
         param.put(JsonKey.API_ID, apiId);
         resultMap.put(JsonKey.PARAMS, param);
+        logger.info(requestContext, "ContentSearchUtil::searchContentSync::resultMap : " + resultMap);
         return resultMap;
       } else {
         logger.info(requestContext, "Composite search resturned failed response :: " + response.getStatus());

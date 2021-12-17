@@ -174,10 +174,9 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             val coursesList: java.util.List[java.util.Map[String, AnyRef]] = searchResult.getOrDefault(JsonKey.CONTENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
             val eventsList: java.util.List[java.util.Map[String, AnyRef]] = searchResult.getOrDefault(JsonKey.EVENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
             if (CollectionUtils.isNotEmpty(coursesList)) {
-                coursesList.addAll(eventsList)
+                if (CollectionUtils.isNotEmpty(eventsList)) coursesList.addAll(eventsList)
                 coursesList
-            } else
-                eventsList
+            } else eventsList
         }
         val coursesMap = if (CollectionUtils.isNotEmpty(coursesList)) {
             coursesList.map(ev => ev.get(JsonKey.IDENTIFIER).asInstanceOf[String] -> ev).toMap

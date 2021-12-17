@@ -24,7 +24,7 @@ public class CourseEnrollmentController extends BaseController {
   @Named("course-enrolment-actor")
   private ActorRef courseEnrolmentActor;
 
-  public CompletionStage<Result> getEnrolledCourses(String uid, String contentType, Http.Request httpRequest) {
+  public CompletionStage<Result> getEnrolledCourses(String uid, Http.Request httpRequest) {
     return handleRequest(courseEnrolmentActor, "listEnrol",
         httpRequest.body().asJson(),
         (req) -> {
@@ -41,7 +41,6 @@ public class CourseEnrollmentController extends BaseController {
           request
               .getContext()
               .put(JsonKey.BATCH_DETAILS, httpRequest.queryString().get(JsonKey.BATCH_DETAILS));
-          request.getRequest().put(JsonKey.CONTENT_TYPE, contentType);
             if (queryParams.containsKey("cache")) {
                 request.getContext().put("cache", Boolean.parseBoolean(queryParams.get("cache")[0]));
             } else

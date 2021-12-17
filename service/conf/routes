@@ -13,7 +13,7 @@ POST /v1/data/sync                          @controllers.search.SearchController
 DELETE /v1/cache/clear/:mapName @controllers.cache.CacheController.clearCache(mapName:String, request: play.mvc.Http.Request)
 
 # Course Management APIs
-GET      /v1/user/courses/list/:uid	    @controllers.enrollment.CourseEnrollmentController.getEnrolledCourses(uid:String, contentType:String ?= null, request: play.mvc.Http.Request)
+GET      /v1/user/courses/list/:uid	    @controllers.enrollment.CourseEnrollmentController.getEnrolledCourses(uid:String, request: play.mvc.Http.Request)
 POST     /v2/user/courses/list	    @controllers.enrollment.CourseEnrollmentController.getUserEnrolledCourses(contentType:String ?= null, request: play.mvc.Http.Request)
 POST     /v1/course/enroll	    		@controllers.enrollment.CourseEnrollmentController.enrollCourse(request: play.mvc.Http.Request)
 POST     /v1/course/unenroll             @controllers.enrollment.CourseEnrollmentController.unenrollCourse(request: play.mvc.Http.Request)
@@ -24,7 +24,7 @@ PATCH    /v1/user/content/state     	@controllers.LearnerController.updateConten
 PATCH    /v1/content/state/update     	@controllers.LearnerController.updateContentState(request: play.mvc.Http.Request)
 
 # Event Management APIs
-GET     /v1/user/event/list/:uid            @controllers.enrollment.CourseEnrollmentController.getEnrolledCourses(uid: String, contentType:String ?= null, request: play.mvc.Http.Request)
+GET     /v1/user/event/list/:uid            @controllers.enrollment.CourseEnrollmentController.getEnrolledCourses(uid: String, request: play.mvc.Http.Request)
 POST    /v1/event/enroll	    		    @controllers.enrollment.CourseEnrollmentController.enrollCourse(request: play.mvc.Http.Request)
 POST    /v1/event/unenroll                  @controllers.enrollment.CourseEnrollmentController.unenrollCourse(request: play.mvc.Http.Request)
 GET     /v1/event/participants/list         @controllers.enrollment.CourseEnrollmentController.getParticipantsForFixedBatch(request: play.mvc.Http.Request)

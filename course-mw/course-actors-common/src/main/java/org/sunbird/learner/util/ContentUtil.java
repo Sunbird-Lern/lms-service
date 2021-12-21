@@ -101,6 +101,59 @@ public final class ContentUtil {
     return resMap;
   }
 
+  /**
+   * Returns the count
+   *
+   * @param params String
+   * @param headers Map<String, String>
+   * @return Map<String,Object>
+   */
+  public static Map<String, Object> searchContentCount(String params, Map<String, String> headers) {
+    Map<String, Object> resMap = new HashMap<>();
+    try {
+      String baseSearchUrl = ProjectUtil.getConfigValue(JsonKey.SEARCH_SERVICE_API_BASE_URL);
+      headers.put(
+              JsonKey.AUTHORIZATION, JsonKey.BEARER + System.getenv(JsonKey.EKSTEP_AUTHORIZATION));
+      headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+      headers.remove(HttpHeaders.ACCEPT_ENCODING.toLowerCase());
+      headers.put(HttpHeaders.ACCEPT_ENCODING.toLowerCase(), "UTF-8");
+      if (StringUtils.isBlank(headers.get(JsonKey.AUTHORIZATION))) {
+        headers.put(
+                JsonKey.AUTHORIZATION,
+                PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_AUTHORIZATION));
+      }
+      logger.info(null, "making call for content search ==" + params);
+      String response =
+              HttpUtil.sendPostRequest(
+                      baseSearchUrl
+                              + PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_CONTENT_COUNT_URL),
+                      params,
+                      headers);
+      logger.info(null, "Content search response", null, new HashMap<>(){{put("response", response);}});
+      Map<String, Object> data = mapper.readValue(response, Map.class);
+      if (MapUtils.isNotEmpty(data)) {
+        String resmsgId = (String) ((Map<String, Object>) data.get("params")).get("resmsgid");
+        String apiId = (String) data.get("id");
+        data = (Map<String, Object>) data.get(JsonKey.RESULT);
+        logger.info(null,
+                "Total number of content fetched from Ekstep while assembling page data : "
+                        + data.get(JsonKey.COUNT));
+        if (MapUtils.isNotEmpty(data)) {
+          Map<String, Object> param = new HashMap<>();
+          param.put(JsonKey.RES_MSG_ID, resmsgId);
+          param.put(JsonKey.API_ID, apiId);
+          resMap.put(JsonKey.PARAMS, param);
+          resMap.put(JsonKey.COUNT, data.get(JsonKey.COUNT));
+        }
+      } else {
+        logger.info(null, "EkStepRequestUtil:searchContent No data found");
+      }
+    } catch (Exception e) {
+      logger.error(null, "Error found during content search parse==" + e.getMessage(), e);
+    }
+    return resMap;
+  }
+
   public static String contentCall(String baseURL, String apiURL, String authKey, String body)
       throws IOException {
     String url = baseURL + PropertiesCache.getInstance().getProperty(apiURL);

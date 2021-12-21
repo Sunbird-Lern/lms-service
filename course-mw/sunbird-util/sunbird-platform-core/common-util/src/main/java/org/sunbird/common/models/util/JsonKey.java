@@ -201,6 +201,7 @@ public final class JsonKey {
   public static final String EKSTEP_CONCEPT_URL = "ekstep_concept_base_url";
   public static final String EKSTEP_CONTENT_SEARCH_BASE_URL = "ekstep_content_search_base_url";
   public static final String EKSTEP_CONTENT_SEARCH_URL = "ekstep_content_search_url";
+  public static final String EKSTEP_CONTENT_COUNT_URL = "ekstep_content_count_url";
   public static final String EKSTEP_CONTENT_UPDATE_URL = "ekstep.content.update.url";
   public static final String EKSTEP_CONTENT_URL = "content_url";
   public static final String EKSTEP_COURSE_PUBLISH_URL = "ekstep_course_publish_url";

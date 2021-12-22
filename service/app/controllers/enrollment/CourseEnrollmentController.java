@@ -6,9 +6,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import controllers.BaseController;
 import controllers.enrollment.validator.CourseEnrollmentRequestValidator;
+import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.responsecode.ResponseCode;
 import play.mvc.Http;
 import play.mvc.Result;
 import org.sunbird.common.Common;
@@ -225,12 +227,14 @@ public class CourseEnrollmentController extends BaseController {
      */
     public CompletionStage<Result> getCourseSummary(Http.Request httpRequest) {
         return handleRequest(courseEnrolmentActor, "getCourseSummary",
+                httpRequest.body().asJson(),
                 (req) -> {
                     Request request = (Request) req;
                     Map<String, String[]> queryParams = new HashMap<>(httpRequest.queryString());
                     request
                             .getContext()
                             .put(JsonKey.URL_QUERY_STRING, getQueryString(queryParams));
+                    new CourseEnrollmentRequestValidator().validateSummaryReport(request);
                     return null;
                 },
                 httpRequest);
@@ -243,12 +247,14 @@ public class CourseEnrollmentController extends BaseController {
      */
     public CompletionStage<Result> getEventSummary(Http.Request httpRequest) {
         return handleRequest(courseEnrolmentActor, "getEventSummary",
+                httpRequest.body().asJson(),
                 (req) -> {
                     Request request = (Request) req;
                     Map<String, String[]> queryParams = new HashMap<>(httpRequest.queryString());
                     request
                             .getContext()
                             .put(JsonKey.URL_QUERY_STRING, getQueryString(queryParams));
+                    new CourseEnrollmentRequestValidator().validateSummaryReport(request);
                     return null;
                 },
                 httpRequest);

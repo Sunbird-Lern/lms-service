@@ -462,7 +462,7 @@ public class BaseRequestValidator {
         });
   }
 
-  private void validateListValues(List val, String key) {
+  public void validateListValues(List val, String key) {
     val.forEach(
         v -> {
           if (v == null) {

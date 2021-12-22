@@ -1,9 +1,13 @@
 package controllers.enrollment.validator;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.util.*;
 import org.sunbird.common.request.BaseRequestValidator;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
+
+import java.util.List;
 
 public class CourseEnrollmentRequestValidator extends BaseRequestValidator {
 
@@ -84,5 +88,27 @@ public class CourseEnrollmentRequestValidator extends BaseRequestValidator {
    */
   public void validateCreateAttendance(String onlineProvider) {
     validateParam(onlineProvider, ResponseCode.mandatoryParamsMissing, JsonKey.ONLINE_PROVIDER);
+  }
+
+  /**
+   * Validates the param for summary reports
+   *
+   * @param request the request
+   */
+  public void validateSummaryReport(Request request) {
+    if (request.getRequest().containsKey(JsonKey.ORGANISATION_IDS)
+            && !(request.getRequest().get(JsonKey.ORGANISATION_IDS) instanceof List)) {
+      throw new ProjectCommonException(
+              ResponseCode.dataTypeError.getErrorCode(),
+              ResponseCode.dataTypeError.getErrorMessage(),
+              ResponseCode.CLIENT_ERROR.getResponseCode());
+    } else if (CollectionUtils.isNotEmpty((List<String>) request.getRequest().get(JsonKey.ORGANISATION_IDS))) {
+      validateListValues((List<String>) request.getRequest().get(JsonKey.ORGANISATION_IDS), JsonKey.ORGANISATION_IDS);
+    } else {
+      throw new ProjectCommonException(
+              ResponseCode.invalidParameterValue.getErrorCode(),
+              ResponseCode.invalidParameterValue.getErrorMessage(),
+              ResponseCode.CLIENT_ERROR.getResponseCode());
+    }
   }
 }

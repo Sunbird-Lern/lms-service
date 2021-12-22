@@ -1119,6 +1119,7 @@ public final class JsonKey {
   public static final String COURSE_KEY = "Course";
   public static final String EVENT_KEY = "Event";
   public static final String EVENT = "event";
+  public static final String ORGANISATION_IDS = "organisationIds";
 
   private JsonKey() {}
 }

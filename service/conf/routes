@@ -88,6 +88,6 @@ POST /v1/group/activity/agg                     @controllers.group.GroupAggContr
 POST /v1/collection/summary                     @controllers.collectionsummaryaggregate.CollectionSummaryAggregateController.getCollectionSummaryAggregate(request: play.mvc.Http.Request)
 
 #Course summary report
-GET     /v1/course/summary            @controllers.enrollment.CourseEnrollmentController.getCourseSummary(request: play.mvc.Http.Request)
+POST     /v1/course/summary            @controllers.enrollment.CourseEnrollmentController.getCourseSummary(request: play.mvc.Http.Request)
 #Event summary report
-GET     /v1/event/summary            @controllers.enrollment.CourseEnrollmentController.getEventSummary(request: play.mvc.Http.Request)
+POST     /v1/event/summary            @controllers.enrollment.CourseEnrollmentController.getEventSummary(request: play.mvc.Http.Request)

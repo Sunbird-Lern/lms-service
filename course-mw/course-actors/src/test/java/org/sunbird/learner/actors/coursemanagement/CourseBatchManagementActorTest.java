@@ -551,6 +551,7 @@ public class CourseBatchManagementActorTest {
       put("content", new HashMap<String, Object>() {{
         put("contentType", "Course");
         put("status", "Live");
+        put("leafNodesCount", 1);
       }});
     }};
     when(ContentUtil.getContent(

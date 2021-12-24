@@ -312,7 +312,9 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
        val updateMap = new java.util.HashMap[String, AnyRef] () {{
             put("lastreadcontentid", lastAccessContent.get(JsonKey.CONTENT_ID_KEY))
             put("lastreadcontentstatus", lastAccessContent.get("status"))
-        }}
+            put(JsonKey.LAST_CONTENT_ACCESS_TIME, lastAccessContent.get(JsonKey.LAST_ACCESS_TIME_KEY))
+
+       }}
       val selectMap = new util.HashMap[String, AnyRef]() {{
         put("batchId", batchId)
         put("userId", userId)

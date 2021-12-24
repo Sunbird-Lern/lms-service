@@ -314,7 +314,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             } else new java.util.ArrayList[java.util.Map[String, AnyRef]]()
         }
         val resp: Response = new Response()
-        resp.put(JsonKey.COURSES, enrolments.sortBy(_.get("lastContentAccessTime").asInstanceOf[Date]).reverse.toList)
+        resp.put(JsonKey.COURSES, enrolments.sortBy(_.get("lastContentAccessTime").asInstanceOf[Date]!=null).reverse.toList)
         resp
     }
     // TODO: to be removed once all are in scala.

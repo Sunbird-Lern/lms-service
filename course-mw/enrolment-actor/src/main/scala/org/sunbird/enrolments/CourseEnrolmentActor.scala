@@ -806,7 +806,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val batchId = batch.get(JsonKey.BATCH_ID).asInstanceOf[String]
         val eventCourseId = event.get(JsonKey.IDENTIFIER).asInstanceOf[String]
         eventCourseSummaryResponse.put(JsonKey.BATCH_ID, batchId)
-        eventCourseSummaryResponse.put(JsonKey.NAME, batch.get(JsonKey.NAME).asInstanceOf[String])
+        eventCourseSummaryResponse.put(JsonKey.BATCH_NAME, batch.get(JsonKey.NAME).asInstanceOf[String])
 
         if (null != eventCourseId && null != batchId) {
             val userCourses: util.List[UserCourses] = userCoursesDao.read(eventCourseId, batchId, request.getRequestContext)

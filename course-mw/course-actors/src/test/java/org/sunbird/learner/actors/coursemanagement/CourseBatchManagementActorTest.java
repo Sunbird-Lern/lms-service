@@ -532,6 +532,36 @@ public class CourseBatchManagementActorTest {
             .equals(ResponseCode.invalidBatchStartDateError.getErrorCode()));
   }
 
+  @Test
+  public void testBatchCreationFailureOnEmptyLeafNodes() throws Exception {
+    int batchProgressStatus = ProjectUtil.ProgressStatus.NOT_STARTED.getValue();
+    Response mockGetRecordByIdResponse = getMockCassandraRecordByIdResponse(batchProgressStatus);
+    when(mockCassandraOperation.getRecordByIdentifier(
+        Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
+        .thenReturn(mockGetRecordByIdResponse);
+    mockCourseEnrollmentActorWithOutLeafNodes();
+
+    TestKit probe = new TestKit(system);
+    ActorRef subject = system.actorOf(props);
+    Request reqObj = new Request();
+    reqObj.setOperation(ActorOperations.UPDATE_BATCH.getValue());
+    HashMap<String, Object> innerMap = new HashMap<>();
+    innerMap.put(JsonKey.ID, BATCH_ID);
+    innerMap.put(JsonKey.NAME, BATCH_NAME);
+    innerMap.put(JsonKey.START_DATE, existingStartDate);
+    innerMap.put(JsonKey.END_DATE, null);
+    innerMap.put(JsonKey.ENROLLMENT_END_DATE, null);
+    reqObj.getRequest().putAll(innerMap);
+    subject.tell(reqObj, probe.getRef());
+    ProjectCommonException exception =
+        probe.expectMsgClass(duration("10 second"), ProjectCommonException.class);
+
+    Assert.assertTrue(
+        ((ProjectCommonException) exception)
+            .getCode()
+            .equals(ResponseCode.invalidCourseId.getErrorCode()));
+  }
+
   private Map<String, Object> getCertTemplate() throws Exception{
     String template = " {\n" +
             "    \"template_01_prad\": {\n" +
@@ -556,6 +586,17 @@ public class CourseBatchManagementActorTest {
     }};
     when(ContentUtil.getContent(
             Mockito.anyString(), Mockito.anyList())).thenReturn(courseMap);
+  }
+
+  private void mockCourseEnrollmentActorWithOutLeafNodes(){
+    Map<String, Object> courseMap = new HashMap<String, Object>() {{
+      put("content", new HashMap<String, Object>() {{
+        put("contentType", "Course");
+        put("status", "Live");
+      }});
+    }};
+    when(ContentUtil.getContent(
+        Mockito.anyString(), Mockito.anyList())).thenReturn(courseMap);
   }
 
   private void courseBatchUtilDateMethods() throws Exception {

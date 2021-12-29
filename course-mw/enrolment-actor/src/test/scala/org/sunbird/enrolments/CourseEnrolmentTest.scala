@@ -161,7 +161,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         userCourse.setCourseId("do_11305984881537024012255")
         userCourse.setBatchId("0130598559365038081")
         
-        val enrolmentsString = "[{\"dateTime\":1594219912979,\"lastReadContentStatus\":2,\"completionPercentage\":100,\"enrolledDate\":\"1594219912979\",\"addedBy\":\"6cf06951-55fe-2a81-4e37-4475428ece80\",\"delta\":null,\"active\":true,\"contentstatus\":{\"do_11305605610466508811\":2},\"batchId\":\"0130598559365038081\",\"userId\":\"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"certificates\":[],\"completedOn\":1595422618082,\"grade\":null,\"progress\":1,\"lastReadContentId\":\"do_11305605610466508811\",\"courseId\":\"do_11305984881537024012255\",\"status\":2},{\"dateTime\":1594219912979,\"completionpercentage\":0,\"enrolledDate\":\"1594219912978\",\"addedBy\":\"6cf06951-55fe-2a81-4e37-4475428ece80\",\"delta\":null,\"active\":true,\"batchId\":\"0130598559365038083\",\"userId\":\"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"certificates\":[],\"grade\":null,\"progress\":0,\"lastReadContentId\":\"do_11305605610466508811\",\"courseId\":\"do_11305984881537024012255\",\"status\":0}]"
+        val enrolmentsString = "[{\"lastContentAccessTime\":\"2019-05-13 16:08:45:125+0530\",\"dateTime\":1594219912979,\"lastReadContentStatus\":2,\"completionPercentage\":100,\"enrolledDate\":\"1594219912979\",\"addedBy\":\"6cf06951-55fe-2a81-4e37-4475428ece80\",\"delta\":null,\"active\":true,\"contentstatus\":{\"do_11305605610466508811\":2},\"batchId\":\"0130598559365038081\",\"userId\":\"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"certificates\":[],\"completedOn\":1595422618082,\"grade\":null,\"progress\":1,\"lastReadContentId\":\"do_11305605610466508811\",\"courseId\":\"do_11305984881537024012255\",\"status\":2},{\"dateTime\":1594219912979,\"completionpercentage\":0,\"enrolledDate\":\"1594219912978\",\"addedBy\":\"6cf06951-55fe-2a81-4e37-4475428ece80\",\"delta\":null,\"active\":true,\"batchId\":\"0130598559365038083\",\"userId\":\"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"certificates\":[],\"grade\":null,\"progress\":0,\"lastReadContentId\":\"do_11305605610466508811\",\"courseId\":\"do_11305984881537024012255\",\"status\":0}]"
         val enrolmentsList = mapper.readValue(enrolmentsString, classOf[java.util.List[java.util.Map[String, AnyRef]]])
         
         (userDao.listEnrolments(_: RequestContext, _: String)).expects(*,*).returns(enrolmentsList)
@@ -170,7 +170,10 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         assert(null != response)
         // TODO: Unable to mock search response as it is static method, hence commented below line to run it in local.
         assert(2 == response.getResult.get("courses").asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]].size())
-        assert(null != response.getResult.get("courses").asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]].get(0).get("completionPercentage"))    }
+        assert(null != response.getResult.get("courses").asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]].get(0).get("completionPercentage"))
+        assert(null != response.getResult.get("courses").asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]].get(0).get("lastContentAccessTime"))
+
+    }
 
     "listEnrol with RedisConnector is true" should "return success on listing from redis RedisConnector" in {
         val userCourse = validUserCourse()

@@ -51,6 +51,7 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
         response.put("response", new java.util.ArrayList[java.util.Map[String, AnyRef]])
         ((requestContext: RequestContext, keyspace: _root_.scala.Predef.String, table: _root_.scala.Predef.String, filters: _root_.java.util.Map[_root_.scala.Predef.String, AnyRef], fields: _root_.java.util.List[_root_.scala.Predef.String]) => cassandraOperation.getRecords(requestContext, keyspace, table, filters, fields)).expects(*,*,*,*,*).returns(response)
         val result = callActor(getStateReadRequest(), Props(new ContentConsumptionActor().setCassandraOperation(cassandraOperation, false)))
+        println("RRRR ="+result.getResult)
         assert(null!= result)
     }
     

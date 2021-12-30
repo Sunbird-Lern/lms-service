@@ -21,6 +21,7 @@ import org.sunbird.learner.util.{ContentUtil, JsonUtil}
 import org.sunbird.models.course.batch.CourseBatch
 import org.sunbird.models.user.courses.UserCourses
 
+import java.util.Date
 import scala.concurrent.duration.FiniteDuration
 
 class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
@@ -160,10 +161,9 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         userCourse.setActive(true)
         userCourse.setCourseId("do_11305984881537024012255")
         userCourse.setBatchId("0130598559365038081")
-        
-        val enrolmentsString = "[{\"lastContentAccessTime\":\"2019-05-13 16:08:45:125+0530\",\"dateTime\":1594219912979,\"lastReadContentStatus\":2,\"completionPercentage\":100,\"enrolledDate\":\"1594219912979\",\"addedBy\":\"6cf06951-55fe-2a81-4e37-4475428ece80\",\"delta\":null,\"active\":true,\"contentstatus\":{\"do_11305605610466508811\":2},\"batchId\":\"0130598559365038081\",\"userId\":\"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"certificates\":[],\"completedOn\":1595422618082,\"grade\":null,\"progress\":1,\"lastReadContentId\":\"do_11305605610466508811\",\"courseId\":\"do_11305984881537024012255\",\"status\":2},{\"dateTime\":1594219912979,\"completionpercentage\":0,\"enrolledDate\":\"1594219912978\",\"addedBy\":\"6cf06951-55fe-2a81-4e37-4475428ece80\",\"delta\":null,\"active\":true,\"batchId\":\"0130598559365038083\",\"userId\":\"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"certificates\":[],\"grade\":null,\"progress\":0,\"lastReadContentId\":\"do_11305605610466508811\",\"courseId\":\"do_11305984881537024012255\",\"status\":0}]"
+        val enrolmentsString = "[{\"dateTime\":1594219912979,\"lastReadContentStatus\":2,\"completionPercentage\":100,\"enrolledDate\":\"1594219912979\",\"addedBy\":\"6cf06951-55fe-2a81-4e37-4475428ece80\",\"delta\":null,\"active\":true,\"contentstatus\":{\"do_11305605610466508811\":2},\"batchId\":\"0130598559365038081\",\"userId\":\"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"certificates\":[],\"completedOn\":1595422618082,\"grade\":null,\"progress\":1,\"lastReadContentId\":\"do_11305605610466508811\",\"courseId\":\"do_11305984881537024012255\",\"status\":2},{\"dateTime\":1594219912979,\"completionpercentage\":0,\"enrolledDate\":\"1594219912978\",\"addedBy\":\"6cf06951-55fe-2a81-4e37-4475428ece80\",\"delta\":null,\"active\":true,\"batchId\":\"0130598559365038083\",\"userId\":\"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"certificates\":[],\"grade\":null,\"progress\":0,\"lastReadContentId\":\"do_11305605610466508811\",\"courseId\":\"do_11305984881537024012255\",\"status\":0}]"
         val enrolmentsList = mapper.readValue(enrolmentsString, classOf[java.util.List[java.util.Map[String, AnyRef]]])
-        
+        enrolmentsList.get(0).put("lastContentAccessTime", new Date)
         (userDao.listEnrolments(_: RequestContext, _: String)).expects(*,*).returns(enrolmentsList)
         val response = callActorWithResult(getListEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)), enrolmentsList)
         println(response)

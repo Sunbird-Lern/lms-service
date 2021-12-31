@@ -29,4 +29,5 @@ public abstract class CourseJsonKey {
       "sunbird_send_email_notifictaion_api";
   public static final String NOTIFY_TEMPLATE="notifyTemplate";
   public static final String CERT_TEMPLATES = "certTemplates";
+    public static final String ADDITIONAL_PROPS = "additionalProps";
 }

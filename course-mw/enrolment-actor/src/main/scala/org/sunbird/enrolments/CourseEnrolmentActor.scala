@@ -5,10 +5,10 @@ import java.text.{MessageFormat, SimpleDateFormat}
 import java.time.format.DateTimeFormatter
 import java.time.{LocalDate, LocalDateTime, LocalTime, ZoneId}
 import java.util
-import java.util.Date
-
+import java.util.{Comparator, Date}
 import akka.actor.ActorRef
 import com.fasterxml.jackson.databind.ObjectMapper
+
 import javax.inject.{Inject, Named}
 import org.apache.commons.collections4.{CollectionUtils, MapUtils}
 import org.apache.commons.lang3.StringUtils
@@ -314,7 +314,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             } else new java.util.ArrayList[java.util.Map[String, AnyRef]]()
         }
         val resp: Response = new Response()
-        resp.put(JsonKey.COURSES, enrolments)
+        resp.put(JsonKey.COURSES, enrolments.asScala.toList.sortBy(_.get("lastContentAccessTime").asInstanceOf[Date]!=null).reverse.toList)
         resp
     }
     // TODO: to be removed once all are in scala.

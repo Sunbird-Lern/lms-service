@@ -1065,7 +1065,7 @@ public final class JsonKey {
   public static final String USER_ID_KEY = "userid";
   public static final String OLD_CREATED_DATE = "oldCreatedDate";
   public static final String X_LOGGING_HEADERS = "X_LOGGING_HEADERS";
-
+  public static final String LAST_CONTENT_ACCESS_TIME = "lastcontentaccesstime";
 
   private JsonKey() {}
 }

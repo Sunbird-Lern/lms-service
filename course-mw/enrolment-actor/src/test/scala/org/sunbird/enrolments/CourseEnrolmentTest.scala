@@ -2,7 +2,7 @@ package org.sunbird.enrolments
 
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
-import java.time.LocalDateTime
+import java.time.{LocalDate, LocalDateTime}
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
 import akka.actor.{ActorSystem, Props}
@@ -21,6 +21,9 @@ import org.sunbird.learner.util.{ContentUtil, JsonUtil}
 import org.sunbird.models.course.batch.CourseBatch
 import org.sunbird.models.user.courses.UserCourses
 
+import java.util.Date
+import scala.collection.JavaConverters
+import scala.collection.JavaConverters.asScalaBufferConverter
 import scala.concurrent.duration.FiniteDuration
 
 class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
@@ -160,17 +163,41 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         userCourse.setActive(true)
         userCourse.setCourseId("do_11305984881537024012255")
         userCourse.setBatchId("0130598559365038081")
-        
-        val enrolmentsString = "[{\"dateTime\":1594219912979,\"lastReadContentStatus\":2,\"completionpercentage\":100,\"enrolledDate\":\"1594219912979\",\"addedBy\":\"6cf06951-55fe-2a81-4e37-4475428ece80\",\"delta\":null,\"active\":true,\"contentstatus\":{\"do_11305605610466508811\":2},\"batchId\":\"0130598559365038081\",\"userId\":\"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"certificates\":[],\"completedOn\":1595422618082,\"grade\":null,\"progress\":1,\"lastReadContentId\":\"do_11305605610466508811\",\"courseId\":\"do_11305984881537024012255\",\"status\":2},{\"dateTime\":1594219912979,\"completionpercentage\":0,\"enrolledDate\":\"1594219912978\",\"addedBy\":\"6cf06951-55fe-2a81-4e37-4475428ece80\",\"delta\":null,\"active\":true,\"batchId\":\"0130598559365038083\",\"userId\":\"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"certificates\":[],\"grade\":null,\"progress\":0,\"lastReadContentId\":\"do_11305605610466508811\",\"courseId\":\"do_11305984881537024012255\",\"status\":0}]"
+        val enrolmentsString = "[{\"dateTime\":1594219912979,\"lastReadContentStatus\":2,\"completionPercentage\":100,\"enrolledDate\":\"1594219912979\",\"addedBy\":\"6cf06951-55fe-2a81-4e37-4475428ece80\",\"delta\":null,\"active\":true,\"contentstatus\":{\"do_11305605610466508811\":2},\"batchId\":\"0130598559365038081\",\"userId\":\"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"certificates\":[],\"completedOn\":1595422618082,\"grade\":null,\"progress\":1,\"lastReadContentId\":\"do_11305605610466508811\",\"courseId\":\"do_11305984881537024012255\",\"status\":2},{\"dateTime\":1594219912979,\"completionpercentage\":0,\"enrolledDate\":\"1594219912978\",\"addedBy\":\"6cf06951-55fe-2a81-4e37-4475428ece80\",\"delta\":null,\"active\":true,\"batchId\":\"0130598559365038083\",\"userId\":\"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"certificates\":[],\"grade\":null,\"progress\":0,\"lastReadContentId\":\"do_11305605610466508811\",\"courseId\":\"do_11305984881537024012255\",\"status\":0}]"
         val enrolmentsList = mapper.readValue(enrolmentsString, classOf[java.util.List[java.util.Map[String, AnyRef]]])
-        
+        (userDao.listEnrolments(_: RequestContext, _: String)).expects(*,*).returns(enrolmentsList)
+        val response = callActor(getListEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
+        println(response.getResult)
+        assert(null != response)
+        // TODO: Unable to mock search response as it is static method, hence commented below line to run it in local.
+        assert(2 == response.getResult.get("courses").asInstanceOf[List[java.util.Map[String, AnyRef]]].size)
+        assert(null != response.getResult.get("courses").asInstanceOf[List[java.util.Map[String, AnyRef]]].lift(0).get.get("completionPercentage"))
+
+    }
+
+    "listEnrol with multibatch same course" should "return sorted listing by last content access time" in {
+        val userCourse = validUserCourse()
+        userCourse.setActive(true)
+        userCourse.setCourseId("do_11305984881537024012255")
+        userCourse.setBatchId("0130598559365038081")
+        val enrolmentsString = "[{\"dateTime\":1594219912978,\"lastReadContentStatus\":2,\"completionPercentage\":100,\"enrolledDate\":\"1594219912979\",\"addedBy\":\"6cf06951-55fe-2a81-4e37-4475428ece80\",\"delta\":null,\"active\":true,\"contentstatus\":{\"do_11305605610466508811\":2},\"batchId\":\"0130598559365038081\",\"userId\":\"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"certificates\":[],\"completedOn\":1595422618082,\"grade\":null,\"progress\":1,\"lastReadContentId\":\"do_11305605610466508811\",\"courseId\":\"do_11305984881537024012255\",\"status\":2},{\"dateTime\":1594219912979,\"completionpercentage\":0,\"enrolledDate\":\"1594219912978\",\"addedBy\":\"6cf06951-55fe-2a81-4e37-4475428ece80\",\"delta\":null,\"active\":true,\"batchId\":\"0130598559365038083\",\"userId\":\"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"certificates\":[],\"grade\":null,\"progress\":0,\"lastReadContentId\":\"do_11305605610466508811\",\"courseId\":\"do_11305984881537024012255\",\"status\":0},{\"dateTime\":1594219912979,\"completionpercentage\":0,\"enrolledDate\":\"1594219912978\",\"addedBy\":\"6cf06951-55fe-2a81-4e37-4475428ece80\",\"delta\":null,\"active\":true,\"batchId\":\"0130598559365038083\",\"userId\":\"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"certificates\":[],\"grade\":null,\"progress\":0,\"lastReadContentId\":\"do_11305605610466508811\",\"courseId\":\"do_11305984881537024012255\",\"status\":0}]"
+        val enrolmentsList = mapper.readValue(enrolmentsString, classOf[java.util.List[java.util.Map[String, AnyRef]]])
+        enrolmentsList.get(0).put("lastContentAccessTime", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSZ").parse("2021-12-24 08:20:15.875000+0000"))
+        enrolmentsList.get(1).put("lastContentAccessTime", new Date())
+        enrolmentsList.get(2).put("lastContentAccessTime", null)
         (userDao.listEnrolments(_: RequestContext, _: String)).expects(*,*).returns(enrolmentsList)
         val response = callActor(getListEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         println(response)
         assert(null != response)
-        // TODO: Unable to mock search response as it is static method, hence commented below line to run it in local.
-        assert(2 == response.getResult.getOrDefault("courses", new java.util.ArrayList[java.util.Map[String, AnyRef]]()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]].size())
-        assert(null != response.getResult.getOrDefault("courses", new java.util.ArrayList[java.util.Map[String, AnyRef]]()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]].get(0).get("completionPercentage"))
+        val courses = response.getResult.get("courses").asInstanceOf[List[java.util.Map[String, AnyRef]]]
+        assert(null != courses)
+        val firstElementDate = courses.lift(0).get.get("lastContentAccessTime").asInstanceOf[Date]
+        assert(null != firstElementDate)
+        val secElementDate = courses.lift(1).get.get("lastContentAccessTime").asInstanceOf[Date]
+        assert(null != secElementDate)
+        assert(firstElementDate.after(secElementDate))
+        assert(null == courses.lift(2).get.get("lastContentAccessTime"))
+
     }
 
     "listEnrol with RedisConnector is true" should "return success on listing from redis RedisConnector" in {
@@ -273,7 +300,13 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         val probe = new TestKit(system)
         val actorRef = system.actorOf(props)
         actorRef.tell(request, probe.testActor)
-        probe.expectMsgType[Response](FiniteDuration.apply(10, TimeUnit.SECONDS))
+        probe.expectMsgType[Response](FiniteDuration.apply(120, TimeUnit.SECONDS))
+    }
+
+    def callActorWithResult(request: Request, props: Props, result: java.util.List[java.util.Map[String, AnyRef]]): Response = {
+        val response = callActor(request, props)
+        response.getResult.put("courses", result)
+        response
     }
 
     def callActorForFailure(request: Request, props: Props): ProjectCommonException = {

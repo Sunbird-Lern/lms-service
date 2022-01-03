@@ -591,14 +591,15 @@ public class CourseBatchManagementActor extends BaseActor {
   }
 
   private Map<String, Object> getContentDetails(RequestContext requestContext, String courseId, Map<String, String> headers) {
-    Map<String, Object> ekStepContent = ContentUtil.getContent(courseId, Arrays.asList("status", "batches"));
+    Map<String, Object> ekStepContent = ContentUtil.getContent(courseId, Arrays.asList("status", "batches", "leafNodesCount"));
     logger.info(requestContext, "CourseBatchManagementActor:getEkStepContent: courseId: " + courseId, null,
             ekStepContent);
     String status = (String) ((Map<String, Object>)ekStepContent.getOrDefault("content", new HashMap<>())).getOrDefault("status", "");
+    Integer leafNodesCount = (Integer) ((Map<String, Object>) ekStepContent.getOrDefault("content", new HashMap<>())).getOrDefault("leafNodesCount", 0);
     if (null == ekStepContent ||
             ekStepContent.size() == 0 ||
-            !validCourseStatus.contains(status)) {
-      logger.info(requestContext, "CourseBatchManagementActor:getEkStepContent: Not found course for ID = " + courseId);
+            !validCourseStatus.contains(status) || leafNodesCount == 0) {
+      logger.info(requestContext, "CourseBatchManagementActor:getEkStepContent: Invalid courseId = " + courseId);
       throw new ProjectCommonException(
           ResponseCode.invalidCourseId.getErrorCode(),
           ResponseCode.invalidCourseId.getErrorMessage(),

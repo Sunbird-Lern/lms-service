@@ -170,8 +170,8 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         println(response.getResult)
         assert(null != response)
         // TODO: Unable to mock search response as it is static method, hence commented below line to run it in local.
-        assert(2 == response.getResult.get("courses").asInstanceOf[List[java.util.Map[String, AnyRef]]].size)
-        assert(null != response.getResult.get("courses").asInstanceOf[List[java.util.Map[String, AnyRef]]].lift(0).get.get("completionPercentage"))
+        assert(2 == response.getResult.get("courses").asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]].size)
+        assert(null != response.getResult.get("courses").asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]].get(0).get("completionPercentage"))
 
     }
 
@@ -189,14 +189,14 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         val response = callActor(getListEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         println(response)
         assert(null != response)
-        val courses = response.getResult.get("courses").asInstanceOf[List[java.util.Map[String, AnyRef]]]
+        val courses = response.getResult.get("courses").asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
         assert(null != courses)
-        val firstElementDate = courses.lift(0).get.get("lastContentAccessTime").asInstanceOf[Date]
+        val firstElementDate = courses.get(0).get("lastContentAccessTime").asInstanceOf[Date]
         assert(null != firstElementDate)
-        val secElementDate = courses.lift(1).get.get("lastContentAccessTime").asInstanceOf[Date]
+        val secElementDate = courses.get(1).get("lastContentAccessTime").asInstanceOf[Date]
         assert(null != secElementDate)
         assert(firstElementDate.after(secElementDate))
-        assert(null == courses.lift(2).get.get("lastContentAccessTime"))
+        assert(null == courses.get(2).get("lastContentAccessTime"))
 
     }
 

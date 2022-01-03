@@ -70,6 +70,14 @@ public class CertificateRequestValidator extends BaseRequestValidator {
               ResponseCode.dataTypeError.getErrorMessage(), CourseJsonKey.SIGNATORY_LIST, "List"),
           ResponseCode.CLIENT_ERROR.getResponseCode());
     }
+    if (template.containsKey(CourseJsonKey.ADDITIONAL_PROPS)
+        && !(template.get(CourseJsonKey.ADDITIONAL_PROPS) instanceof Map)) {
+      throw new ProjectCommonException(
+          ResponseCode.dataTypeError.getErrorCode(),
+          MessageFormat.format(
+              ResponseCode.dataTypeError.getErrorMessage(), CourseJsonKey.ADDITIONAL_PROPS, "Map"),
+          ResponseCode.CLIENT_ERROR.getResponseCode());
+    }
   }
 
   public void validateDeleteCertificateRequest(Request certRequestDto) {

@@ -113,7 +113,7 @@ class GroupAggregatesActor @Inject()(implicit val cacheUtil: RedisCacheUtil) ext
         val aggLastUpdated = dbAggRecord.get("agg_last_updated").asInstanceOf[java.util.Map[String, AnyRef]]
         val agg = dbAgg.map(aggregate => Map("metric"-> aggregate._1, "value" -> aggregate._2, "lastUpdatedOn" -> aggLastUpdated.get(aggregate._1)).asJava).toList.asJava
         val userId = dbAggRecord.get("user_id").asInstanceOf[String]
-        (membersMap.get(userId).filterKeys(key => GROUP_MEMBERS_METADATA.contains(key)) ++ Map("agg" -> agg.filter(a => a.get("lastUpdatedOn") != null).toList.asJava)).asJava
+        (membersMap.get(userId).filterKeys(key => GROUP_MEMBERS_METADATA.contains(key)) ++ Map("agg" -> agg)).asJava
       }).toList
     } else List()
 
@@ -136,7 +136,7 @@ class GroupAggregatesActor @Inject()(implicit val cacheUtil: RedisCacheUtil) ext
   def activityLastUpdated(membersAggList: List[java.util.Map[String, AnyRef]]) = {
     if (membersAggList.nonEmpty) {
       val aggLatestUpdated = membersAggList.map(m => m.get("agg").asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]])
-        .flatten.map(agg => agg.get("lastUpdatedOn").asInstanceOf[java.util.Date]).max
+        .flatten.filter(a => a.get("lastUpdatedOn") != null).map(agg => agg.get("lastUpdatedOn").asInstanceOf[java.util.Date]).max
       aggLatestUpdated.getTime
     } else System.currentTimeMillis
   }

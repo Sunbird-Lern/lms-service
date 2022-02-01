@@ -175,8 +175,8 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         println(response)
         assert(null != response)
         // TODO: Unable to mock search response as it is static method, hence commented below line to run it in local.
-        assert(0 == response.getResult.getOrDefault("courses", new java.util.ArrayList[java.util.Map[String, AnyRef]]()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]].size())
-        //assert(null != response.getResult.getOrDefault("courses", new java.util.ArrayList[java.util.Map[String, AnyRef]]()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]].get(0).get("completionPercentage"))
+        assert(2 == response.getResult.getOrDefault("courses", new java.util.ArrayList[java.util.Map[String, AnyRef]]()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]].size())
+        assert(null != response.getResult.getOrDefault("courses", new java.util.ArrayList[java.util.Map[String, AnyRef]]()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]].get(0).get("completionPercentage"))
     }
 
     "listEnrol with RedisConnector is true" should "return success on listing from redis RedisConnector" in {

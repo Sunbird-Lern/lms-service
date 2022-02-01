@@ -27,6 +27,7 @@ import org.sunbird.models.course.batch.CourseBatch
 import org.sunbird.models.user.courses.UserCourses
 import org.sunbird.cache.util.RedisCacheUtil
 import org.sunbird.common.CassandraUtil
+import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.telemetry.util.TelemetryUtil
 
 import scala.collection.JavaConversions._
@@ -122,14 +123,14 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             enrolments.filter(e => e.getOrDefault(JsonKey.ACTIVE, false.asInstanceOf[AnyRef]).asInstanceOf[Boolean]).toList.asJava
             enrolments.sort(new Comparator[util.Map[String, AnyRef]] {
                 override def compare(map1: util.Map[String, AnyRef], map2: util.Map[String, AnyRef]): Int = {
-                    if (null != map1.get("enrolled_date") && null != map2.get("enrolled_date")) {
-                        map2.get("enrolled_date").asInstanceOf[Date].compareTo(map1.get("enrolled_date").asInstanceOf[Date])
+                    if (null != map1.get(JsonKey.COURSE_ENROLL_DATE) && null != map2.get(JsonKey.COURSE_ENROLL_DATE)) {
+                        map2.get(JsonKey.COURSE_ENROLL_DATE).asInstanceOf[Date].compareTo(map1.get(JsonKey.COURSE_ENROLL_DATE).asInstanceOf[Date])
                     } else {
                         1
                     }
                 }
             })
-            enrolments.take(1000)
+            enrolments.take(Integer.parseInt(ProjectUtil.getConfigValue("enrollment_list_size")))
         } else {
             new util.ArrayList[java.util.Map[String, AnyRef]]()
         }

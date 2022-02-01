@@ -9,7 +9,6 @@ import java.util.{Comparator, Date}
 
 import akka.actor.ActorRef
 import com.fasterxml.jackson.databind.ObjectMapper
-
 import javax.inject.{Inject, Named}
 import org.apache.commons.collections4.{CollectionUtils, MapUtils}
 import org.apache.commons.lang3.StringUtils

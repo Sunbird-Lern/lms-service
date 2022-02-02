@@ -5,7 +5,7 @@ import java.text.{MessageFormat, SimpleDateFormat}
 import java.time.format.DateTimeFormatter
 import java.time.{LocalDate, LocalDateTime, LocalTime, ZoneId}
 import java.util
-import java.util.Date
+import java.util.{Comparator, Date}
 
 import akka.actor.ActorRef
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -26,6 +26,7 @@ import org.sunbird.models.course.batch.CourseBatch
 import org.sunbird.models.user.courses.UserCourses
 import org.sunbird.cache.util.RedisCacheUtil
 import org.sunbird.common.CassandraUtil
+import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.telemetry.util.TelemetryUtil
 
 import scala.collection.JavaConversions._
@@ -117,11 +118,21 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
 
     def getActiveEnrollments(userId: String, requestContext: RequestContext): java.util.List[java.util.Map[String, AnyRef]] = {
         val enrolments: java.util.List[java.util.Map[String, AnyRef]] = userCoursesDao.listEnrolments(requestContext, userId)
-        logger.info(requestContext, "All enrolment list from casandra :: " + enrolments + " for user ::" + userId)
-        if (CollectionUtils.isNotEmpty(enrolments))
+        if (CollectionUtils.isNotEmpty(enrolments)) {
             enrolments.filter(e => e.getOrDefault(JsonKey.ACTIVE, false.asInstanceOf[AnyRef]).asInstanceOf[Boolean]).toList.asJava
-        else
+            enrolments.sort(new Comparator[util.Map[String, AnyRef]] {
+                override def compare(map1: util.Map[String, AnyRef], map2: util.Map[String, AnyRef]): Int = {
+                    if (null != map1.get(JsonKey.COURSE_ENROLL_DATE) && null != map2.get(JsonKey.COURSE_ENROLL_DATE)) {
+                        map2.get(JsonKey.COURSE_ENROLL_DATE).asInstanceOf[Date].compareTo(map1.get(JsonKey.COURSE_ENROLL_DATE).asInstanceOf[Date])
+                    } else {
+                        1
+                    }
+                }
+            })
+            enrolments.take(Integer.parseInt(ProjectUtil.getConfigValue("enrollment_list_size")))
+        } else {
             new util.ArrayList[java.util.Map[String, AnyRef]]()
+        }
     }
 
     def addCourseDetails(activeEnrolments: java.util.List[java.util.Map[String, AnyRef]], courseIds: java.util.List[String] , request:Request): java.util.List[java.util.Map[String, AnyRef]] = {
@@ -293,12 +304,10 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val key = getCacheKey(userId)
         val responseString = cacheUtil.get(key)
         if (StringUtils.isNotBlank(responseString)) {
-            logger.info(null, "CourseEnrolmentActor :: getCachedEnrolmentList :: Entry in redis for key " + key + ", cache result " + responseString)
             JsonUtil.deserialize(responseString, classOf[Response])
         } else {
             val response = handleEmptyCache()
             val responseString = JsonUtil.serialize(response)
-            logger.info(null, "CourseEnrolmentActor :: getCachedEnrolmentList handleEmptyCache :: Entry in redis for key " + key + ", cache result " + responseString)
             cacheUtil.set(key, responseString, ttl)
             response
         }
@@ -307,7 +316,6 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     def getEnrolmentList(request: Request, userId: String): Response = {
         logger.info(request.getRequestContext,"CourseEnrolmentActor :: getCachedEnrolmentList :: fetching data from cassandra with userId " + userId)
         val activeEnrolments: java.util.List[java.util.Map[String, AnyRef]] = getActiveEnrollments( userId, request.getRequestContext)
-        logger.info(request.getRequestContext, "Active enrolment list from casandra :: " + activeEnrolments + " | userId ::" + userId)
         val enrolments: java.util.List[java.util.Map[String, AnyRef]] = {
             if (CollectionUtils.isNotEmpty(activeEnrolments)) {
               val courseIds: java.util.List[String] = activeEnrolments.map(e => e.getOrDefault(JsonKey.COURSE_ID, "").asInstanceOf[String]).distinct.filter(id => StringUtils.isNotBlank(id)).toList.asJava

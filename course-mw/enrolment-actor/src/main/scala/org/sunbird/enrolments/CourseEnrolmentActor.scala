@@ -136,7 +136,6 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
                 coursesList.map(ev => ev.get(JsonKey.IDENTIFIER).asInstanceOf[String] -> ev).toMap
             } else Map()
         }
-        
         activeEnrolments.filter(enrolment => coursesMap.containsKey(enrolment.get(JsonKey.COURSE_ID))).map(enrolment => {
             val courseContent = coursesMap.get(enrolment.get(JsonKey.COURSE_ID))
             enrolment.put(JsonKey.COURSE_NAME, courseContent.get(JsonKey.NAME))

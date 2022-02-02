@@ -118,7 +118,6 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
 
     def getActiveEnrollments(userId: String, requestContext: RequestContext): java.util.List[java.util.Map[String, AnyRef]] = {
         val enrolments: java.util.List[java.util.Map[String, AnyRef]] = userCoursesDao.listEnrolments(requestContext, userId)
-        logger.info(requestContext, "All enrolment list from casandra :: " + enrolments + " for user ::" + userId)
         if (CollectionUtils.isNotEmpty(enrolments)) {
             enrolments.filter(e => e.getOrDefault(JsonKey.ACTIVE, false.asInstanceOf[AnyRef]).asInstanceOf[Boolean]).toList.asJava
             enrolments.asScala.toList.sortBy(_.get(JsonKey.COURSE_ENROLL_DATE).asInstanceOf[Date] != null).reverse

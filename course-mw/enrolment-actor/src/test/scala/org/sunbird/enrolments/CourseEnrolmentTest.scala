@@ -207,7 +207,6 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         assert(null != secElementDate)
         //assert(firstElementDate.after(secElementDate))
         assert(null == courses.get(2).get("lastContentAccessTime"))
-
     }
 
     "listEnrol with RedisConnector is true" should "return success on listing from redis RedisConnector" in {

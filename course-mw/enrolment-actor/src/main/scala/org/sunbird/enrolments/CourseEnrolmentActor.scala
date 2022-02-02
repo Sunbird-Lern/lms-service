@@ -26,6 +26,7 @@ import org.sunbird.models.course.batch.CourseBatch
 import org.sunbird.models.user.courses.UserCourses
 import org.sunbird.cache.util.RedisCacheUtil
 import org.sunbird.common.CassandraUtil
+import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.telemetry.util.TelemetryUtil
 
 import scala.collection.JavaConversions._
@@ -117,11 +118,13 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
 
     def getActiveEnrollments(userId: String, requestContext: RequestContext): java.util.List[java.util.Map[String, AnyRef]] = {
         val enrolments: java.util.List[java.util.Map[String, AnyRef]] = userCoursesDao.listEnrolments(requestContext, userId)
-        logger.info(requestContext, "All enrolment list from casandra :: " + enrolments + " for user ::" + userId)
-        if (CollectionUtils.isNotEmpty(enrolments))
+        if (CollectionUtils.isNotEmpty(enrolments)) {
             enrolments.filter(e => e.getOrDefault(JsonKey.ACTIVE, false.asInstanceOf[AnyRef]).asInstanceOf[Boolean]).toList.asJava
-        else
+            enrolments.asScala.toList.sortBy(_.get(JsonKey.COURSE_ENROLL_DATE).asInstanceOf[Date] != null).reverse
+              .take(Integer.parseInt(ProjectUtil.getConfigValue("enrollment_list_size"))).asJava
+        } else {
             new util.ArrayList[java.util.Map[String, AnyRef]]()
+        }
     }
 
     def addCourseDetails(activeEnrolments: java.util.List[java.util.Map[String, AnyRef]], courseIds: java.util.List[String] , request:Request): java.util.List[java.util.Map[String, AnyRef]] = {
@@ -133,7 +136,6 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
                 coursesList.map(ev => ev.get(JsonKey.IDENTIFIER).asInstanceOf[String] -> ev).toMap
             } else Map()
         }
-        
         activeEnrolments.filter(enrolment => coursesMap.containsKey(enrolment.get(JsonKey.COURSE_ID))).map(enrolment => {
             val courseContent = coursesMap.get(enrolment.get(JsonKey.COURSE_ID))
             enrolment.put(JsonKey.COURSE_NAME, courseContent.get(JsonKey.NAME))
@@ -293,12 +295,10 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val key = getCacheKey(userId)
         val responseString = cacheUtil.get(key)
         if (StringUtils.isNotBlank(responseString)) {
-            logger.info(null, "CourseEnrolmentActor :: getCachedEnrolmentList :: Entry in redis for key " + key + ", cache result " + responseString)
             JsonUtil.deserialize(responseString, classOf[Response])
         } else {
             val response = handleEmptyCache()
             val responseString = JsonUtil.serialize(response)
-            logger.info(null, "CourseEnrolmentActor :: getCachedEnrolmentList handleEmptyCache :: Entry in redis for key " + key + ", cache result " + responseString)
             cacheUtil.set(key, responseString, ttl)
             response
         }
@@ -307,7 +307,6 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     def getEnrolmentList(request: Request, userId: String): Response = {
         logger.info(request.getRequestContext,"CourseEnrolmentActor :: getCachedEnrolmentList :: fetching data from cassandra with userId " + userId)
         val activeEnrolments: java.util.List[java.util.Map[String, AnyRef]] = getActiveEnrollments( userId, request.getRequestContext)
-        logger.info(request.getRequestContext, "Active enrolment list from casandra :: " + activeEnrolments + " | userId ::" + userId)
         val enrolments: java.util.List[java.util.Map[String, AnyRef]] = {
             if (CollectionUtils.isNotEmpty(activeEnrolments)) {
               val courseIds: java.util.List[String] = activeEnrolments.map(e => e.getOrDefault(JsonKey.COURSE_ID, "").asInstanceOf[String]).distinct.filter(id => StringUtils.isNotBlank(id)).toList.asJava

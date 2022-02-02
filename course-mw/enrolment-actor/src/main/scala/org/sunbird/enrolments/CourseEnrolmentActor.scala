@@ -26,6 +26,7 @@ import org.sunbird.models.course.batch.CourseBatch
 import org.sunbird.models.user.courses.UserCourses
 import org.sunbird.cache.util.RedisCacheUtil
 import org.sunbird.common.CassandraUtil
+import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.telemetry.util.TelemetryUtil
 
 import scala.collection.JavaConversions._
@@ -118,10 +119,13 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     def getActiveEnrollments(userId: String, requestContext: RequestContext): java.util.List[java.util.Map[String, AnyRef]] = {
         val enrolments: java.util.List[java.util.Map[String, AnyRef]] = userCoursesDao.listEnrolments(requestContext, userId)
         logger.info(requestContext, "All enrolment list from casandra :: " + enrolments + " for user ::" + userId)
-        if (CollectionUtils.isNotEmpty(enrolments))
+        if (CollectionUtils.isNotEmpty(enrolments)) {
             enrolments.filter(e => e.getOrDefault(JsonKey.ACTIVE, false.asInstanceOf[AnyRef]).asInstanceOf[Boolean]).toList.asJava
-        else
+            enrolments.asScala.toList.sortBy(_.get(JsonKey.COURSE_ENROLL_DATE).asInstanceOf[Date] != null).reverse
+              .take(Integer.parseInt(ProjectUtil.getConfigValue("enrollment_list_size"))).asJava
+        } else {
             new util.ArrayList[java.util.Map[String, AnyRef]]()
+        }
     }
 
     def addCourseDetails(activeEnrolments: java.util.List[java.util.Map[String, AnyRef]], courseIds: java.util.List[String] , request:Request): java.util.List[java.util.Map[String, AnyRef]] = {

@@ -297,12 +297,10 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val key = getCacheKey(userId)
         val responseString = cacheUtil.get(key)
         if (StringUtils.isNotBlank(responseString)) {
-            logger.info(null, "CourseEnrolmentActor :: getCachedEnrolmentList :: Entry in redis for key " + key + ", cache result " + responseString)
             JsonUtil.deserialize(responseString, classOf[Response])
         } else {
             val response = handleEmptyCache()
             val responseString = JsonUtil.serialize(response)
-            logger.info(null, "CourseEnrolmentActor :: getCachedEnrolmentList handleEmptyCache :: Entry in redis for key " + key + ", cache result " + responseString)
             cacheUtil.set(key, responseString, ttl)
             response
         }
@@ -311,7 +309,6 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     def getEnrolmentList(request: Request, userId: String): Response = {
         logger.info(request.getRequestContext,"CourseEnrolmentActor :: getCachedEnrolmentList :: fetching data from cassandra with userId " + userId)
         val activeEnrolments: java.util.List[java.util.Map[String, AnyRef]] = getActiveEnrollments( userId, request.getRequestContext)
-        logger.info(request.getRequestContext, "Active enrolment list from casandra :: " + activeEnrolments + " | userId ::" + userId)
         val enrolments: java.util.List[java.util.Map[String, AnyRef]] = {
             if (CollectionUtils.isNotEmpty(activeEnrolments)) {
               val courseIds: java.util.List[String] = activeEnrolments.map(e => e.getOrDefault(JsonKey.COURSE_ID, "").asInstanceOf[String]).distinct.filter(id => StringUtils.isNotBlank(id)).toList.asJava

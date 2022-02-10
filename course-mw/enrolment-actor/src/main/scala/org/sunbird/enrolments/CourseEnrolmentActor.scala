@@ -119,8 +119,8 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     def getActiveEnrollments(userId: String, requestContext: RequestContext): java.util.List[java.util.Map[String, AnyRef]] = {
         val enrolments: java.util.List[java.util.Map[String, AnyRef]] = userCoursesDao.listEnrolments(requestContext, userId)
         if (CollectionUtils.isNotEmpty(enrolments)) {
-            enrolments.filter(e => e.getOrDefault(JsonKey.ACTIVE, false.asInstanceOf[AnyRef]).asInstanceOf[Boolean]).toList.asJava
-            enrolments.sort(new Comparator[util.Map[String, AnyRef]] {
+            val activeEnrolments = enrolments.filter(e => e.getOrDefault(JsonKey.ACTIVE, false.asInstanceOf[AnyRef]).asInstanceOf[Boolean])
+            activeEnrolments.sort(new Comparator[util.Map[String, AnyRef]] {
                 override def compare(map1: util.Map[String, AnyRef], map2: util.Map[String, AnyRef]): Int = {
                     if (null != map1.get(JsonKey.COURSE_ENROLL_DATE) && null != map2.get(JsonKey.COURSE_ENROLL_DATE)) {
                         map2.get(JsonKey.COURSE_ENROLL_DATE).asInstanceOf[Date].compareTo(map1.get(JsonKey.COURSE_ENROLL_DATE).asInstanceOf[Date])
@@ -129,7 +129,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
                     }
                 }
             })
-            enrolments.take(Integer.parseInt(ProjectUtil.getConfigValue("enrollment_list_size")))
+            activeEnrolments.take(Integer.parseInt(ProjectUtil.getConfigValue("enrollment_list_size"))).toList.asJava
         } else {
             new util.ArrayList[java.util.Map[String, AnyRef]]()
         }

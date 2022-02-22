@@ -118,6 +118,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         }catch {
             case e: Exception =>
                 logger.error(request.getRequestContext, "Exception in enrolment list : user" + userId + "| Exception is:", e)
+                throw e
         }
 
     }
@@ -136,7 +137,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
                     }
                 }
             })
-            logger.info(null, "sorted on enrolled date active enrolment =>"+activeEnrolments.take(5).toList.asJava)
+            logger.info(requestContext, "sorted on enrolled date active enrolment =>"+activeEnrolments.take(5).toList.asJava)
             activeEnrolments.take(Integer.parseInt(ProjectUtil.getConfigValue("enrollment_list_size"))).toList.asJava
         } else {
             new util.ArrayList[java.util.Map[String, AnyRef]]()

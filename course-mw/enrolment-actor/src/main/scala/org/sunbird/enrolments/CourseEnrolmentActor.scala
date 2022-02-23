@@ -129,10 +129,18 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         logger.info(requestContext, "CoursEnrolmentActor ::  enrolled list size from db  =>"+enrolments.size())
         if (CollectionUtils.isNotEmpty(enrolments)) {
             val activeEnrolments = enrolments.filter(e => e.getOrDefault(JsonKey.ACTIVE, false.asInstanceOf[AnyRef]).asInstanceOf[Boolean])
-            val sortedEnrolment = activeEnrolments.filter(ae => ae.get(JsonKey.COURSE_ENROLL_DATE)!=null).toList.sortBy(_.get(JsonKey.COURSE_ENROLL_DATE).asInstanceOf[Date])(Ordering[Date].reverse).toList
-            val finalEnrolments = sortedEnrolment ++ activeEnrolments.filter(e => e.get(JsonKey.COURSE_ENROLL_DATE)==null).toList
-            logger.info(requestContext, "sorted on enrolled date active enrolment =>"+finalEnrolments.take(5).toList.asJava)
-            finalEnrolments.take(Integer.parseInt(ProjectUtil.getConfigValue("enrollment_list_size"))).toList.asJava
+
+            activeEnrolments.sort(new Comparator[util.Map[String, AnyRef]] {
+                override def compare(map1: util.Map[String, AnyRef], map2: util.Map[String, AnyRef]): Int = {
+                    if (null != map1.get(JsonKey.COURSE_ENROLL_DATE) && null != map2.get(JsonKey.COURSE_ENROLL_DATE)) {
+                        map2.get(JsonKey.COURSE_ENROLL_DATE).asInstanceOf[Date].compareTo(map1.get(JsonKey.COURSE_ENROLL_DATE).asInstanceOf[Date])
+                    } else {
+                        1
+                    }
+                }
+            })
+            logger.info(requestContext, "sorted on enrolled date active enrolment =>"+activeEnrolments.take(5).toList.asJava)
+            activeEnrolments.take(Integer.parseInt(ProjectUtil.getConfigValue("enrollment_list_size"))).toList.asJava
         } else {
             new util.ArrayList[java.util.Map[String, AnyRef]]()
         }

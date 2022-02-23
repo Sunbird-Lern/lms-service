@@ -117,7 +117,8 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             sender().tell(response, self)
         }catch {
             case e: Exception =>
-                logger.error(request.getRequestContext, "Exception in enrolment list : user" + userId + "| Exception is:", e)
+                e.printStackTrace()
+                logger.error(request.getRequestContext, "Exception in enrolment list : user" + userId + "| Exception is:"+e.getMessage, e)
                 throw e
         }
 

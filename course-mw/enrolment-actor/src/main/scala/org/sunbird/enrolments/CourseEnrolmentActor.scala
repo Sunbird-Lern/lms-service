@@ -326,8 +326,9 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             } else new java.util.ArrayList[java.util.Map[String, AnyRef]]()
         }
         val resp: Response = new Response()
-        val sortedEnrolment = enrolments.asScala.toList.sortBy(_.get("lastContentAccessTime").asInstanceOf[Date]!=null).reverse.toList
-        resp.put(JsonKey.COURSES, sortedEnrolment.asJava)
+        val sortedEnrolment = enrolments.filter(ae => ae.get("lastContentAccessTime")!=null).toList.sortBy(_.get("lastContentAccessTime").asInstanceOf[Date])(Ordering[Date].reverse).toList
+        val finalEnrolments = sortedEnrolment ++ enrolments.asScala.filter(e => e.get("lastContentAccessTime")==null).toList
+        resp.put(JsonKey.COURSES, finalEnrolments.asJava)
         resp
     }
     // TODO: to be removed once all are in scala.

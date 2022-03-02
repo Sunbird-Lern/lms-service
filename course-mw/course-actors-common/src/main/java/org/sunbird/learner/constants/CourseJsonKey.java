@@ -1,5 +1,8 @@
 package org.sunbird.learner.constants;
 
+import java.util.Arrays;
+import java.util.List;
+
 public abstract class CourseJsonKey {
 
   public static final String ACTOR = "actor";
@@ -22,6 +25,7 @@ public abstract class CourseJsonKey {
   public static final String TEMPLATE_ID = "templateId";
   public static final String ISSUER = "issuer";
   public static final String SIGNATORY_LIST = "signatoryList";
+  public static final List<String> SIGNATORY_LIST_ATTRIBUTES = Arrays.asList("name","id","designation","image");
   public static final String ENROLLMENT = "enrollment";
   public static final String SCORE = "score";
   public static final String ASSESMENT_CRITERIA = "ge, le, eq";

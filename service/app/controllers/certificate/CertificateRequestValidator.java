@@ -3,6 +3,11 @@ package controllers.certificate;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.request.BaseRequestValidator;
@@ -69,6 +74,21 @@ public class CertificateRequestValidator extends BaseRequestValidator {
           MessageFormat.format(
               ResponseCode.dataTypeError.getErrorMessage(), CourseJsonKey.SIGNATORY_LIST, "List"),
           ResponseCode.CLIENT_ERROR.getResponseCode());
+    }
+    if (template.containsKey(CourseJsonKey.SIGNATORY_LIST)) {
+      List<Object> signatoryList = (List<Object>) template.get(CourseJsonKey.SIGNATORY_LIST);
+      signatoryList.forEach(signatory->{
+        Map<String, String> data = (Map<String, String>) signatory;
+        if(MapUtils.isNotEmpty(data)){
+          CourseJsonKey.SIGNATORY_LIST_ATTRIBUTES.forEach(attr->{
+            if (StringUtils.isNotBlank(data.get(attr))){
+              ProjectCommonException.throwClientErrorException(
+                      ResponseCode.invalidData,
+                      "Signatory list missing attribute: " + attr);
+            }
+          });
+        }
+      });
     }
     if (template.containsKey(CourseJsonKey.ADDITIONAL_PROPS)
         && !(template.get(CourseJsonKey.ADDITIONAL_PROPS) instanceof Map)) {

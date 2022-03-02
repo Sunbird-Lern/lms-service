@@ -75,8 +75,7 @@ public class CertificateRequestValidator extends BaseRequestValidator {
               ResponseCode.dataTypeError.getErrorMessage(), CourseJsonKey.SIGNATORY_LIST, "List"),
           ResponseCode.CLIENT_ERROR.getResponseCode());
     }
-    if (template.containsKey(CourseJsonKey.SIGNATORY_LIST)
-            && (template.get(CourseJsonKey.SIGNATORY_LIST) instanceof List)) {
+    if (template.containsKey(CourseJsonKey.SIGNATORY_LIST)) {
       List<Object> signatoryList = (List<Object>) template.get(CourseJsonKey.SIGNATORY_LIST);
       signatoryList.forEach(signatory->{
         Map<String, Object> data = (Map<String, Object>) signatory;

@@ -84,7 +84,7 @@ public class CertificateRequestValidator extends BaseRequestValidator {
             if (StringUtils.isNotBlank(data.get(attr))){
               ProjectCommonException.throwClientErrorException(
                       ResponseCode.invalidData,
-                      "Mandatory attributes for signatory list are missing");
+                      "Signatory list missing attribute: " + attr);
             }
           });
         }

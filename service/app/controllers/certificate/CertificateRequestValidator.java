@@ -78,10 +78,10 @@ public class CertificateRequestValidator extends BaseRequestValidator {
     if (template.containsKey(CourseJsonKey.SIGNATORY_LIST)) {
       List<Object> signatoryList = (List<Object>) template.get(CourseJsonKey.SIGNATORY_LIST);
       signatoryList.forEach(signatory->{
-        Map<String, Object> data = (Map<String, Object>) signatory;
+        Map<String, String> data = (Map<String, String>) signatory;
         if(MapUtils.isNotEmpty(data)){
           CourseJsonKey.SIGNATORY_LIST_ATTRIBUTES.forEach(attr->{
-            if (Objects.isNull(data.get(attr)) || StringUtils.isNotBlank(data.get(attr).toString())){
+            if (StringUtils.isNotBlank(data.get(attr))){
               ProjectCommonException.throwClientErrorException(
                       ResponseCode.invalidData,
                       "Mandatory attributes for signatory list are missing");

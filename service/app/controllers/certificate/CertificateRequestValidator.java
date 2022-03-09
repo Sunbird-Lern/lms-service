@@ -81,10 +81,10 @@ public class CertificateRequestValidator extends BaseRequestValidator {
         Map<String, String> data = (Map<String, String>) signatory;
         if(MapUtils.isNotEmpty(data)){
           CourseJsonKey.SIGNATORY_LIST_ATTRIBUTES.forEach(attr->{
-            if (StringUtils.isNotBlank(data.get(attr))){
+            if (StringUtils.isBlank(data.get(attr))){
               ProjectCommonException.throwClientErrorException(
                       ResponseCode.invalidData,
-                      "Signatory list missing attribute: " + attr);
+                      "Signatory list missing attribute" );
             }
           });
         }

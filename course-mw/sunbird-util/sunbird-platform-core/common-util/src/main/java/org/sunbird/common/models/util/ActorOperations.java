@@ -172,7 +172,11 @@ public enum ActorOperations {
   GET_USER_FEED_BY_ID("getUserFeedById"),
   CREATE_USER_V3("createUserV3"),
   ONDEMAND_START_SCHEDULER("onDemandStartScheduler"),
-  GROUP_ACTIVITY_AGGREGATES("groupActivityAggregates");
+  GROUP_ACTIVITY_AGGREGATES("groupActivityAggregates"),
+  UPDATE_EVENT_SET("updateEventSet"),
+  DELETE_EVENT_SET("deleteEventSet"),
+  DELETE_EVENT("deleteEvent");
+
   private String value;
 
   /**

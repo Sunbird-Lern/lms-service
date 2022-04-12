@@ -7,6 +7,7 @@ import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
+import org.sunbird.learner.util.Util;
 import play.mvc.Http;
 import play.mvc.Result;
 
@@ -187,5 +188,17 @@ public class CourseEnrollmentController extends BaseController {
             },
             getAllRequestHeaders((httpRequest)),
             httpRequest);
+    }
+
+    public CompletionStage<Result> getParticipantsForFixedBatch(Http.Request httpRequest) {
+        return handleRequest(courseEnrolmentActor, "getParticipantsForFixedBatch",
+                httpRequest.body().asJson(),
+                (request) -> {
+                    Util.handleFixedBatchIdRequest((Request) request);
+                    new CourseEnrollmentRequestValidator().validateCourseParticipant((Request) request);
+                    return null;
+                },
+                getAllRequestHeaders(httpRequest),
+                httpRequest);
     }
 }

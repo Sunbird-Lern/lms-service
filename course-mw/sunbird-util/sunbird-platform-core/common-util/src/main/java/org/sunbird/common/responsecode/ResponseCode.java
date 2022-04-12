@@ -826,7 +826,9 @@ public enum ResponseCode {
   activityIdMismatch(ResponseMessage.Key.ACTIVITY_ID_MISSING, ResponseMessage.Message.ACTIVITY_ID_MISSING),
   activityTypeMismatch(ResponseMessage.Key.ACTIVITY_TYPE_MISSING, ResponseMessage.Message.ACTIVITY_TYPE_MISSING),
   erroCallGrooupAPI(ResponseMessage.Key.ERR_CALLING_GROUP_API, ResponseMessage.Message.ERR_CALLING_GROUP_API),
-
+  cannotUpdateEventSetHavingEnrollments(
+          ResponseMessage.Key.CANNOT_UPDATE_EVENT_SET_HAVING_ENROLLMENTS,
+          ResponseMessage.Message.CANNOT_UPDATE_EVENT_SET_HAVING_ENROLLMENTS),
   OK(200),
   CLIENT_ERROR(400),
   SERVER_ERROR(500),

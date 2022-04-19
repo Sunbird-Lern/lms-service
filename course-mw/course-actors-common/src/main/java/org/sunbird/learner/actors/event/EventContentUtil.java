@@ -45,30 +45,6 @@ public class EventContentUtil {
         return response;
     }
 
-    public static Response postContent(Request request, String contentKey, String uri, Map<String, Object> contentMap, String pathId, String pathVal) throws UnirestException, JsonProcessingException {
-        String requestUrl = getConfigValue(EKSTEP_BASE_URL) + uri;
-        Map<String, String> headers = new HashMap<String, String>() {{
-            put(SunbirdKey.CONTENT_TYPE_HEADER, SunbirdKey.APPLICATION_JSON);
-            put(SunbirdKey.X_CHANNEL_ID, (String) request.getContext().get(SunbirdKey.CHANNEL));
-        }};
-        Map<String, Object> requestMap = new HashMap<String, Object>() {{
-            put(SunbirdKey.REQUEST, new HashMap<String, Object>() {{
-                put(contentKey, contentMap);
-            }});
-        }};
-
-        HttpResponse<String> updateResponse =
-                Unirest.patch(requestUrl)
-                        .headers(headers)
-                        .routeParam(pathId, pathVal)
-                        .body(mapper.writeValueAsString(requestMap))
-                        .asString();
-
-        Response response = null;
-        if (null != updateResponse) response = mapper.readValue(updateResponse.getBody(), Response.class);
-        return response;
-    }
-
     public static Response deleteContent(Request request, String uri, String pathId, String pathVal) throws UnirestException, JsonProcessingException {
         String requestUrl = getConfigValue(EKSTEP_BASE_URL) + uri;
         Map<String, String> headers = new HashMap<String, String>() {{

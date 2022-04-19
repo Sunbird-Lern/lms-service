@@ -55,7 +55,6 @@ public final class SunbirdKey {
     public static final String USER_ID = "user_id";
     public static final String RESPONSE = "response";
     public static final String EVENT_SET = "eventSet";
-    public static final String OBJECT_TYPE = "objectType";
 
     private SunbirdKey() {}
 }

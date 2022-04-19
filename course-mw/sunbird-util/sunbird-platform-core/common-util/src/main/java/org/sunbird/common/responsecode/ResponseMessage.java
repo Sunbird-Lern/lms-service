@@ -457,7 +457,6 @@ public interface ResponseMessage {
     String ACTIVITY_ID_MISSING = "ActivityId is mandatory.";
     String ACTIVITY_TYPE_MISSING = "ActivityType is mandatory.";
     String ERR_CALLING_GROUP_API = "Error while calling group api.";
-    String CANNOT_UPDATE_EVENT_SET_HAVING_ENROLLMENTS = "Cannot update event set having enrollments.";
   }
 
   interface Key {
@@ -843,6 +842,5 @@ public interface ResponseMessage {
     String ACTIVITY_ID_MISSING = "ACTIVITY_ID_MISSING";
     String ACTIVITY_TYPE_MISSING = "ACTIVITY_TYPE_MISSING";
     String ERR_CALLING_GROUP_API = "ERR_CALLING_GROUOP_API";
-    String CANNOT_UPDATE_EVENT_SET_HAVING_ENROLLMENTS = "CANNOT_UPDATE_EVENT_SET_HAVING_ENROLLMENTS";
   }
 }

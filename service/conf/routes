@@ -81,8 +81,5 @@ POST    /v1/event/unenroll                  @controllers.courseenrollment.Course
 GET     /v1/event/participants/list         @controllers.courseenrollment.CourseEnrollmentController.getParticipantsForFixedBatch(request: play.mvc.Http.Request)
 POST    /v1/eventset/enroll	    		    @controllers.eventenrollment.EventSetEnrollmentController.enroll(request: play.mvc.Http.Request)
 POST    /v1/eventset/unenroll               @controllers.eventenrollment.EventSetEnrollmentController.unenroll(request: play.mvc.Http.Request)
-PATCH   /v1/eventset/update                 @controllers.eventmanagement.EventSetController.update(request: play.mvc.Http.Request)
-DELETE  /v1/eventset/discard/:id            @controllers.eventmanagement.EventSetController.discard(id: String, request: play.mvc.Http.Request)
-DELETE  /v1/event/discard/:id               @controllers.eventmanagement.EventController.discard(id: String, request: play.mvc.Http.Request)
 POST    /v1/user/event/state/read           @controllers.eventmanagement.EventConsumptionController.getUserEventState(request: play.mvc.Http.Request)
 PATCH   /v1/user/event/state/update     	@controllers.eventmanagement.EventConsumptionController.updateUserEventState(request: play.mvc.Http.Request)

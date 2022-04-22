@@ -20,6 +20,7 @@ import org.sunbird.common.request.{Request, RequestContext}
 import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.learner.actors.coursebatch.dao.impl.{CourseBatchDaoImpl, UserCoursesDaoImpl}
 import org.sunbird.learner.actors.coursebatch.dao.{CourseBatchDao, UserCoursesDao}
+import org.sunbird.learner.actors.coursebatch.service.UserCoursesService
 import org.sunbird.learner.actors.group.dao.impl.GroupDaoImpl
 import org.sunbird.learner.util.{ContentSearchUtil, ContentUtil, CourseBatchSchedulerUtil, JsonUtil, Util}
 import org.sunbird.models.course.batch.CourseBatch
@@ -41,6 +42,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
      */
     var courseBatchDao: CourseBatchDao = new CourseBatchDaoImpl()
     var userCoursesDao: UserCoursesDao = new UserCoursesDaoImpl()
+    val userCoursesService = new UserCoursesService
     var groupDao: GroupDaoImpl = new GroupDaoImpl()
     val isCacheEnabled = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("user_enrolments_response_cache_enable")))
         (ProjectUtil.getConfigValue("user_enrolments_response_cache_enable")).toBoolean else true
@@ -69,6 +71,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             case "enrol" => enroll(request)
             case "unenrol" => unEnroll(request)
             case "listEnrol" => list(request)
+            case "getParticipantsForFixedBatch" => fetchParticipantsForFixedBatch(request)
             case _ => ProjectCommonException.throwClientErrorException(ResponseCode.invalidRequestData,
                 ResponseCode.invalidRequestData.getErrorMessage)
         }
@@ -106,6 +109,21 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         sender().tell(successResponse(), self)
         generateTelemetryAudit(userId, courseId, batchId, data, "unenrol", JsonKey.UPDATE, request.getContext)
         notifyUser(userId, batchData, JsonKey.REMOVE)
+    }
+
+    def fetchParticipantsForFixedBatch(request: Request): Unit = {
+        val batchId: String = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
+        val isFixedBatch: Boolean = request.getRequest.containsKey(JsonKey.FIXED_BATCH_ID)
+        if (!isFixedBatch)
+            ProjectCommonException.throwClientErrorException(ResponseCode.missingFixedBatchId, ResponseCode.missingFixedBatchId.getErrorMessage)
+        var users: util.List[String] = userCoursesService.getParticipantsList(batchId, true, request.getRequestContext)
+        if (users == null) users = new util.ArrayList()
+        val response: Response = new Response
+        val result = new util.HashMap[String, Object]
+        result.put(JsonKey.COUNT, users.size.asInstanceOf[Integer])
+        result.put(JsonKey.PARTICIPANTS, users)
+        response.put(JsonKey.PARTICIPANTS, result)
+        sender.tell(response, self)
     }
 
     def list(request: Request): Unit = {

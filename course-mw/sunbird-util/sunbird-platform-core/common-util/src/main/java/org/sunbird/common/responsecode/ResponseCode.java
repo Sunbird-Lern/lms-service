@@ -256,6 +256,9 @@ public enum ResponseCode {
       ResponseMessage.Message.USER_ALREADY_COMPLETED_COURSE),
   pageAlreadyExist(
       ResponseMessage.Key.PAGE_ALREADY_EXIST, ResponseMessage.Message.PAGE_ALREADY_EXIST),
+  missingFixedBatchId(
+          ResponseMessage.Key.MISSING_FIXED_BATCH_ID,
+          ResponseMessage.Message.MISSING_FIXED_BATCH_ID),
   contentTypeRequiredError(
       ResponseMessage.Key.CONTENT_TYPE_ERROR, ResponseMessage.Message.CONTENT_TYPE_ERROR),
   invalidPropertyError(

@@ -144,6 +144,7 @@ public interface ResponseMessage {
     String COURSE_BATCH_ENROLLMENT_DATE_ENDED = "Course batch enrollment date has ended.";
     String EXISTING_ORG_MEMBER = "You already have a membership of this organization.";
     String CONTENT_TYPE_ERROR = "Please add Content-Type header with value application/json";
+    String MISSING_FIXED_BATCH_ID = "Missing Fixed Batch Id.";
     String INVALID_PROPERTY_ERROR = "Invalid property {0}.";
     String USER_NAME_OR_ID_ERROR = "Please provide either username or userId.";
     String USER_ACCOUNT_BLOCKED = "User account has been blocked .";
@@ -578,6 +579,7 @@ public interface ResponseMessage {
     String COURSE_BATCH_ALREADY_COMPLETED = "COURSE_BATCH_ALREADY_COMPLETED";
     String COURSE_BATCH_ENROLLMENT_DATE_ENDED = "COURSE_BATCH_ENROLLMENT_DATE_ENDED";
     String CONTENT_TYPE_ERROR = "CONTENT_TYPE_ERROR";
+    String MISSING_FIXED_BATCH_ID = "MISSING_FIXED_BATCH_ID";
     String INVALID_PROPERTY_ERROR = "INVALID_PROPERTY_ERROR";
     String USER_NAME_OR_ID_ERROR = "USER_NAME_OR_ID_ERROR";
     String USER_ACCOUNT_BLOCKED = "USER_ACCOUNT_BLOCKED";

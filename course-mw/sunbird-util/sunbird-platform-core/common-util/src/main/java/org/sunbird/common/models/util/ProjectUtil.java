@@ -7,6 +7,7 @@ import com.google.i18n.phonenumbers.Phonenumber;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -16,6 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.UrlValidator;
+import org.apache.hadoop.util.Time;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
@@ -38,6 +40,7 @@ public class ProjectUtil {
   public static final String ELASTIC_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
   public static final String YEAR_MONTH_DATE_FORMAT = "yyyy-MM-dd";
   private static final int randomPasswordLength = 9;
+  private static LoggerUtil logger = new LoggerUtil(ProjectUtil.class);
 
   protected static final String FILE_NAME[] = {
     "cassandratablecolumn.properties",
@@ -266,6 +269,15 @@ public class ProjectUtil {
   }
 
   /**
+   * This method will provide timestamp
+   *
+   * @return
+   */
+  public static Date getTimeStamp() {
+    return new Timestamp(System.currentTimeMillis());
+  }
+
+  /**
    * This method will provide formatted date
    *
    * @return
@@ -490,11 +502,14 @@ public class ProjectUtil {
   }
 
   public static SimpleDateFormat getDateFormatter() {
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSSZ");
+    return getDateFormatter("yyyy-MM-dd HH:mm:ss:SSSZ");
+  }
+
+  public static SimpleDateFormat getDateFormatter(String pattern) {
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
     simpleDateFormat.setLenient(false);
     return simpleDateFormat;
   }
-
   /** @author Manzarul */
   public enum EnrolmentType {
     open("open"),
@@ -586,7 +601,7 @@ public class ProjectUtil {
     if (StringUtils.isBlank(logoUrl)) {
       logoUrl = getConfigValue(JsonKey.SUNBIRD_ENV_LOGO_URL);
     }
-    ProjectLogger.log("ProjectUtil:getSunbirdLogoUrl: url = " + logoUrl, LoggerEnum.INFO.name());
+    logger.info(null,"ProjectUtil:getSunbirdLogoUrl: url = " + logoUrl);
     return logoUrl;
   }
 
@@ -605,7 +620,7 @@ public class ProjectUtil {
     if (StringUtils.isBlank(fromEmail)) {
       fromEmail = getConfigValue(JsonKey.EMAIL_SERVER_FROM);
     }
-    ProjectLogger.log("ProjectUtil:getFromEmail: fromEmail = " + fromEmail, LoggerEnum.INFO.name());
+    logger.info(null,"ProjectUtil:getFromEmail: fromEmail = " + fromEmail);
     return fromEmail;
   }
 
@@ -671,7 +686,7 @@ public class ProjectUtil {
       throws Exception {
     String tagStatus = "";
     try {
-      ProjectLogger.log("start call for registering the tag ==" + tagId);
+      logger.info(null,"start call for registering the tag ==" + tagId);
       String analyticsBaseUrl = getConfigValue(JsonKey.ANALYTICS_API_BASE_URL);
       tagStatus =
           HttpUtil.sendPostRequest(
@@ -681,7 +696,7 @@ public class ProjectUtil {
                   + tagId,
               body,
               header);
-      ProjectLogger.log(
+      logger.info(null,
           "end call for tag registration id and status  ==" + tagId + " " + tagStatus);
     } catch (Exception e) {
       throw e;
@@ -760,8 +775,8 @@ public class ProjectUtil {
       phoneNumber = phoneNumberUtil.parse(phNumber, isoCode);
       return phoneNumberUtil.isValidNumber(phoneNumber);
     } catch (NumberParseException e) {
-      ProjectLogger.log("Exception occurred while validating phone number : ", e);
-      ProjectLogger.log(phNumber + "this phone no. is not a valid one.");
+      logger.error(null,"Exception occurred while validating phone number : ", e);
+      logger.info(null,phNumber + "this phone no. is not a valid one.");
     }
     return false;
   }
@@ -799,7 +814,7 @@ public class ProjectUtil {
       t.merge(context, writer);
       return writer.toString();
     } catch (Exception ex) {
-      ProjectLogger.log("Exception occurred while formating and sending SMS " + ex);
+      logger.error(null,"Exception occurred while formating and sending SMS ", ex);
     }
     return "";
   }
@@ -813,7 +828,7 @@ public class ProjectUtil {
         date = null;
       }
     } catch (ParseException ex) {
-      ProjectLogger.log(ex.getMessage(), ex);
+      logger.error(null, ex.getMessage(), ex);
     }
     return date != null;
   }
@@ -911,7 +926,7 @@ public class ProjectUtil {
     try {
       return mapper.writeValueAsString(mapList);
     } catch (IOException e) {
-      ProjectLogger.log(e.getMessage(), e);
+        logger.error(null, e.getMessage(), e);
     }
     return null;
   }

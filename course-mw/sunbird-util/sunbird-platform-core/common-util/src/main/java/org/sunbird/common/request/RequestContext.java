@@ -1,8 +1,7 @@
 package org.sunbird.common.request;
 
-import org.sunbird.common.util.JsonUtil;
-
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class RequestContext {
@@ -10,81 +9,76 @@ public class RequestContext {
     private String uid;
     private String did;
     private String sid;
-    private String appId;
-    private String appVer;
-    private String reqId;
     private String debugEnabled;
-    private String op;
-    private final String pid = "lms-service"; 
+    private String actorId;
+    private String actorType;
+    private String loggerLevel;
+    private String requestId;
+    private String env;
     private Map<String, Object> contextMap = new HashMap<>();
-    
-    
-    public RequestContext(String uid, String did, String sid, String appId, String appVer, String reqId, String debugEnabled, String op) {
-        this.uid = uid;
+    private String channel;
+    private Map<String, Object> pdata = new HashMap<>();
+
+    public RequestContext(String channel, String pdataId, String env, String did, String sid, String pid, String pver, List<Object> cdata) {
         this.did = did;
         this.sid = sid;
-        this.appId = appId;
-        this.appVer = appVer;
-        this.reqId = reqId;
-        this.debugEnabled = debugEnabled;
-        this.op = op;
-
-        contextMap.putAll(new HashMap<String, Object>(){{
-            put("uid", uid);
+        this.channel = channel;
+        this.pdata.put("id", pdataId);
+        this.pdata.put("pid", pid);
+        this.pdata.put("ver", pver);
+        this.contextMap.putAll(new HashMap<String, Object>() {{
             put("did", did);
             put("sid", sid);
-            put("appId", appId);
-            put("appVer", appVer);
-            put("reqId", reqId);
-            put("op", op);
+            put("channel", channel);
+            put("env", env);
+            put("pdata", pdata);
+            if (cdata != null)
+                put("cdata", cdata);
         }});
-        
-    }
-    
-    
-
-    public String getReqId() {
-        return reqId;
     }
 
-
-    public String getActorOperation() {
-        return op;
+    public String getActorId() {
+        return actorId;
     }
 
-    public void setActorOperation(String actorOperation) {
-        this.op = actorOperation;
+    public void setActorId(String actorId) {
+        this.actorId = actorId;
     }
 
-    public String getUid() {
-        return uid;
+    public String getActorType() {
+        return actorType;
     }
 
-
-    public String getDid() {
-        return did;
+    public void setActorType(String actorType) {
+        this.actorType = actorType;
     }
 
-
-    public String getSid() {
-        return sid;
+    public String getLoggerLevel() {
+        return loggerLevel;
     }
 
-    public String getAppId() {
-        return appId;
+    public void setLoggerLevel(String loggerLevel) {
+        this.loggerLevel = loggerLevel;
     }
 
+    public String getRequestId() {
+        return requestId;
+    }
 
-    public String getAppVer() {
-        return appVer;
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
     }
 
     public String getDebugEnabled() {
         return debugEnabled;
     }
 
-    public String getOp() {
-        return op;
+    public String getEnv() {
+        return env;
+    }
+
+    public void setEnv(String env) {
+        this.env = env;
     }
 
     public Map<String, Object> getContextMap() {

@@ -28,6 +28,7 @@ import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.request.Request;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.kafka.client.InstructionEventGenerator;
 import org.sunbird.kafka.client.KafkaClient;
@@ -65,7 +66,6 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
     Map<String, Object> courseBatch =
         CustomObjectBuilder.getCourseBatchBuilder()
             .generateRandomFields()
-            .addField(JsonKey.ENROLLMENT_TYPE, JsonKey.INVITE_ONLY)
             .build()
             .get();
     when(group
@@ -143,9 +143,10 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
       put("content", new HashMap<String, Object>() {{
         put("contentType", "Course");
         put("status", "Live");
+        put("leafNodesCount", 1);
       }});
     }};
     when(ContentUtil.getContent(
-            Mockito.anyString())).thenReturn(courseMap);
+            Mockito.anyString(), Mockito.anyList())).thenReturn(courseMap);
   }
 }

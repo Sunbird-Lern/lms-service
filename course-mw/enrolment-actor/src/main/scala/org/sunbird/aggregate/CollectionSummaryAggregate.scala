@@ -1,9 +1,9 @@
 package org.sunbird.aggregate
 
 import java.util
-
 import com.google.gson.Gson
 import com.mashape.unirest.http.Unirest
+
 import javax.inject.Inject
 import javax.ws.rs.core.MediaType
 import org.apache.commons.lang3.StringUtils
@@ -18,8 +18,10 @@ import org.sunbird.common.request.{Request, RequestContext}
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao
 import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl
 import org.sunbird.learner.util.{JsonUtil, Util}
-import java.math.BigDecimal
 
+import java.math.BigDecimal
+import java.text.SimpleDateFormat
+import java.util.Date
 import scala.collection.JavaConverters._
 
 class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUtil) extends BaseActor {
@@ -31,7 +33,8 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
   var courseBatchDao: CourseBatchDao = new CourseBatchDaoImpl()
 
   override def onReceive(request: Request): Unit = {
-    Util.initializeContext(request, TelemetryEnvKey.BATCH)
+    Util.initializeContext(request, TelemetryEnvKey.BATCH, this.getClass.getName)
+
     val response = new Response()
     val filters = request.getRequest.get(JsonKey.FILTERS).asInstanceOf[util.Map[String, AnyRef]]
     val groupByKeys = request.getRequest.getOrDefault(JsonKey.GROUPBY, new util.ArrayList[String]()).asInstanceOf[util.ArrayList[String]].asScala.toList
@@ -39,7 +42,6 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     val collectionId = filters.get(JsonKey.COLLECTION_ID).asInstanceOf[String]
     val granularity = getDate(request.getRequestContext,request.getRequest.getOrDefault("granularity", "ALL").asInstanceOf[String], collectionId, batchId)
     val key = getCacheKey(batchId = batchId, granularity, groupByKeys)
-    println(s"Druid granularity: $granularity & Cache Key: $key")
     try {
       val redisData = cacheUtil.get(key)
       val result: util.Map[String, AnyRef] = if (null != redisData && !redisData.isEmpty) {
@@ -195,7 +197,8 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
          |    ]
          |  }
          |}""".stripMargin.replaceAll("null", " ")
-    println("Druid Query" + JsonUtil.serialize(druidQuery))
+    ProjectLogger.log("Druid Query Is " + druidQuery)
+    println("Query" + druidQuery)
     val host: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("druid_proxy_api_host"))) ProjectUtil.getConfigValue("druid_proxy_api_host") else "localhost"
     val port: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("druid_proxy_api_port"))) ProjectUtil.getConfigValue("druid_proxy_api_port") else "8081"
     val endPoint: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("druid_proxy_api_endpoint"))) ProjectUtil.getConfigValue("druid_proxy_api_endpoint") else "/druid/v2/"
@@ -217,21 +220,27 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
   }
 
   def getDate(requestContext: RequestContext, date: String, courseId: String, batchId: String): String = {
-    val dateTimeFormat = DateTimeFormat.forPattern("yyyy-MM-dd")
-    val defaultEndDate = dateTimeFormat.print(DateTime.now(DateTimeZone.UTC).plusDays(1)) // Adding 1 Day extra
-    val defaultStartDate = dateTimeFormat.print(DateTime.now(DateTimeZone.UTC))
-    val nofDates = date.replaceAll("[^0-9]", "")
+    val dateTimeFormate = DateTimeFormat.forPattern("yyyy-MM-dd")
+    val sd = new SimpleDateFormat("yyyy-MM-dd");
+    val defaultStartDate = sd.format(sd.parse(dateTimeFormate.print(DateTime.now(DateTimeZone.UTC))))
+    val defaultEndDate = sd.format(sd.parse(dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).plusDays(1)))) // Adding 1 Day extra
+    if (StringUtils.equalsIgnoreCase(date, "ALL")) {
 
-    if (StringUtils.equalsIgnoreCase(date, "ALL")) { // When granularity Is ALL fetch the batch start and end date.
-      val courseBatchData = courseBatchDao.readById(courseId, batchId, requestContext)
-      val batchStartDate = Option(courseBatchData.getStartDate)
-        .map(date => if (date.isEmpty) defaultStartDate else date).getOrElse(defaultStartDate)
-      val batchEndDate = Option(courseBatchData.getEndDate)
-        .map(date => if (date.isEmpty) defaultEndDate else date).getOrElse(defaultEndDate)
-      s"$batchStartDate/$batchEndDate"
+      val batchOldStartDate: String = Option(courseBatchDao.readById(courseId, batchId, requestContext).getOldStartDate).map(date => if (date.nonEmpty) date else defaultStartDate).getOrElse(defaultStartDate)
+      val batchOldEndDate: String = Option(courseBatchDao.readById(courseId, batchId, requestContext).getOldEndDate).map(date => if (date.nonEmpty) date else defaultEndDate).getOrElse(defaultEndDate)
+
+      val batchLatestStartDate: Date = courseBatchDao.readById(courseId, batchId, requestContext).getStartDate
+      val batchLatestEndDate: Date = courseBatchDao.readById(courseId, batchId, requestContext).getEndDate
+
+      val startDate: String = Option(batchLatestStartDate).map(date => sd.format(date)).getOrElse(batchOldStartDate)
+      val endDate: String = Option(batchLatestEndDate).map(date => sd.format(date)).getOrElse(batchOldEndDate)
+
+      s"$startDate/$endDate"
     } else {
-      val startDate = dateTimeFormat.print(DateTime.now(DateTimeZone.UTC).minusDays(nofDates.toInt))
-      s"$startDate/$defaultEndDate"
+      val nofDates = date.replaceAll("[^0-9]", "")
+      val batchStartDate: String = sd.format(sd.parse(dateTimeFormate.print(DateTime.now(DateTimeZone.UTC).minusDays(nofDates.toInt))))
+      s"$batchStartDate/$defaultEndDate"
     }
   }
+
 }

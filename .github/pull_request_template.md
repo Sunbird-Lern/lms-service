@@ -18,7 +18,7 @@ Please describe the tests that you ran to verify your changes in the below check
 
 **Test Configuration**:
 * Software versions: Java-11, play2-2.7.2, scala-2.11, redis-5.0.3
-* Hardware versions: 2 CPU / 4GB RAM
+* Hardware versions: 2 CPU/ 4GB RAM
 
 ### Checklist:
 
@@ -30,4 +30,3 @@ Please describe the tests that you ran to verify your changes in the below check
 - [ ] I have added tests that prove my fix is effective or that my feature works
 - [ ] New and existing unit tests pass locally with my changes
 - [ ] Any dependent changes have been merged and published in downstream modules
-

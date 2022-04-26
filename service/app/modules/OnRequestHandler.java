@@ -5,14 +5,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import controllers.BaseController;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.auth.verifier.AccessTokenValidator;
+import org.sunbird.cache.platform.Platform;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.HeaderParam;
 import org.sunbird.common.responsecode.ResponseCode;
-import org.sunbird.keys.SunbirdKey;
+import org.sunbird.common.util.JsonUtil;
 import play.http.ActionCreator;
 import play.libs.Json;
 import play.mvc.Action;
@@ -33,6 +34,7 @@ import java.util.UUID;
 import java.util.WeakHashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
 
 public class OnRequestHandler implements ActionCreator {
     
@@ -40,8 +42,11 @@ public class OnRequestHandler implements ActionCreator {
   public static boolean isServiceHealthy = true;
   private final List<String> USER_UNAUTH_STATES =
       Arrays.asList(JsonKey.UNAUTHORIZED, JsonKey.ANONYMOUS);
+  public LoggerUtil logger = new LoggerUtil(this.getClass());
+  private static final List<String> clientAppHeaderKeys = Platform.getStringList("request_headers_logging", Arrays.asList("x-app-id", "x-device-id", "x-channel-id"));
 
-  @Override
+
+    @Override
   public Action createAction(Http.Request request, Method actionMethod) {
     Optional<String> optionalMessageId = request.header(JsonKey.MESSAGE_ID);
     String messageId;
@@ -54,7 +59,6 @@ public class OnRequestHandler implements ActionCreator {
     return new Action.Simple() {
       @Override
       public CompletionStage<Result> call(Http.Request request) {
-        request.getHeaders();
         CompletionStage<Result> result = checkForServiceHealth(request);
         if (result != null) return result;
         // Setting Actual userId (requestedBy) and managed userId (requestedFor) placeholders in flash memory to null before processing.
@@ -62,9 +66,11 @@ public class OnRequestHandler implements ActionCreator {
         String message = RequestInterceptor.verifyRequestData(request);
         Optional<String> forAuth = request.header(HeaderParam.X_Authenticated_For.getName());
         String childId = null;
+        String loggingHeaders = getLoggingHeaders(request);
+        request = request.addAttr(Attrs.X_LOGGING_HEADERS, loggingHeaders);
         if (StringUtils.isNotBlank(message) && forAuth.isPresent() && StringUtils.isNotBlank(forAuth.orElse(""))) {
             String requestedForId = getRequestedForId(request);
-          childId = AccessTokenValidator.verifyManagedUserToken(forAuth.get(), message, requestedForId);
+          childId = AccessTokenValidator.verifyManagedUserToken(forAuth.get(), message, requestedForId, loggingHeaders);
           if (StringUtils.isNotBlank(childId) && !USER_UNAUTH_STATES.contains(childId)) {
               request = request.addAttr(Attrs.REQUESTED_FOR, childId);
           }
@@ -111,7 +117,7 @@ public class OnRequestHandler implements ActionCreator {
           try {
               requestedForUserID = UUID.fromString(uuidSegment).toString();
           } catch (IllegalArgumentException iae) {
-              ProjectLogger.log("Perhaps this is another API, like search that doesn't carry user id.");
+             logger.info(null, "Perhaps this is another API, like search that doesn't carry user id.");
           }
       }
       return requestedForUserID;
@@ -127,7 +133,7 @@ public class OnRequestHandler implements ActionCreator {
    */
   public CompletionStage<Result> onDataValidationError(
       Http.Request request, String errorMessage, int responseCode) {
-    ProjectLogger.log("Data error found--" + errorMessage);
+    logger.info(null, "Data error found--" + errorMessage);
     ResponseCode code = ResponseCode.getResponse(errorMessage);
     ResponseCode headerCode = ResponseCode.CLIENT_ERROR;
     Response resp = BaseController.createFailureResponse(request, code, headerCode);
@@ -255,4 +261,15 @@ public class OnRequestHandler implements ActionCreator {
     }
     return null;
   }
+
+  // TODO: same method created in BaseController also. We should move it to a common place.
+    protected String getLoggingHeaders(Http.Request httpRequest) {
+        try {
+            Map<String, List<String>> headers = httpRequest.getHeaders().toMap();
+            Map<String, List<String>>  filteredHeaders = headers.entrySet().stream().filter(e -> clientAppHeaderKeys.contains(e.getKey().toLowerCase())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            return JsonUtil.serialize(filteredHeaders);
+        } catch (Exception e) {
+            return "Exception in serializing headers= " + e.getMessage();
+        }
+    }
 }

@@ -11,6 +11,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.base.BaseActor;
 import org.sunbird.cassandra.CassandraOperation;
+import org.sunbird.common.CassandraUtil;
 import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.cacheloader.PageCacheLoaderService;
 import org.sunbird.common.exception.ProjectCommonException;
@@ -25,6 +26,7 @@ import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.common.util.JsonUtil;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.util.ContentSearchUtil;
@@ -37,8 +39,11 @@ import scala.concurrent.Future;
 import scala.concurrent.Promise;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -47,6 +52,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.TimeZone;
 
 import static org.sunbird.common.models.util.JsonKey.ID;
 
@@ -67,10 +73,15 @@ public class PageManagementActor extends BaseActor {
   private static final String DYNAMIC_FILTERS = "dynamicFilters";
   private static List<String> userProfilePropList = Arrays.asList("board");
   private LoggerUtil logger = new LoggerUtil(PageManagementActor.class);
+  private static final SimpleDateFormat DATE_FORMAT = ProjectUtil.getDateFormatter();
 
+  static {
+    DATE_FORMAT.setTimeZone(
+            TimeZone.getTimeZone(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TIMEZONE)));
+  }
   @Override
   public void onReceive(Request request) throws Throwable {
-    Util.initializeContext(request, TelemetryEnvKey.PAGE);
+    Util.initializeContext(request, TelemetryEnvKey.PAGE, this.getClass().getName());
 
     if(request.getOperation().equalsIgnoreCase(ActorOperations.GET_DIAL_PAGE_DATA.getValue())) {
       getDIALPageData(request);
@@ -114,7 +125,7 @@ public class PageManagementActor extends BaseActor {
   }
 
   @SuppressWarnings("unchecked")
-  private void getSection(Request actorMessage) {
+  private void getSection(Request actorMessage) throws Exception {
     Response response = null;
     Map<String, Object> req = actorMessage.getRequest();
     String sectionId = (String) req.get(JsonKey.ID);
@@ -132,7 +143,7 @@ public class PageManagementActor extends BaseActor {
         Map<String, Object> map = result.get(0);
         removeUnwantedData(map, "");
         Response section = new Response();
-        section.put(JsonKey.SECTION, response.get(JsonKey.RESPONSE));
+        section.put(JsonKey.SECTION, JsonUtil.convertWithDateFormat(response.get(JsonKey.RESPONSE), Map.class, DATE_FORMAT));
         PageCacheLoaderService.putDataIntoCache(
             ActorOperations.GET_SECTION.getValue(), sectionId, response.get(JsonKey.RESPONSE));
         sender().tell(section, self());
@@ -142,7 +153,7 @@ public class PageManagementActor extends BaseActor {
       }
     } else {
       response = new Response();
-      response.put(JsonKey.SECTION, sectionMap);
+      response.put(JsonKey.SECTION, JsonUtil.convertWithDateFormat(sectionMap, Map.class, DATE_FORMAT));
     }
     sender().tell(response, self());
   }
@@ -171,7 +182,22 @@ public class PageManagementActor extends BaseActor {
         logger.error(actorMessage.getRequestContext(), "Exception occurred while processing display " + e.getMessage(), e);
       }
     }
-    sectionMap.put(JsonKey.UPDATED_DATE, ProjectUtil.getFormattedDate());
+    sectionMap.put(JsonKey.UPDATED_DATE, ProjectUtil.getTimeStamp());
+    sectionMap = CassandraUtil.changeCassandraColumnMapping(sectionMap);
+
+    if (!StringUtils.isBlank((String) sectionMap.get(JsonKey.ID))) {
+      Map<String, Object> map = new HashMap<>();
+      map.put(JsonKey.ID, (String) sectionMap.get(JsonKey.ID));
+      Response res =
+              cassandraOperation.getRecordsByProperties(
+                      actorMessage.getRequestContext(), sectionDbInfo.getKeySpace(), sectionDbInfo.getTableName(), map);
+      if (!((List<Map<String, Object>>) res.get(JsonKey.RESPONSE)).isEmpty()) {
+        Map<String, Object> pageSection = ((List<Map<String, Object>>) res.get(JsonKey.RESPONSE)).get(0);
+        pageSection.put(JsonKey.CREATED_DATE, createdDateCheck(pageSection));
+      }
+    }
+
+    sectionMap = CassandraUtil.changeCassandraColumnMapping(sectionMap);
     Response response =
         cassandraOperation.updateRecord(
                 actorMessage.getRequestContext(), sectionDbInfo.getKeySpace(), sectionDbInfo.getTableName(), sectionMap);
@@ -215,7 +241,8 @@ public class PageManagementActor extends BaseActor {
     }
     sectionMap.put(JsonKey.ID, uniqueId);
     sectionMap.put(JsonKey.STATUS, ProjectUtil.Status.ACTIVE.getValue());
-    sectionMap.put(JsonKey.CREATED_DATE, ProjectUtil.getFormattedDate());
+    sectionMap.put(JsonKey.CREATED_DATE, ProjectUtil.getTimeStamp());
+    sectionMap = CassandraUtil.changeCassandraColumnMapping(sectionMap);
     Response response =
         cassandraOperation.insertRecord(
                 actorMessage.getRequestContext(), sectionDbInfo.getKeySpace(), sectionDbInfo.getTableName(), sectionMap);
@@ -442,6 +469,7 @@ public class PageManagementActor extends BaseActor {
                   actorMessage.getRequestContext(), pageDbInfo.getKeySpace(), pageDbInfo.getTableName(), map);
       if (!((List<Map<String, Object>>) res.get(JsonKey.RESPONSE)).isEmpty()) {
         Map<String, Object> page = ((List<Map<String, Object>>) res.get(JsonKey.RESPONSE)).get(0);
+        pageMap.put(JsonKey.CREATED_DATE, createdDateCheck(page));
         if (!(((String) page.get(JsonKey.ID)).equals(pageMap.get(JsonKey.ID)))) {
           ProjectCommonException exception =
               new ProjectCommonException(
@@ -453,7 +481,7 @@ public class PageManagementActor extends BaseActor {
         }
       }
     }
-    pageMap.put(JsonKey.UPDATED_DATE, ProjectUtil.getFormattedDate());
+    pageMap.put(JsonKey.UPDATED_DATE, ProjectUtil.getTimeStamp());
     if (null != pageMap.get(JsonKey.PORTAL_MAP)) {
       try {
         pageMap.put(JsonKey.PORTAL_MAP, mapper.writeValueAsString(pageMap.get(JsonKey.PORTAL_MAP)));
@@ -468,6 +496,7 @@ public class PageManagementActor extends BaseActor {
         logger.error(actorMessage.getRequestContext(), "Exception occurred while updating app map data " + e.getMessage(), e);
       }
     }
+    pageMap = CassandraUtil.changeCassandraColumnMapping(pageMap);
     Response response =
         cassandraOperation.updateRecord(
                 actorMessage.getRequestContext(), pageDbInfo.getKeySpace(), pageDbInfo.getTableName(), pageMap);
@@ -516,7 +545,7 @@ public class PageManagementActor extends BaseActor {
       }
     }
     pageMap.put(JsonKey.ID, uniqueId);
-    pageMap.put(JsonKey.CREATED_DATE, ProjectUtil.getFormattedDate());
+    pageMap.put(JsonKey.CREATED_DATE, ProjectUtil.getTimeStamp());
     if (null != pageMap.get(JsonKey.PORTAL_MAP)) {
       try {
         pageMap.put(JsonKey.PORTAL_MAP, mapper.writeValueAsString(pageMap.get(JsonKey.PORTAL_MAP)));
@@ -531,6 +560,7 @@ public class PageManagementActor extends BaseActor {
         logger.error(actorMessage.getRequestContext(), "createPage: " + e.getMessage(), e);
       }
     }
+    pageMap = CassandraUtil.changeCassandraColumnMapping(pageMap);
     Response response =
         cassandraOperation.insertRecord(
                 actorMessage.getRequestContext(), pageDbInfo.getKeySpace(), pageDbInfo.getTableName(), pageMap);
@@ -931,5 +961,17 @@ public class PageManagementActor extends BaseActor {
     } else {
       return Arrays.asList((String)obj);
     }
+  }
+
+  // Remove this implementation after deprecating text date columns
+  private Date createdDateCheck(Map<String, Object> page) {
+    try {
+      if (page.containsKey(JsonKey.CREATED_DATE) && page.get(JsonKey.CREATED_DATE) == null) {
+        return DATE_FORMAT.parse((String) page.get(JsonKey.OLD_CREATED_DATE));
+      }
+    } catch (ParseException e) {
+      logger.error(null, "PageManagementActor:createdDateCheck: Exception occurred with error message = " + e.getMessage(), e);
+    }
+    return (Date) page.get(JsonKey.CREATED_DATE);
   }
 }

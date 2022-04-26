@@ -38,7 +38,7 @@ public class SearchController extends BaseController {
   public CompletionStage<Result> sync(Http.Request httpRequest) {
     try {
       JsonNode requestData = httpRequest.body().asJson();
-      ProjectLogger.log("making a call to data synch api = " + requestData, LoggerEnum.INFO.name());
+     logger.info(null, "making a call to data synch api = " + requestData);
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
       RequestValidator.validateSyncRequest(reqObj);
       String operation = (String) reqObj.getRequest().get(JsonKey.OPERATION_FOR);

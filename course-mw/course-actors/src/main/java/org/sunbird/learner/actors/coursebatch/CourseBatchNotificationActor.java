@@ -9,6 +9,7 @@ import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.PropertiesCache;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.request.RequestContext;
+import org.sunbird.common.util.JsonUtil;
 import org.sunbird.learner.util.ContentUtil;
 import org.sunbird.learner.util.CourseBatchSchedulerUtil;
 import org.sunbird.models.course.batch.CourseBatch;
@@ -45,7 +46,7 @@ public class CourseBatchNotificationActor extends BaseActor {
     }
   }
 
-  private void courseBatchNotification(Request request) {
+  private void courseBatchNotification(Request request) throws Exception {
 
     Map<String, Object> requestMap = request.getRequest();
 
@@ -119,7 +120,7 @@ public class CourseBatchNotificationActor extends BaseActor {
           CourseBatch courseBatch,
           String subject,
           String template,
-          Map<String, Object> contentDetails, String authToken) {
+          Map<String, Object> contentDetails, String authToken) throws Exception {
 
     logger.debug(requestContext, "CourseBatchNotificationActor:triggerEmailNotification: userIdList = "
             + userIdList);
@@ -141,8 +142,8 @@ public class CourseBatchNotificationActor extends BaseActor {
       CourseBatch courseBatch,
       Map<String, Object> contentDetails,
       String subject,
-      String template) {
-    Map<String, Object> courseBatchObject = new ObjectMapper().convertValue(courseBatch, Map.class);
+      String template) throws Exception {
+    Map<String, Object> courseBatchObject = JsonUtil.convert(courseBatch, Map.class);
 
     Map<String, Object> request = new HashMap<>();
     Map<String, Object> requestMap = new HashMap<String, Object>();

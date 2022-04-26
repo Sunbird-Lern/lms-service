@@ -92,8 +92,8 @@ public class PageController extends BaseController {
       String pageId, String organisationId, Http.Request httpRequest) {
 
     try {
-      ProjectLogger.log(
-          "getting data for particular page settings = " + pageId, LoggerEnum.INFO.name());
+     logger.info(null,
+          "getting data for particular page settings = " + pageId);
       Request reqObj = new Request();
       reqObj.setOperation(ActorOperations.GET_PAGE_SETTING.getValue());
       reqObj.setRequestId(httpRequest.attrs().getOptional(Attrs.REQUEST_ID).orElse(null));
@@ -114,7 +114,7 @@ public class PageController extends BaseController {
   public CompletionStage<Result> getPageSettings(Http.Request httpRequest) {
 
     try {
-      ProjectLogger.log("getting page settings api called = ", LoggerEnum.INFO.name());
+     logger.info(null, "getting page settings api called = ");
       Request reqObj = new Request();
       reqObj.setOperation(ActorOperations.GET_PAGE_SETTINGS.getValue());
       reqObj.setRequestId(httpRequest.attrs().getOptional(Attrs.REQUEST_ID).orElse(null));
@@ -147,9 +147,8 @@ public class PageController extends BaseController {
       reqObj.setRequest(map);
       return actorResponseHandler(pageManagementActorRef, reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
-      ProjectLogger.log(
-          "PageController:getPageData: Exception occurred with error message = " + e.getMessage(),
-          LoggerEnum.ERROR.name());
+     logger.info(null,
+          "PageController:getPageData: Exception occurred with error message = " + e.getMessage());
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
   }
@@ -176,9 +175,8 @@ public class PageController extends BaseController {
       reqObj.setRequest(map);
       return actorResponseHandler(pageManagementActorRef, reqObj, timeout, null, httpRequest);
     } catch (Exception e) {
-      ProjectLogger.log(
-              "PageController:getPageData: Exception occurred with error message = " + e.getMessage(),
-              LoggerEnum.ERROR.name());
+     logger.info(null,
+              "PageController:getPageData: Exception occurred with error message = " + e.getMessage());
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
   }
@@ -209,8 +207,8 @@ public class PageController extends BaseController {
 
     try {
       JsonNode requestData = httpRequest.body().asJson();
-      ProjectLogger.log(
-          "getting create page section data request=" + requestData, LoggerEnum.INFO.name());
+     logger.info(null,
+          "getting create page section data request=" + requestData);
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
       RequestValidator.validateCreateSection(reqObj);
       reqObj.setOperation(ActorOperations.CREATE_SECTION.getValue());
@@ -235,8 +233,8 @@ public class PageController extends BaseController {
 
     try {
       JsonNode requestData = httpRequest.body().asJson();
-      ProjectLogger.log(
-          "getting update page section data request=" + requestData, LoggerEnum.INFO.name());
+     logger.info(null,
+          "getting update page section data request=" + requestData);
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
       RequestValidator.validateUpdateSection(reqObj);
       reqObj.setOperation(ActorOperations.UPDATE_SECTION.getValue());
@@ -261,8 +259,8 @@ public class PageController extends BaseController {
   public CompletionStage<Result> getSection(String sectionId, Http.Request httpRequest) {
 
     try {
-      ProjectLogger.log(
-          "getting data for particular page section =" + sectionId, LoggerEnum.INFO.name());
+     logger.info(null,
+          "getting data for particular page section =" + sectionId);
       Request reqObj = new Request();
       reqObj.setOperation(ActorOperations.GET_SECTION.getValue());
       reqObj.setRequestId(httpRequest.attrs().getOptional(Attrs.REQUEST_ID).orElse(null));
@@ -282,7 +280,7 @@ public class PageController extends BaseController {
   public CompletionStage<Result> getSections(Http.Request httpRequest) {
 
     try {
-      ProjectLogger.log("get page all section method called = ", LoggerEnum.INFO.name());
+     logger.info(null, "get page all section method called = ");
       Request reqObj = new Request();
       reqObj.setOperation(ActorOperations.GET_ALL_SECTION.getValue());
       reqObj.setRequestId(httpRequest.attrs().getOptional(Attrs.REQUEST_ID).orElse(null));

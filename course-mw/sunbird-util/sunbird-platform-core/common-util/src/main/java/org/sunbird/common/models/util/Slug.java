@@ -21,13 +21,14 @@ public class Slug {
   private static final Pattern NONLATIN = Pattern.compile("[^\\w-\\.]");
   private static final Pattern WHITESPACE = Pattern.compile("[\\s]");
   private static final Pattern DUPDASH = Pattern.compile("-+");
+  private static LoggerUtil logger = new LoggerUtil(Slug.class);
 
   public static String makeSlug(String input, boolean transliterate) {
     String origInput = input;
     String tempInputValue = "";
     // Validate the input
     if (input == null) {
-      ProjectLogger.log("Provided input value is null");
+      logger.info(null, "Provided input value is null");
       return input;
     }
     // Remove extra spaces
@@ -57,7 +58,7 @@ public class Slug {
   private static void validateResult(String input, String origInput) {
     // Check if we are not left with a blank
     if (input.length() == 0) {
-      ProjectLogger.log("Failed to cleanup the input " + origInput);
+      logger.info(null,"Failed to cleanup the input " + origInput);
     }
   }
 
@@ -70,7 +71,7 @@ public class Slug {
     try {
       value = URLDecoder.decode(input, "UTF-8");
     } catch (Exception ex) {
-      ProjectLogger.log(ex.getMessage(), ex);
+      logger.error(null, ex.getMessage(), ex);
     }
     return value;
   }

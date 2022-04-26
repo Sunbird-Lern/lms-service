@@ -5,17 +5,22 @@ import com.mashape.unirest.http.HttpMethod;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerUtil;
+import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.common.util.KeycloakRequiredActionLinkUtil;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static org.sunbird.common.exception.ProjectCommonException.throwServerErrorException;
@@ -172,18 +177,16 @@ public class UserOrgServiceImpl implements UserOrgService {
     }
     String relativeUrl = getConfigValue(SUNBIRD_GET_SINGLE_USER_API) + FORWARD_SLASH + id;
     Response response = getUserOrgResponse(relativeUrl, HttpMethod.GET, requestMap, headers);
-    if (response != null) {
+    if (response != null && ResponseCode.OK == response.getResponseCode()) {
       return (Map<String, Object>) response.get(RESPONSE);
-    }
-    return null;
+    } else
+    return new HashMap<>();
   }
 
   @Override
   public List<Map<String, Object>> getUsersByIds(List<String> ids, String authToken) {
-    Map<String, Object> filterlist = new HashMap<>();
-    filterlist.put(ID, ids);
-    Map<String, Object> requestMap = getRequestMap(filterlist);
-    return getUsersResponse(requestMap, authToken);
+    List<CompletableFuture<Map<String, Object>>> futures = ids.stream().map(id -> getUserDetail(id, authToken)).collect(Collectors.toList());
+    return futures.stream().map(CompletableFuture::join).filter(map -> MapUtils.isNotEmpty(map)).collect(Collectors.toList());
   }
 
   @Override
@@ -227,5 +230,14 @@ public class UserOrgServiceImpl implements UserOrgService {
       }
     }
     return null;
+  }
+
+  private CompletableFuture<Map<String, Object>> getUserDetail(String userId, String authToken) {
+    return CompletableFuture.supplyAsync(new Supplier<Map<String, Object>>() {
+      @Override
+      public Map<String, Object> get() {
+        return getUserById(userId, authToken);
+      }
+    });
   }
 }

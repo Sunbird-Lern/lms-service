@@ -32,6 +32,24 @@ class GroupAggregatesActorTest extends FlatSpec with Matchers with MockFactory {
     assert(response.getResponseCode == ResponseCode.OK)
   }
 
+  "GroupAggregatesActor with null aggr field" should "return success" in {
+    (groupAggregateUtil.getGroupDetails(_:String, _:Request)).expects(*,*).returns(validRestResponse())
+    (groupDao.read(_: String, _: String, _: java.util.List[String], _: RequestContext)).expects(*,*,*,* ).returns(validDBResponseWithNullAggr())
+    (cacheUtil.set(_: String, _: String, _: Int)).expects(*, *, *).once()
+    val response = callActor(getGroupActivityAggRequest(), Props(new GroupAggregatesActor()(cacheUtil).setInstanceVariable(groupAggregateUtil, groupDao)))
+
+    assert(response.getResponseCode == ResponseCode.OK)
+  }
+
+  "GroupAggregatesActor with missing attemptCount last updated" should "return success" in {
+    (groupAggregateUtil.getGroupDetails(_:String, _:Request)).expects(*,*).returns(validRestResponse())
+    (groupDao.read(_: String, _: String, _: java.util.List[String], _: RequestContext)).expects(*,*,*,* ).returns(validDBResponseWithMissingAttemptsCountLastUpdated())
+    (cacheUtil.set(_: String, _: String, _: Int)).expects(*, *, *).once()
+    val response = callActor(getGroupActivityAggRequest(), Props(new GroupAggregatesActor()(cacheUtil).setInstanceVariable(groupAggregateUtil, groupDao)))
+
+    assert(response.getResponseCode == ResponseCode.OK)
+  }
+
   "GroupAggregatesActor" should "return member not found" in {
     (groupAggregateUtil.getGroupDetails(_:String, _:Request)).expects(*,*).returns(blankRestResponse())
     val response = callActor(getGroupActivityAggRequest(), Props(new GroupAggregatesActor()(cacheUtil).setInstanceVariable(groupAggregateUtil, groupDao)))
@@ -100,6 +118,53 @@ class GroupAggregatesActorTest extends FlatSpec with Matchers with MockFactory {
         put("context_id", "context")
         put("agg", new util.HashMap[String, AnyRef](){{
           put("completedCount", 1.asInstanceOf[AnyRef])
+        }})
+        put("aggregates", new util.HashMap[String, AnyRef](){{
+          put("completedCount", 1.toDouble.asInstanceOf[AnyRef])
+        }})
+        put("agg_last_updated", new util.HashMap[String, AnyRef](){{
+          put("completedCount", new java.util.Date())
+        }})
+      }})
+    }}
+    response.put("response", members)
+    response
+  }
+  def validDBResponseWithNullAggr(): Response = {
+    val response = new Response()
+    val members = new java.util.ArrayList[java.util.Map[String, AnyRef]] {{
+      add(new java.util.HashMap[String, AnyRef] {{
+        put("activity_type", "course1")
+        put("activity_id","do_123")
+        put("user_id", "user1")
+        put("context_id", "context")
+        put("agg", null)
+        put("aggregates", new util.HashMap[String, AnyRef](){{
+          put("completedCount", 1.toDouble.asInstanceOf[AnyRef])
+        }})
+        put("agg_last_updated", new util.HashMap[String, AnyRef](){{
+          put("completedCount", new java.util.Date())
+        }})
+      }})
+    }}
+    response.put("response", members)
+    response
+  }
+
+  def validDBResponseWithMissingAttemptsCountLastUpdated(): Response = {
+    val response = new Response()
+    val members = new java.util.ArrayList[java.util.Map[String, AnyRef]] {{
+      add(new java.util.HashMap[String, AnyRef] {{
+        put("activity_type", "course1")
+        put("activity_id","do_123")
+        put("user_id", "user1")
+        put("context_id", "context")
+        put("agg", new util.HashMap[String, AnyRef](){{
+          put("completedCount", 1.asInstanceOf[AnyRef])
+        }})
+        put("aggregates", new util.HashMap[String, AnyRef](){{
+          put("completedCount", 1.toDouble.asInstanceOf[AnyRef])
+          put("attempts_count:do_contentId", 1.toDouble.asInstanceOf[AnyRef])
         }})
         put("agg_last_updated", new util.HashMap[String, AnyRef](){{
           put("completedCount", new java.util.Date())

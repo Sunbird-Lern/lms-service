@@ -56,7 +56,7 @@ public class AccessTokenValidator {
      * @return
      */
     public static String verifyManagedUserToken(
-            String managedEncToken, String requestedByUserId, String requestedForUserId) {
+            String managedEncToken, String requestedByUserId, String requestedForUserId, String loggingHeaders) {
         String managedFor = JsonKey.UNAUTHORIZED;
         try {
             Map<String, Object> payload = validateToken(managedEncToken, true);
@@ -74,8 +74,9 @@ public class AccessTokenValidator {
                                 + requestedForUserId);
                 boolean isValid =
                         parentId.equalsIgnoreCase(requestedByUserId);
-                if(!muaId.equalsIgnoreCase(requestedForUserId))
-                    logger.info( null,"RequestedFor userid : " + requestedForUserId + " is not matching with the muaId : " + muaId);
+                if(!muaId.equalsIgnoreCase(requestedForUserId)) {
+                    logger.info( null,"RequestedFor userid : " + requestedForUserId + " is not matching with the muaId : " + muaId + " Headers: " + loggingHeaders);
+                }
                 if (isValid) {
                     managedFor = muaId;
                 }

@@ -2,7 +2,10 @@ package org.sunbird.common.models.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 /**
  * This class will be used to read cassandratablecolumn properties file.
@@ -14,6 +17,7 @@ public class CassandraPropertyReader {
   private final Properties properties = new Properties();
   private static final String file = "cassandratablecolumn.properties";
   private static CassandraPropertyReader cassandraPropertyReader = null;
+  public LoggerUtil logger = new LoggerUtil(this.getClass());
 
   /** private default constructor */
   private CassandraPropertyReader() {
@@ -21,7 +25,7 @@ public class CassandraPropertyReader {
     try {
       properties.load(in);
     } catch (IOException e) {
-      ProjectLogger.log("Error in properties cache", e);
+      logger.error(null, "Error in properties cache", e);
     }
   }
 
@@ -44,5 +48,19 @@ public class CassandraPropertyReader {
    */
   public String readProperty(String key) {
     return properties.getProperty(key) != null ? properties.getProperty(key) : key;
+  }
+
+  /**
+   * Method to read value from resource file .
+   *
+   * @param key to read property key
+   * @return key corresponding to given value if found else will return value itself.
+   */
+  public String readPropertyValue(String key) {
+    List<Map.Entry<Object, Object>> s = properties.entrySet()
+            .stream()
+            .filter(entry -> key.equals(entry.getValue()))
+            .collect(Collectors.toList());
+    return s.isEmpty() ? key : (String) s.get(0).getKey();
   }
 }

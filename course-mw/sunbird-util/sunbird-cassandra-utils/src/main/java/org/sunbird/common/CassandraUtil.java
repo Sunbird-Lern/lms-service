@@ -22,10 +22,7 @@ import org.sunbird.cassandraannotation.ClusteringKey;
 import org.sunbird.cassandraannotation.PartitioningKey;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.CassandraPropertyReader;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.models.util.ProjectUtil;
+import org.sunbird.common.models.util.*;
 import org.sunbird.common.responsecode.ResponseCode;
 
 /**
@@ -37,6 +34,7 @@ public final class CassandraUtil {
   private static final CassandraPropertyReader propertiesCache =
       CassandraPropertyReader.getInstance();
   private static final String SERIAL_VERSION_UID = "serialVersionUID";
+  protected static LoggerUtil logger = new LoggerUtil(CassandraUtil.class);
 
   private CassandraUtil() {}
 
@@ -63,7 +61,7 @@ public final class CassandraUtil {
       }
     }
     query.append(commaSepValueBuilder + Constants.CLOSING_BRACE);
-    ProjectLogger.log(query.toString());
+    logger.info(null, query.toString());
     return query.toString();
   }
 
@@ -87,7 +85,7 @@ public final class CassandraUtil {
               .forEach(entry -> rowMap.put(entry.getKey(), row.getObject(entry.getValue())));
           responseList.add(rowMap);
         });
-    ProjectLogger.log(responseList.toString());
+    logger.info(null, "Total rows fetched from cassandra: " + responseList.size());
     response.put(Constants.RESPONSE, responseList);
     return response;
   }
@@ -144,7 +142,7 @@ public final class CassandraUtil {
             + Constants.IDENTIFIER
             + Constants.EQUAL
             + " ?; ");
-    ProjectLogger.log(query.toString());
+    logger.info(null, query.toString());
     return query.toString();
   }
 
@@ -198,7 +196,7 @@ public final class CassandraUtil {
         }
       }
     } catch (Exception ex) {
-      ProjectLogger.log("Exception occurred - batchUpdateQuery", ex);
+      logger.error(null,"Exception occurred - batchUpdateQuery", ex);
       throw new ProjectCommonException(
           ResponseCode.SERVER_ERROR.getErrorCode(),
           ResponseCode.SERVER_ERROR.getErrorMessage(),
@@ -245,7 +243,7 @@ public final class CassandraUtil {
         }
       }
     } catch (Exception ex) {
-      ProjectLogger.log("Exception occurred - getPrimaryKey", ex);
+      logger.error(null, "Exception occurred - getPrimaryKey", ex);
       throw new ProjectCommonException(
           ResponseCode.SERVER_ERROR.getErrorCode(),
           ResponseCode.SERVER_ERROR.getErrorMessage(),
@@ -342,5 +340,11 @@ public final class CassandraUtil {
     } else {
       where.and(QueryBuilder.eq(key, value));
     }
+  }
+
+  public static Map<String, Object> changeCassandraColumnMapping(Map<String, Object> map) {
+    Map<String, Object> newMap = new HashMap<>();
+    map.entrySet().forEach(entry -> newMap.put(propertiesCache.readPropertyValue(entry.getKey()), entry.getValue()));
+    return newMap;
   }
 }

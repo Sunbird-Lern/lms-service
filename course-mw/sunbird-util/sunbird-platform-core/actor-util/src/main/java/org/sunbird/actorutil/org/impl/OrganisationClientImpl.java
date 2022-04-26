@@ -17,11 +17,7 @@ import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.ActorOperations;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.models.util.ProjectUtil;
+import org.sunbird.common.models.util.*;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
@@ -29,7 +25,7 @@ import org.sunbird.models.organisation.Organisation;
 import scala.concurrent.Future;
 
 public class OrganisationClientImpl implements OrganisationClient {
-  
+  private LoggerUtil logger = new LoggerUtil(this.getClass());
   public static OrganisationClient organisationClient = null;
   public static OrganisationClient getInstance() {
     if (organisationClient == null) {
@@ -49,13 +45,13 @@ public class OrganisationClientImpl implements OrganisationClient {
 
   @Override
   public String createOrg(ActorRef actorRef, Map<String, Object> orgMap) {
-    ProjectLogger.log("OrganisationClientImpl: createOrg called", LoggerEnum.INFO);
+    logger.info(null, "OrganisationClientImpl: createOrg called");
     return upsertOrg(actorRef, orgMap, ActorOperations.CREATE_ORG.getValue());
   }
 
   @Override
   public void updateOrg(ActorRef actorRef, Map<String, Object> orgMap) {
-    ProjectLogger.log("OrganisationClientImpl: updateOrg called", LoggerEnum.INFO);
+    logger.info(null, "OrganisationClientImpl: updateOrg called");
     upsertOrg(actorRef, orgMap, ActorOperations.UPDATE_ORG.getValue());
   }
 
@@ -85,7 +81,7 @@ public class OrganisationClientImpl implements OrganisationClient {
 
   @Override
   public Organisation getOrgById(ActorRef actorRef, String orgId) {
-    ProjectLogger.log("OrganisationClientImpl: getOrgById called", LoggerEnum.INFO);
+    logger.info(null, "OrganisationClientImpl: getOrgById called");
     Organisation organisation = null;
 
     Request request = new Request();

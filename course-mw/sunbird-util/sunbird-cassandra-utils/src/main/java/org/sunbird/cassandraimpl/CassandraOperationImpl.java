@@ -67,7 +67,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
       while (iterator.hasNext()) {
         array[i++] = iterator.next();
       }
-      if(null != statement) logger.debug(requestContext, statement.getQueryString(), null);
+      if(null != statement) logger.debug(requestContext, statement.getQueryString());
       connectionManager.getSession(keyspaceName).execute(boundStatement.bind(array));
       response.put(Constants.RESPONSE, Constants.SUCCESS);
     } catch (Exception e) {
@@ -189,8 +189,9 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
         selectStatement.and(QueryBuilder.eq(propertyName, propertyValue));
       }
       ResultSet results = null;
+      Select selectQuery = selectStatement.allowFiltering();
       if (null != selectStatement) logger.debug(requestContext, selectStatement.getQueryString());
-      results = session.execute(selectStatement);
+      results = session.execute(selectQuery);
       response = CassandraUtil.createResponse(results);
     } catch (Exception e) {
       logger.error(requestContext, Constants.EXCEPTION_MSG_FETCH + tableName + " : " + e.getMessage(), e);
@@ -213,8 +214,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
           String keyspaceName, String tableName, Map<String, Object> propertyMap, List<String> fields, RequestContext requestContext) {
     long startTime = System.currentTimeMillis();
     logger.info(requestContext, 
-        "Cassandra Service getRecordsByProperties method started at ==" + startTime,
-        LoggerEnum.INFO);
+        "Cassandra Service getRecordsByProperties method started at ==" + startTime);
     Response response = new Response();
     try {
       Builder selectBuilder;
@@ -261,8 +261,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
           String keyspaceName, String tableName, String id, RequestContext requestContext, String... properties) {
     long startTime = System.currentTimeMillis();
     logger.info(requestContext, 
-        "Cassandra Service getPropertiesValueById method started at ==" + startTime,
-        LoggerEnum.INFO);
+        "Cassandra Service getPropertiesValueById method started at ==" + startTime);
     Response response = new Response();
     try {
       String selectQuery = CassandraUtil.getSelectStatement(keyspaceName, tableName, properties);
@@ -286,8 +285,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
   @Override
   public Response getAllRecords(RequestContext requestContext, String keyspaceName, String tableName) {
     long startTime = System.currentTimeMillis();
-    logger.info(requestContext, 
-        "Cassandra Service getAllRecords method started at ==" + startTime);
+    logger.debug(requestContext, "Cassandra Service getAllRecords method started at ==" + startTime);
     Response response = new Response();
     try {
       Select selectQuery = QueryBuilder.select().all().from(keyspaceName, tableName);
@@ -308,7 +306,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
   @Override
   public Response updateRecordV2(RequestContext requestContext, String keyspace, String table, Map<String, Object> selectMap, Map<String, Object> updateMap, boolean ifExists) {
       long startTime = System.currentTimeMillis();
-      logger.info(requestContext,"Cassandra Service updateRecordV2 method started at ==" + startTime);
+      logger.debug(requestContext,"Cassandra Service updateRecordV2 method started at ==" + startTime);
       Response response = new Response();
       try {
         Update updateQuery = QueryBuilder.update(keyspace, table);
@@ -343,8 +341,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
   @Override
   public Response upsertRecord(String keyspaceName, String tableName, Map<String, Object> request, RequestContext requestContext) {
     long startTime = System.currentTimeMillis();
-    logger.info(requestContext, 
-        "Cassandra Service upsertRecord method started at ==" + startTime);
+    logger.debug(requestContext, "Cassandra Service upsertRecord method started at ==" + startTime);
     Response response = new Response();
     try {
       String query = CassandraUtil.getPreparedStatement(keyspaceName, tableName, request);
@@ -387,8 +384,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
           Map<String, Object> compositeKey) {
 
     long startTime = System.currentTimeMillis();
-    logger.info(requestContext, 
-        "Cassandra Service updateRecord method started at ==" + startTime);
+    logger.debug(requestContext, "Cassandra Service updateRecord method started at ==" + startTime);
     Response response = new Response();
     try {
       Session session = connectionManager.getSession(keyspaceName);
@@ -433,8 +429,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
   public Response getRecordByIdentifier(
           RequestContext requestContext, String keyspaceName, String tableName, Object key, List<String> fields) {
     long startTime = System.currentTimeMillis();
-    logger.info(requestContext, 
-        "Cassandra Service getRecordBy key method started at ==" + startTime);
+    logger.debug(requestContext, "Cassandra Service getRecordBy key method started at ==" + startTime);
     Response response = new Response();
     try {
       Session session = connectionManager.getSession(keyspaceName);
@@ -477,8 +472,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
           RequestContext requestContext, String keyspaceName, String tableName, List<Map<String, Object>> records) {
 
     long startTime = System.currentTimeMillis();
-    logger.info(requestContext, 
-        "Cassandra Service batchInsert method started at ==" + startTime);
+    logger.debug(requestContext, "Cassandra Service batchInsert method started at ==" + startTime);
 
     Session session = connectionManager.getSession(keyspaceName);
     Response response = new Response();
@@ -502,7 +496,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
         | QueryValidationException
         | NoHostAvailableException
         | IllegalStateException e) {
-      logger.info(requestContext, "Cassandra Batch Insert Failed." + e.getMessage(), e);
+      logger.error(requestContext, "Cassandra Batch Insert Failed." + e.getMessage(), e);
       throw new ProjectCommonException(
           ResponseCode.SERVER_ERROR.getErrorCode(),
           ResponseCode.SERVER_ERROR.getErrorMessage(),
@@ -519,8 +513,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
     Session session = connectionManager.getSession(keyspaceName);
     BatchStatement batchStatement = new BatchStatement();
     long startTime = System.currentTimeMillis();
-    logger.info(requestContext, 
-        "Cassandra Service batchUpdate method started at ==" + startTime);
+    logger.debug(requestContext, "Cassandra Service batchUpdate method started at ==" + startTime);
     Response response = new Response();
     ResultSet resultSet = null;
     try {
@@ -550,7 +543,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
     String message =
         "Cassandra operation {0} started at {1} and completed at {2}. Total time elapsed is {3}.";
     MessageFormat mf = new MessageFormat(message);
-    logger.info(null, 
+    logger.debug(null,
         mf.format(new Object[] {operation, startTime, stopTime, elapsedTime}));
   }
 
@@ -558,9 +551,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
   public Response getRecordsByIndexedProperty(
           String keyspaceName, String tableName, String propertyName, Object propertyValue, RequestContext requestContext) {
     long startTime = System.currentTimeMillis();
-    logger.info(requestContext, 
-        "CassandraOperationImpl:getRecordsByIndexedProperty called at " + startTime,
-        LoggerEnum.INFO);
+    logger.debug(requestContext, "CassandraOperationImpl:getRecordsByIndexedProperty called at " + startTime);
     Response response = new Response();
     try {
       Select selectQuery = QueryBuilder.select().all().from(keyspaceName, tableName);
@@ -591,9 +582,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
   public void deleteRecord(
           String keyspaceName, String tableName, Map<String, String> compositeKeyMap, RequestContext requestContext) {
     long startTime = System.currentTimeMillis();
-    logger.info(requestContext, 
-        "CassandraOperationImpl: deleteRecord by composite key called at " + startTime,
-        LoggerEnum.INFO);
+    logger.debug(requestContext, "CassandraOperationImpl: deleteRecord by composite key called at " + startTime);
     try {
       Delete delete = QueryBuilder.delete().from(keyspaceName, tableName);
       Delete.Where deleteWhere = delete.where();
@@ -627,8 +616,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
   public boolean deleteRecords(String keyspaceName, String tableName, List<String> identifierList, RequestContext requestContext) {
     long startTime = System.currentTimeMillis();
     ResultSet resultSet;
-    logger.info(requestContext, 
-        "CassandraOperationImpl: deleteRecords called at " + startTime);
+    logger.debug(requestContext, "CassandraOperationImpl: deleteRecords called at " + startTime);
     try {
       Delete delete = QueryBuilder.delete().from(keyspaceName, tableName);
       Delete.Where deleteWhere = delete.where();
@@ -657,8 +645,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
   public Response getRecordsByCompositeKey(
           String keyspaceName, String tableName, Map<String, Object> compositeKeyMap, RequestContext requestContext) {
     long startTime = System.currentTimeMillis();
-    logger.info(requestContext, 
-        "CassandraOperationImpl: getRecordsByCompositeKey called at " + startTime);
+    logger.debug(requestContext, "CassandraOperationImpl: getRecordsByCompositeKey called at " + startTime);
     Response response = new Response();
     try {
       Builder selectBuilder = QueryBuilder.select().all();
@@ -777,7 +764,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
             | QueryValidationException
             | NoHostAvailableException
             | IllegalStateException e) {
-      logger.info(requestContext, "Cassandra Batch Insert Failed." + e.getMessage(), e);
+      logger.error(requestContext, "Cassandra Batch Insert Failed." + e.getMessage(), e);
       if (e instanceof WriteTimeoutException && writeType.contains(((WriteTimeoutException) e).getWriteType().name()))
         response.put(Constants.RESPONSE, Constants.SUCCESS);
       else {

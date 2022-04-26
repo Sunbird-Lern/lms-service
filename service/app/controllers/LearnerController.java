@@ -46,10 +46,33 @@ public class LearnerController extends BaseController {
       JsonNode requestJson = httpRequest.body().asJson();
       Request request =
           createAndInitRequest("getConsumption", requestJson, httpRequest);
+      String userId = (String) request.getContext().getOrDefault(JsonKey.REQUESTED_FOR, request.getContext().get(JsonKey.REQUESTED_BY));
+      validator.validateRequestedBy(userId);
+      request.getRequest().put(JsonKey.USER_ID, userId);
       validator.validateGetContentState(request);
       request = transformUserId(request);
       return actorResponseHandler(
               contentConsumptionActor, request, timeout, JsonKey.CONTENT_LIST, httpRequest);
+    } catch (Exception e) {
+      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
+    }
+  }
+
+  /**
+   * This method will provide list of user content state. Content refer user activity {started,half
+   * completed ,completed} against TOC (table of content).
+   *
+   * @return Result
+   */
+  public CompletionStage<Result> privateGetContentState(Http.Request httpRequest) {
+    try {
+      JsonNode requestJson = httpRequest.body().asJson();
+      Request request =
+          createAndInitRequest("getConsumption", requestJson, httpRequest);
+      validator.validateGetContentState(request);
+      request = transformUserId(request);
+      return actorResponseHandler(
+          contentConsumptionActor, request, timeout, JsonKey.CONTENT_LIST, httpRequest);
     } catch (Exception e) {
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
@@ -61,9 +84,12 @@ public class LearnerController extends BaseController {
    * @return Result
    */
   public CompletionStage<Result> updateContentState(Http.Request httpRequest) {
-    try {
-      JsonNode requestData = httpRequest.body().asJson();
-      ProjectLogger.log(" updateContentState request data=" + requestData, LoggerEnum.INFO.name());
+    JsonNode requestData = httpRequest.body().asJson();
+    String loggingHeaders =  httpRequest.attrs().getOptional(Attrs.X_LOGGING_HEADERS).orElse(null);
+    String requestedBy = httpRequest.attrs().getOptional(Attrs.USER_ID).orElse(null);
+    String requestedFor = httpRequest.attrs().getOptional(Attrs.REQUESTED_FOR).orElse(null);
+    String apiDebugLog = "UpdateContentState Request: " + requestData.toString() + " RequestedBy: " + requestedBy + " RequestedFor: " + requestedFor + " ";
+      try {
       Request reqObj = (Request) mapper.RequestMapper.mapRequest(requestData, Request.class);
       RequestValidator.validateUpdateContent(reqObj);
       reqObj = transformUserId(reqObj);
@@ -71,16 +97,28 @@ public class LearnerController extends BaseController {
       reqObj.setRequestId(httpRequest.attrs().getOptional(Attrs.REQUEST_ID).orElse(null));
       reqObj.setEnv(getEnvironment());
       HashMap<String, Object> innerMap = new HashMap<>();
-      innerMap.put(JsonKey.CONTENTS, reqObj.getRequest().get(JsonKey.CONTENTS));
-      innerMap.put(JsonKey.REQUESTED_BY, httpRequest.attrs().getOptional(Attrs.USER_ID).orElse(null));
-      if (StringUtils.isNotBlank(httpRequest.attrs().getOptional(Attrs.REQUESTED_FOR).orElse(null)))
-        innerMap.put(SunbirdKey.REQUESTED_FOR, httpRequest.attrs().getOptional(Attrs.REQUESTED_FOR).orElse(null));
-      innerMap.put(JsonKey.ASSESSMENT_EVENTS, reqObj.getRequest().get(JsonKey.ASSESSMENT_EVENTS));
+      innerMap.put(JsonKey.REQUESTED_BY, requestedBy);
+      if (StringUtils.isNotBlank(requestedFor))
+        innerMap.put(SunbirdKey.REQUESTED_FOR, requestedFor);
+      if(!reqObj.contains(JsonKey.CONTENTS) && !reqObj.contains(JsonKey.ASSESSMENT_EVENTS)) {
+        innerMap.put(JsonKey.COURSE_ID, reqObj.getOrDefault(JsonKey.COURSE_ID, ""));
+        innerMap.put(JsonKey.BATCH_ID, reqObj.getOrDefault(JsonKey.BATCH_ID, ""));
+      } else {
+        innerMap.put(JsonKey.CONTENTS, reqObj.get(JsonKey.CONTENTS));
+        innerMap.put(JsonKey.ASSESSMENT_EVENTS, reqObj.getRequest().get(JsonKey.ASSESSMENT_EVENTS));
+      }
       innerMap.put(JsonKey.USER_ID, reqObj.getRequest().get(JsonKey.USER_ID));
       reqObj.setRequest(innerMap);
-      return actorResponseHandler(contentConsumptionActor, reqObj, timeout, null, httpRequest);
+      CompletionStage<Result> result = actorResponseHandler(contentConsumptionActor, reqObj, timeout, null, httpRequest);
+      return result.thenApplyAsync(r -> {
+        logger.info(null,apiDebugLog + ":: ResponseStatus: " + r.status() + " Headers: " + loggingHeaders);
+        return r;
+      });
     } catch (Exception e) {
-      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
+        return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest)).thenApplyAsync(r -> {
+            logger.info(null,apiDebugLog + ":: ResponseStatus: " + r.status() + " Headers: " + loggingHeaders +  " ErrMessage: " + e.getMessage());
+            return r;
+        });
     }
   }
 

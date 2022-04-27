@@ -4,6 +4,8 @@ import org.sunbird.aggregate.CollectionSummaryAggregate;
 import org.sunbird.enrolments.CourseEnrolmentActor;
 import org.sunbird.enrolments.ContentConsumptionActor;
 import org.sunbird.enrolments.CourseEnrolmentActor;
+import org.sunbird.enrolments.EventConsumptionActor;
+import org.sunbird.enrolments.EventSetEnrolmentActor;
 import org.sunbird.group.GroupAggregatesActor;
 import org.sunbird.learner.actors.BackgroundJobManager;
 import org.sunbird.learner.actors.PageManagementActor;
@@ -44,7 +46,9 @@ public enum ACTOR_NAMES {
   //Scala Actors
   COURSE_ENROLMENT_ACTOR(CourseEnrolmentActor.class, "course-enrolment-actor"),
   CONTENT_CONSUMPTION_ACTOR(ContentConsumptionActor.class, "content-consumption-actor"),
-  GROUP_AGGREGATES_ACTORS(GroupAggregatesActor.class, "group-aggregates-actor");
+  GROUP_AGGREGATES_ACTORS(GroupAggregatesActor.class, "group-aggregates-actor"),
+  EVENT_SET_ENROLMENT_ACTOR(EventSetEnrolmentActor.class, "eventset-enrolment-actor"),
+  EVENT_CONSUMPTION_ACTOR(EventConsumptionActor.class, "event-consumption-actor");
 
   private ACTOR_NAMES(Class clazz, String name) {
     actorClass = clazz;

@@ -3,7 +3,7 @@ executorType: machine
 jobs:
   build:
     docker:
-      - image: circleci/openjdk:11-jdk-buster-node-browsers-legacy
+      - image: circleci/openjdk:14-jdk-buster-node-browsers-legacy
       - image: circleci/redis:latest
     steps:
       - checkout
@@ -13,7 +13,7 @@ jobs:
       - run:
           name: redis
           command: sudo apt install redis-server -y
-      - run: JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 mvn clean install
+      - run: mvn clean install
       - run: cd course-mw/enrolment-actor && mvn scoverage:report
       - run: cd course-mw/sunbird-util/cache-utils && mvn scoverage:report
       - run: cd service && mvn play2:dist

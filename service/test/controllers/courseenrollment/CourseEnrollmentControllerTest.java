@@ -225,7 +225,7 @@ public class CourseEnrollmentControllerTest extends BaseApplicationTest {
                     .bodyJson(createCourseEnrollmentRequest(COURSE_ID, BATCH_ID, null))
                     .method("POST");
     Result result = Helpers.route(application, req);
-    Assert.assertEquals( 401, result.status());
+    Assert.assertEquals( 400, result.status());
   }
 
   @Test
@@ -270,7 +270,7 @@ public class CourseEnrollmentControllerTest extends BaseApplicationTest {
                     .bodyJson(createCourseEnrollmentRequest(COURSE_ID, BATCH_ID, null))
                     .method("POST");
     Result result = Helpers.route(application, req);
-    Assert.assertEquals( 401, result.status());
+    Assert.assertEquals( 400, result.status());
   }
 
   @Test

@@ -41,7 +41,9 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
 
 
     "CourseEnrolmentActor" should "return success on enrol" in {
-        (courseDao.readById(_: String, _: String,_: RequestContext)).expects(*,*,*).returns(validCourseBatch())
+        val courseBatch = validCourseBatch()
+        courseBatch.setEnrollmentType("invite-only")
+        (courseDao.readById(_: String, _: String,_: RequestContext)).expects(*,*,*).returns(courseBatch)
         (userDao.read(_: RequestContext, _: String,_: String,_: String)).expects(*,*,*,*).returns(null)
         (userDao.insertV2(_: RequestContext, _: java.util.Map[String, AnyRef])).expects(*, *)
         (cacheUtil.delete(_: String)).expects(*).once()
@@ -58,7 +60,6 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
 
     "On invite only batch" should "return client error" in  {
         val courseBatch = validCourseBatch()
-        courseBatch.setEnrollmentType("invite-only")
         (courseDao.readById(_: String, _: String,_: RequestContext)).expects(*,*,*).returns(courseBatch)
         (userDao.read(_: RequestContext, _: String,_: String,_: String)).expects(*,*,*,*).returns(null)
         val response = callActorForFailure(getEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
@@ -108,7 +109,9 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
     "On existing enrolment" should "return success on enrol" in {
         val userCourse = validUserCourse()
         userCourse.setActive(false)
-        (courseDao.readById(_: String, _: String,_: RequestContext)).expects(*,*,*).returns(validCourseBatch())
+        val courseBatch = validCourseBatch()
+        courseBatch.setEnrollmentType("invite-only")
+        (courseDao.readById(_: String, _: String,_: RequestContext)).expects(*,*,*).returns(courseBatch)
         (userDao.read(_: RequestContext, _: String,_: String,_: String)).expects(*,*,*,*).returns(userCourse)
         (userDao.updateV2(_: RequestContext, _: String,_: String,_: String, _: java.util.Map[String, AnyRef])).expects(*,*,*,*,*)
         (cacheUtil.delete(_: String)).expects(*).once()
@@ -119,7 +122,9 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
     "Unenrol" should "return success on enrol" in {
         val userCourse = validUserCourse()
         userCourse.setActive(true)
-        (courseDao.readById(_: String, _: String, _: RequestContext)).expects(*,*,*).returns(validCourseBatch())
+        val courseBatch = validCourseBatch()
+        courseBatch.setEnrollmentType("invite-only")
+        (courseDao.readById(_: String, _: String, _: RequestContext)).expects(*,*,*).returns(courseBatch)
         (userDao.read(_: RequestContext, _: String,_: String,_: String)).expects(*,*,*,*).returns(userCourse)
         (userDao.updateV2(_: RequestContext, _: String,_: String,_: String, _: java.util.Map[String, AnyRef])).expects(*,*,*,*,*)
         (cacheUtil.delete(_: String)).expects(*).once()
@@ -154,7 +159,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         userCourse.setActive(true)
         userCourse.setCourseId("do_11305605610466508811")
         userCourse.setBatchId("0130598559365038081")
-        (userDao.listEnrolments(_: RequestContext, _: String)).expects(*,*).returns(getEnrolmentLists())
+        (userDao.listEnrolments(_: RequestContext, _: String, _: java.util.List[String])).expects(*,*,*).returns(getEnrolmentLists())
             val response = callActor(getListEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         println(response)
         assert(null != response)
@@ -171,7 +176,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
             val map: java.util.Map[String, AnyRef] = enrolmentsList.get(i)
             map.put("enrolledDate", new Timestamp(System.currentTimeMillis))
         }
-        (userDao.listEnrolments(_: RequestContext, _: String)).expects(*,*).returns(enrolmentsList)
+        (userDao.listEnrolments(_: RequestContext, _: String, _: java.util.List[String])).expects(*,*,*).returns(enrolmentsList)
         val response = callActor(getListEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         println(response.getResult)
         assert(null != response)
@@ -195,7 +200,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         enrolmentsList.get(0).put("lastContentAccessTime", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSZ").parse("2021-12-24 08:20:15.875000+0000"))
         enrolmentsList.get(1).put("lastContentAccessTime", new Date())
         enrolmentsList.get(2).put("lastContentAccessTime", null)
-        (userDao.listEnrolments(_: RequestContext, _: String)).expects(*,*).returns(enrolmentsList)
+        (userDao.listEnrolments(_: RequestContext, _: String, _: java.util.List[String])).expects(*,*,*).returns(enrolmentsList)
         val response = callActor(getListEnrolRequest(), Props(new CourseEnrolmentActor(null)(cacheUtil).setDao(courseDao, userDao, groupDao)))
         println(response)
         assert(null != response)
@@ -228,7 +233,7 @@ class CourseEnrolmentTest extends FlatSpec with Matchers with MockFactory {
         userCourse.setCourseId("do_11305605610466508811")
         userCourse.setBatchId("0130598559365038081")
         (cacheUtil.get(_: String, _: String => String, _: Int)).expects(*, *, *).returns(null)
-        (userDao.listEnrolments(_: RequestContext, _: String)).expects(*, *).returns(getEnrolmentLists())
+        (userDao.listEnrolments(_: RequestContext, _: String, _: java.util.List[String])).expects(*, *, *).returns(getEnrolmentLists())
         (cacheUtil.set(_: String, _: String, _: Int)).expects(*, *, *).once()
         val request = getListEnrolRequest()
         request.getContext.put("cache", true.asInstanceOf[AnyRef])

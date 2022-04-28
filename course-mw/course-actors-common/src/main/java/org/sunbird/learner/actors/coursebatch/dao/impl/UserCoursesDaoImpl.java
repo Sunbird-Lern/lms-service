@@ -135,9 +135,12 @@ public class UserCoursesDaoImpl implements UserCoursesDao {
   }
 
   @Override
-  public List<Map<String, Object>> listEnrolments(RequestContext requestContext, String userId) {
+  public List<Map<String, Object>> listEnrolments(RequestContext requestContext, String userId, List<String> courseIdList) {
     Map<String, Object> primaryKey = new HashMap<>();
     primaryKey.put(JsonKey.USER_ID, userId);
+    if(!CollectionUtils.isEmpty(courseIdList)){
+      primaryKey.put(JsonKey.COURSE_ID_KEY, courseIdList);
+    }
     Response response = cassandraOperation.getRecordByIdentifier(requestContext, KEYSPACE_NAME, USER_ENROLMENTS, primaryKey, null);
     List<Map<String, Object>> userCoursesList = (List<Map<String, Object>>) response.get(JsonKey.RESPONSE);
     if (CollectionUtils.isEmpty(userCoursesList)) {

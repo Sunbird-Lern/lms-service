@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -95,7 +96,7 @@ public class UserCoursesDaoTest {
     when(cassandraOperation.getRecordByIdentifier(
             Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
             .thenReturn(readResponse);
-    List<Map<String, Object>> response = userCoursesDao.listEnrolments(null, JsonKey.USER_ID);
+    List<Map<String, Object>> response = userCoursesDao.listEnrolments(null, JsonKey.USER_ID, Collections.emptyList());
     Assert.assertEquals(null, response);
   }
 
@@ -108,7 +109,7 @@ public class UserCoursesDaoTest {
     when(cassandraOperation.getRecordByIdentifier(
             Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
             .thenReturn(readResponse);
-    List<Map<String, Object>> response = userCoursesDao.listEnrolments(null, JsonKey.USER_ID);
+    List<Map<String, Object>> response = userCoursesDao.listEnrolments(null, JsonKey.USER_ID, Collections.emptyList());
     Assert.assertNotEquals(null, response);
   }
 

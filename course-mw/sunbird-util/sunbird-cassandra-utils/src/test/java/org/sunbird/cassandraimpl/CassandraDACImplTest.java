@@ -136,6 +136,7 @@ public class CassandraDACImplTest extends BaseTest {
     }
 
     @Test
+    @Ignore
     public void testBatchInsertLoggedPartialWrite() {
         Request request = getRequest();
         ArrayList<Map<String, Object>> records = new ArrayList<Map<String, Object>>() {

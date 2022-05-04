@@ -36,7 +36,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     private val enrolmentDBInfo = Util.dbInfoMap.get(JsonKey.LEARNER_COURSE_DB)
     val dateFormatter = ProjectUtil.getDateFormatter
     //Added default fields in env varible:
-    val defaultFields: Set[String] = if(ProjectUtil.getConfigValue("content.default.fields")!=null) ProjectUtil.getConfigValue("content.default.fields").split(",").toSet else Set[String]("contentid","userid","batchid","courseid","completedcount","completionpercentage","lastcompletedtime","status","viewcount")
+    val defaultFields: Set[String] = if(ProjectUtil.getConfigValue("content.default.fields")!=null) ProjectUtil.getConfigValue("content.default.fields").split(",").toSet else Set[String]("contentid","userid","batchid","courseid","completedcount","lastcompletedtime","status","viewcount")
     val jsonFields = Set[String]("progressdetails")
 
     override def onReceive(request: Request): Unit = {
@@ -377,7 +377,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                 ProjectUtil.removeUnwantedFields(m, JsonKey.DATE_TIME, JsonKey.USER_ID, JsonKey.ADDED_BY, JsonKey.LAST_UPDATED_TIME, JsonKey.OLD_LAST_ACCESS_TIME, JsonKey.OLD_LAST_UPDATED_TIME, JsonKey.OLD_LAST_COMPLETED_TIME)
                 m.put(JsonKey.COLLECTION_ID, m.getOrDefault(JsonKey.COURSE_ID, ""))
                 jsonFields.foreach(field =>
-                    if(fields.contains(field))
+                    if(fields.contains(field) && m.get(field) != null)
                         m.put(field, mapper.readTree(m.get(field).asInstanceOf[String]))
                 )
                 val formattedMap = JsonUtil.convertWithDateFormat(m, classOf[util.Map[String, Object]], dateFormatter)

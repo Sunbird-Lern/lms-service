@@ -64,5 +64,5 @@ public interface UserCoursesDao {
   List<String> getBatchParticipants(RequestContext requestContext, String batchId, boolean active);
   
   
-  List<Map<String, Object>> listEnrolments(RequestContext requestContext, String userId);
+  List<Map<String, Object>> listEnrolments(RequestContext requestContext, String userId, List<String> courseIdList);
 }

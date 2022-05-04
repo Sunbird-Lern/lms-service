@@ -273,7 +273,6 @@
 				<version>3.0.0-M5</version>
 				<configuration>
 					<useSystemClassLoader>false</useSystemClassLoader>
-					<forkCount>0</forkCount>
 					<argLine>
 						--illegal-access=warn
 					</argLine>
@@ -288,25 +287,22 @@
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>0.8.5</version>
+				<configuration>
+					<destFile>${basedir}/target/coverage-reports/jacoco-unit.exec</destFile>
+					<dataFile>${basedir}/target/coverage-reports/jacoco-unit.exec</dataFile>
+				</configuration>
 				<executions>
 					<execution>
-						<id>default-prepare-agent</id>
+						<id>jacoco-initialize</id>
 						<goals>
 							<goal>prepare-agent</goal>
 						</goals>
 					</execution>
 					<execution>
-						<id>default-report</id>
-						<phase>prepare-package</phase>
+						<id>jacoco-site</id>
+						<phase>package</phase>
 						<goals>
 							<goal>report</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>report-aggregate</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>report-aggregate</goal>
 						</goals>
 					</execution>
 				</executions>

@@ -21,7 +21,7 @@ public class EventSetEnrollmentController extends BaseController {
     public CompletionStage<Result> enroll(Http.Request httpRequest) {
         return handleRequest(actorRef, "enrol",
                 httpRequest.body().asJson(),
-                (request) -> {
+                request -> {
                     Request req = (Request) request;
                     Util.handleFixedBatchIdRequest(req);
                     new CourseEnrollmentRequestValidator().validateEnrollCourse(req);
@@ -34,7 +34,7 @@ public class EventSetEnrollmentController extends BaseController {
     public CompletionStage<Result> unenroll(Http.Request httpRequest) {
         return handleRequest(actorRef, "unenrol",
                 httpRequest.body().asJson(),
-                (request) -> {
+                request -> {
                     Request req = (Request) request;
                     Util.handleFixedBatchIdRequest(req);
                     new CourseEnrollmentRequestValidator().validateUnenrollCourse(req);

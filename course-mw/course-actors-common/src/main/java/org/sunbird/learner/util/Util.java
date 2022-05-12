@@ -386,11 +386,14 @@ public final class Util {
   }
 
   public static void handleFixedBatchIdRequest(Request request) {
-    String courseIdKey = request.getRequest().containsKey(JsonKey.COURSE_ID)
-            ? JsonKey.COURSE_ID
-            : (request.getRequest().containsKey(JsonKey.ENROLLABLE_ITEM_ID)
-            ? JsonKey.ENROLLABLE_ITEM_ID
-            : JsonKey.COLLECTION_ID);
+    String courseIdKey = "";
+    if(request.getRequest().containsKey(JsonKey.COURSE_ID)) {
+      courseIdKey = JsonKey.COURSE_ID;
+    } else if (request.getRequest().containsKey(JsonKey.ENROLLABLE_ITEM_ID)){
+      courseIdKey = JsonKey.ENROLLABLE_ITEM_ID;
+    } else {
+      courseIdKey = JsonKey.COLLECTION_ID;
+    }
     String courseId = request.getRequest().getOrDefault(courseIdKey, "").toString();
     request.getRequest().put(JsonKey.COURSE_ID, courseId);
     //Till we add a type, we will use fixed batch identifier to prefix to course to get the batchId

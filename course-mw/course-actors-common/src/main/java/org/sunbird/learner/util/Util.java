@@ -385,6 +385,30 @@ public final class Util {
         : "";
   }
 
+  public static void handleFixedBatchIdRequest(Request request) {
+    String courseIdKey = "";
+    if(request.getRequest().containsKey(JsonKey.COURSE_ID)) {
+      courseIdKey = JsonKey.COURSE_ID;
+    } else if (request.getRequest().containsKey(JsonKey.ENROLLABLE_ITEM_ID)){
+      courseIdKey = JsonKey.ENROLLABLE_ITEM_ID;
+    } else {
+      courseIdKey = JsonKey.COLLECTION_ID;
+    }
+    String courseId = request.getRequest().getOrDefault(courseIdKey, "").toString();
+    request.getRequest().put(JsonKey.COURSE_ID, courseId);
+    //Till we add a type, we will use fixed batch identifier to prefix to course to get the batchId
+    String fixedBatchId = request.getRequest().getOrDefault(JsonKey.FIXED_BATCH_ID, "").toString();
+    String batchId = request.getRequest().getOrDefault(JsonKey.BATCH_ID, "").toString();
+    if (!fixedBatchId.isEmpty()) {
+      batchId = formBatchIdForFixedBatchId(courseId, fixedBatchId);
+    }
+    request.getRequest().put(JsonKey.BATCH_ID, batchId);
+  }
+
+  public static String formBatchIdForFixedBatchId(String courseId, String fixedBatchId) {
+    return fixedBatchId + "-" + courseId;
+  }
+
 }
 
 @FunctionalInterface

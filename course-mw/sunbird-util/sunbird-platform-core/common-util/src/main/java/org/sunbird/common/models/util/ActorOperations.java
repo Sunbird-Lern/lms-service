@@ -173,6 +173,7 @@ public enum ActorOperations {
   CREATE_USER_V3("createUserV3"),
   ONDEMAND_START_SCHEDULER("onDemandStartScheduler"),
   GROUP_ACTIVITY_AGGREGATES("groupActivityAggregates");
+
   private String value;
 
   /**

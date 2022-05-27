@@ -7,6 +7,7 @@ import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
+import org.sunbird.learner.util.Util;
 import play.mvc.Http;
 import play.mvc.Result;
 
@@ -32,7 +33,7 @@ public class CourseEnrollmentController extends BaseController {
   public CompletionStage<Result> getEnrolledCourses(String uid, Http.Request httpRequest) {
       return handleRequest(courseEnrolmentActor, "listEnrol",
           httpRequest.body().asJson(),
-          (req) -> {
+          req -> {
               Request request = (Request) req;
               Map<String, String[]> queryParams = new HashMap<>(httpRequest.queryString());
               if(queryParams.containsKey("fields")) {
@@ -68,7 +69,7 @@ public class CourseEnrollmentController extends BaseController {
     public CompletionStage<Result> privateGetEnrolledCourses(String uid, Http.Request httpRequest) {
         return handleRequest(courseEnrolmentActor, "listEnrol",
             httpRequest.body().asJson(),
-            (req) -> {
+            req -> {
                 Request request = (Request) req;
                 Map<String, String[]> queryParams = new HashMap<>(httpRequest.queryString());
                 if(queryParams.containsKey("fields")) {
@@ -99,7 +100,7 @@ public class CourseEnrollmentController extends BaseController {
   public CompletionStage<Result> enrollCourse(Http.Request httpRequest) {
     return handleRequest(courseEnrolmentActor, "enrol",
         httpRequest.body().asJson(),
-        (request) -> {
+        request -> {
           Request req = (Request) request;
           Map<String, String[]> queryParams = new HashMap<>(httpRequest.queryString());
           String courseId = req.getRequest().containsKey(JsonKey.COURSE_ID) ? JsonKey.COURSE_ID : JsonKey.COLLECTION_ID;
@@ -118,7 +119,7 @@ public class CourseEnrollmentController extends BaseController {
     return handleRequest(
             courseEnrolmentActor, "unenrol",
         httpRequest.body().asJson(),
-        (request) -> {
+        request -> {
           Request req = (Request) request;
           Map<String, String[]> queryParams = new HashMap<>(httpRequest.queryString());
           String courseId = req.getRequest().containsKey(JsonKey.COURSE_ID) ? JsonKey.COURSE_ID : JsonKey.COLLECTION_ID;
@@ -137,7 +138,7 @@ public class CourseEnrollmentController extends BaseController {
         return handleRequest(
                 courseEnrolmentActor, "listEnrol",
                 httpRequest.body().asJson(),
-                (req) -> {
+                req -> {
                     Request request = (Request) req;
                     Map<String, String[]> queryParams = new HashMap<>(httpRequest.queryString());
                     if(queryParams.containsKey("fields")) {
@@ -166,7 +167,7 @@ public class CourseEnrollmentController extends BaseController {
         return handleRequest(
             courseEnrolmentActor, "listEnrol",
             httpRequest.body().asJson(),
-            (req) -> {
+            req -> {
                 Request request = (Request) req;
                 Map<String, String[]> queryParams = new HashMap<>(httpRequest.queryString());
                 if(queryParams.containsKey("fields")) {
@@ -193,7 +194,7 @@ public class CourseEnrollmentController extends BaseController {
         return handleRequest(
                 courseEnrolmentActor, "listEnrol",
                 httpRequest.body().asJson(),
-                (req) -> {
+                req -> {
                     Request request = (Request) req;
                     Map<String, String[]> queryParams = new HashMap<>(httpRequest.queryString());
                     if(queryParams.containsKey("fields")) {
@@ -217,9 +218,8 @@ public class CourseEnrollmentController extends BaseController {
     public CompletionStage<Result> adminEnrollCourse(Http.Request httpRequest) {
         return handleRequest(courseEnrolmentActor, "enrol",
                 httpRequest.body().asJson(),
-                (request) -> {
+                request -> {
                     Request req = (Request) request;
-                    Map<String, String[]> queryParams = new HashMap<>(httpRequest.queryString());
                     String courseId = req.getRequest().containsKey(JsonKey.COURSE_ID) ? JsonKey.COURSE_ID : JsonKey.COLLECTION_ID;
                     req.getRequest().put(JsonKey.COURSE_ID, req.getRequest().get(courseId));
                     validator.validateEnrollCourse(req);
@@ -233,12 +233,23 @@ public class CourseEnrollmentController extends BaseController {
         return handleRequest(
                 courseEnrolmentActor, "unenrol",
                 httpRequest.body().asJson(),
-                (request) -> {
+                request -> {
                     Request req = (Request) request;
-                    Map<String, String[]> queryParams = new HashMap<>(httpRequest.queryString());
                     String courseId = req.getRequest().containsKey(JsonKey.COURSE_ID) ? JsonKey.COURSE_ID : JsonKey.COLLECTION_ID;
                     req.getRequest().put(JsonKey.COURSE_ID, req.getRequest().get(courseId));
                     validator.validateUnenrollCourse(req);
+                    return null;
+                },
+                getAllRequestHeaders(httpRequest),
+                httpRequest);
+    }
+  
+    public CompletionStage<Result> getParticipantsForFixedBatch(Http.Request httpRequest) {
+        return handleRequest(courseEnrolmentActor, "getParticipantsForFixedBatch",
+                httpRequest.body().asJson(),
+                request -> {
+                    Util.handleFixedBatchIdRequest((Request) request);
+                    new CourseEnrollmentRequestValidator().validateCourseParticipant((Request) request);
                     return null;
                 },
                 getAllRequestHeaders(httpRequest),

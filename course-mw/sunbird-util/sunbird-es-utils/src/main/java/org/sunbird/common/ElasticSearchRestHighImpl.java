@@ -242,7 +242,7 @@ public class ElasticSearchRestHighImpl implements ElasticSearchService {
 
             @Override
             public void onFailure(Exception e) {
-              logger.debug(requestContext, 
+              logger.error(requestContext,
                   "ElasticSearchRestHighImpl:getDataByIdentifier: method Failed with error == " , e);
               promise.failure(e);
             }
@@ -550,7 +550,7 @@ public class ElasticSearchRestHighImpl implements ElasticSearchService {
 
           @Override
           public void onFailure(Exception e) {
-            logger.debug(requestContext, "ElasticSearchRestHighImpl:bulkinsert: Bulk upload error block", e);
+            logger.error(requestContext, "ElasticSearchRestHighImpl:bulkinsert: Bulk upload error block", e);
             promise.success(false);
           }
         };

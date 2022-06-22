@@ -46,7 +46,7 @@ public final class Util {
   /** This method will initialize the cassandra data base property */
   private static void initializeDBProperty() {
     dbInfoMap.put(
-        JsonKey.LEARNER_COURSE_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "user_courses"));
+        JsonKey.LEARNER_COURSE_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "user_enrolments"));
     dbInfoMap.put(
         JsonKey.LEARNER_CONTENT_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "user_content_consumption"));
     dbInfoMap.put(
@@ -69,6 +69,7 @@ public final class Util {
             JsonKey.GROUP_ACTIVITY_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "user_activity_agg"));
     dbInfoMap.put(
             JsonKey.ASSESSMENT_AGGREGATOR_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "assessment_aggregator"));
+    dbInfoMap.put(JsonKey.USER_ENROLMENTS_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "user_enrolments"));
   }
 
   /**
@@ -342,7 +343,7 @@ public final class Util {
     return null != obj ? true : false;
   }
 
-  public static void initializeContext(Request actorMessage, String env) {
+  public static void initializeContext(Request actorMessage, String env, String log_env) {
     Map<String, Object> requestContext = null;
     if ((actorMessage.getContext().get(JsonKey.TELEMETRY_CONTEXT) != null)) {
       // means request context is already set by some other actor ...
@@ -370,6 +371,9 @@ public final class Util {
       requestContext.put(JsonKey.X_AUTH_TOKEN, getKeyFromContext(JsonKey.X_AUTH_TOKEN, actorMessage));
 
         actorMessage.getContext().putAll(requestContext);
+      if (actorMessage.getRequestContext() != null)
+        actorMessage.getRequestContext().setEnv(log_env);
+
       // and global context will be set at the time of creation of thread local
       // automatically ...
     }
@@ -380,6 +384,7 @@ public final class Util {
         ? (String) actorMessage.getContext().get(key)
         : "";
   }
+
 }
 
 @FunctionalInterface

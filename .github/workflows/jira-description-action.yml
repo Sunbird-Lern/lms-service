@@ -14,4 +14,3 @@ jobs:
           jira-base-url: ${{ secrets.JIRA_BASE_URL }}
           fail-when-jira-issue-not-found: ${{ secrets.FAIL_WHEN_JIRA_ISSUE_NOT_FOUND }}
           use: both
-

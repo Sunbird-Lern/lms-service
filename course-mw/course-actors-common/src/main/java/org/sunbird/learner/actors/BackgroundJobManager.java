@@ -161,7 +161,7 @@ public class BackgroundJobManager extends BaseActor {
     logger.info(requestContext, "BackgroundJobManager:insertDataToElastic: type = " + type + " identifier = " + identifier);
     Future<String> responseF = esService.save(requestContext, type, identifier, data);
     String response = (String) ElasticSearchHelper.getResponseFromFuture(responseF);
-    logger.debug(requestContext, "ES save response for identifier :" + identifier + " : ", response);
+    logger.debug(requestContext, "ES save response for identifier :" + identifier, null, new HashMap<String, Object>() {{put("response", response);}});
     if (!StringUtils.isBlank(response)) {
       return true;
     }

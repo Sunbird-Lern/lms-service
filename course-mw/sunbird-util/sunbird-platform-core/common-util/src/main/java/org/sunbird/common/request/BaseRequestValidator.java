@@ -8,12 +8,7 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.util.EmailValidator;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.models.util.ProjectUtil;
-import org.sunbird.common.models.util.StringFormatter;
+import org.sunbird.common.models.util.*;
 import org.sunbird.common.responsecode.ResponseCode;
 
 /**
@@ -22,6 +17,7 @@ import org.sunbird.common.responsecode.ResponseCode;
  * @author B Vinaya Kumar
  */
 public class BaseRequestValidator {
+  public LoggerUtil logger = new LoggerUtil(this.getClass());
 
   /**
    * Helper method which throws an exception if given parameter value is blank (null or empty).
@@ -94,7 +90,7 @@ public class BaseRequestValidator {
    */
   public ProjectCommonException createExceptionByResponseCode(ResponseCode code, int errorCode) {
     if (code == null) {
-      ProjectLogger.log("ResponseCode object is coming as null", LoggerEnum.INFO.name());
+     logger.info(null, "ResponseCode object is coming as null");
       return new ProjectCommonException(
           ResponseCode.invalidData.getErrorCode(),
           ResponseCode.invalidData.getErrorMessage(),
@@ -114,7 +110,7 @@ public class BaseRequestValidator {
   public ProjectCommonException createExceptionByResponseCode(
       ResponseCode code, int errorCode, String errorMsgArgument) {
     if (code == null) {
-      ProjectLogger.log("ResponseCode object is coming as null", LoggerEnum.INFO.name());
+     logger.info(null, "ResponseCode object is coming as null");
       return new ProjectCommonException(
           ResponseCode.invalidData.getErrorCode(),
           ResponseCode.invalidData.getErrorMessage(),
@@ -493,6 +489,14 @@ public class BaseRequestValidator {
           ResponseCode.phoneNoFormatError.getErrorCode(),
           ResponseCode.phoneNoFormatError.getErrorMessage(),
           ResponseCode.CLIENT_ERROR.getResponseCode());
+    }
+  }
+  
+  public void validateRequestedBy(String requestedBy) {
+    if(StringUtils.isBlank(requestedBy) || JsonKey.ANONYMOUS.contentEquals(requestedBy)) {
+      throw new ProjectCommonException(ResponseCode.unAuthorized.getErrorCode(),
+              ResponseCode.unAuthorized.getErrorMessage(),
+              ResponseCode.UNAUTHORIZED.getResponseCode());
     }
   }
 }

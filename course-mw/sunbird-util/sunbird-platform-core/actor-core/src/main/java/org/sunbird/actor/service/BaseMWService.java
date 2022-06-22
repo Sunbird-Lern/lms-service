@@ -15,6 +15,7 @@ import org.sunbird.actor.core.RouterMode;
 import org.sunbird.actor.router.BackgroundRequestRouter;
 import org.sunbird.actor.router.RequestRouter;
 import org.sunbird.common.models.util.LoggerEnum;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectLogger;
 
 /** @author Mahesh Kumar Gangula */
@@ -27,6 +28,7 @@ public class BaseMWService {
   protected static String name = "SunbirdMWSystem";
   protected static ActorRef requestRouter;
   protected static ActorRef bgRequestRouter;
+  protected static LoggerUtil logger = new LoggerUtil(BaseMWService.class);
 
   protected static String getMode() {
     if (StringUtils.isBlank(actorMode)) {
@@ -75,7 +77,7 @@ public class BaseMWService {
       } else {
         conf = config.getConfig(name);
       }
-      ProjectLogger.log("ActorSystem starting with mode: " + getMode(), LoggerEnum.INFO.name());
+      logger.info(null, "ActorSystem starting with mode: " + getMode());
       system = ActorSystem.create(name, conf);
     }
     return system;
@@ -92,7 +94,7 @@ public class BaseMWService {
   }
 
   protected static void initRouters() {
-    ProjectLogger.log("RequestRouter mode: " + RequestRouter.getMode(), LoggerEnum.INFO.name());
+    logger.info(null, "RequestRouter mode: " + RequestRouter.getMode());
     if (!RouterMode.OFF.name().equalsIgnoreCase(RequestRouter.getMode())) {
       requestRouter =
           system.actorOf(
@@ -100,9 +102,8 @@ public class BaseMWService {
                   .props(Props.create(RequestRouter.class).withDispatcher("rr-dispatcher")),
               RequestRouter.class.getSimpleName());
     }
-    ProjectLogger.log(
-        "BackgroundRequestRouter mode: " + BackgroundRequestRouter.getMode(),
-        LoggerEnum.INFO.name());
+    logger.info(null,
+        "BackgroundRequestRouter mode: " + BackgroundRequestRouter.getMode());
     if (!RouterMode.OFF.name().equalsIgnoreCase(BackgroundRequestRouter.getMode())) {
       bgRequestRouter =
           system.actorOf(

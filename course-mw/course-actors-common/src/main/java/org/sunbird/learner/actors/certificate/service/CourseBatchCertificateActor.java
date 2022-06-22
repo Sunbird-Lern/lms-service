@@ -33,7 +33,7 @@ public class CourseBatchCertificateActor extends BaseActor {
 
   @Override
   public void onReceive(Request request) throws Throwable {
-    Util.initializeContext(request, TelemetryEnvKey.USER);
+    Util.initializeContext(request, TelemetryEnvKey.USER, this.getClass().getName());
 
     String requestedOperation = request.getOperation();
     switch (requestedOperation) {
@@ -122,31 +122,32 @@ public class CourseBatchCertificateActor extends BaseActor {
                 CourseJsonKey.NOTIFY_TEMPLATE,
                 mapper.writeValueAsString(template.get(CourseJsonKey.NOTIFY_TEMPLATE)));
       }
+      if (MapUtils.isNotEmpty((Map<String,Object>)template.get(CourseJsonKey.ADDITIONAL_PROPS))) {
+        template.put(
+            CourseJsonKey.ADDITIONAL_PROPS,
+            mapper.writeValueAsString(template.get(CourseJsonKey.ADDITIONAL_PROPS)));
+      }
     } catch (JsonProcessingException ex) {
       ProjectCommonException.throwClientErrorException(
           ResponseCode.invalidData,
-          "Error in parsing template data, Please check "
-              + JsonKey.CRITERIA
-              + ","
-              + CourseJsonKey.ISSUER
-              + " and "
-              + CourseJsonKey.SIGNATORY_LIST
-              + " fields");
+          "Error in parsing certificate template data, Please check fields data and dataTypes");
     }
   }
 
   private Map<String, Object> mapESFieldsToObject(Map<String, Object> courseBatch) {
     Map<String, Map<String, Object>> certificateTemplates =
         (Map<String, Map<String, Object>>)
-            courseBatch.get(CourseJsonKey.CERTIFICATE_TEMPLATES_COLUMN);
-    certificateTemplates
-        .entrySet()
-        .stream()
-        .forEach(
-            cert_template ->
-                certificateTemplates.put(
-                    cert_template.getKey(), mapToObject(cert_template.getValue())));
-    courseBatch.put(CourseJsonKey.CERTIFICATE_TEMPLATES_COLUMN, certificateTemplates);
+            courseBatch.getOrDefault(CourseJsonKey.CERT_TEMPLATES, null);
+    if(MapUtils.isNotEmpty(certificateTemplates)){
+      certificateTemplates
+              .entrySet()
+              .stream()
+              .forEach(
+                      cert_template ->
+                              certificateTemplates.put(
+                                      cert_template.getKey(), mapToObject(cert_template.getValue())));
+      courseBatch.put(CourseJsonKey.CERTIFICATE_TEMPLATES_COLUMN, certificateTemplates);
+    }
     return courseBatch;
   }
 
@@ -180,6 +181,14 @@ public class CourseBatchCertificateActor extends BaseActor {
                         (String) template.get(CourseJsonKey.NOTIFY_TEMPLATE),
                         new TypeReference<HashMap<String, Object>>() {
                         }));
+      }
+      if(StringUtils.isNotEmpty((String)template.get(CourseJsonKey.ADDITIONAL_PROPS))) {
+        template.put(
+            CourseJsonKey.ADDITIONAL_PROPS,
+            mapper.readValue(
+                (String) template.get(CourseJsonKey.ADDITIONAL_PROPS),
+                new TypeReference<HashMap<String, Object>>() {
+                }));
       }
     } catch (Exception ex) {
       logger.error(null, "CourseBatchCertificateActor:mapToObject Exception occurred with error message ==", ex);

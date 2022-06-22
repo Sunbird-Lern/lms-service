@@ -20,9 +20,8 @@ public class QRCodeDownloadController extends BaseController {
   private ActorRef qrcodeDownloadActorRef;
 
   public CompletionStage<Result> downloadQRCodes(Http.Request httpRequest) {
-    ProjectLogger.log(
-        "Download QR Code method is called = " + httpRequest.body().asJson(),
-        LoggerEnum.DEBUG.name());
+   logger.debug(null,
+        "Download QR Code method is called = " + httpRequest.body().asJson());
     return handleRequest(
         qrcodeDownloadActorRef,
         ActorOperations.DOWNLOAD_QR_CODES.getValue(),

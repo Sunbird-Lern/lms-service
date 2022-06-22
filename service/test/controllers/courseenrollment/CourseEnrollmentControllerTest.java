@@ -7,6 +7,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.common.models.util.JsonKey;
@@ -15,6 +17,8 @@ import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
 import util.ACTOR_NAMES;
+import util.Attrs;
+import util.RequestInterceptor;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,6 +40,9 @@ public class CourseEnrollmentControllerTest extends BaseApplicationTest {
   String GET_ENROLLED_COURSES_URL = "/v1/user/courses/list/"+USER_ID;
   String GET_ENROLLED_COURSE_URL_V2 = "/v2/user/courses/list";
   String GET_ENROLLED_COURSE_URL_CACHE = "/v1/user/courses/list/" + USER_ID + "?cache=false";
+  String ADMIN_ENROLL_BATCH_URL = "/v1/course/admin/enroll";
+  String ADMIN_UENROLL_BATCH_URL = "/v1/course/admin/unenroll";
+  String ADMIN_GET_ENROLLED_COURSE_URL_V2 = "/v2/user/courses/admin/list";
 
   @Before
   public void before() {
@@ -89,13 +96,14 @@ public class CourseEnrollmentControllerTest extends BaseApplicationTest {
 
   @Test
   public void testEnrollCourseBatchFailureWithoutUserId() {
+    PowerMockito.when(RequestInterceptor.verifyRequestData(Mockito.any())).thenReturn(JsonKey.ANONYMOUS);
     Http.RequestBuilder req =
             new Http.RequestBuilder()
                     .uri(ENROLL_BATCH_URL)
                     .bodyJson(createCourseEnrollmentRequest(COURSE_ID, BATCH_ID, null))
                     .method("POST");
     Result result = Helpers.route(application, req);
-    Assert.assertEquals( 400, result.status());
+    Assert.assertEquals( 401, result.status());
   }
 
   @Test
@@ -122,19 +130,20 @@ public class CourseEnrollmentControllerTest extends BaseApplicationTest {
 
   @Test
   public void testUnenrollCourseBatchFailureWithoutUserId() {
+    PowerMockito.when(RequestInterceptor.verifyRequestData(Mockito.any())).thenReturn(JsonKey.ANONYMOUS);
     Http.RequestBuilder req =
             new Http.RequestBuilder()
                     .uri(UENROLL_BATCH_URL)
                     .bodyJson(createCourseEnrollmentRequest(COURSE_ID, BATCH_ID, null))
                     .method("POST");
     Result result = Helpers.route(application, req);
-    Assert.assertEquals( 400, result.status());
+    Assert.assertEquals( 401, result.status());
   }
 
   @Test
   public void testGetEnrolledCoursesSuccess() {
     Http.RequestBuilder req =
-            new Http.RequestBuilder()
+            new Http.RequestBuilder().attr(Attrs.USER_ID, USER_ID)
                     .uri(GET_ENROLLED_COURSES_URL)
                     .method("GET");
     Result result = Helpers.route(application, req);
@@ -155,7 +164,7 @@ public class CourseEnrollmentControllerTest extends BaseApplicationTest {
   @Test
   public void testGetUserEnrolledCoursesWithCache() {
     Http.RequestBuilder req =
-            new Http.RequestBuilder()
+            new Http.RequestBuilder().attr(Attrs.USER_ID, USER_ID)
                     .uri(GET_ENROLLED_COURSE_URL_CACHE)
                     .method("GET");
     Result result = Helpers.route(application, req);
@@ -172,5 +181,106 @@ public class CourseEnrollmentControllerTest extends BaseApplicationTest {
     requestMap.put(JsonKey.REQUEST, innerMap);
     String data = mapToJson(requestMap);
     return Json.parse(data);
+  }
+
+  @Test
+  public void testAdminEnrollCourseSuccess(){
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(ADMIN_ENROLL_BATCH_URL)
+                    .bodyJson(createCourseEnrollmentRequest(COURSE_ID, BATCH_ID, USER_ID))
+                    .method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 200, result.status());
+  }
+
+  @Test
+  public void testAdminEnrollCourseFailureWithoutCourseId() {
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(ADMIN_ENROLL_BATCH_URL)
+                    .bodyJson(createCourseEnrollmentRequest(null, BATCH_ID, USER_ID))
+                    .method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 400, result.status());
+  }
+
+  @Test
+  public void testAdminEnrollCourseFailureWithoutBatchId() {
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(ADMIN_ENROLL_BATCH_URL)
+                    .bodyJson(createCourseEnrollmentRequest(COURSE_ID, null, USER_ID))
+                    .method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 400, result.status());
+  }
+
+  @Test
+  public void testAdminEnrollCourseFailureWithoutUserId() {
+    PowerMockito.when(RequestInterceptor.verifyRequestData(Mockito.any())).thenReturn(JsonKey.ANONYMOUS);
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(ADMIN_ENROLL_BATCH_URL)
+                    .bodyJson(createCourseEnrollmentRequest(COURSE_ID, BATCH_ID, null))
+                    .method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 400, result.status());
+  }
+
+  @Test
+  public void testAdminUnenrollCourseSuccess(){
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(ADMIN_UENROLL_BATCH_URL)
+                    .bodyJson(createCourseEnrollmentRequest(COURSE_ID, BATCH_ID, USER_ID))
+                    .method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 200, result.status());
+  }
+
+  @Test
+  public void testAdminUnenrollCourseBatchFailureWithoutCourseId() {
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(ADMIN_UENROLL_BATCH_URL)
+                    .bodyJson(createCourseEnrollmentRequest(null, BATCH_ID, USER_ID))
+                    .method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 400, result.status());
+  }
+
+  @Test
+  public void testAdminUnenrollCourseBatchFailureWithoutBatchId() {
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(ADMIN_UENROLL_BATCH_URL)
+                    .bodyJson(createCourseEnrollmentRequest(COURSE_ID, null, USER_ID))
+                    .method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 400, result.status());
+  }
+
+  @Test
+  public void testAdminUnenrollCourseBatchFailureWithoutUserId() {
+    PowerMockito.when(RequestInterceptor.verifyRequestData(Mockito.any())).thenReturn(JsonKey.ANONYMOUS);
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(ADMIN_UENROLL_BATCH_URL)
+                    .bodyJson(createCourseEnrollmentRequest(COURSE_ID, BATCH_ID, null))
+                    .method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 400, result.status());
+  }
+
+  @Test
+  public void testAdminGetUserEnrolledCourses(){
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(ADMIN_GET_ENROLLED_COURSE_URL_V2)
+                    .bodyJson(createCourseEnrollmentRequest(null,null, USER_ID))
+                    .method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 200, result.status());
   }
 }

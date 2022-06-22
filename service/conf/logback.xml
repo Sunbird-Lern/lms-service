@@ -55,17 +55,22 @@
         </encoder>
     </appender>
 
+    <appender name="customLoggerAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder"/>
+    </appender>
+
+    <logger name="org.sunbird" level="INFO">
+        <appender-ref ref="customLoggerAppender"/>
+    </logger>
 
     <logger name="play" level="INFO" />
-    <logger name="defaultLogger" level="INFO" />
+    <logger name="defaultLogger" level="INFO">
+        <appender-ref ref = "defaultLoggerAppender" />
+    </logger>
     <!-- Telemetry Loggers-->
     <logger name="TelemetryEventLogger" level="INFO" />
     <logger name="queryLogger" level="DEBUG">
         <appender-ref ref="queryLoggerAppender" />
-    </logger>
-    
-    <logger name="org.sunbird" level="INFO">
-        <appender-ref ref="defaultLoggerAppender" />
     </logger>
 
     <root level="INFO">

@@ -22,7 +22,7 @@ public class UserCoursesDaoImpl implements UserCoursesDao {
       Util.dbInfoMap.get(JsonKey.LEARNER_COURSE_DB).getKeySpace();
   private static final String TABLE_NAME =
       Util.dbInfoMap.get(JsonKey.LEARNER_COURSE_DB).getTableName();
-  private static final String USER_ENROLMENTS = "user_enrolments";
+  private static final String USER_ENROLMENTS = Util.dbInfoMap.get(JsonKey.USER_ENROLMENTS_DB).getTableName();
   public static UserCoursesDao getInstance() {
     if (userCoursesDao == null) {
       userCoursesDao = new UserCoursesDaoImpl();
@@ -89,9 +89,9 @@ public class UserCoursesDaoImpl implements UserCoursesDao {
     primaryKey.put(JsonKey.BATCH_ID, batchId);
     Map<String, Object> updateList = new HashMap<>();
     updateList.putAll(updateAttributes);
-    updateList.remove(JsonKey.BATCH_ID);
-    updateList.remove(JsonKey.COURSE_ID);
-    updateList.remove(JsonKey.USER_ID);
+    updateList.remove(JsonKey.BATCH_ID_KEY);
+    updateList.remove(JsonKey.COURSE_ID_KEY);
+    updateList.remove(JsonKey.USER_ID_KEY);
     return cassandraOperation.updateRecord(requestContext, KEYSPACE_NAME, USER_ENROLMENTS, updateList, primaryKey);
   }
 
@@ -135,9 +135,12 @@ public class UserCoursesDaoImpl implements UserCoursesDao {
   }
 
   @Override
-  public List<Map<String, Object>> listEnrolments(RequestContext requestContext, String userId) {
+  public List<Map<String, Object>> listEnrolments(RequestContext requestContext, String userId, List<String> courseIdList) {
     Map<String, Object> primaryKey = new HashMap<>();
     primaryKey.put(JsonKey.USER_ID, userId);
+    if(!CollectionUtils.isEmpty(courseIdList)){
+      primaryKey.put(JsonKey.COURSE_ID_KEY, courseIdList);
+    }
     Response response = cassandraOperation.getRecordByIdentifier(requestContext, KEYSPACE_NAME, USER_ENROLMENTS, primaryKey, null);
     List<Map<String, Object>> userCoursesList = (List<Map<String, Object>>) response.get(JsonKey.RESPONSE);
     if (CollectionUtils.isEmpty(userCoursesList)) {

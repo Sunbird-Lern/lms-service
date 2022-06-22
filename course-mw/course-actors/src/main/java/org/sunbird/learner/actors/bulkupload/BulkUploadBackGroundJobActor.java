@@ -54,7 +54,7 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
 
   @Override
   public void onReceive(Request request) throws Throwable {
-    Util.initializeContext(request, TelemetryEnvKey.USER);
+    Util.initializeContext(request, TelemetryEnvKey.USER, this.getClass().getName());
     if (request.getOperation().equalsIgnoreCase(ActorOperations.PROCESS_BULK_UPLOAD.getValue())) {
       process(request);
     } else {
@@ -165,6 +165,7 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
     Map<String, Object> map = null;
     List<String> createdFor = (List<String>) courseBatchObject.get(JsonKey.COURSE_CREATED_FOR);
     List<Map<String, Object>> userDetails = userOrgService.getUsersByIds(userIds, (String) context.getOrDefault(JsonKey.X_AUTH_TOKEN, ""));
+    logger.info(requestContext, "BulkUploadBackGroundJobActor::validateBatchUserListAndAdd::userDetails : " + userDetails);
     Map<String, String> userToRootOrg =
         userDetails
             .stream()

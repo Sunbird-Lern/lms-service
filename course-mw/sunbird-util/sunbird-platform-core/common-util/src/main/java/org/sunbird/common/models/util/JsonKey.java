@@ -1,5 +1,9 @@
 package org.sunbird.common.models.util;
 
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * This class will contains all the key related to request and response.
  *
@@ -75,6 +79,8 @@ public final class JsonKey {
   public static final String ASSESSMENT_STATUS = "assessmentStatus";
   public static final String ASSESSMENT_TYPE = "assessmentType";
   public static final String ATTEMPT_ID = "attemptId";
+  public static final String ASSESSMENT_EVENTS_KEY = "events";
+  public static final String ASSESSMENT_ACTOR = "actor";
   public static final String ATTEMPTED_COUNT = "attemptedCount";
   public static final String AUTH_TOKEN = "authToken";
   public static final String AUTH_USER_HEADER = "X-Authenticated-Userid";
@@ -417,7 +423,6 @@ public final class JsonKey {
   public static final String PHONE_NUMBER_VERIFIED = "phoneNumberVerified";
   public static final String PHONE_UNIQUE = "phoneUnique";
   public static final String PHONE_VERIFIED = "phoneVerified";
-  public static final String PID = "pid";
   public static final String PORTAL_MAP = "portalMap";
   public static final String PORTAL_SECTIONS = "portalSections";
   public static final String POSITION = "position";
@@ -1035,6 +1040,32 @@ public final class JsonKey {
   public static final String X_AUTH_TOKEN = "X_AUTH_TOKEN";
   public static final String TEMPLATE = "template";
   public static final String ASSESSMENT_AGGREGATOR_DB = "assessment_aggregator_db";
+  public static final String SERVICE_NAME = "course-service";
+  public static final String PRODUCER_NAME = "org.sunbird.course-service";
+  public static final String PID = "course-service";
+  public static final String P_VERSION = "1.0";
+  public static final String X_DEVICE_ID = "x-device-id";
+  public static final String X_SESSION_ID = "x-session-id";
+  public static final String X_TRACE_ID = "x-trace-id";
+  public static final String USER_ENROLMENTS_DB = "user_enrolments";
+  public static final List<String> CHANGE_IN_SIMPLE_DATE_FORMAT = Arrays.asList("startDate", "endDate", "enrollmentEndDate");
+  public static final List<String> CHANGE_IN_DATE_FORMAT = Arrays.asList("createdDate", "updatedDate");
+  public static final List<String> CHANGE_IN_DATE_FORMAT_ALL = Arrays.asList("startDate", "endDate", "enrollmentEndDate", "createdDate", "updatedDate");
+  public static final String OLD_START_DATE = "oldStartDate";
+  public static final String OLD_END_DATE = "oldEndDate";
+  public static final String OLD_ENROLLMENT_END_DATE = "oldEnrollmentEndDate";
+  public static final String OLD_LAST_ACCESS_TIME = "oldLastAccessTime";
+  public static final String OLD_LAST_COMPLETED_TIME = "oldLastCompletedTime";
+  public static final String OLD_LAST_UPDATED_TIME = "oldLastUpdatedTime";
+  public static final String COURSE_ID_KEY = "courseid";
+  public static final String CONTENT_ID_KEY = "contentid";
+  public static final String LAST_ACCESS_TIME_KEY = "last_access_time";
+  public static final List<String> SET_END_OF_DAY = Arrays.asList("endDate", "enrollmentEndDate");
+  public static final String BATCH_ID_KEY = "batchid";
+  public static final String USER_ID_KEY = "userid";
+  public static final String OLD_CREATED_DATE = "oldCreatedDate";
+  public static final String X_LOGGING_HEADERS = "X_LOGGING_HEADERS";
+  public static final String LAST_CONTENT_ACCESS_TIME = "lastcontentaccesstime";
 
   private JsonKey() {}
 }

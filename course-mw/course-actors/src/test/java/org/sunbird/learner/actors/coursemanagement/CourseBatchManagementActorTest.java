@@ -1,15 +1,9 @@
 package org.sunbird.learner.actors.coursemanagement;
 
-import static akka.testkit.JavaTestKit.duration;
-import static org.powermock.api.mockito.PowerMockito.*;
-
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.testkit.javadsl.TestKit;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +12,6 @@ import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.cassandraimpl.CassandraOperationImpl;
 import org.sunbird.common.exception.ProjectCommonException;
@@ -30,18 +23,32 @@ import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.helper.ServiceFactory;
-import org.sunbird.kafka.client.InstructionEventGenerator;
-import org.sunbird.kafka.client.KafkaClient;
 import org.sunbird.learner.actors.coursebatch.CourseBatchManagementActor;
 import org.sunbird.learner.constants.CourseJsonKey;
+import org.sunbird.learner.util.ContentUtil;
 import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.JsonUtil;
 import org.sunbird.learner.util.Util;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static akka.testkit.JavaTestKit.duration;
+import static org.powermock.api.mockito.PowerMockito.doCallRealMethod;
+import static org.powermock.api.mockito.PowerMockito.doNothing;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.when;
+
 @RunWith(PowerMockRunner.class)
-@SuppressStaticInitializationFor("org.sunbird.kafka.client.KafkaClient")
-@PrepareForTest({ServiceFactory.class, EsClientFactory.class, CourseBatchUtil.class, Util.class, InstructionEventGenerator.class, KafkaClient.class})
-@PowerMockIgnore({"javax.management.*"})
+@PrepareForTest({ServiceFactory.class, EsClientFactory.class, CourseBatchUtil.class, Util.class, ContentUtil.class})
+@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*", "jdk.internal.reflect.*",
+        "sun.security.ssl.*", "javax.net.ssl.*", "javax.crypto.*",
+        "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class CourseBatchManagementActorTest {
 
   public ActorSystem system = ActorSystem.create("system");
@@ -58,21 +65,12 @@ public class CourseBatchManagementActorTest {
   @Before
   public void setUp() throws Exception {
     mockCassandraOperation = mock(CassandraOperationImpl.class);
-    PowerMockito.mockStatic(InstructionEventGenerator.class);
-    PowerMockito.mockStatic(KafkaClient.class);
-    PowerMockito.doNothing()
-            .when(
-                    InstructionEventGenerator.class,
-                    "pushInstructionEvent",
-                    Mockito.anyString(),
-                    Mockito.anyMap());
-
-    PowerMockito.doNothing()
-            .when(KafkaClient.class, "send", Mockito.anyString(), Mockito.anyString());
     ActorRef actorRef = mock(ActorRef.class);
     PowerMockito.mockStatic(ServiceFactory.class);
     when(ServiceFactory.getInstance()).thenReturn(mockCassandraOperation);
     PowerMockito.mockStatic(CourseBatchUtil.class);
+    PowerMockito.mockStatic(ContentUtil.class);
+    courseBatchUtilDateMethods();
   }
 
   private String calculateDate(int dayOffset) {
@@ -90,6 +88,7 @@ public class CourseBatchManagementActorTest {
     when(mockCassandraOperation.getRecordByIdentifier(
             Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
         .thenReturn(mockGetRecordByIdResponse);
+    mockCourseEnrollmentActor();
    
     TestKit probe = new TestKit(system);
     ActorRef subject = system.actorOf(props);
@@ -126,6 +125,8 @@ public class CourseBatchManagementActorTest {
 
     PowerMockito.doNothing().when(CourseBatchUtil.class);
     CourseBatchUtil.syncCourseBatchForeground(null, BATCH_ID, new HashMap<>());
+    PowerMockito.mockStatic(ContentUtil.class);
+    mockCourseEnrollmentActor();
 
     TestKit probe = new TestKit(system);
     ActorRef subject = system.actorOf(props);
@@ -219,13 +220,15 @@ public class CourseBatchManagementActorTest {
   public void checkTelemetryKeyFailure() throws Exception {
 
     String telemetryEnvKey = "batch";
+    String envKey = "CourseBatchManagementActor";
     PowerMockito.mockStatic(Util.class);
     doNothing()
         .when(
             Util.class,
             "initializeContext",
             Mockito.any(Request.class),
-            Mockito.eq(telemetryEnvKey));
+            Mockito.eq(telemetryEnvKey),
+            Mockito.eq(envKey));
 
     int batchProgressStatus = ProjectUtil.ProgressStatus.STARTED.getValue();
     Response mockGetRecordByIdResponse = getMockCassandraRecordByIdResponse(batchProgressStatus);
@@ -458,6 +461,46 @@ public class CourseBatchManagementActorTest {
             .equals(ResponseCode.invalidBatchStartDateError.getErrorCode()));
   }
 
+    @Test
+    public void testUpdateCompletedCourseBatchSuccessWithEndDateNull() throws Exception {
+
+        int batchProgressStatus = ProjectUtil.ProgressStatus.COMPLETED.getValue();
+        Response mockGetRecordByIdResponse = getMockCassandraRecordByIdResponse(batchProgressStatus);
+        Response mockUpdateRecordResponse = getMockCassandraResult();
+        Response response =
+                performUpdateCourseBatchSuccessTest(
+                        existingStartDate, null, null, mockGetRecordByIdResponse, mockUpdateRecordResponse);
+        Assert.assertTrue(null != response && response.getResponseCode() == ResponseCode.OK);
+    }
+
+    @Test
+    public void testUpdateCompletedCourseBatchSuccessWithEndDateExtended() throws Exception {
+
+        int batchProgressStatus = ProjectUtil.ProgressStatus.COMPLETED.getValue();
+        Response mockGetRecordByIdResponse = getMockCassandraRecordByIdResponse(batchProgressStatus);
+        Response mockUpdateRecordResponse = getMockCassandraResult();
+        Response response =
+                performUpdateCourseBatchSuccessTest(
+                        existingStartDate, null, getOffsetDate(existingEndDate, 3), mockGetRecordByIdResponse, mockUpdateRecordResponse);
+        Assert.assertTrue(null != response && response.getResponseCode() == ResponseCode.OK);
+    }
+
+    @Test
+    public void testUpdateCompletedCourseBatchFailureWithEndDateExtended() throws Exception {
+
+        int batchProgressStatus = ProjectUtil.ProgressStatus.COMPLETED.getValue();
+        Response mockGetRecordByIdResponse = getMockCassandraRecordByIdResponse(batchProgressStatus);
+        Response mockUpdateRecordResponse = getMockCassandraResult();
+        ProjectCommonException exception =
+                performUpdateCourseBatchFailureTest(
+                        existingStartDate, null, getOffsetDate(existingEndDate, -1), mockGetRecordByIdResponse);
+        Assert.assertTrue(
+                ((ProjectCommonException) exception)
+                        .getCode()
+                        .equals(ResponseCode.courseBatchEndDateError.getErrorCode()));
+    }
+  
+
   @Test
   public void testUpdateCompletedCourseBatchFailureWithEndDate() throws Exception {
 
@@ -489,6 +532,36 @@ public class CourseBatchManagementActorTest {
             .equals(ResponseCode.invalidBatchStartDateError.getErrorCode()));
   }
 
+  @Test
+  public void testBatchCreationFailureOnEmptyLeafNodes() throws Exception {
+    int batchProgressStatus = ProjectUtil.ProgressStatus.NOT_STARTED.getValue();
+    Response mockGetRecordByIdResponse = getMockCassandraRecordByIdResponse(batchProgressStatus);
+    when(mockCassandraOperation.getRecordByIdentifier(
+        Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
+        .thenReturn(mockGetRecordByIdResponse);
+    mockCourseEnrollmentActorWithOutLeafNodes();
+
+    TestKit probe = new TestKit(system);
+    ActorRef subject = system.actorOf(props);
+    Request reqObj = new Request();
+    reqObj.setOperation(ActorOperations.UPDATE_BATCH.getValue());
+    HashMap<String, Object> innerMap = new HashMap<>();
+    innerMap.put(JsonKey.ID, BATCH_ID);
+    innerMap.put(JsonKey.NAME, BATCH_NAME);
+    innerMap.put(JsonKey.START_DATE, existingStartDate);
+    innerMap.put(JsonKey.END_DATE, null);
+    innerMap.put(JsonKey.ENROLLMENT_END_DATE, null);
+    reqObj.getRequest().putAll(innerMap);
+    subject.tell(reqObj, probe.getRef());
+    ProjectCommonException exception =
+        probe.expectMsgClass(duration("10 second"), ProjectCommonException.class);
+
+    Assert.assertTrue(
+        ((ProjectCommonException) exception)
+            .getCode()
+            .equals(ResponseCode.invalidCourseId.getErrorCode()));
+  }
+
   private Map<String, Object> getCertTemplate() throws Exception{
     String template = " {\n" +
             "    \"template_01_prad\": {\n" +
@@ -501,5 +574,34 @@ public class CourseBatchManagementActorTest {
             "    }\n" +
             "}";
     return JsonUtil.deserialize(template, Map.class);
+  }
+
+  private void mockCourseEnrollmentActor(){
+    Map<String, Object> courseMap = new HashMap<String, Object>() {{
+      put("content", new HashMap<String, Object>() {{
+        put("contentType", "Course");
+        put("status", "Live");
+        put("leafNodesCount", 1);
+      }});
+    }};
+    when(ContentUtil.getContent(
+            Mockito.anyString(), Mockito.anyList())).thenReturn(courseMap);
+  }
+
+  private void mockCourseEnrollmentActorWithOutLeafNodes(){
+    Map<String, Object> courseMap = new HashMap<String, Object>() {{
+      put("content", new HashMap<String, Object>() {{
+        put("contentType", "Course");
+        put("status", "Live");
+      }});
+    }};
+    when(ContentUtil.getContent(
+        Mockito.anyString(), Mockito.anyList())).thenReturn(courseMap);
+  }
+
+  private void courseBatchUtilDateMethods() throws Exception {
+    doCallRealMethod().when(CourseBatchUtil.class, "cassandraCourseMapping",Mockito.any(), Mockito.anyString());
+    doCallRealMethod().when(CourseBatchUtil.class, "setEndOfDay", Mockito.any(), Mockito.any(), Mockito.any());
+    doCallRealMethod().when(CourseBatchUtil.class, "esCourseMapping", Mockito.any(), Mockito.anyString());
   }
 }

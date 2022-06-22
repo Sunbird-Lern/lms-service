@@ -15,12 +15,14 @@ import akka.testkit.javadsl.TestKit;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.CollectionUtils;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+import com.mashape.unirest.request.GetRequest;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -60,7 +62,8 @@ import scala.concurrent.Promise;
   ServiceFactory.class,
   ElasticSearchRestHighImpl.class,
   UserCoursesDaoImpl.class,
-  EsClientFactory.class, HttpUtil.class, KeycloakRequiredActionLinkUtil.class , ProjectUtil.class
+  EsClientFactory.class, HttpUtil.class, KeycloakRequiredActionLinkUtil.class , ProjectUtil.class,
+  Unirest.class
 })
 @PowerMockIgnore({"javax.management.*"})
 public class SearchHandlerActorTest {
@@ -172,36 +175,13 @@ public class SearchHandlerActorTest {
   }
 
   @Test
-  public void testGetUserSearchRequest() throws Exception {
-    Method method = SearchHandlerActor.class.getDeclaredMethod("getUserSearchRequest", List.class, List.class);
-    method.setAccessible(true);
-    List<String> creatorIds = Arrays.asList("test_id1", "test_id2");
-    List<String> fields = Arrays.asList("firstName", "lastName", "id");
-    String result = (String) method.invoke(actorRef.underlyingActor(), creatorIds, fields);
-    assertTrue(StringUtils.isNotBlank(result));
-    assertTrue(result.contains("test_id1"));
-    assertTrue(result.contains("firstName"));
-    assertTrue(result.contains("filters"));
-    assertTrue(result.contains("fields"));
-  }
-
-  @Test
-  public void testMakePostRequest() throws Exception {
-    String req = "{\"request\":{\"filters\":{\"id\":[\"test_id1\",\"test_id2\"]},\"fields\":[\"firstName\",\"lastName\",\"id\"]}}";
-    Method method = SearchHandlerActor.class.getDeclaredMethod("makePostRequest", RequestContext.class, String.class, String.class);
-    method.setAccessible(true);
-    List<Map<String, Object>> result = (List<Map<String, Object>>) method.invoke(actorRef.underlyingActor(), null, "test_url", req);
-    assertTrue(CollectionUtils.isNotEmpty(result));
-  }
-
-  @Test
   public void testPopulateCreatorDetails() throws Exception {
     Map<String, Object> input = new HashMap<String, Object>(){{
       put("count", 2);
       put("content", new ArrayList<Map<String, Object>>(){{
         add(new HashMap<String, Object>(){{
           put("identifier", "0129889020926115845");
-          put("createdBy", "0ac58586-76c9-491f-8af4-f184b3c34a67");
+          put("createdBy", "8454cb21-3ce9-4e30-85b5-fade097880d8");
         }});
         add(new HashMap<String, Object>(){{
           put("identifier", "0129889020926115952");
@@ -209,13 +189,34 @@ public class SearchHandlerActorTest {
         }});
       }});
     }};
-    Method method = SearchHandlerActor.class.getDeclaredMethod("populateCreatorDetails", RequestContext.class, Map.class);
+    mockResponse();
+    HashMap<String, Object> context = new HashMap<>(){{put("JsonKey.X_AUTH_TOKEN","authToken");}};
+    RequestContext requestContext = new RequestContext( "uid", "did", "sid", "appId", "appVer", "reqId", "debugEnabled", null);
+    Method method = SearchHandlerActor.class.getDeclaredMethod("populateCreatorDetails", Map.class, Map.class, RequestContext.class);
     method.setAccessible(true);
-    method.invoke(actorRef.underlyingActor(), null, input);
+    method.invoke(actorRef.underlyingActor(), context, input, requestContext);
     List<Map<String, Object>> content = (List<Map<String, Object>>) input.getOrDefault("content", new ArrayList<Map<String, Object>>());
     for(Map<String, Object> map : content){
       if(StringUtils.equalsIgnoreCase("95e4942d-cbe8-477d-aebd-ad8e6de4bfc8", (String) map.get("createdBy")))
         assertTrue(MapUtils.isNotEmpty((Map<String, Object>) map.get("creatorDetails")));
     }
+  }
+  private void mockResponse() throws UnirestException {
+    GetRequest http = Mockito.mock(GetRequest.class);
+    GetRequest http2 = Mockito.mock(GetRequest.class);
+    HttpResponse<String> response = Mockito.mock(HttpResponse.class);
+    HttpResponse<String> response2 = Mockito.mock(HttpResponse.class);
+    mockStatic(Unirest.class);
+    when(Unirest.get(Mockito.anyString())).thenReturn(http, http2);
+    when(http.headers(Mockito.anyMap())).thenReturn(http);
+    when(http2.headers(Mockito.anyMap())).thenReturn(http2);
+    when(http.asString()).thenReturn(response);
+    when(http2.asString()).thenReturn(response2);
+    when(response.getStatus()).thenReturn(200);
+    when(response2.getStatus()).thenReturn(200);
+    String resp1 = "{\"result\":{\"response\":{\"id\":\"8454cb21-3ce9-4e30-85b5-fade097880d8\",\"firstName\":\"FirstName1\",\"lastName\":\"LastName1\"}}}";
+    String resp2 = "{\"result\":{\"response\":{\"id\":\"95e4942d-cbe8-477d-aebd-ad8e6de4bfc8\",\"firstName\":\"FirstName2\",\"lastName\":\"LastName2\"}}}";
+    when(response.getBody()).thenReturn(resp1);
+    when(response2.getBody()).thenReturn(resp2);
   }
 }

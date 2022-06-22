@@ -23,7 +23,7 @@ import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 
 public class CassandraDACImpl extends CassandraOperationImpl {
-    
+
     @Override
   public Response getRecords(
             RequestContext requestContext, String keySpace, String table, Map<String, Object> filters, List<String> fields) {
@@ -32,7 +32,7 @@ public class CassandraDACImpl extends CassandraOperationImpl {
     try {
       Select select;
       if (CollectionUtils.isNotEmpty(fields)) {
-        select = QueryBuilder.select((String[]) fields.toArray()).from(keySpace, table);
+        select = QueryBuilder.select(fields.toArray()).from(keySpace, table);
       } else {
         select = QueryBuilder.select().all().from(keySpace, table);
       }
@@ -73,7 +73,7 @@ public class CassandraDACImpl extends CassandraOperationImpl {
     try {
       Select select;
       if (CollectionUtils.isNotEmpty(fields)) {
-        select = QueryBuilder.select((String[]) fields.toArray()).from(keySpace, table);
+        select = QueryBuilder.select(fields.toArray()).from(keySpace, table);
       } else {
         select = QueryBuilder.select().all().from(keySpace, table);
       }
@@ -156,7 +156,7 @@ public class CassandraDACImpl extends CassandraOperationImpl {
       return response;
     } catch (Exception e) {
       e.printStackTrace();
-      ProjectLogger.log(Constants.EXCEPTION_MSG_FETCH + table + " : " + e.getMessage(), e);
+      logger.error(null,Constants.EXCEPTION_MSG_FETCH + table + " : " + e.getMessage(), e);
       throw new ProjectCommonException(
           ResponseCode.SERVER_ERROR.getErrorCode(),
           ResponseCode.SERVER_ERROR.getErrorMessage(),

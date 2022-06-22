@@ -26,7 +26,6 @@ node('build-slave') {
                     print "Environment will be : ${env.NODE_ENV}"
                     sh 'git log -1'
                     sh 'mvn clean install -DskipTests=true '
-
                 }
 
                 // stage('Unit Tests') {

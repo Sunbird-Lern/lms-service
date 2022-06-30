@@ -49,7 +49,7 @@ public class CertificateControllerTest extends BaseApplicationTest {
 
   @Test
   public void issueCertificateTest() {
-    setup(ACTOR_NAMES.CERTIFICATE_ACTOR,DummyActor.class);
+//    setup(ACTOR_NAMES.CERTIFICATE_ACTOR,DummyActor.class);
     Http.RequestBuilder req =
         new Http.RequestBuilder()
             .uri(ISSUE_CERTIFICATE_URL)

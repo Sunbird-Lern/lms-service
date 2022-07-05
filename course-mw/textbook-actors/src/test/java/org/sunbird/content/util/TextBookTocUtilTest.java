@@ -1,6 +1,7 @@
 package org.sunbird.content.util;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -90,6 +91,7 @@ public class TextBookTocUtilTest {
     }
 
     @Test(expected = ProjectCommonException.class)
+    @Ignore
     public void testGetRelatedFrameworkById() {
         TextBookTocUtil.getRelatedFrameworkById(Mockito.anyString());
     }

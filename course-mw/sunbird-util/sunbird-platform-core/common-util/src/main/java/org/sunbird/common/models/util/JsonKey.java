@@ -784,6 +784,14 @@ public final class JsonKey {
   public static final String CONTENT_CLOUD_STORAGE_TYPE = "sunbird_content_cloud_storage_type";
   public static final String CONTENT_AZURE_STORAGE_CONTAINER =
       "sunbird_content_azure_storage_container";
+  public static final String CONTENT_AWS_STORAGE_CONTAINER =
+          "sunbird_content_aws_storage_container";
+  public static final String CONTENT_GCLOUD_STORAGE_CONTAINER =
+          "sunbird_content_gcloud_storage_container";
+  public static final String AZURE_STR = "azure";
+  public static final String AWS_STR = "aws";
+  public static final String GCLOUD_STR = "gcloud";
+
   public static final String CLOUD_FOLDER_CONTENT = "sunbird_cloud_content_folder";
   public static final String TO_URL = "toUrl";
   public static final String TTL = "ttl";

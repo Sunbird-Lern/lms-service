@@ -1,6 +1,7 @@
 package org.sunbird.helper;
 
 import com.datastax.driver.core.*;
+import com.datastax.driver.core.policies.DCAwareRoundRobinPolicy;
 import com.datastax.driver.core.policies.DefaultRetryPolicy;
 import java.util.Collection;
 import java.util.List;
@@ -63,7 +64,8 @@ public class CassandraConnectionManagerImpl implements CassandraConnectionManage
       poolingOptions.setPoolTimeoutMillis(
           Integer.parseInt(cache.getProperty(Constants.POOL_TIMEOUT)));
 
-      cluster = createCluster(hosts, poolingOptions);
+      //check for multi DC enabled or not from configuration file and send the value
+      cluster = createCluster(hosts, poolingOptions, Boolean.parseBoolean(cache.getProperty(Constants.IS_MULTI_DC_ENABLED)));
 
       final Metadata metadata = cluster.getMetadata();
       String msg = String.format("Connected to cluster: %s", metadata.getClusterName());
@@ -85,21 +87,27 @@ public class CassandraConnectionManagerImpl implements CassandraConnectionManage
     }
   }
 
-  private static Cluster createCluster(String[] hosts, PoolingOptions poolingOptions) {
+  private static Cluster createCluster(String[] hosts, PoolingOptions poolingOptions, boolean isMultiDCEnabled) {
     Cluster.Builder builder =
-        Cluster.builder()
-            .addContactPoints(hosts)
-            .withProtocolVersion(ProtocolVersion.V3)
-            .withRetryPolicy(DefaultRetryPolicy.INSTANCE)
-            .withTimestampGenerator(new AtomicMonotonicTimestampGenerator())
-            .withPoolingOptions(poolingOptions);
+            Cluster.builder()
+                    .addContactPoints(hosts)
+                    .withProtocolVersion(ProtocolVersion.V3)
+                    .withRetryPolicy(DefaultRetryPolicy.INSTANCE)
+                    .withTimestampGenerator(new AtomicMonotonicTimestampGenerator())
+                    .withPoolingOptions(poolingOptions);
 
     ConsistencyLevel consistencyLevel = getConsistencyLevel();
     logger.info(null,
-        "CassandraConnectionManagerImpl:createCluster: Consistency level = " + consistencyLevel);
+            "CassandraConnectionManagerImpl:createCluster: Consistency level = " + consistencyLevel);
 
     if (consistencyLevel != null) {
       builder.withQueryOptions(new QueryOptions().setConsistencyLevel(consistencyLevel));
+    }
+
+    if (isMultiDCEnabled) {
+      String msg = String.format("CassandraConnectionManagerImpl:createCluster: isMultiDCEnabled = true");
+      logger.info(null,msg);
+      builder.withLoadBalancingPolicy(DCAwareRoundRobinPolicy.builder().build());
     }
 
     return builder.build();

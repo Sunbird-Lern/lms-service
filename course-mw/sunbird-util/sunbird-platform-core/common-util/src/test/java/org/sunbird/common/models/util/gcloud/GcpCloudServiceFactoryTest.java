@@ -1,9 +1,6 @@
 package org.sunbird.common.models.util.gcloud;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
@@ -73,6 +70,7 @@ public class GcpCloudServiceFactoryTest {
     }
 
     @Test
+    @Ignore
     public void testUploadFileSuccess() {
         try {
             CloudService service = (CloudService) obj;
@@ -84,6 +82,7 @@ public class GcpCloudServiceFactoryTest {
     }
 
     @Test
+    @Ignore
     public void testUploadFileFailureWithoutContainerName() {
         try {
             CloudService service = (CloudService) obj;
@@ -94,6 +93,7 @@ public class GcpCloudServiceFactoryTest {
     }
 
     @Test
+    @Ignore
     public void testUploadFileSuccessWithMultiplePath() {
         try {
             CloudService service = (CloudService) obj;
@@ -104,6 +104,7 @@ public class GcpCloudServiceFactoryTest {
     }
 
     @Test
+    @Ignore
     public void testUploadFileSuccessWithFileLocation() {
         try{
             CloudService service = (CloudService) obj;

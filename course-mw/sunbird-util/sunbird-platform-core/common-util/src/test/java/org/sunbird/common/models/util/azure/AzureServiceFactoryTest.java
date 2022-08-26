@@ -4,6 +4,7 @@ package org.sunbird.common.models.util.azure;
 import static org.powermock.api.mockito.PowerMockito.doReturn;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
+import static org.sunbird.common.models.util.JsonKey.*;
 
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
@@ -26,6 +27,8 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.sunbird.common.models.util.cloud.CloudService;
+import org.sunbird.common.models.util.cloud.CloudServiceFactory;
 
 /** @author Manzarul */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -47,7 +50,7 @@ public class AzureServiceFactoryTest {
 
   @BeforeClass
   public static void getObject() {
-    obj = CloudServiceFactory.get("Azure");
+    obj = CloudServiceFactory.get(AZURE_STR);
     Assert.assertTrue(obj instanceof CloudService);
     Assert.assertNotNull(obj);
   }
@@ -83,7 +86,7 @@ public class AzureServiceFactoryTest {
 
   @Test
   public void testGetSuccess() {
-    Object obj1 = CloudServiceFactory.get("Azure");
+    Object obj1 = CloudServiceFactory.get(AZURE_STR);
     Assert.assertNotNull(obj1);
     Assert.assertTrue(obj.equals(obj1));
   }

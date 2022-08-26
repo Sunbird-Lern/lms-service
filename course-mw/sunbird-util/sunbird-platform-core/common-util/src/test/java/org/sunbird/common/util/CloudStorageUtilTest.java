@@ -4,6 +4,7 @@ import static org.junit.Assert.assertTrue;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
+import static org.sunbird.common.models.util.JsonKey.*;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -60,9 +61,21 @@ public class CloudStorageUtilTest {
   }
 
   @Test
-  public void testGetStorageTypeSuccess() {
-    CloudStorageType storageType = CloudStorageType.getByName("azure");
+  public void testGetAzureStorageTypeSuccess() {
+    CloudStorageType storageType = CloudStorageType.getByName(AZURE_STR);
     assertTrue(CloudStorageType.AZURE.equals(storageType));
+  }
+
+  @Test
+  public void testGetAwsStorageTypeSuccess() {
+    CloudStorageType storageType = CloudStorageType.getByName(AWS_STR);
+    assertTrue(CloudStorageType.AWS.equals(storageType));
+  }
+
+  @Test
+  public void testGetGcpStorageTypeSuccess() {
+    CloudStorageType storageType = CloudStorageType.getByName(GCLOUD_STR);
+    assertTrue(CloudStorageType.GCLOUD.equals(storageType));
   }
 
   @Test(expected = ProjectCommonException.class)

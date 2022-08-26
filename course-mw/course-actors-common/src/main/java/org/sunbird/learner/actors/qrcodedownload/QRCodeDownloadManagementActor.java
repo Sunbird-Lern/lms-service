@@ -1,8 +1,7 @@
 package org.sunbird.learner.actors.qrcodedownload;
 
 import static java.io.File.separator;
-import static org.sunbird.common.models.util.JsonKey.CLOUD_FOLDER_CONTENT;
-import static org.sunbird.common.models.util.JsonKey.CONTENT_AZURE_STORAGE_CONTAINER;
+import static org.sunbird.common.models.util.JsonKey.*;
 import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -262,12 +261,27 @@ public class QRCodeDownloadManagementActor extends BaseActor {
     try {
       if (file.isFile()) {
         objectKey += file.getName();
+        //CSP related changes
+        String cloudStorage = getConfigValue(CONTENT_CLOUD_STORAGE_TYPE);
+        CloudStorageUtil.CloudStorageType storageType;
+        if (cloudStorage.equalsIgnoreCase(AWS_STR)) {
+          storageType = CloudStorageUtil.CloudStorageType.AWS;
+        } else if (cloudStorage.equalsIgnoreCase(GCLOUD_STR)) {
+          storageType = CloudStorageUtil.CloudStorageType.GCLOUD;
+        } else if (cloudStorage.equalsIgnoreCase(AZURE_STR)) {
+          storageType = CloudStorageUtil.CloudStorageType.AZURE;
+        } else {
+          ProjectCommonException.throwClientErrorException(
+                  ResponseCode.errorUnsupportedCloudStorage,
+                  ProjectUtil.formatMessage(
+                          ResponseCode.errorUnsupportedCloudStorage.getErrorMessage(), cloudStorage));
+          return null;
+        }
         String fileUrl =
-            CloudStorageUtil.upload(
-                CloudStorageUtil.CloudStorageType.AZURE,
-                getConfigValue(CONTENT_AZURE_STORAGE_CONTAINER),
-                objectKey,
-                file.getAbsolutePath());
+                CloudStorageUtil.upload(storageType,
+                        getConfigValue(CONTENT_CLOUD_STORAGE_CONTAINER),
+                        objectKey,
+                        file.getAbsolutePath());
         if (StringUtils.isBlank(fileUrl))
           throw new ProjectCommonException(
               ResponseCode.errorUploadQRCodeCSVfailed.getErrorCode(),

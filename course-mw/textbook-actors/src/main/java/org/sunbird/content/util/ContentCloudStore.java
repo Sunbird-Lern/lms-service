@@ -17,7 +17,7 @@ public class ContentCloudStore {
     prefix = FOLDER + prefix;
     try {
       CloudStorageType storageType = storageType();
-      return CloudStorageUtil.getUri(storageType, container(storageType), prefix, isDirectory);
+      return CloudStorageUtil.getUri(storageType, getConfigValue(CONTENT_CLOUD_STORAGE_CONTAINER), prefix, isDirectory);
     } catch (Exception e) {
       return null;
     }
@@ -26,7 +26,7 @@ public class ContentCloudStore {
   public static String getUri(CloudStorageType storageType, String prefix, boolean isDirectory) {
     prefix = FOLDER + prefix;
     try {
-      return CloudStorageUtil.getUri(storageType, container(storageType), prefix, isDirectory);
+      return CloudStorageUtil.getUri(storageType, getConfigValue(CONTENT_CLOUD_STORAGE_CONTAINER), prefix, isDirectory);
     } catch (Exception e) {
       return null;
     }
@@ -38,7 +38,7 @@ public class ContentCloudStore {
     if (file.isFile()) {
       objectKey += file.getName();
       return CloudStorageUtil.upload(
-          storageType, container(storageType), objectKey, file.getAbsolutePath());
+          storageType, getConfigValue(CONTENT_CLOUD_STORAGE_CONTAINER), objectKey, file.getAbsolutePath());
     } else {
       return null;
     }
@@ -49,7 +49,7 @@ public class ContentCloudStore {
     if (file.isFile()) {
       objectKey += file.getName();
       return CloudStorageUtil.upload(
-          storageType, container(storageType), objectKey, file.getAbsolutePath());
+          storageType, getConfigValue(CONTENT_CLOUD_STORAGE_CONTAINER), objectKey, file.getAbsolutePath());
     } else {
       return null;
     }
@@ -73,21 +73,4 @@ public class ContentCloudStore {
     return storageType;
   }
 
-  private static String container(CloudStorageType type) {
-    String container = null;
-    switch (type) {
-      case AZURE:
-        container = getConfigValue(CONTENT_AZURE_STORAGE_CONTAINER);
-        break;
-      case AWS:
-        container = getConfigValue(CONTENT_AWS_STORAGE_CONTAINER);
-        break;
-      case GCLOUD:
-        container = getConfigValue(CONTENT_GCLOUD_STORAGE_CONTAINER);
-        break;
-      default:
-        break;
-    }
-    return container;
-  }
 }

@@ -264,16 +264,12 @@ public class QRCodeDownloadManagementActor extends BaseActor {
         //CSP related changes
         String cloudStorage = getConfigValue(CONTENT_CLOUD_STORAGE_TYPE);
         CloudStorageUtil.CloudStorageType storageType;
-        String container;
         if (cloudStorage.equalsIgnoreCase(AWS_STR)) {
           storageType = CloudStorageUtil.CloudStorageType.AWS;
-          container = getConfigValue(CONTENT_AWS_STORAGE_CONTAINER);
         } else if (cloudStorage.equalsIgnoreCase(GCLOUD_STR)) {
           storageType = CloudStorageUtil.CloudStorageType.GCLOUD;
-          container = getConfigValue(CONTENT_GCLOUD_STORAGE_CONTAINER);
         } else if (cloudStorage.equalsIgnoreCase(AZURE_STR)) {
           storageType = CloudStorageUtil.CloudStorageType.AZURE;
-          container = getConfigValue(CONTENT_AZURE_STORAGE_CONTAINER);
         } else {
           ProjectCommonException.throwClientErrorException(
                   ResponseCode.errorUnsupportedCloudStorage,
@@ -282,10 +278,10 @@ public class QRCodeDownloadManagementActor extends BaseActor {
           return null;
         }
         String fileUrl =
-            CloudStorageUtil.upload(storageType,
-                container,
-                objectKey,
-                file.getAbsolutePath());
+                CloudStorageUtil.upload(storageType,
+                        getConfigValue(CONTENT_CLOUD_STORAGE_CONTAINER),
+                        objectKey,
+                        file.getAbsolutePath());
         if (StringUtils.isBlank(fileUrl))
           throw new ProjectCommonException(
               ResponseCode.errorUploadQRCodeCSVfailed.getErrorCode(),

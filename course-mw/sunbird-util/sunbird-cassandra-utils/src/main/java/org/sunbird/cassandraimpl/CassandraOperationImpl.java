@@ -30,13 +30,11 @@ import org.sunbird.common.CassandraUtil;
 import org.sunbird.common.Constants;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.LoggerUtil;
-import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.*;
 import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.helper.CassandraConnectionManager;
+import org.sunbird.helper.CassandraConnectionManagerImpl;
 import org.sunbird.helper.CassandraConnectionMngrFactory;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
@@ -744,7 +742,7 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
     Session session = connectionManager.getSession(keyspaceName);
     Response response = new Response();
     BatchStatement batchStatement = new BatchStatement(BatchStatement.Type.LOGGED);
-    batchStatement.setConsistencyLevel(ConsistencyLevel.QUORUM);
+    batchStatement.setConsistencyLevel(CassandraConnectionManagerImpl.getConsistencyLevel());
     ResultSet resultSet = null;
 
     try {

@@ -113,7 +113,7 @@ public class CassandraConnectionManagerImpl implements CassandraConnectionManage
     return builder.build();
   }
 
-  private static ConsistencyLevel getConsistencyLevel() {
+  public static ConsistencyLevel getConsistencyLevel() {
     String consistency = ProjectUtil.getConfigValue(JsonKey.SUNBIRD_CASSANDRA_CONSISTENCY_LEVEL);
 
     logger.info(null,

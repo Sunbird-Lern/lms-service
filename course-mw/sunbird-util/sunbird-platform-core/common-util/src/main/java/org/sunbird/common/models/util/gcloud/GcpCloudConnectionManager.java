@@ -37,7 +37,7 @@ public class GcpCloudConnectionManager {
 
     public static BaseStorageService getStorageService(){
         if(null == baseStorageService){
-            baseStorageService = StorageServiceFactory.getStorageService(new StorageConfig(GCLOUD_STR, accountKey, accountName));
+            baseStorageService = StorageServiceFactory.getStorageService(new StorageConfig(GCLOUD_STR, accountName, accountKey));
             ProjectLogger.log(
                     "Gcloud account storage service with account name and key as " + accountName + " " + accountKey);
         }

@@ -12,7 +12,7 @@ public class GcpFileUtility {
 
     public static String uploadFile(String containerName, String fileName, String fileLocation) {
         String objectKey = getObjectKey(containerName, fileName);
-        return GcpCloudConnectionManager.getStorageService().upload(containerName, fileLocation + fileName, objectKey, Option.apply(false), Option.apply(1), Option.apply(3), Option.apply(1));
+        return GcpCloudConnectionManager.getStorageService().upload(containerName, fileLocation + fileName, objectKey, Option.apply(false), Option.apply(1), Option.apply(3), Option.empty());
     }
 
     public static boolean downLoadFile(String containerName, String fileName, String downloadFolder) {
@@ -21,7 +21,7 @@ public class GcpFileUtility {
 
     public static String uploadFile(String containerName, File file) {
         String objectKey = getObjectKey(containerName, file.getName());
-        return GcpCloudConnectionManager.getStorageService().upload(containerName, file.getAbsolutePath(), objectKey, Option.apply(false), Option.apply(1), Option.apply(3), Option.apply(1));
+        return GcpCloudConnectionManager.getStorageService().upload(containerName, file.getAbsolutePath(), objectKey, Option.apply(false), Option.apply(1), Option.apply(3), Option.empty());
     }
 
     public static boolean deleteFile(String containerName, String fileName) {

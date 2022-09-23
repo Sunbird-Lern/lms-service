@@ -37,7 +37,7 @@ public class AwsConnectionManager {
 
     public static BaseStorageService getStorageService(){
         if(null == baseStorageService){
-            baseStorageService = StorageServiceFactory.getStorageService(new StorageConfig(AWS_STR, accountKey, accountName));
+            baseStorageService = StorageServiceFactory.getStorageService(new StorageConfig(AWS_STR, accountName, accountKey));
             ProjectLogger.log(
                     "Aws account storage service with account name and key as " + accountName + " " + accountKey);
         }

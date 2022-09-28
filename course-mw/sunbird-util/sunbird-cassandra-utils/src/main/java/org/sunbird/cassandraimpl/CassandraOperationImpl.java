@@ -314,8 +314,8 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
         Update.Where where = updateQuery.where();
         for (Map.Entry<String, Object> entry: selectMap.entrySet())
           where.and(eq(entry.getKey(), entry.getValue()));
-        //TODO make changes as ifExists by default taking consistency as SERIAL, which is failing for multiple DCs
-        if (ifExists) where.ifExists();
+        // RELEASE# 5.0.0 Removed this check as it is not required.It was added for taking care of wrong data, which is no longer needed
+        //if (ifExists) where.ifExists();
         logger.debug(requestContext, updateQuery.getQueryString());
         connectionManager.getSession(keyspace).execute(updateQuery);
         response.put(Constants.RESPONSE, Constants.SUCCESS);

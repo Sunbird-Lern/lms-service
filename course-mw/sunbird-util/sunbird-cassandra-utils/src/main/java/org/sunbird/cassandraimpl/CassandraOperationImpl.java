@@ -4,7 +4,6 @@ import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.WriteType;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
@@ -314,8 +313,6 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
         Update.Where where = updateQuery.where();
         for (Map.Entry<String, Object> entry: selectMap.entrySet())
           where.and(eq(entry.getKey(), entry.getValue()));
-        // RELEASE# 5.0.0 Removed this check as it is not required.It was added for taking care of wrong data, which is no longer needed
-        //if (ifExists) where.ifExists();
         logger.debug(requestContext, updateQuery.getQueryString());
         connectionManager.getSession(keyspace).execute(updateQuery);
         response.put(Constants.RESPONSE, Constants.SUCCESS);

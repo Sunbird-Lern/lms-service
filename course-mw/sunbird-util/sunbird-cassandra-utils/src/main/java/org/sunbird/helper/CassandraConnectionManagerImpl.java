@@ -104,9 +104,9 @@ public class CassandraConnectionManagerImpl implements CassandraConnectionManage
       builder.withQueryOptions(new QueryOptions().setConsistencyLevel(consistencyLevel));
     }
 
+    String msg = String.format("CassandraConnectionManagerImpl:createCluster: isMultiDCEnabled = ",isMultiDCEnabled);
+    logger.info(null,msg);
     if (isMultiDCEnabled) {
-      String msg = String.format("CassandraConnectionManagerImpl:createCluster: isMultiDCEnabled = true");
-      logger.info(null,msg);
       builder.withLoadBalancingPolicy(DCAwareRoundRobinPolicy.builder().build());
     }
 

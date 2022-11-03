@@ -104,16 +104,16 @@ public class CassandraConnectionManagerImpl implements CassandraConnectionManage
       builder.withQueryOptions(new QueryOptions().setConsistencyLevel(consistencyLevel));
     }
 
+    String msg = String.format("CassandraConnectionManagerImpl:createCluster: isMultiDCEnabled = ",isMultiDCEnabled);
+    logger.info(null,msg);
     if (isMultiDCEnabled) {
-      String msg = String.format("CassandraConnectionManagerImpl:createCluster: isMultiDCEnabled = true");
-      logger.info(null,msg);
       builder.withLoadBalancingPolicy(DCAwareRoundRobinPolicy.builder().build());
     }
 
     return builder.build();
   }
 
-  private static ConsistencyLevel getConsistencyLevel() {
+  public static ConsistencyLevel getConsistencyLevel() {
     String consistency = ProjectUtil.getConfigValue(JsonKey.SUNBIRD_CASSANDRA_CONSISTENCY_LEVEL);
 
     logger.info(null,

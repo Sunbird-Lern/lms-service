@@ -11,6 +11,7 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class JsonUtilTest {
@@ -50,5 +51,12 @@ public class JsonUtilTest {
 		assertTrue(BooleanUtils.isFalse((Boolean) result.get("test-key")));
 	}
 
+	@Test
+	public void testConvertString() throws Exception {
+		String input = "{\"test-key\":false}";
+		Map<String, Object> result = JsonUtil.convert(JsonUtil.deserialize(input,Map.class), Map.class);
+		assertTrue(MapUtils.isNotEmpty(result));
+		assertTrue(BooleanUtils.isFalse((Boolean) result.get("test-key")));
+	}
 
 }

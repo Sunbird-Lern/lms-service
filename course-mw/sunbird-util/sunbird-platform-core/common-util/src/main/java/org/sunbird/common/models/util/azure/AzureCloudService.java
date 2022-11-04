@@ -1,5 +1,6 @@
 package org.sunbird.common.models.util.azure;
 
+import org.sunbird.common.models.util.cloud.CloudService;
 import java.io.File;
 import java.util.List;
 

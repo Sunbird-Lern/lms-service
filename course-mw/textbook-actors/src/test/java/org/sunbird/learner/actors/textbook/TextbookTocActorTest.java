@@ -96,7 +96,7 @@ public class TextbookTocActorTest {
     when(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TOC_LINKED_CONTENT_COLUMN_NAME))
         .thenReturn("Linked Content {0}");
     when(ProjectUtil.getConfigValue(JsonKey.CONTENT_CLOUD_STORAGE_TYPE)).thenReturn("azure");
-    when(ProjectUtil.getConfigValue(JsonKey.CONTENT_AZURE_STORAGE_CONTAINER))
+    when(ProjectUtil.getConfigValue(JsonKey.CONTENT_CLOUD_STORAGE_CONTAINER))
         .thenReturn("randomContainer");
     when(ProjectUtil.getConfigValue(JsonKey.TEXTBOOK_TOC_OUTPUT_MAPPING))
         .thenReturn(

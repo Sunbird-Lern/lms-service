@@ -13,13 +13,18 @@ import org.sunbird.common.responsecode.ResponseCode;
 import scala.Option;
 import scala.Some;
 
+import static org.sunbird.common.models.util.JsonKey.*;
+
 public class CloudStorageUtil {
   private static final int STORAGE_SERVICE_API_RETRY_COUNT = 3;
 
   private static final Map<String, IStorageService> storageServiceMap = new HashMap<>();
 
   public enum CloudStorageType {
-    AZURE("azure");
+    AZURE(AZURE_STR),
+    AWS(AWS_STR),
+    GCLOUD(GCLOUD_STR);
+
     private String type;
 
     private CloudStorageType(String type) {
@@ -31,8 +36,12 @@ public class CloudStorageUtil {
     }
 
     public static CloudStorageType getByName(String type) {
-      if (AZURE.type.equals(type)) {
+      if (AZURE.type.equalsIgnoreCase(type)) {
         return CloudStorageType.AZURE;
+      } if (AWS.type.equalsIgnoreCase(type)) {
+        return CloudStorageType.AWS;
+      } if (GCLOUD.type.equalsIgnoreCase(type)) {
+        return CloudStorageType.GCLOUD;
       } else {
         ProjectCommonException.throwClientErrorException(
             ResponseCode.errorUnsupportedCloudStorage,

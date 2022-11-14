@@ -263,22 +263,15 @@ public class QRCodeDownloadManagementActor extends BaseActor {
         objectKey += file.getName();
         //CSP related changes
         String cloudStorage = getConfigValue(CONTENT_CLOUD_STORAGE_TYPE);
-        CloudStorageUtil.CloudStorageType storageType;
-        if (cloudStorage.equalsIgnoreCase(AWS_STR)) {
-          storageType = CloudStorageUtil.CloudStorageType.AWS;
-        } else if (cloudStorage.equalsIgnoreCase(GCLOUD_STR)) {
-          storageType = CloudStorageUtil.CloudStorageType.GCLOUD;
-        } else if (cloudStorage.equalsIgnoreCase(AZURE_STR)) {
-          storageType = CloudStorageUtil.CloudStorageType.AZURE;
-        } else {
+        if (cloudStorage == null) {
           ProjectCommonException.throwClientErrorException(
                   ResponseCode.errorUnsupportedCloudStorage,
                   ProjectUtil.formatMessage(
-                          ResponseCode.errorUnsupportedCloudStorage.getErrorMessage(), cloudStorage));
+                          ResponseCode.errorUnsupportedCloudStorage.getErrorMessage()));
           return null;
         }
         String fileUrl =
-                CloudStorageUtil.upload(storageType,
+                CloudStorageUtil.upload(cloudStorage,
                         getConfigValue(CONTENT_CLOUD_STORAGE_CONTAINER),
                         objectKey,
                         file.getAbsolutePath());

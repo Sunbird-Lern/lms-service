@@ -4,7 +4,6 @@ import static org.junit.Assert.assertTrue;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
-import static org.sunbird.common.models.util.JsonKey.*;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -17,8 +16,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.cloud.storage.BaseStorageService;
 import org.sunbird.cloud.storage.factory.StorageServiceFactory;
-import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.util.CloudStorageUtil.CloudStorageType;
 import scala.Option;
 
 @RunWith(PowerMockRunner.class)
@@ -61,40 +58,17 @@ public class CloudStorageUtilTest {
   }
 
   @Test
-  public void testGetAzureStorageTypeSuccess() {
-    CloudStorageType storageType = CloudStorageType.getByName(AZURE_STR);
-    assertTrue(CloudStorageType.AZURE.equals(storageType));
-  }
-
-  @Test
-  public void testGetAwsStorageTypeSuccess() {
-    CloudStorageType storageType = CloudStorageType.getByName(AWS_STR);
-    assertTrue(CloudStorageType.AWS.equals(storageType));
-  }
-
-  @Test
-  public void testGetGcpStorageTypeSuccess() {
-    CloudStorageType storageType = CloudStorageType.getByName(GCLOUD_STR);
-    assertTrue(CloudStorageType.GCLOUD.equals(storageType));
-  }
-
-  @Test(expected = ProjectCommonException.class)
-  public void testGetStorageTypeFailureWithWrongType() {
-    CloudStorageType.getByName("wrongstorage");
-  }
-
-  @Test
   @Ignore
   public void testUploadSuccess() {
     String result =
-        CloudStorageUtil.upload(CloudStorageType.AZURE, "container", "key", "/file/path");
+        CloudStorageUtil.upload("azure", "container", "key", "/file/path");
     assertTrue(UPLOAD_URL.equals(result));
   }
 
   @Test
   @Ignore
   public void testGetSignedUrlSuccess() {
-    String signedUrl = CloudStorageUtil.getSignedUrl(CloudStorageType.AZURE, "container", "key");
+    String signedUrl = CloudStorageUtil.getSignedUrl("azure", "container", "key");
     assertTrue(SIGNED_URL.equals(signedUrl));
   }
 }

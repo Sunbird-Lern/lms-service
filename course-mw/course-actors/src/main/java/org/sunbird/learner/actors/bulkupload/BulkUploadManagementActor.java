@@ -8,7 +8,6 @@ import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.BulkUploadJsonKey;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.PropertiesCache;
 import org.sunbird.common.models.util.TelemetryEnvKey;
@@ -16,7 +15,6 @@ import org.sunbird.common.request.Request;
 import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.common.util.CloudStorageUtil;
-import org.sunbird.common.util.CloudStorageUtil.CloudStorageType;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.actors.bulkupload.dao.impl.BulkUploadProcessDaoImpl;
 import org.sunbird.learner.actors.bulkupload.model.BulkUploadProcess;
@@ -74,8 +72,8 @@ public class BulkUploadManagementActor extends BaseBulkUploadActor {
 
   private void getBulkUploadDownloadStatusLink(Request actorMessage) {
     String processId = (String) actorMessage.getRequest().get(JsonKey.PROCESS_ID);
-    BulkUploadProcessDaoImpl bulkuploadDao = new BulkUploadProcessDaoImpl();
-    BulkUploadProcess bulkUploadProcess = bulkuploadDao.read(actorMessage.getRequestContext(), processId);
+    BulkUploadProcessDaoImpl bulkUploadDao = new BulkUploadProcessDaoImpl();
+    BulkUploadProcess bulkUploadProcess = bulkUploadDao.read(actorMessage.getRequestContext(), processId);
     if (bulkUploadProcess != null) {
 
       try {
@@ -86,7 +84,7 @@ public class BulkUploadManagementActor extends BaseBulkUploadActor {
         }
         String signedUrl =
             CloudStorageUtil.getSignedUrl(
-                CloudStorageType.getByName(cloudStorageData.getStorageType()),
+                cloudStorageData.getStorageType(),
                 cloudStorageData.getContainer(),
                 cloudStorageData.getFileName());
         Response response = new Response();

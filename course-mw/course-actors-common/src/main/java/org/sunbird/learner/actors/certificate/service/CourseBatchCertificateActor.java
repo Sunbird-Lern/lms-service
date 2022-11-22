@@ -14,8 +14,6 @@ import org.sunbird.actor.base.BaseActor;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerUtil;
-import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.request.RequestContext;
@@ -25,6 +23,10 @@ import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl;
 import org.sunbird.learner.constants.CourseJsonKey;
 import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.Util;
+
+import static org.sunbird.common.models.util.JsonKey.CLOUD_STORE_BASE_PATH;
+import static org.sunbird.common.models.util.JsonKey.CLOUD_STORE_BASE_PATH_PLACEHOLDER;
+import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
 
 public class CourseBatchCertificateActor extends BaseActor {
 
@@ -100,7 +102,11 @@ public class CourseBatchCertificateActor extends BaseActor {
       String certName = (String) templateData.getOrDefault(JsonKey.TITLE , (String)templateDetails.getOrDefault(JsonKey.NAME, ""));
       
       template.put(JsonKey.NAME, certName);
-      template.put(JsonKey.URL, templateDetails.getOrDefault("artifactUrl", ""));
+      // replace the actual cloud url with the template value
+      String templateUrl = (String) templateDetails.getOrDefault("artifactUrl", "");
+      if (templateUrl.contains(getConfigValue(CLOUD_STORE_BASE_PATH)))
+        templateUrl = templateUrl.replace(getConfigValue(CLOUD_STORE_BASE_PATH), CLOUD_STORE_BASE_PATH_PLACEHOLDER);
+      template.put(JsonKey.URL, templateUrl);
       template.put(JsonKey.CRITERIA, mapper.writeValueAsString(template.get(JsonKey.CRITERIA)));
       if (null != template.get(CourseJsonKey.ISSUER)) {
         template.put(
@@ -118,6 +124,7 @@ public class CourseBatchCertificateActor extends BaseActor {
                 CourseJsonKey.ISSUER, mapper.writeValueAsString(templateDetails.get(CourseJsonKey.SIGNATORY_LIST)));
       }
       if (MapUtils.isNotEmpty((Map<String,Object>)template.get(CourseJsonKey.NOTIFY_TEMPLATE))) {
+        //TODO Do we need to change stateImgUrl in notifyTemplate??
         template.put(
                 CourseJsonKey.NOTIFY_TEMPLATE,
                 mapper.writeValueAsString(template.get(CourseJsonKey.NOTIFY_TEMPLATE)));

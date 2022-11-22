@@ -16,6 +16,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.cloud.storage.BaseStorageService;
 import org.sunbird.cloud.storage.factory.StorageServiceFactory;
+import org.sunbird.common.models.util.JsonKey;
 import scala.Option;
 
 @RunWith(PowerMockRunner.class)
@@ -26,6 +27,7 @@ public class CloudStorageUtilTest {
 
   String SIGNED_URL = "singedUrl";
   String UPLOAD_URL = "uploadUrl";
+  String PUT_SIGNED_URL = "gcpSignedUrl";
 
   @Before
   public void initTest() {
@@ -51,6 +53,13 @@ public class CloudStorageUtilTest {
               Mockito.any(Option.class),
               Mockito.any(Option.class)))
           .thenReturn(SIGNED_URL);
+      when(service.getPutSignedURL(
+              Mockito.anyString(),
+              Mockito.anyString(),
+              Mockito.any(Option.class),
+              Mockito.any(Option.class),
+              Mockito.any(Option.class)))
+              .thenReturn(PUT_SIGNED_URL);
 
     } catch (Exception e) {
       Assert.fail(e.getMessage());
@@ -58,7 +67,6 @@ public class CloudStorageUtilTest {
   }
 
   @Test
-  @Ignore
   public void testUploadSuccess() {
     String result =
         CloudStorageUtil.upload("azure", "container", "key", "/file/path");
@@ -66,9 +74,14 @@ public class CloudStorageUtilTest {
   }
 
   @Test
-  @Ignore
   public void testGetSignedUrlSuccess() {
     String signedUrl = CloudStorageUtil.getSignedUrl("azure", "container", "key");
     assertTrue(SIGNED_URL.equals(signedUrl));
+  }
+
+  @Test
+  public void testGetSignedUrlGCPSuccess() {
+    String signedUrl = CloudStorageUtil.getSignedUrl(JsonKey.GCP, "container", "key");
+    assertTrue(PUT_SIGNED_URL.equals(signedUrl));
   }
 }

@@ -18,7 +18,7 @@ class ResponseFilter  @Inject()(implicit val mat: Materializer, ec: ExecutionCon
       if (null != result.body && !result.body.isKnownEmpty){
         val contentType = result.body.contentType
         val updatedBody = result.body.consumeData.map { x =>
-          val y = x.utf8String.replaceAll(JsonKey.CLOUD_STORE_BASE_PATH, getConfigValue(JsonKey.CLOUD_STORE_BASE_PATH_VALUE))
+          val y = x.utf8String.replaceAll(getConfigValue(JsonKey.CLOUD_STORE_BASE_PATH_PLACEHOLDER),getConfigValue(JsonKey.CLOUD_STORE_BASE_PATH))
           logger.info("updated body: " + y)
           y
         }

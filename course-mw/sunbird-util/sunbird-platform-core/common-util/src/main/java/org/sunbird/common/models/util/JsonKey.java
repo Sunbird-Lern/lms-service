@@ -789,8 +789,8 @@ public final class JsonKey {
   public static final String GCLOUD_STR = "gcloud";
 
   public static final String CLOUD_FOLDER_CONTENT = "sunbird_cloud_content_folder";
-  public static final String CLOUD_STORE_BASE_PATH="$CLOUD_STORE_BASE_PATH";
-  public static final String CLOUD_STORE_BASE_PATH_VALUE="cloud_store_base_path_value";
+  public static final String CLOUD_STORE_BASE_PATH = "cloud_store_base_path";
+  public static final String CLOUD_STORE_BASE_PATH_PLACEHOLDER = "cloud_store_base_path_placeholder";
   public static final String TO_URL = "toUrl";
   public static final String TTL = "ttl";
   public static final String TEXTBOOK_TOC_CSV_TTL = "sunbird_texbook_toc_csv_ttl";

@@ -207,12 +207,7 @@ public class CourseBatchUtil {
     SimpleDateFormat dateTimeFormat = ProjectUtil.getDateFormatter();
     dateFormat.setTimeZone(TimeZone.getTimeZone(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TIMEZONE)));
     dateTimeFormat.setTimeZone(TimeZone.getTimeZone(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TIMEZONE)));
-    //replace actual cloud url with template url
-    if(courseBatch.getCertTemplates().values().contains(JsonKey.CLOUD_STORE_BASE_PATH)){
-      String templateUrl = (String) courseBatch.getCertTemplates().get(JsonKey.TEMPLATE_URL);
-      String modifiedUrl  = templateUrl.replace(JsonKey.CLOUD_STORE_BASE_PATH,JsonKey.CLOUD_STORE_BASE_PATH_PLACEHOLDER);
-      courseBatch.getCertTemplates().replace(JsonKey.TEMPLATE_URL,templateUrl,modifiedUrl);
-    }
+    
     Map<String, Object> courseBatchMap = mapper.convertValue(courseBatch, Map.class);
     changeInDateFormatAll.forEach(key -> {
       try {

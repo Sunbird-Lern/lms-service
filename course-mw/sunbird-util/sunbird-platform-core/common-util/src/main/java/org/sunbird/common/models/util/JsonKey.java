@@ -1,7 +1,6 @@
 package org.sunbird.common.models.util;
 
 import java.util.Arrays;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -1072,7 +1071,8 @@ public final class JsonKey {
   public static final String OLD_CREATED_DATE = "oldCreatedDate";
   public static final String X_LOGGING_HEADERS = "X_LOGGING_HEADERS";
   public static final String LAST_CONTENT_ACCESS_TIME = "lastcontentaccesstime";
-
+  public static final String GCP="gcloud";
+  public static final String TEMPLATE_URL = "templateUrl";
 
   private JsonKey() {}
 }

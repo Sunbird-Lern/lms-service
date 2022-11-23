@@ -207,7 +207,6 @@ public class CourseBatchUtil {
     SimpleDateFormat dateTimeFormat = ProjectUtil.getDateFormatter();
     dateFormat.setTimeZone(TimeZone.getTimeZone(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TIMEZONE)));
     dateTimeFormat.setTimeZone(TimeZone.getTimeZone(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TIMEZONE)));
-    
     Map<String, Object> courseBatchMap = mapper.convertValue(courseBatch, Map.class);
     changeInDateFormatAll.forEach(key -> {
       try {

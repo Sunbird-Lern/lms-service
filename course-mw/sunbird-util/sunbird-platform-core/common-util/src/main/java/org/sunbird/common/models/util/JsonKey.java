@@ -1071,8 +1071,6 @@ public final class JsonKey {
   public static final String OLD_CREATED_DATE = "oldCreatedDate";
   public static final String X_LOGGING_HEADERS = "X_LOGGING_HEADERS";
   public static final String LAST_CONTENT_ACCESS_TIME = "lastcontentaccesstime";
-  public static final String CLOUD_STORE_BASE_PATH_PLACEHOLDER = "cloud_store_base_path_placeholder";
-  public static final String CLOUD_STORE_BASE_PATH = "cloud_store_base_path";
   public static final String GCP="gcloud";
   public static final String TEMPLATE_URL = "templateUrl";
 

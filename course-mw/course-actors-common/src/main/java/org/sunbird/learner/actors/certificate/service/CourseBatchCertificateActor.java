@@ -102,10 +102,7 @@ public class CourseBatchCertificateActor extends BaseActor {
       String certName = (String) templateData.getOrDefault(JsonKey.TITLE , (String)templateDetails.getOrDefault(JsonKey.NAME, ""));
       
       template.put(JsonKey.NAME, certName);
-      // replace the actual cloud url with the template value
-      String templateUrl = (String) templateDetails.getOrDefault("artifactUrl", "");
-      if (templateUrl.contains(getConfigValue(CLOUD_STORE_BASE_PATH)))
-        templateUrl = templateUrl.replace(getConfigValue(CLOUD_STORE_BASE_PATH), CLOUD_STORE_BASE_PATH_PLACEHOLDER);
+      String templateUrl = getPlaceholderUrl(templateDetails,"artifactUrl");
       template.put(JsonKey.URL, templateUrl);
       template.put(JsonKey.CRITERIA, mapper.writeValueAsString(template.get(JsonKey.CRITERIA)));
       if (null != template.get(CourseJsonKey.ISSUER)) {
@@ -124,10 +121,13 @@ public class CourseBatchCertificateActor extends BaseActor {
                 CourseJsonKey.ISSUER, mapper.writeValueAsString(templateDetails.get(CourseJsonKey.SIGNATORY_LIST)));
       }
       if (MapUtils.isNotEmpty((Map<String,Object>)template.get(CourseJsonKey.NOTIFY_TEMPLATE))) {
-        //TODO Do we need to change stateImgUrl in notifyTemplate??
+        // We need to change stateImgUrl in notifyTemplate
+        Map<String, Object> notifyData = (Map<String, Object>) template.get(CourseJsonKey.NOTIFY_TEMPLATE);
+        String notifyTemplateUrl = getPlaceholderUrl(notifyData,JsonKey.stateImgUrl);
+        notifyData.replace(JsonKey.stateImgUrl,notifyTemplateUrl);
         template.put(
                 CourseJsonKey.NOTIFY_TEMPLATE,
-                mapper.writeValueAsString(template.get(CourseJsonKey.NOTIFY_TEMPLATE)));
+                mapper.writeValueAsString(notifyData));
       }
       if (MapUtils.isNotEmpty((Map<String,Object>)template.get(CourseJsonKey.ADDITIONAL_PROPS))) {
         template.put(
@@ -139,6 +139,17 @@ public class CourseBatchCertificateActor extends BaseActor {
           ResponseCode.invalidData,
           "Error in parsing certificate template data, Please check fields data and dataTypes");
     }
+  }
+
+  private String getPlaceholderUrl(Map<String, Object> templateDetails, String key) {
+    String templateUrl = "";
+    if (MapUtils.isNotEmpty(templateDetails) && templateDetails.containsKey(key)) {
+      // replace the actual cloud url with the template value
+      templateUrl = (String) templateDetails.get(key);
+      if (templateUrl.contains(getConfigValue(CLOUD_STORE_BASE_PATH)))
+        templateUrl = templateUrl.replace(getConfigValue(CLOUD_STORE_BASE_PATH), getConfigValue(CLOUD_STORE_BASE_PATH_PLACEHOLDER));
+    }
+    return templateUrl;
   }
 
   private Map<String, Object> mapESFieldsToObject(Map<String, Object> courseBatch) {
@@ -181,11 +192,14 @@ public class CourseBatchCertificateActor extends BaseActor {
                         new TypeReference<HashMap<String, Object>>() {
                         }));
       }
-      if(StringUtils.isNotEmpty((String)template.get(CourseJsonKey.NOTIFY_TEMPLATE))) {
+      if (StringUtils.isNotEmpty((String) template.get(CourseJsonKey.NOTIFY_TEMPLATE))) {
+        String notifyTemplateData = (String) template.get(CourseJsonKey.NOTIFY_TEMPLATE);
+        //Modify the placeholder with the actual configured cloud base path as ES should have the actual cloud path
+        if (notifyTemplateData.contains(getConfigValue(CLOUD_STORE_BASE_PATH_PLACEHOLDER)))
+          notifyTemplateData = notifyTemplateData.replace(getConfigValue(CLOUD_STORE_BASE_PATH_PLACEHOLDER), getConfigValue(CLOUD_STORE_BASE_PATH));
         template.put(
                 CourseJsonKey.NOTIFY_TEMPLATE,
-                mapper.readValue(
-                        (String) template.get(CourseJsonKey.NOTIFY_TEMPLATE),
+                mapper.readValue(notifyTemplateData,
                         new TypeReference<HashMap<String, Object>>() {
                         }));
       }

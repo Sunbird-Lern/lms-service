@@ -41,16 +41,8 @@ public class CloudStorageUtil {
           BaseStorageService storageService,
           String container,
           String objectKey, String cloudType) {
-    int timeoutInSeconds = getTimeoutInSeconds();
-    String signUrl = "";
-    if (JsonKey.GCP.equalsIgnoreCase(cloudType)) {
-      signUrl = storageService.getPutSignedURL(container, objectKey, Some.apply(getTimeoutInSeconds()),
-              Some.apply("r"), Some.apply("application/pdf"));
-    } else {
-      signUrl = storageService.getSignedURL(
-              container, objectKey, Some.apply(timeoutInSeconds), Some.apply("r"));
-    }
-    return signUrl;
+    return storageService.getSignedURLV2(container, objectKey, Some.apply(getTimeoutInSeconds()),
+            Some.apply("r"), Some.apply("application/pdf"));
   }
 
   private static BaseStorageService getStorageService(String storageType) {

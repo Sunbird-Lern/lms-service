@@ -60,6 +60,20 @@ public class CloudStorageUtilTest {
               Mockito.any(Option.class),
               Mockito.any(Option.class)))
               .thenReturn(PUT_SIGNED_URL);
+      when(service.getSignedURLV2(
+              Mockito.eq("azurecontainer"),
+              Mockito.anyString(),
+              Mockito.any(Option.class),
+              Mockito.any(Option.class),
+              Mockito.any(Option.class)))
+              .thenReturn(SIGNED_URL);
+      when(service.getSignedURLV2(
+              Mockito.eq("gcpcontainer"),
+              Mockito.anyString(),
+              Mockito.any(Option.class),
+              Mockito.any(Option.class),
+              Mockito.any(Option.class)))
+              .thenReturn(PUT_SIGNED_URL);
 
     } catch (Exception e) {
       Assert.fail(e.getMessage());
@@ -75,13 +89,13 @@ public class CloudStorageUtilTest {
 
   @Test
   public void testGetSignedUrlSuccess() {
-    String signedUrl = CloudStorageUtil.getSignedUrl("azure", "container", "key");
+    String signedUrl = CloudStorageUtil.getSignedUrl("azure", "azurecontainer", "key");
     assertTrue(SIGNED_URL.equals(signedUrl));
   }
 
   @Test
   public void testGetSignedUrlGCPSuccess() {
-    String signedUrl = CloudStorageUtil.getSignedUrl(JsonKey.GCP, "container", "key");
+    String signedUrl = CloudStorageUtil.getSignedUrl(JsonKey.GCP, "gcpcontainer", "key");
     assertTrue(PUT_SIGNED_URL.equals(signedUrl));
   }
 }

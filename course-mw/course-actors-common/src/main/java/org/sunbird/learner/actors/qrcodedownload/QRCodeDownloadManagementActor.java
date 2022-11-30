@@ -19,8 +19,6 @@ import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerUtil;
-import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.Request;
@@ -234,7 +232,12 @@ public class QRCodeDownloadManagementActor extends BaseActor {
       if (null != obj && obj instanceof List) {
         List<Map<String, Object>> listOfMap = (List<Map<String, Object>>) obj;
         if (CollectionUtils.isNotEmpty(listOfMap)) {
-          return (String) listOfMap.get(0).get("url");
+          //TODO Resolve it and store. Assuming dial code db will have the template url with data migration script
+          String templateUrl = (String) listOfMap.get(0).get("url");
+          //replace template url with the actual cloud url
+          if (templateUrl.contains(getConfigValue(CLOUD_STORE_BASE_PATH_PLACEHOLDER)))
+            templateUrl = templateUrl.replace(getConfigValue(CLOUD_STORE_BASE_PATH_PLACEHOLDER), getConfigValue(CLOUD_STORE_BASE_PATH));
+          return templateUrl;
         }
       }
     }
@@ -263,22 +266,15 @@ public class QRCodeDownloadManagementActor extends BaseActor {
         objectKey += file.getName();
         //CSP related changes
         String cloudStorage = getConfigValue(CONTENT_CLOUD_STORAGE_TYPE);
-        CloudStorageUtil.CloudStorageType storageType;
-        if (cloudStorage.equalsIgnoreCase(AWS_STR)) {
-          storageType = CloudStorageUtil.CloudStorageType.AWS;
-        } else if (cloudStorage.equalsIgnoreCase(GCLOUD_STR)) {
-          storageType = CloudStorageUtil.CloudStorageType.GCLOUD;
-        } else if (cloudStorage.equalsIgnoreCase(AZURE_STR)) {
-          storageType = CloudStorageUtil.CloudStorageType.AZURE;
-        } else {
+        if (cloudStorage == null) {
           ProjectCommonException.throwClientErrorException(
                   ResponseCode.errorUnsupportedCloudStorage,
                   ProjectUtil.formatMessage(
-                          ResponseCode.errorUnsupportedCloudStorage.getErrorMessage(), cloudStorage));
+                          ResponseCode.errorUnsupportedCloudStorage.getErrorMessage()));
           return null;
         }
         String fileUrl =
-                CloudStorageUtil.upload(storageType,
+                CloudStorageUtil.upload(cloudStorage,
                         getConfigValue(CONTENT_CLOUD_STORAGE_CONTAINER),
                         objectKey,
                         file.getAbsolutePath());

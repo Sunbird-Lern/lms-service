@@ -10,9 +10,6 @@ import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.request.HeaderParam;
-
-import com.typesafe.config.ConfigFactory;
-
 import play.mvc.Http;
 
 /**
@@ -57,12 +54,7 @@ public class RequestInterceptor {
    *     is returned
    */
   public static String verifyRequestData(Http.Request request) {
-    String clientId = null;
-    if(ConfigFactory.load().getBoolean(JsonKey.AUTH_ENABLED)){
-      clientId = JsonKey.UNAUTHORIZED;
-    }else{
-      clientId = JsonKey.ANONYMOUS;
-    }
+    String clientId = JsonKey.UNAUTHORIZED;
     Optional<String> accessToken = request.header(HeaderParam.X_Authenticated_User_Token.getName());
     Optional<String> authClientToken =
         request.header(HeaderParam.X_Authenticated_Client_Token.getName());

@@ -2,6 +2,8 @@ package controllers.courseenrollment;
 
 import actors.DummyActor;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.typesafe.config.ConfigFactory;
+
 import controllers.BaseApplicationTest;
 import org.junit.Assert;
 import org.junit.Before;
@@ -78,14 +80,16 @@ public class CourseEnrollmentControllerTest2 extends BaseApplicationTest {
 
     @Test
     public void testAdminEnrollCourseFailureWithoutUserId() {
-        PowerMockito.when(RequestInterceptor.verifyRequestData(Mockito.any())).thenReturn(JsonKey.ANONYMOUS);
-        Http.RequestBuilder req =
-                new Http.RequestBuilder()
-                        .uri(ADMIN_ENROLL_BATCH_URL)
-                        .bodyJson(createCourseEnrollmentRequest(COURSE_ID, BATCH_ID, null))
-                        .method("POST");
-        Result result = Helpers.route(application, req);
-        Assert.assertEquals( 400, result.status());
+        if (ConfigFactory.load().getBoolean(JsonKey.AUTH_ENABLED)) {
+            PowerMockito.when(RequestInterceptor.verifyRequestData(Mockito.any())).thenReturn(JsonKey.ANONYMOUS);
+            Http.RequestBuilder req =
+                    new Http.RequestBuilder()
+                            .uri(ADMIN_ENROLL_BATCH_URL)
+                            .bodyJson(createCourseEnrollmentRequest(COURSE_ID, BATCH_ID, null))
+                            .method("POST");
+            Result result = Helpers.route(application, req);
+            Assert.assertEquals(400, result.status());
+        }
     }
 
     @Test
@@ -123,14 +127,16 @@ public class CourseEnrollmentControllerTest2 extends BaseApplicationTest {
 
     @Test
     public void testAdminUnenrollCourseBatchFailureWithoutUserId() {
-        PowerMockito.when(RequestInterceptor.verifyRequestData(Mockito.any())).thenReturn(JsonKey.ANONYMOUS);
-        Http.RequestBuilder req =
-                new Http.RequestBuilder()
-                        .uri(ADMIN_UENROLL_BATCH_URL)
-                        .bodyJson(createCourseEnrollmentRequest(COURSE_ID, BATCH_ID, null))
-                        .method("POST");
-        Result result = Helpers.route(application, req);
-        Assert.assertEquals( 400, result.status());
+        if (ConfigFactory.load().getBoolean(JsonKey.AUTH_ENABLED)) {
+            PowerMockito.when(RequestInterceptor.verifyRequestData(Mockito.any())).thenReturn(JsonKey.ANONYMOUS);
+            Http.RequestBuilder req =
+                    new Http.RequestBuilder()
+                            .uri(ADMIN_UENROLL_BATCH_URL)
+                            .bodyJson(createCourseEnrollmentRequest(COURSE_ID, BATCH_ID, null))
+                            .method("POST");
+            Result result = Helpers.route(application, req);
+            Assert.assertEquals(400, result.status());
+        }
     }
 
     @Test

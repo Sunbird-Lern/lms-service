@@ -1009,6 +1009,6 @@ public final class JsonKey {
   public static final String LAST_CONTENT_ACCESS_TIME = "lastcontentaccesstime";
   public static final String GCP="gcloud";
   public static final String TEMPLATE_URL = "templateUrl";
-
+  public static final String AUTH_ENABLED = "AuthenticationEnabled";
   private JsonKey() {}
 }

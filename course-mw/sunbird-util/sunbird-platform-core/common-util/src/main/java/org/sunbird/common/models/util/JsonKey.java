@@ -89,14 +89,11 @@ public final class JsonKey {
   public static final String BAD_REQUEST = "badRequest";
   public static final String BATCH = "batch";
   public static final String BATCH_ID = "batchId";
-  public static final String BATCH_RELATIONS = "batch_relations";
   public static final String BEARER = "Bearer ";
   public static final String BLOCKED = "blocked";
   public static final String BODY = "body";
   public static final String BULK_OP_DB = "BulkOpDb";
   public static final String BULK_UPLOAD_BATCH_DATA_SIZE = "bulk_upload_batch_data_size";
-  public static final String BULK_UPLOAD_ORG_DATA_SIZE = "bulk_upload_org_data_size";
-  public static final String BULK_UPLOAD_USER_DATA_SIZE = "sunbird_user_bulk_upload_size";
   public static final String BULK_USER_UPLOAD = "bulkUserUpload";
   public static final String CASSANDRA_IN_EMBEDDED_MODE = "cassandraInEmbeddedMode";
   public static final String CASSANDRA_SERVICE = "Cassandra service";
@@ -193,25 +190,11 @@ public final class JsonKey {
   public static final String ANALYTICS_API_BASE_URL = "sunbird_analytics_api_base_url";
   public static final String EKSTEP_AUTHORIZATION = "ekstep_authorization";
   public static final String EKSTEP_BASE_URL = "ekstep_api_base_url";
-  public static final String EKSTEP_CHANNEL_REG_API_URL = "ekstep.channel.reg.api.url";
-  public static final String EKSTEP_CHANNEL_UPDATE_API_URL = "ekstep.channel.update.api.url";
-  public static final String EKSTEP_CONCEPT_URL = "ekstep_concept_base_url";
   public static final String EKSTEP_CONTENT_SEARCH_BASE_URL = "ekstep_content_search_base_url";
   public static final String EKSTEP_CONTENT_SEARCH_URL = "ekstep_content_search_url";
   public static final String EKSTEP_CONTENT_UPDATE_URL = "ekstep.content.update.url";
-  public static final String EKSTEP_CONTENT_URL = "content_url";
-  public static final String EKSTEP_COURSE_PUBLISH_URL = "ekstep_course_publish_url";
-  public static final String EKSTEP_DOMAIN_URL = "ekstep_domain_url";
-  public static final String EKSTEP_ES_METRICS_API_URL = "ekstep_es_metrics_api_url";
-  public static final String EKSTEP_GET_CHANNEL_LIST = "ekstep.channel.list.api.url";
-  public static final String EKSTEP_METRICS_API_URL = "ekstep_metrics_api_url";
-  public static final String EKSTEP_METRICS_AUTHORIZATION = "ekstep_metrics_authorization";
-  public static final String EKSTEP_METRICS_URL = "ekstep_metrics_base_url";
   public static final String EKSTEP_SERVICE = "EkStep service";
   public static final String EKSTEP_TAG_API_URL = "ekstep.tag.api.url";
-  public static final String EKSTEP_TELEMETRY_API_URL = "ekstep_telemetry_api_url";
-  public static final String EKSTEP_TELEMETRY_BASE_URL = "ekstep_telemetry_api_base_url";
-  public static final String EKSTEP_TELEMETRY_V3_URL = "eksetp_telemetry_V3_url";
   public static final String EMAIL = "email";
   public static final String EMAIL_REQUEST = "emailReq";
   public static final String EMAIL_SERVER_FROM = "sunbird_mail_server_from_email";
@@ -224,9 +207,6 @@ public final class JsonKey {
   public static final String EMAIL_VERIFIED = "emailVerified";
   public static final String EMAIL_VERIFIED_UPDATED = "emailVerifiedUpdated";
   public static final String EMBEDDED = "embedded";
-  public static final String EMBEDDED_CASSANDRA_HOST = "embedded_cassandra_host";
-  public static final String EMBEDDED_CASSANDRA_PORT = "embedded_cassandra_port";
-  public static final String EMBEDDED_CQL_FILE_NAME = "embedded_cql_file_name";
   public static final String EMBEDDED_MODE = "embedded";
   public static final String ENC_EMAIL = "encEmail";
   public static final String ENC_PHONE = "encPhone";
@@ -387,7 +367,6 @@ public final class JsonKey {
   public static final String ORG_LEFT_DATE = "orgLeftDate";
   public static final String ORG_MAP_DB = "org_mapping";
   public static final String ORG_NAME = "orgName";
-  public static final String ORG_RELATIONS = "org_relations";
   public static final String ORG_SERVER_FROM_NAME = "orgServerFromName";
   public static final String ORG_TYPE = "orgType";
   public static final String ORG_TYPE_DB = "org_type";
@@ -527,7 +506,6 @@ public final class JsonKey {
   public static final String SUMMARY = "summary";
   public static final String SUNBIRD = "sunbird";
   public static final String SUNBIRD_ALLOWED_LOGIN = "sunbird_allowed_login";
-  public static final String SUNBIRD_APP_URL = "sunbird_app_url";
   public static final String SUNBIRD_API_BASE_URL = "sunbird_api_base_url";
   public static final String SUNBIRD_CASSANDRA_IP = "sunbird_cassandra_host";
   public static final String SUNBIRD_CASSANDRA_KEYSPACE = "sunbird_cassandra_keyspace";
@@ -562,11 +540,8 @@ public final class JsonKey {
   public static final String SUNBIRD_GET_ORGANISATION_API = "sunbird_search_organisation_api";
   public static final String SUNBIRD_GET_SINGLE_USER_API = "sunbird_read_user_api";
   public static final String SUNBIRD_GET_MULTIPLE_USER_API = "sunbird_search_user_api";
-  public static final String SUNBIRD_CHANNEL_READ_API = "sunbird_channel_read_api";
-  public static final String SUNBIRD_FRAMEWORK_READ_API = "sunbird_framework_read_api";
   public static final String SUNBIRD_CONTENT_GET_HIERARCHY_API = "sunbird_get_hierarchy_api";
   public static final String SUNBIRD_CONTENT_READ_API = "sunbird_content_read_api";
-  public static final String SUNBIRD_USERNAME_NUM_DIGITS = "sunbird_username_num_digits";
   public static final String SYSTEM = "system";
   public static final String SYSTEM_SETTINGS_DB = "system_settings";
   public static final String TAG = "tag";
@@ -575,7 +550,6 @@ public final class JsonKey {
   public static final String TC_UPDATED_DATE = "tcUpdatedAt";
   public static final String TELEMETRY_CONTEXT = "TELEMETRY_CONTEXT";
   public static final String TELEMETRY_EVENT_TYPE = "telemetryEventType";
-  public static final String TELEMETRY_QUEUE_THRESHOLD_VALUE = "telemetry_queue_threshold_value";
   public static final String TEMPORARY_PASSWORD = "tempPassword";
   public static final String TENANT_PREFERENCE = "tenantPreference";
   public static final String TENANT_PREFERENCE_DB = "tenantPreferenceDb";
@@ -626,7 +600,6 @@ public final class JsonKey {
   public static final String USER_NOTES_DB = "userNotes_db";
   public static final String USER_ORG = "user_org";
   public static final String USER_ORG_DB = "user_org_db";
-  public static final String USER_RELATIONS = "user_relations";
   public static final String USER_SKILL_DB = "userSkillDb";
   public static final String USERIDS = "userIds";
   public static final String USERNAME = "userName";
@@ -644,7 +617,7 @@ public final class JsonKey {
   public static final String ZIPCODE = "zipcode";
   public static final String SUNBIRD_CONTENT_SERVICE_BASE_URL = "sunbird_content_service_base_url";
   public static final String SUNBIRD_CONTENT_SERVICE_AUTHORIZATION =
-      "sunbird_content_service_authorization";
+          "sunbird_content_service_authorization";
   public static final String SUNBIRD_HEALTH_CHECK_ENABLE = "sunbird_health_check_enable";
   public static final String HEALTH = "health";
   public static final String SERVICE = "service";
@@ -654,8 +627,6 @@ public final class JsonKey {
   public static final String SUNBIRD_AUTHORIZATION = "sunbird_authorization";
   public static final String SUNBIRD_CS_BASE_URL = "sunbird_cs_base_url";
   public static final String SUNBIRD_CS_SEARCH_PATH = "sunbird_cs_search_path";
-  public static final String SUNBIRD_LMS_BASE_URL = "sunbird_lms_base_url";
-  public static final String SUNBIRD_TELEMETRY_API_PATH = "sunbird_telemetry_api_path";
   public static final String SUNBIRD_LMS_TELEMETRY = "Sunbird_LMS_Telemetry";
   public static final String SUNBIRD_LMS_AUTHORIZATION = "sunbird_authorization";
   public static final String ETS = "ets";
@@ -683,37 +654,28 @@ public final class JsonKey {
   public static final String ORG_EXTERNAL_ID = "orgExternalId";
   public static final String ORG_PROVIDER = "orgProvider";
   public static final String EXTERNAL_IDS = "externalIds";
-  public static final String SUNBIRD_TELEMETRY_BASE_URL = "sunbird_telemetry_base_url";
   public static final String EXTERNAL_ID_TYPE = "externalIdType";
   public static final String ID_TYPE = "idType";
   public static final String ADD = "add";
   public static final String REMOVE = "remove";
   public static final String EDIT = "edit";
   public static final String DEFAULT_FRAMEWORK = "defaultFramework";
-  public static final String SUNBIRD_OPENSABER_BRIDGE_ENABLE = "sunbird_open_saber_bridge_enable";
   public static final String EXTERNAL_ID_PROVIDER = "externalIdProvider";
-  public static final String SUNBIRD_INSTALLATION_DISPLAY_NAME =
-      "sunbird_installation_display_name";
   public static final String USR_EXT_IDNT_TABLE = "usr_external_identity";
   public static final String END_TIME_IN_HOUR_MINUTE_SECOND = " 23:59:59";
   public static final String REGISTRY_ID = "registryId";
   public static final String RESPONSE_CODE = "responseCode";
   public static final String OK = "ok";
-  public static final String SUNBIRD_APP_NAME = "sunbird_app_name";
   public static final String SUNBIRD_DEFAULT_COUNTRY_CODE = "sunbird_default_country_code";
   public static final String ONBOARDING_MAIL_SUBJECT = "onboarding_mail_subject";
   public static final String ONBOARDING_MAIL_MESSAGE = "onboarding_welcome_message";
-  public static final String SUNBIRD_DEFAULT_WELCOME_MSG = "sunbird_default_welcome_sms";
-  public static final String SUNBIRD_DEFAULT_USER_TYPE = "sunbird_default_user_type";
   public static final String ES_TYPES = "types";
   public static final String RECIPIENT_SEARCH_QUERY = "recipientSearchQuery";
-  public static final String SUNBIRD_EMAIL_MAX_RECEPIENT_LIMIT =
-      "sunbird_email_max_recipients_limit";
   public static final String ORIGINAL_EXTERNAL_ID = "originalExternalId";
   public static final String ORIGINAL_ID_TYPE = "originalIdType";
   public static final String ORIGINAL_PROVIDER = "originalProvider";
   public static final String SUNBIRD_CASSANDRA_CONSISTENCY_LEVEL =
-      "sunbird_cassandra_consistency_level";
+          "sunbird_cassandra_consistency_level";
   public static final String VERSION_2 = "v2";
   public static final String CUSTODIAN_ORG_CHANNEL = "custodianOrgChannel";
   public static final String CUSTODIAN_ORG_ID = "custodianOrgId";
@@ -727,12 +689,10 @@ public final class JsonKey {
   public static final String USER_PROFILE_CONFIG = "userProfileConfig";
   public static final String PUBLIC_FIELDS = "publicFields";
   public static final String PRIVATE_FIELDS = "privateFields";
-  public static final String SUNBIRD_USER_PROFILE_FIELD_DEFAULT_VISIBILITY =
-      "sunbird_user_profile_field_default_visibility";
   public static final String DEFAULT_PROFILE_FIELD_VISIBILITY = "defaultProfileFieldVisibility";
 
   public static final String SUNBIRD_COURSE_BATCH_NOTIFICATIONS_ENABLED =
-      "sunbird_course_batch_notification_enabled";
+          "sunbird_course_batch_notification_enabled";
 
   public static final String BATCH_START_DATE = "batchStartDate";
   public static final String BATCH_END_DATE = "batchEndDate";
@@ -755,7 +715,7 @@ public final class JsonKey {
   public static final String REMOVED_PARTICIPANTS = "removedParticipants";
   public static final String URL_QUERY_STRING = "urlQueryString";
   public static final String SUNBIRD_API_REQUEST_LOWER_CASE_FIELDS =
-      "sunbird_api_request_lower_case_fields";
+          "sunbird_api_request_lower_case_fields";
   public static final String ATTRIBUTE = "attribute";
   public static final String ERRORS = "errors";
   public static final String ROLE_LIST = "roleList";
@@ -766,7 +726,7 @@ public final class JsonKey {
 
   public static final String COURSE_BATCH_URL = "courseBatchUrl";
   public static final String SUNBIRD_COURSE_BATCH_NOTIFICATION_SIGNATURE =
-      "sunbird_course_batch_notification_signature";
+          "sunbird_course_batch_notification_signature";
   public static final String SIGNATURE = "signature";
   public static final String OPEN_BATCH_LEARNER_ENROL = "openBatchLearnerEnrol";
   public static final String CONTENT_PROPERTY_MEDIUM = "medium";
@@ -777,12 +737,12 @@ public final class JsonKey {
   public static final String CONTENT_PROPERTY_VISIBILITY_PARENT = "Parent";
   public static final String CONTENT_PROPERTY_MIME_TYPE = "mimeType";
   public static final String CONTENT_MIME_TYPE_COLLECTION =
-      "application/vnd.ekstep.content-collection";
+          "application/vnd.ekstep.content-collection";
   public static final String VERSION_KEY = "versionKey";
   public static final String CSV_SEPERATOR = ",";
   public static final String CONTENT_CLOUD_STORAGE_TYPE = "sunbird_cloud_service_provider";
   public static final String CONTENT_CLOUD_STORAGE_CONTAINER =
-      "sunbird_content_cloud_storage_container";
+          "sunbird_content_cloud_storage_container";
   public static final String AZURE_STR = "azure";
   public static final String AWS_STR = "aws";
   public static final String GCLOUD_STR = "gcloud";
@@ -805,14 +765,14 @@ public final class JsonKey {
   public static final String FILE_DATA = "fileData";
   public static final String FRAMEWORK_METADATA = "frameworkCategories";
   public static final String TEXTBOOK_TOC_ALLOWED_MIMETYPE =
-      "application/vnd.ekstep.content-collection";
+          "application/vnd.ekstep.content-collection";
   public static final String TEXTBOOK_TOC_ALLOWED_CONTNET_TYPES =
-      "textbook_toc_allowed_content_types";
+          "textbook_toc_allowed_content_types";
   public static final String TEXTBOOK_TOC_MAX_CSV_ROWS = "textbook_toc_max_csv_rows";
   public static final String TEXTBOOK_TOC_INPUT_MAPPING = "textbook_toc_input_mapping";
   public static final String NODES_MODIFIED = "nodesModified";
   public static final String TEXT_TOC_FILE_SUPPRESS_COLUMN_NAMES =
-      "textbook_toc_file_suppress_column_names";
+          "textbook_toc_file_suppress_column_names";
   public static final String TEXTBOOK_TOC_MANDATORY_FIELDS = "textbook_toc_mandatory_fields";
   public static final String DOWNLOAD = "download";
   public static final String COLLECTION_MIME_TYPE = "application/vnd.ekstep.content-collection";
@@ -834,12 +794,7 @@ public final class JsonKey {
   public static final String TNC = "tnc";
   public static final String ACCEPT = "accept";
   public static final String ROOT_ORG_NAME = "rootOrgName";
-  public static final String SUNBIRD_OTP_EXPIRATION = "sunbird_otp_expiration";
-  public static final String SUNBIRD_OTP_LENGTH = "sunbird_otp_length";
   public static final String OTP_EXPIRATION_IN_MINUTES = "otpExpiryInMinutes";
-  public static final String SUNBIRD_RATE_LIMIT_ENABLED = "sunbird_rate_limit_enabled";
-  public static final String SUNBIRD_USER_MAX_ENCRYPTION_LIMIT =
-      "sunbird_user_max_encryption_limit";
   public static final String SUNBIRD_USER_MAX_PHONE_LENGTH = "sunbird_user_max_phone_length";
   public static final String RATE_LIMIT = "rate_limit";
   public static final String RATE_LIMIT_UNIT = "unit";
@@ -860,7 +815,6 @@ public final class JsonKey {
   public static final String LINK_DIAL_CODE_API = "sunbird_link_dial_code_api";
   public static final String LINKED_CONTENT = "linkedContent";
   public static final String MAX_ALLOWED_CONTENT_SIZE = "max_allowed_content_size";
-  public static final String SUNBIRD_LINKED_CONTENT_BASE_URL = "sunbird_linked_content_base_url";
   public static final String LINKED_CONTENT_COLUMN_KEY = "Linked Content";
 
   public static final String BATCHES = "batches";
@@ -878,9 +832,9 @@ public final class JsonKey {
   public static final String TERM = "term";
   public static final String DESC = "desc";
   public static final String SUNBIRD_TOC_LINKED_CONTENT_COLUMN_NAME =
-      "sunbird_toc_linked_content_column_name";
+          "sunbird_toc_linked_content_column_name";
   public static final String SUNBIRD_TOC_MAX_FIRST_LEVEL_UNITS =
-      "sunbird_toc_max_first_level_units";
+          "sunbird_toc_max_first_level_units";
   public static final String TEXTBOOK_TOC_OUTPUT_MAPPING = "textbook_toc_output_mapping";
   public static final String TEXTBOOK_UNIT = "TextBookUnit";
   public static final String USER_NAME_HEADER = "User Name";
@@ -899,7 +853,7 @@ public final class JsonKey {
   public static final String SUNBIRD_DIALCODE_SEARCH_API = "sunbird_dialcode_search_api";
   public static final String FROM_BEGINING = "fromBegining";
   public static final String SUNBIRD_KEYCLOAK_USER_FEDERATION_PROVIDER_ID =
-      "sunbird_keycloak_user_federation_provider_id";
+          "sunbird_keycloak_user_federation_provider_id";
   public static final String DEVICE_ID = "did";
   public static final String SUNBIRD_GZIP_FILTER_ENABLED = "sunbird_gzip_filter_enabled";
   public static final String COMPLETED_PERCENT = "completedPercent";
@@ -909,16 +863,9 @@ public final class JsonKey {
   public static final String SUNBIRD_GZIP_ENABLE = "sunbird_gzip_enable";
   public static final String SHOW_DOWNLOAD_LINK = "showDownloadLink";
   public static final String SUNBIRD_SYNC_READ_WAIT_TIME = "sunbird_sync_read_wait_time";
-  public static final String SUNBIRD_COURSE_METRICS_CONTANER = "sunbird_course_metrics_container";
-  public static final String SUNBIRD_COURSE_METRICS_REPORT_FOLDER =
-      "sunbird_course_metrics_report_folder";
-  public static final String SUNBIRD_ASSESSMENT_REPORT_FOLDER = "sunbird_assessment_report_folder";
   public static final String REPORT_UPDATED_ON = "reportUpdatedOn";
   public static final String SUNBIRD_GZIP_SIZE_THRESHOLD = "sunbird_gzip_size_threshold";
-  public static final String ANALYTICS_ACCOUNT_NAME = "sunbird_analytics_blob_account_name";
-  public static final String ANALYTICS_ACCOUNT_KEY = "sunbird_analytics_blob_account_key";
   public static final String PAGE_MANAGEMENT = "page_management";
-  public static final String SUNBIRD_CACHE_ENABLE = "sunbird_cache_enable";
   public static final String MAP_NAME = "mapName";
   public static final String PAGE_ASSEMBLE = "pageAssemble";
   public static final String SIGNUP_TYPE = "signupType";
@@ -928,8 +875,6 @@ public final class JsonKey {
   public static final String RECIPIENT_PHONES = "recipientPhones";
   public static final String TCP = "tcp";
   public static final String REST = "rest";
-  public static final String SUNBIRD_AUDIT_EVENT_BATCH_ALLOWED =
-      "sunbird_audit_event_batch_allowed";
   public static final String ES_OR_OPERATION = "$or";
   public static final String PREV_USED_EMAIL = "prevUsedEmail";
   public static final String PREV_USED_PHONE = "prevUsedPhone";
@@ -939,7 +884,6 @@ public final class JsonKey {
   public static final String MERGEE_ID = "mergeeId";
   public static final String USER_MERGEE_ACCOUNT = "userMergeeAccount";
   public static final String SEARCH_FUZZY = "fuzzy";
-  public static final String SUNBIRD_FUZZY_SEARCH_THRESHOLD = "sunbird_fuzzy_search_threshold";
   public static final String CERT_ID = "certId";
   public static final String ACCESS_CODE = "accessCode";
   public static final String USER_CERT = "user_cert";
@@ -958,13 +902,10 @@ public final class JsonKey {
   public static final String stateImgUrl = "stateImgUrl";
   public static final String dikshaImgUrl = "dikshaImgUrl";
   public static final String certificateImgUrl = "certificateImgUrl";
-  public static final String SUNBIRD_RESET_PASS_MAIL_SUBJECT = "sunbird_reset_pass_mail_subject";
   public static final String X_AUTHENTICATED_USER_TOKEN = "x-authenticated-user-token";
   public static final String X_SOURCE_USER_TOKEN = "x-source-user-token";
   public static final String SUNBIRD_SUBDOMAIN_KEYCLOAK_BASE_URL =
-      "sunbird_subdomain_keycloak_base_url";
-  public static final String SUNBIRD_CERT_SERVICE_BASE_URL = "sunbird_cert_service_base_url";
-  public static final String SUNBIRD_CERT_DOWNLOAD_URI = "sunbird_cert_download_uri";
+          "sunbird_subdomain_keycloak_base_url";
   public static final String ACTION = "action";
   public static final String ITERATION = "iteration";
   public static final String TELEMETRY_TARGET_USER_MERGE_TYPE = "MergeUserCoursesAndCert";
@@ -973,7 +914,6 @@ public final class JsonKey {
   public static final String BE_JOB_REQUEST = "BE_JOB_REQUEST";
   public static final String TELEMETRY_ACTOR_USER_MERGE_ID = "Merge User Courses and Cert";
   public static final String SUNBIRD_COURSE_DIALCODES_DB = "sunbird_course_dialcodes_db";
-  public static final String SUNBIRD_ACCOUNT_MERGE_BODY = "sunbird_account_merge_body";
   public static final String CERTIFICATE = "Certificate";
   public static final String OLD_CERTIFICATE = "oldCertificate";
   public static final String MERGE_CERT = "Mergecert";
@@ -984,9 +924,7 @@ public final class JsonKey {
   public static final String EXTERNAL_USER_ID = "ext user id";
   public static final String EXTERNAL_ORG_ID = "ext org id";
   public static final String MIGRATION_USER_OBJECT = "MigrationUser";
-  public static final String TASK_COUNT = "taskCount";
-  public static final String ERROR_VISUALIZATION_THRESHOLD =
-      "sunbird_user_upload_error_visualization_threshold";
+  public static final String TASK_COUNT = "taskCount";;
   public static final String NESTED_KEY_FILTER = "nestedFilters";
   public static final String SHADOW_USER = "shadow_user";
   public static final String USER_EXT_ID = "userExtId";
@@ -996,9 +934,7 @@ public final class JsonKey {
   public static final String USER_STATUS = "userStatus";
   public static final String CLAIM_STATUS = "claimStatus";
   public static final String CLAIMED_ON = "claimedOn";
-  public static final String SUNBIRD_MIGRATE_USER_BODY = "sunbird_migrate_user_body";
   public static final String SMS = "sms";
-  public static final String SUNBIRD_ACCOUNT_MERGE_SUBJECT = "sunbird_account_merge_subject";
   public static final String CONTEXT_TELEMETRY = "telemetryContext";
   public static final String OLD_ID = "oldId";
   public static final String MAX_ATTEMPT = "maxAttempt";

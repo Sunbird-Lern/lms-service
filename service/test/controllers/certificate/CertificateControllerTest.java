@@ -49,7 +49,6 @@ public class CertificateControllerTest extends BaseApplicationTest {
 
   @Test
   public void issueCertificateTest() {
-    setup(ACTOR_NAMES.CERTIFICATE_ACTOR,DummyActor.class);
     Http.RequestBuilder req =
         new Http.RequestBuilder()
             .uri(ISSUE_CERTIFICATE_URL)
@@ -129,6 +128,7 @@ public class CertificateControllerTest extends BaseApplicationTest {
 
   @Test
   public void addCertificateTest() {
+    setup(ACTOR_NAMES.COURSEBATCH_CERTIFICATE_ACTOR,DummyActor.class);
     Http.RequestBuilder req =
         new Http.RequestBuilder()
             .uri(ADD_CERTIFICATE_URL)
@@ -257,6 +257,7 @@ public class CertificateControllerTest extends BaseApplicationTest {
 
   @Test
   public void deleteCertificateTest() {
+    setup(ACTOR_NAMES.COURSEBATCH_CERTIFICATE_ACTOR,DummyActor.class);
     Http.RequestBuilder req =
         new Http.RequestBuilder()
             .uri(DELETE_CERTIFICATE_URL)
@@ -293,7 +294,7 @@ public class CertificateControllerTest extends BaseApplicationTest {
     Http.RequestBuilder req =
         new Http.RequestBuilder()
             .uri(DELETE_CERTIFICATE_URL)
-            .bodyJson(getCertificateRequest(COURSE_ID, null, false, null))
+            .bodyJson(getCertificateRequest(COURSE_ID, BATCH_ID, false, null))
             .method("PATCH");
     Result result = Helpers.route(application, req);
     Assert.assertEquals(400, result.status());

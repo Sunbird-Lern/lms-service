@@ -43,6 +43,8 @@ public class CourseEnrollmentControllerTest extends BaseApplicationTest {
   String ADMIN_ENROLL_BATCH_URL = "/v1/course/admin/enroll";
   String ADMIN_UENROLL_BATCH_URL = "/v1/course/admin/unenroll";
   String ADMIN_GET_ENROLLED_COURSE_URL_V2 = "/v2/user/courses/admin/list";
+  String PRIVATE_GET_USER_ENROLLED_COURSE_URL = "/private/v2/user/courses/list";
+  String PRIVATE_GET_ENROLLED_COURSE_URL = "/private/v1/user/courses/list/"+USER_ID;
 
   @Before
   public void before() {
@@ -56,6 +58,28 @@ public class CourseEnrollmentControllerTest extends BaseApplicationTest {
                     .uri(ENROLL_BATCH_URL)
                     .bodyJson(createCourseEnrollmentRequest(COURSE_ID, BATCH_ID, USER_ID))
                     .method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 200, result.status());
+  }
+
+  @Test
+  public void testPrivateGetUserEnrolledCoursesBatchSuccess() {
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(PRIVATE_GET_USER_ENROLLED_COURSE_URL)
+                    .bodyJson(createCourseEnrollmentRequest(COURSE_ID, BATCH_ID, USER_ID))
+                    .method("POST");
+    Result result = Helpers.route(application, req);
+    Assert.assertEquals( 200, result.status());
+  }
+
+  @Test
+  public void testPrivateGetEnrolledCoursesBatchSuccess() {
+    Http.RequestBuilder req =
+            new Http.RequestBuilder()
+                    .uri(PRIVATE_GET_ENROLLED_COURSE_URL)
+                    .bodyJson(createCourseEnrollmentRequest(COURSE_ID, BATCH_ID, USER_ID))
+                    .method("GET");
     Result result = Helpers.route(application, req);
     Assert.assertEquals( 200, result.status());
   }

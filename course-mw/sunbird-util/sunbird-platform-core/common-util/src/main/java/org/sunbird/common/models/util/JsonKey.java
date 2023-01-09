@@ -3,8 +3,6 @@ package org.sunbird.common.models.util;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
-
 /**
  * This class will contains all the key related to request and response.
  *
@@ -791,9 +789,12 @@ public final class JsonKey {
 
   public static final String CLOUD_FOLDER_CONTENT = "sunbird_cloud_content_folder";
   public static final String CLOUD_STORE_BASE_PATH = "cloud_storage_base_url";
+
+  public static final String CLOUD_STORAGE_DIAL_BUCKET_NAME = "cloud_storage_dial_bucketname";
+
+  public static final String DIAL_STORAGE_BASE_PATH_PLACEHOLDER="DIAL_STORAGE_BASE_PATH";
+
   public static final String CLOUD_STORE_BASE_PATH_PLACEHOLDER = "cloud_store_base_path_placeholder";
-  public static final String DIAL_STORAGE_BASE_PATH = getConfigValue("cloud_storage_base_url") +"/"+
-          getConfigValue("cloud_storage_dial_bucketname");
   public static final String TO_URL = "toUrl";
   public static final String TTL = "ttl";
   public static final String TEXTBOOK_TOC_CSV_TTL = "sunbird_texbook_toc_csv_ttl";

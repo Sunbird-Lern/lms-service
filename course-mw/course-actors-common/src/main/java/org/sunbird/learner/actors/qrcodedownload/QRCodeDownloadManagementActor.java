@@ -233,10 +233,13 @@ public class QRCodeDownloadManagementActor extends BaseActor {
         List<Map<String, Object>> listOfMap = (List<Map<String, Object>>) obj;
         if (CollectionUtils.isNotEmpty(listOfMap)) {
           //TODO Resolve it and store. Assuming dial code db will have the template url with data migration script
-          String templateUrl = (String) listOfMap.get(0).get("url");
+
           //replace template url with the actual cloud url
-          if (templateUrl.contains(getConfigValue(DIAL_STORAGE_BASE_PATH)))
-            templateUrl = templateUrl.replace(getConfigValue(DIAL_STORAGE_BASE_PATH), getConfigValue(CLOUD_STORE_BASE_PATH));
+          String templateUrl = (String) listOfMap.get(0).get("url");
+          if (templateUrl.contains(getConfigValue(DIAL_STORAGE_BASE_PATH_PLACEHOLDER)))
+            templateUrl = templateUrl.replace(getConfigValue(DIAL_STORAGE_BASE_PATH_PLACEHOLDER),
+                    getConfigValue(CLOUD_STORE_BASE_PATH)+"/"+
+                    getConfigValue(CLOUD_STORAGE_DIAL_BUCKET_NAME));
           return templateUrl;
         }
       }

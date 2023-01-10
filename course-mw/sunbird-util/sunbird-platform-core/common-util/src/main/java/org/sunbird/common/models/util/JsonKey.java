@@ -789,6 +789,9 @@ public final class JsonKey {
 
   public static final String CLOUD_FOLDER_CONTENT = "sunbird_cloud_content_folder";
   public static final String CLOUD_STORE_BASE_PATH = "cloud_storage_base_url";
+  public static final String CLOUD_STORAGE_CNAME_URL= "cloud_storage_cname_url";
+  public static final String CLOUD_STORAGE_DIAL_BUCKET_NAME = "cloud_storage_dial_bucketname";
+  public static final String DIAL_STORAGE_BASE_PATH_PLACEHOLDER="DIAL_STORAGE_BASE_PATH";
   public static final String CLOUD_STORE_BASE_PATH_PLACEHOLDER = "cloud_store_base_path_placeholder";
   public static final String TO_URL = "toUrl";
   public static final String TTL = "ttl";

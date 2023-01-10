@@ -236,9 +236,11 @@ public class QRCodeDownloadManagementActor extends BaseActor {
 
           //check if template url contains dail storage base path,if yes then append it with cnameurl and dial bucket name
           String templateUrl = (String) listOfMap.get(0).get("url");
-          if (templateUrl.contains(getConfigValue(DIAL_STORAGE_BASE_PATH_PLACEHOLDER)))
-            templateUrl = templateUrl.replace(getConfigValue(DIAL_STORAGE_BASE_PATH_PLACEHOLDER),
-                    getConfigValue(CLOUD_STORAGE_CNAME_URL).isEmpty() ? getConfigValue(CLOUD_STORE_BASE_PATH) : getConfigValue(CLOUD_STORAGE_CNAME_URL)
+          String dailStorageBasePath = getConfigValue(DIAL_STORAGE_BASE_PATH_PLACEHOLDER);
+          String cnameUrl = getConfigValue(CLOUD_STORAGE_CNAME_URL);
+          if (templateUrl.contains(dailStorageBasePath))
+            templateUrl = templateUrl.replace(dailStorageBasePath,
+                    cnameUrl.isEmpty() ? getConfigValue(CLOUD_STORE_BASE_PATH) :cnameUrl
                             + "/" + getConfigValue(CLOUD_STORAGE_DIAL_BUCKET_NAME));
           return templateUrl;
         }

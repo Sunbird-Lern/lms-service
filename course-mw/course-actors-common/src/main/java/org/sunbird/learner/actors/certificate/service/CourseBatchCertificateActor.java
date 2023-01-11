@@ -197,7 +197,7 @@ public class CourseBatchCertificateActor extends BaseActor {
         String notifyTemplateData = (String) template.get(CourseJsonKey.NOTIFY_TEMPLATE);
         //Modify the placeholder with the actual configured cloud base path as ES should have the actual cloud path
         if (notifyTemplateData.contains(getConfigValue(CLOUD_STORE_BASE_PATH_PLACEHOLDER)))
-          notifyTemplateData = notifyTemplateData.replace(getConfigValue(CLOUD_STORE_BASE_PATH_PLACEHOLDER), getConfigValue(CLOUD_STORE_BASE_PATH));
+          notifyTemplateData = notifyTemplateData.replace(getConfigValue(CLOUD_STORE_BASE_PATH_PLACEHOLDER), CloudStorageUtil.getBaseUrl()+"/"+getConfigValue(CONTENT_CLOUD_STORAGE_CONTAINER));
         template.put(
                 CourseJsonKey.NOTIFY_TEMPLATE,
                 mapper.readValue(notifyTemplateData,

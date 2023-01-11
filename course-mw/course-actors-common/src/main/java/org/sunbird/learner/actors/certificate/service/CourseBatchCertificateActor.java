@@ -24,8 +24,7 @@ import org.sunbird.learner.constants.CourseJsonKey;
 import org.sunbird.learner.util.CourseBatchUtil;
 import org.sunbird.learner.util.Util;
 
-import static org.sunbird.common.models.util.JsonKey.CLOUD_STORE_BASE_PATH;
-import static org.sunbird.common.models.util.JsonKey.CLOUD_STORE_BASE_PATH_PLACEHOLDER;
+import static org.sunbird.common.models.util.JsonKey.*;
 import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
 
 public class CourseBatchCertificateActor extends BaseActor {
@@ -123,6 +122,7 @@ public class CourseBatchCertificateActor extends BaseActor {
       if (MapUtils.isNotEmpty((Map<String,Object>)template.get(CourseJsonKey.NOTIFY_TEMPLATE))) {
         // We need to change stateImgUrl in notifyTemplate
         Map<String, Object> notifyData = (Map<String, Object>) template.get(CourseJsonKey.NOTIFY_TEMPLATE);
+        //TODO cross check the data in environments and remove this check if not required
         String notifyTemplateUrl = getPlaceholderUrl(notifyData,JsonKey.stateImgUrl);
         notifyData.replace(JsonKey.stateImgUrl,notifyTemplateUrl);
         template.put(
@@ -146,8 +146,8 @@ public class CourseBatchCertificateActor extends BaseActor {
     if (MapUtils.isNotEmpty(templateDetails) && templateDetails.containsKey(key)) {
       // replace the actual cloud url with the template value
       templateUrl = (String) templateDetails.get(key);
-      if (templateUrl.contains(getConfigValue(CLOUD_STORE_BASE_PATH)))
-        templateUrl = templateUrl.replace(getConfigValue(CLOUD_STORE_BASE_PATH), getConfigValue(CLOUD_STORE_BASE_PATH_PLACEHOLDER));
+      if (templateUrl.contains(getConfigValue(CLOUD_STORE_BASE_PATH) +"/"+getConfigValue(CONTENT_CLOUD_STORAGE_CONTAINER)))
+        templateUrl = templateUrl.replace(getConfigValue(CLOUD_STORE_BASE_PATH)+"/"+getConfigValue(CONTENT_CLOUD_STORAGE_CONTAINER), getConfigValue(CLOUD_STORE_BASE_PATH_PLACEHOLDER));
     }
     return templateUrl;
   }

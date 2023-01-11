@@ -3,6 +3,7 @@ package filters
 import akka.stream.Materializer
 import akka.util.ByteString
 import org.sunbird.common.models.util.JsonKey
+import org.sunbird.common.models.util.JsonKey.{CLOUD_STORE_BASE_PATH, CONTENT_CLOUD_STORAGE_CONTAINER}
 import play.api.http.HttpEntity.Strict
 import play.api.mvc.{Filter, RequestHeader, Result}
 import org.sunbird.common.models.util.ProjectUtil.getConfigValue
@@ -18,7 +19,7 @@ class ResponseFilter  @Inject()(implicit val mat: Materializer, ec: ExecutionCon
       if (null != result.body && !result.body.isKnownEmpty){
         val contentType = result.body.contentType
         val updatedBody = result.body.consumeData.map { x =>
-          val y = x.utf8String.replaceAll(getConfigValue(JsonKey.CLOUD_STORE_BASE_PATH_PLACEHOLDER),getConfigValue(JsonKey.CLOUD_STORE_BASE_PATH))
+          val y = x.utf8String.replaceAll(getConfigValue(JsonKey.CLOUD_STORE_BASE_PATH_PLACEHOLDER),getConfigValue(CLOUD_STORE_BASE_PATH) + "/" + getConfigValue(CONTENT_CLOUD_STORAGE_CONTAINER))
           logger.info("updated body: " + y)
           y
         }

@@ -232,21 +232,29 @@ public class QRCodeDownloadManagementActor extends BaseActor {
       if (null != obj && obj instanceof List) {
         List<Map<String, Object>> listOfMap = (List<Map<String, Object>>) obj;
         if (CollectionUtils.isNotEmpty(listOfMap)) {
-          //TODO Resolve it and store. Assuming dial code db will have the template url with data migration script
-
-          //check if template url contains dail storage base path,if yes then append it with cnameurl and dial bucket name
+          //check if template url contains dail storage base path placeholder,if yes then append it with cname url and dial bucket name
           String templateUrl = (String) listOfMap.get(0).get("url");
-          String dailStorageBasePath = getConfigValue(DIAL_STORAGE_BASE_PATH_PLACEHOLDER);
-          String cnameUrl = getConfigValue(CLOUD_STORAGE_CNAME_URL);
-          if (templateUrl.contains(dailStorageBasePath))
-            templateUrl = templateUrl.replace(dailStorageBasePath,
-                    cnameUrl.isEmpty() ? getConfigValue(CLOUD_STORE_BASE_PATH) :cnameUrl
-                            + "/" + getConfigValue(CLOUD_STORAGE_DIAL_BUCKET_NAME));
+          String dailStorageBasePathPlaceHolder = getConfigValue(DIAL_STORAGE_BASE_PATH_PLACEHOLDER);
+          templateUrl = resolvePlaceholder(templateUrl, dailStorageBasePathPlaceHolder,getConfigValue(CLOUD_STORAGE_DIAL_BUCKET_NAME));
           return templateUrl;
         }
       }
     }
     return "";
+  }
+
+  private String resolvePlaceholder(String templateUrl, String placeHolder,String containerName) {
+    if (templateUrl.contains(placeHolder))
+      templateUrl = templateUrl.replace(placeHolder, getBaseUrl()
+                      + "/" + containerName);
+    return templateUrl;
+  }
+
+  private String getBaseUrl() {
+    String baseUrl = getConfigValue(CLOUD_STORAGE_CNAME_URL);
+    if(StringUtils.isEmpty(baseUrl))
+      baseUrl = getConfigValue(CLOUD_STORE_BASE_PATH);
+    return baseUrl;
   }
 
   /**

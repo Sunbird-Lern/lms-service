@@ -18,6 +18,7 @@ import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.common.util.CloudStorageUtil;
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao;
 import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl;
 import org.sunbird.learner.constants.CourseJsonKey;
@@ -146,8 +147,8 @@ public class CourseBatchCertificateActor extends BaseActor {
     if (MapUtils.isNotEmpty(templateDetails) && templateDetails.containsKey(key)) {
       // replace the actual cloud url with the template value
       templateUrl = (String) templateDetails.get(key);
-      if (templateUrl.contains(getConfigValue(CLOUD_STORE_BASE_PATH) +"/"+getConfigValue(CONTENT_CLOUD_STORAGE_CONTAINER)))
-        templateUrl = templateUrl.replace(getConfigValue(CLOUD_STORE_BASE_PATH)+"/"+getConfigValue(CONTENT_CLOUD_STORAGE_CONTAINER), getConfigValue(CLOUD_STORE_BASE_PATH_PLACEHOLDER));
+      if (templateUrl.contains(CloudStorageUtil.getBaseUrl() +"/"+getConfigValue(CONTENT_CLOUD_STORAGE_CONTAINER)))
+        templateUrl = templateUrl.replace(CloudStorageUtil.getBaseUrl()+"/"+getConfigValue(CONTENT_CLOUD_STORAGE_CONTAINER), getConfigValue(CLOUD_STORE_BASE_PATH_PLACEHOLDER));
     }
     return templateUrl;
   }

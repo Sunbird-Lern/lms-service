@@ -245,17 +245,11 @@ public class QRCodeDownloadManagementActor extends BaseActor {
 
   private String resolvePlaceholder(String templateUrl, String placeHolder,String containerName) {
     if (templateUrl.contains(placeHolder))
-      templateUrl = templateUrl.replace(placeHolder, getBaseUrl()
+      templateUrl = templateUrl.replace(placeHolder, CloudStorageUtil.getBaseUrl()
                       + "/" + containerName);
     return templateUrl;
   }
 
-  private String getBaseUrl() {
-    String baseUrl = getConfigValue(CLOUD_STORAGE_CNAME_URL);
-    if(StringUtils.isEmpty(baseUrl))
-      baseUrl = getConfigValue(CLOUD_STORE_BASE_PATH);
-    return baseUrl;
-  }
 
   /**
    * Uploading the generated csv to aws

@@ -232,17 +232,24 @@ public class QRCodeDownloadManagementActor extends BaseActor {
       if (null != obj && obj instanceof List) {
         List<Map<String, Object>> listOfMap = (List<Map<String, Object>>) obj;
         if (CollectionUtils.isNotEmpty(listOfMap)) {
-          //TODO Resolve it and store. Assuming dial code db will have the template url with data migration script
+          //check if template url contains dail storage base path placeholder,if yes then append it with cname url and dial bucket name
           String templateUrl = (String) listOfMap.get(0).get("url");
-          //replace template url with the actual cloud url
-          if (templateUrl.contains(getConfigValue(CLOUD_STORE_BASE_PATH_PLACEHOLDER)))
-            templateUrl = templateUrl.replace(getConfigValue(CLOUD_STORE_BASE_PATH_PLACEHOLDER), getConfigValue(CLOUD_STORE_BASE_PATH));
+          String dailStorageBasePathPlaceHolder = getConfigValue(DIAL_STORAGE_BASE_PATH_PLACEHOLDER);
+          templateUrl = resolvePlaceholder(templateUrl, dailStorageBasePathPlaceHolder,getConfigValue(CLOUD_STORAGE_DIAL_BUCKET_NAME));
           return templateUrl;
         }
       }
     }
     return "";
   }
+
+  private String resolvePlaceholder(String templateUrl, String placeHolder,String containerName) {
+    if (templateUrl.contains(placeHolder))
+      templateUrl = templateUrl.replace(placeHolder, CloudStorageUtil.getBaseUrl()
+                      + "/" + containerName);
+    return templateUrl;
+  }
+
 
   /**
    * Uploading the generated csv to aws

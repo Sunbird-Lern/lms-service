@@ -2,6 +2,8 @@ package org.sunbird.common.util;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
 import org.sunbird.cloud.storage.BaseStorageService;
 import org.sunbird.cloud.storage.factory.StorageConfig;
 import org.sunbird.cloud.storage.factory.StorageServiceFactory;
@@ -10,6 +12,10 @@ import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.PropertiesCache;
 import scala.Option;
 import scala.Some;
+
+import static org.sunbird.common.models.util.JsonKey.CLOUD_STORAGE_CNAME_URL;
+import static org.sunbird.common.models.util.JsonKey.CLOUD_STORE_BASE_PATH;
+import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
 
 public class CloudStorageUtil {
   private static final int STORAGE_SERVICE_API_RETRY_COUNT = 3;
@@ -75,5 +81,12 @@ public class CloudStorageUtil {
       String storageType, String container, String prefix, boolean isDirectory) {
     BaseStorageService storageService = getStorageService(storageType);
     return storageService.getUri(container, prefix, Option.apply(isDirectory));
+  }
+
+  public static String getBaseUrl() {
+    String baseUrl = getConfigValue(CLOUD_STORAGE_CNAME_URL);
+    if(StringUtils.isEmpty(baseUrl))
+      baseUrl = getConfigValue(CLOUD_STORE_BASE_PATH);
+    return baseUrl;
   }
 }

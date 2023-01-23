@@ -19,6 +19,8 @@ public final class JsonKey {
   public static final String ACCESSTOKEN = "accessToken";
   public static final String ACCOUNT_KEY = "sunbird_account_key";
   public static final String ACCOUNT_NAME = "sunbird_account_name";
+
+  public static final String ACCOUNT_ENDPOINT = "sunbird_account_endpoint";
   public static final String DOWNLOAD_LINK_EXPIRY_TIMEOUT = "download_link_expiry_timeout";
   public static final String SIGNED_URL = "signedUrl";
   public static final String REPORTS = "reports";
@@ -788,6 +790,7 @@ public final class JsonKey {
   public static final String AWS_STR = "aws";
   public static final String GCLOUD_STR = "gcloud";
 
+  public static final String OCI_STR = "oci";
   public static final String CLOUD_FOLDER_CONTENT = "sunbird_cloud_content_folder";
   public static final String TO_URL = "toUrl";
   public static final String TTL = "ttl";
@@ -916,6 +919,8 @@ public final class JsonKey {
   public static final String SUNBIRD_GZIP_SIZE_THRESHOLD = "sunbird_gzip_size_threshold";
   public static final String ANALYTICS_ACCOUNT_NAME = "sunbird_analytics_blob_account_name";
   public static final String ANALYTICS_ACCOUNT_KEY = "sunbird_analytics_blob_account_key";
+
+  public static final String ANALYTICS_ACCOUNT_ENDPOINT = "sunbird_analytics_blob_account_endpoint";
   public static final String PAGE_MANAGEMENT = "page_management";
   public static final String SUNBIRD_CACHE_ENABLE = "sunbird_cache_enable";
   public static final String MAP_NAME = "mapName";

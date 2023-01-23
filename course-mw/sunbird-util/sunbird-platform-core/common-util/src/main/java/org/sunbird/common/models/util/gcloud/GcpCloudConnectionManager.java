@@ -12,20 +12,29 @@ import static org.sunbird.common.models.util.JsonKey.GCLOUD_STR;
 public class GcpCloudConnectionManager {
     private static String accountName = "";
     private static String accountKey = "";
+    private static scala.Option<String> accountEndpoint = scala.Option.apply("");
+
+    private static scala.Option<String> accountRegion = scala.Option.apply("");
     private static GcpCloudConnectionManager connectionManager;
     private static BaseStorageService baseStorageService;
 
     static {
         String name = System.getenv(JsonKey.ACCOUNT_NAME);
         String key = System.getenv(JsonKey.ACCOUNT_KEY);
+        scala.Option<String> endpoint = scala.Option.apply(System.getenv(JsonKey.ACCOUNT_ENDPOINT));
+        scala.Option<String> region = scala.Option.apply("");
         if (StringUtils.isBlank(name) || StringUtils.isBlank(key)) {
             ProjectLogger.log(
                     "Gcloud account name and key is not provided by environment variable." + name + " " + key);
             accountName = PropertiesCache.getInstance().getProperty(JsonKey.ACCOUNT_NAME);
             accountKey = PropertiesCache.getInstance().getProperty(JsonKey.ACCOUNT_KEY);
+            scala.Option<String> accountEndpoint = scala.Option.apply(System.getenv(JsonKey.ACCOUNT_ENDPOINT));
+            scala.Option<String> accountRegion = scala.Option.apply("");
         } else {
             accountName = name;
             accountKey = key;
+            accountEndpoint = endpoint;
+            accountRegion= region;
             ProjectLogger.log(
                     "Gcloud account name and key is  provided by environment variable." + name + " " + key);
         }
@@ -37,7 +46,7 @@ public class GcpCloudConnectionManager {
 
     public static BaseStorageService getStorageService(){
         if(null == baseStorageService){
-            baseStorageService = StorageServiceFactory.getStorageService(new StorageConfig(GCLOUD_STR, accountKey, accountName));
+            baseStorageService = StorageServiceFactory.getStorageService(new StorageConfig(GCLOUD_STR, accountKey, accountName,accountEndpoint,accountRegion));
             ProjectLogger.log(
                     "Gcloud account storage service with account name and key as " + accountName + " " + accountKey);
         }

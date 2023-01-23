@@ -218,8 +218,8 @@
         </dependency>
         <dependency>
             <groupId>org.sunbird</groupId>
-            <artifactId>cloud-store-sdk</artifactId>
-            <version>1.4.0</version>
+            <artifactId>cloud-store-sdk_2.11</artifactId>
+            <version>1.4.6</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.sun.jersey</groupId>
@@ -271,6 +271,11 @@
             <id>cloud-store</id>
             <url>https://oss.sonatype.org/content/repositories/orgsunbird-1021</url>
         </repository>
+<!-- Below repository added for testing -->
+        <!-- <repository>
+            <id>cloud-store</id>
+            <url>https://oss.sonatype.org/content/repositories/orgsunbird-1144/</url>
+        </repository> -->
     </repositories>
     <build>
         <pluginManagement>

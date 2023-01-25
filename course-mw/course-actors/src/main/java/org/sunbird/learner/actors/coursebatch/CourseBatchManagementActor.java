@@ -1,6 +1,7 @@
 package org.sunbird.learner.actors.coursebatch;
 
 import akka.actor.ActorRef;
+import com.typesafe.config.ConfigFactory;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -430,7 +431,7 @@ public class CourseBatchManagementActor extends BaseActor {
     if (CollectionUtils.isNotEmpty(courseBatch.getMentors())) {
       canUpdateList.addAll(courseBatch.getMentors());
     }
-    if (!canUpdateList.contains(requestedBy)) {
+    if (ConfigFactory.load().getBoolean(JsonKey.AUTH_ENABLED) && !canUpdateList.contains(requestedBy)) {
       throw new ProjectCommonException(
           ResponseCode.unAuthorized.getErrorCode(),
           ResponseCode.unAuthorized.getErrorMessage(),

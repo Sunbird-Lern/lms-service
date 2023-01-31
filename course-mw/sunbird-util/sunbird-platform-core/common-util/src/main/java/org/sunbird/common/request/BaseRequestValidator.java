@@ -4,6 +4,8 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import com.typesafe.config.ConfigFactory;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -493,10 +495,12 @@ public class BaseRequestValidator {
   }
   
   public void validateRequestedBy(String requestedBy) {
-    if(StringUtils.isBlank(requestedBy) || JsonKey.ANONYMOUS.contentEquals(requestedBy)) {
-      throw new ProjectCommonException(ResponseCode.unAuthorized.getErrorCode(),
-              ResponseCode.unAuthorized.getErrorMessage(),
-              ResponseCode.UNAUTHORIZED.getResponseCode());
+    if (ConfigFactory.load().getBoolean(JsonKey.AUTH_ENABLED)) {
+      if (StringUtils.isBlank(requestedBy) || JsonKey.ANONYMOUS.contentEquals(requestedBy)) {
+        throw new ProjectCommonException(ResponseCode.unAuthorized.getErrorCode(),
+                ResponseCode.unAuthorized.getErrorMessage(),
+                ResponseCode.UNAUTHORIZED.getResponseCode());
+      }
     }
   }
 }

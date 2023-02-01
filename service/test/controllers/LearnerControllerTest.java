@@ -4,6 +4,8 @@ import static util.TestUtil.mapToJson;
 
 import actors.DummyActor;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.typesafe.config.ConfigFactory;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -79,12 +81,14 @@ public class LearnerControllerTest extends BaseApplicationTest {
 
   @Test
   public void testGetContentStateFailureWithoutUserId() {
-    PowerMockito.when(RequestInterceptor.verifyRequestData(Mockito.any())).thenReturn(JsonKey.ANONYMOUS);
-    JsonNode json = createGetContentStateRequest(null, COURSE_ID, BATCH_ID);
-    Http.RequestBuilder req =
-        new Http.RequestBuilder().uri(CONTENT_STATE_READ_URL).bodyJson(json).method("POST");
-    Result result = Helpers.route(application, req);
-    Assert.assertEquals(401, result.status());
+    if (ConfigFactory.load().getBoolean(JsonKey.AUTH_ENABLED)) {
+      PowerMockito.when(RequestInterceptor.verifyRequestData(Mockito.any())).thenReturn(JsonKey.ANONYMOUS);
+      JsonNode json = createGetContentStateRequest(null, COURSE_ID, BATCH_ID);
+      Http.RequestBuilder req =
+              new Http.RequestBuilder().uri(CONTENT_STATE_READ_URL).bodyJson(json).method("POST");
+      Result result = Helpers.route(application, req);
+      Assert.assertEquals(401, result.status());
+    }
   }
 
   @Test

@@ -2,6 +2,8 @@ package modules;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.typesafe.config.ConfigFactory;
+
 import controllers.BaseController;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.auth.verifier.AccessTokenValidator;
@@ -60,10 +62,17 @@ public class OnRequestHandler implements ActionCreator {
       @Override
       public CompletionStage<Result> call(Http.Request request) {
         CompletionStage<Result> result = checkForServiceHealth(request);
-        if (result != null) return result;
+          String message = null;
+          if (result != null) {
+              return result;
+          }
+          if (ConfigFactory.load().getBoolean(JsonKey.AUTH_ENABLED)) {
+              message = RequestInterceptor.verifyRequestData(request);
+          } else {
+              message = JsonKey.ANONYMOUS;
+          }
         // Setting Actual userId (requestedBy) and managed userId (requestedFor) placeholders in flash memory to null before processing.
         // Unauthorized, Anonymous, UserID
-        String message = RequestInterceptor.verifyRequestData(request);
         Optional<String> forAuth = request.header(HeaderParam.X_Authenticated_For.getName());
         String childId = null;
         String loggingHeaders = getLoggingHeaders(request);

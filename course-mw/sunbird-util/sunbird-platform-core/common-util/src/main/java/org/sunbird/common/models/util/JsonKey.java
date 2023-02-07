@@ -1077,5 +1077,8 @@ public final class JsonKey {
   public static final String GCP="gcloud";
   public static final String TEMPLATE_URL = "templateUrl";
 
+  public static final String SUNBIRD_DIAL_SERVICE_BASE_URL = "sunbird_dial_service_base_url";
+  public static final String SUNBIRD_DIAL_SERVICE_IMAGE_LIST_URL = "sunbird_dial_service_image_list_url";
+
   private JsonKey() {}
 }

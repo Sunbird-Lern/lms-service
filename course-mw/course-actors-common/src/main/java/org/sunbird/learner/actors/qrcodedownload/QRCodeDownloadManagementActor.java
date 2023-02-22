@@ -66,6 +66,7 @@ public class QRCodeDownloadManagementActor extends BaseActor {
           ResponseCode.errorUserHasNotCreatedAnyCourse.getErrorCode(),
           ResponseCode.errorUserHasNotCreatedAnyCourse.getErrorMessage(),
           ResponseCode.CLIENT_ERROR.getResponseCode());
+    String channel = (String) contents.get(0).get("channel");
     Map<String, List<String>> dialCodesMap =
         contents
             .stream()
@@ -75,7 +76,7 @@ public class QRCodeDownloadManagementActor extends BaseActor {
                 Collectors.toMap(
                     content -> ((String) content.get("identifier")) + "<<<" + (String) content.get("name"),
                     content -> (List<String>) content.get("dialcodes"), (a,b) -> b, LinkedHashMap::new));
-    File file = generateCSVFile(request.getRequestContext(), dialCodesMap);
+    File file = generateCSVFile(request.getRequestContext(), dialCodesMap, channel);
     Response response = new Response();
     if (null == file)
       throw new ProjectCommonException(
@@ -95,7 +96,7 @@ public class QRCodeDownloadManagementActor extends BaseActor {
    * @param dialCodeMap
    * @return
    */
-  private File generateCSVFile(RequestContext requestContext, Map<String, List<String>> dialCodeMap) {
+  private File generateCSVFile(RequestContext requestContext, Map<String, List<String>> dialCodeMap, String channel) {
     File file = null;
     if (MapUtils.isEmpty(dialCodeMap))
       throw new ProjectCommonException(
@@ -111,7 +112,7 @@ public class QRCodeDownloadManagementActor extends BaseActor {
               .flatMap(List::stream)
               .collect(Collectors.toSet());
 
-      Map<String, String> dialcodeImageUrlMap = downloadManager.getQRCodeImageURLs(dialCodes);
+      Map<String, String> dialcodeImageUrlMap = downloadManager.getQRCodeImageURLs(dialCodes, channel);
 
       dialCodeMap
           .keySet()

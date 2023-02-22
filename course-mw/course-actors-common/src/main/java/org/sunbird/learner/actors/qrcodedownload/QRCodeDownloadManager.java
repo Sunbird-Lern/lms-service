@@ -97,14 +97,14 @@ public class QRCodeDownloadManager {
      * @param dialCodes
      * @return
      */
-    public Map<String, String> getQRCodeImageURLs(Set dialCodes) {
+    public Map<String, String> getQRCodeImageURLs(Set dialCodes, String channel) {
         Map<String, String> headers = new HashMap<>();
-        String params = "{\"request\": {\"filters\":{\"dialcodes\": [\""+String.join("\",\"",dialCodes)+"\"]}}}";
+        String params = "{\"request\": {\"search\":{\"identifier\": [\""+String.join("\",\"",dialCodes)+"\"]}}}";
         try {
             String dialServiceUrl = ProjectUtil.getConfigValue(JsonKey.SUNBIRD_DIAL_SERVICE_BASE_URL);
-            headers.put(
-                    JsonKey.AUTHORIZATION, JsonKey.BEARER + System.getenv(JsonKey.EKSTEP_AUTHORIZATION));
+            headers.put(JsonKey.AUTHORIZATION, JsonKey.BEARER + System.getenv(JsonKey.EKSTEP_AUTHORIZATION));
             headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+            headers.put("X-Channel-ID", channel);
             headers.remove(HttpHeaders.ACCEPT_ENCODING.toLowerCase());
             headers.put(HttpHeaders.ACCEPT_ENCODING.toLowerCase(), "UTF-8");
             if (org.apache.commons.lang3.StringUtils.isBlank(headers.get(JsonKey.AUTHORIZATION))) {
@@ -113,14 +113,14 @@ public class QRCodeDownloadManager {
                         PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_AUTHORIZATION));
             }
             logger.info(null, "QRCodeDownloadManager:: getQRCodeImageUrl:: invoking DIAL service for QR Code Images:: " + String.join(",", dialCodes));
-            String response = HttpUtil.sendPostRequest(dialServiceUrl + PropertiesCache.getInstance().getProperty(JsonKey.SUNBIRD_DIAL_SERVICE_IMAGE_LIST_URL), params, headers);
+            String response = HttpUtil.sendPostRequest(dialServiceUrl + PropertiesCache.getInstance().getProperty(JsonKey.SUNBIRD_DIAL_SERVICE_SEARCH_URL), params, headers);
             Map<String, Object> data = new ObjectMapper().readValue(response, Map.class);
             logger.info(null, "QRCodeDownloadManager:: getQRCodeImageUrl:: QR Code List response:: ", null, (Map<String, Object>) data.get(JsonKey.PARAMS));
             if (MapUtils.isNotEmpty(data)) {
                 Map<String, Object> resultData = (Map<String, Object>) data.get(JsonKey.RESULT);
-                logger.info(null,"QRCodeDownloadManager:: getQRCodeImageUrl:: Total number of images fetched : " + ((List) resultData.get("qrcodeImagesInfo")).size());
+                logger.info(null,"QRCodeDownloadManager:: getQRCodeImageUrl:: Total number of images fetched : " + ((List) resultData.get("dialcodes")).size());
                 if (MapUtils.isNotEmpty(resultData)) {
-                    List<Map<String, Object>> qrCodeImagesList = (List) resultData.get("qrcodeImagesInfo");
+                    List<Map<String, Object>> qrCodeImagesList = (List) resultData.get("dialcodes");
                     Map<String, String> resMap = new HashMap<>();
 
                     for(Map<String, Object> qrImageObj : qrCodeImagesList) {

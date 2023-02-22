@@ -108,7 +108,8 @@ public class QRCodeDownloadManagerTest {
         Set<String> dialcodes = new HashSet();
         dialcodes.add("Q1I5I3");
         dialcodes.add("A5Z7I3");
-        Map<String, String> qrCodeImageURLObjs = downloadManager.getQRCodeImageURLs(dialcodes);
+        String channel = "sunbird";
+        Map<String, String> qrCodeImageURLObjs = downloadManager.getQRCodeImageURLs(dialcodes, channel);
         Assert.assertTrue(qrCodeImageURLObjs.size()>0);
 
     }

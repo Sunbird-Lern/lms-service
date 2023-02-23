@@ -124,7 +124,7 @@ public class QRCodeDownloadManager {
                     Map<String, String> resMap = new HashMap<>();
 
                     for(Map<String, Object> qrImageObj : qrCodeImagesList) {
-                        resMap.put(qrImageObj.get("dialcode").toString(), qrImageObj.get("url").toString());
+                        resMap.put(qrImageObj.get("identifier").toString(), qrImageObj.get("imageUrl").toString());
                     }
                     return resMap;
                 }

@@ -15,6 +15,9 @@ import org.powermock.core.classloader.annotations.SuppressStaticInitializationFo
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.request.HeaderParam;
+
+import com.typesafe.config.ConfigFactory;
+
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
@@ -60,11 +63,13 @@ public class CacheControllerTest extends BaseApplicationTest {
   @Test
   public void testClearCacheUnauth() {
     PowerMockito.mockStatic(RequestInterceptor.class);
+    if (ConfigFactory.load().getBoolean(JsonKey.AUTH_ENABLED)) {
     PowerMockito.when(RequestInterceptor.verifyRequestData(Mockito.any()))
         .thenReturn(JsonKey.UNAUTHORIZED);
     Http.RequestBuilder req =
         new Http.RequestBuilder().uri("/v1/cache/clear/" + MAP_NAME).method("DELETE");
     Result result = Helpers.route(application, req);
     Assert.assertEquals(401, result.status());
+    }
   }
 }

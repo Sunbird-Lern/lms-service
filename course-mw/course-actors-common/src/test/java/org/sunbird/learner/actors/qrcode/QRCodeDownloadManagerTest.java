@@ -46,7 +46,7 @@ public class QRCodeDownloadManagerTest {
         PowerMockito.mockStatic(Unirest.class);
         PowerMockito.mockStatic(RestUtil.class);
         PowerMockito.when(ProjectUtil.getConfigValue(Mockito.anyString())).thenReturn("");
-        String qrImageListAPIResponse = "{\"id\": \"sunbird.dialcode.images.list\",\"ver\": \"3.0\",\"ts\": \"2023-02-01T12:16:52Z+05:30\",\"params\": {\"resmsgid\": \"505bce18-1feb-44c3-91c3-07b8324de4f9\",\"msgid\": null,\"err\": null,\"status\": \"successful\",\"errmsg\": null},\"responseCode\": \"OK\",\"result\": {\"count\": 1, \"qrcodeImagesInfo\": [{\"filename\": \"0_Q1I5I3\",\"channel\": \"b00bc992ef25f1a9a8d63291e20efc8d\",\"config\": {},\"createdOn\": null,\"dialcode\": \"Q1I5I3\",\"publisher\": null,\"status\": 0,\"url\": \"https://sunbirddev.blob.core.windows.net/sunbird-content-dev/in.ekstep/0_Q1I5I3.png\"}]}}";
+        String qrImageListAPIResponse = "{\"id\": \"sunbird.dialcode.images.list\",\"ver\": \"3.0\",\"ts\": \"2023-02-01T12:16:52Z+05:30\",\"params\": {\"resmsgid\": \"505bce18-1feb-44c3-91c3-07b8324de4f9\",\"msgid\": null,\"err\": null,\"status\": \"successful\",\"errmsg\": null},\"responseCode\": \"OK\",\"result\": {\"count\": 1, \"dialcodes\": [{ \"dialcode_index\": 14711964,\"identifier\": \"F6A5C7\",\"imageUrl\": \"https://sunbirddevbbpublic.blob.core.windows.net/dial/01309282781705830427//4_F6A5C7.png\", \"channel\": \"01309282781705830427\",\"batchcode\": \"do_21373837923890790415\",\"generated_on\": \"2023-02-22T06:44:48.449+0000\",\"objectType\": \"DialCode\",\"status\": \"Draft\"}]}}";
         PowerMockito.when(HttpUtil.sendPostRequest(Mockito.anyString(),Mockito.anyString(),Mockito.anyMap())).thenReturn(qrImageListAPIResponse);
     }
 

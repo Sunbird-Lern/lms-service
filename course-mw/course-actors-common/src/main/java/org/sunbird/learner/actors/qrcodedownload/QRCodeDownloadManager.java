@@ -26,7 +26,7 @@ public class QRCodeDownloadManager {
                     put(JsonKey.CONTENT_TYPE, JsonKey.CONTENT_TYPE);
                 }
             };
-    private static int SEARCH_CONTENTS_LIMIT = Integer.parseInt(StringUtils.isNotBlank(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_QRCODE_COURSES_LIMIT)) ? ProjectUtil.getConfigValue(JsonKey.SUNBIRD_QRCODE_COURSES_LIMIT) : "2000");
+    private static final int SEARCH_CONTENTS_LIMIT = Integer.parseInt(StringUtils.isNotBlank(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_QRCODE_COURSES_LIMIT)) ? ProjectUtil.getConfigValue(JsonKey.SUNBIRD_QRCODE_COURSES_LIMIT) : "2000");
 
     /**
      * Search call to Learning Platform composite search engine
@@ -40,8 +40,7 @@ public class QRCodeDownloadManager {
     public Map<String, Object> searchCourses(
             RequestContext requestContext, Map<String, Object> requestMap, Map<String, String> headers) throws UnirestException {
         String request = prepareSearchRequest (requestContext, requestMap);
-        Map<String, Object> searchResponse = ContentSearchUtil.searchContentSync(requestContext, null, request, headers);
-        return searchResponse;
+        return ContentSearchUtil.searchContentSync(requestContext, null, request, headers);
     }
 
     /**
@@ -97,7 +96,7 @@ public class QRCodeDownloadManager {
      * @param dialCodes
      * @return
      */
-    public Map<String, String> getQRCodeImageURLs(Set dialCodes, String channel) {
+    public Map<String, String> getQRCodeImageURLs(Set<String> dialCodes, String channel) {
         Map<String, String> headers = new HashMap<>();
         String params = "{\"request\": {\"search\":{\"identifier\": [\""+String.join("\",\"",dialCodes)+"\"]}}}";
         try {

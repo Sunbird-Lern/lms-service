@@ -100,7 +100,7 @@ public class QRCodeDownloadManager {
         Map<String, String> headers = new HashMap<>();
         String params = "{\"request\": {\"search\":{\"identifier\": [\""+String.join("\",\"",dialCodes)+"\"]}}}";
         try {
-            String dialServiceUrl = ProjectUtil.getConfigValue(JsonKey.SUNBIRD_DIAL_SERVICE_BASE_URL);
+            String dialServiceUrl = ProjectUtil.getConfigValue(JsonKey.SUNBIRD_API_MGR_BASE_URL);
             headers.put(JsonKey.AUTHORIZATION, JsonKey.BEARER + System.getenv(JsonKey.EKSTEP_AUTHORIZATION));
             headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
             headers.put("X-Channel-ID", channel);

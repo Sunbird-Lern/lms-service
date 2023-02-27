@@ -106,7 +106,7 @@ public class CloudStorageUtilTest {
   }
   @Test
   public void testGetSignedUrlAWSSuccess() {
-    String signedUrl = CloudStorageUtil.getSignedUrl("azure", "awscontainer", "key");
+    String signedUrl = CloudStorageUtil.getSignedUrl(JsonKey.AWS_STR, "awscontainer", "key");
     assertTrue(SIGNED_URL.equals(signedUrl));
   }
 }

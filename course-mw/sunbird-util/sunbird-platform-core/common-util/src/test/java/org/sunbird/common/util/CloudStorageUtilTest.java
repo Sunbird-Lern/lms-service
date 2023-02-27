@@ -7,7 +7,6 @@ import static org.powermock.api.mockito.PowerMockito.when;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -74,6 +73,13 @@ public class CloudStorageUtilTest {
               Mockito.any(Option.class),
               Mockito.any(Option.class)))
               .thenReturn(PUT_SIGNED_URL);
+      when(service.getSignedURLV2(
+              Mockito.eq("awscontainer"),
+              Mockito.anyString(),
+              Mockito.any(Option.class),
+              Mockito.any(Option.class),
+              Mockito.any(Option.class)))
+              .thenReturn(SIGNED_URL);
 
     } catch (Exception e) {
       Assert.fail(e.getMessage());
@@ -88,7 +94,7 @@ public class CloudStorageUtilTest {
   }
 
   @Test
-  public void testGetSignedUrlSuccess() {
+  public void testGetSignedUrlAZURESuccess() {
     String signedUrl = CloudStorageUtil.getSignedUrl("azure", "azurecontainer", "key");
     assertTrue(SIGNED_URL.equals(signedUrl));
   }
@@ -97,5 +103,10 @@ public class CloudStorageUtilTest {
   public void testGetSignedUrlGCPSuccess() {
     String signedUrl = CloudStorageUtil.getSignedUrl(JsonKey.GCP, "gcpcontainer", "key");
     assertTrue(PUT_SIGNED_URL.equals(signedUrl));
+  }
+  @Test
+  public void testGetSignedUrlAWSSuccess() {
+    String signedUrl = CloudStorageUtil.getSignedUrl("azure", "awscontainer", "key");
+    assertTrue(SIGNED_URL.equals(signedUrl));
   }
 }

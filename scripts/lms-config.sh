@@ -1,3 +1,5 @@
+#!/bin/bash
+
 export actor_hostname=actor-service
 export api_actor_provider=local
 export background_actor_provider=local

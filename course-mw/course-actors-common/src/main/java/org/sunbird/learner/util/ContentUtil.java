@@ -101,35 +101,12 @@ public final class ContentUtil {
     return resMap;
   }
 
-  public static String contentCall(String baseURL, String apiURL, String authKey, String body)
-      throws IOException {
-    String url = baseURL + PropertiesCache.getInstance().getProperty(apiURL);
-    logger.info(null,
-        "BaseMetricsActor:makePostRequest completed requested url :" + url, null, new HashMap<>(){{put("data", body);}});
-    Map<String, String> headers = new HashMap<>();
-    headers.put("Content-Type", "application/json; charset=utf-8");
-    headers.put(JsonKey.AUTHORIZATION, authKey);
-    HttpUtilResponse response = HttpUtil.doPostRequest(url, body, headers);
-    if (response == null || response.getStatusCode() != 200) {
-      logger.info(null,
-          "BaseMetricsActor:makePostRequest: Status code from analytics is not 200");
-      throw new ProjectCommonException(
-          ResponseCode.unableToConnect.getErrorCode(),
-          ResponseCode.unableToConnect.getErrorMessage(),
-          ResponseCode.SERVER_ERROR.getResponseCode());
-    }
-
-    String result = response.getBody();
-    logger.info(null,
-        "BaseMetricsActor:makePostRequest: Response from analytics store for metrics", null, new HashMap<>(){{put("result", result);}});
-    return result;
-  }
   public static Map<String, Object> getContent(String courseId, List<String> fields) {
     Map<String, Object> resMap = new HashMap<>();
     Map<String, String> headers = new HashMap<>();
     try {
       String fieldsStr = StringUtils.join(fields, ",");
-      String baseContentreadUrl = ProjectUtil.getConfigValue(JsonKey.EKSTEP_BASE_URL) + "/content/v3/read/" + courseId + "?fields=" + fieldsStr;
+      String baseContentreadUrl = ProjectUtil.getConfigValue(JsonKey.EKSTEP_BASE_URL) + PropertiesCache.getInstance().getProperty(JsonKey.CONTENT_READ_URL) + courseId + "?fields=" + fieldsStr;
       headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
       headers.put(JsonKey.AUTHORIZATION, PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_AUTHORIZATION));
 
@@ -180,21 +157,21 @@ public final class ContentUtil {
     return null;
   }
 
-  public static boolean updateCollection(RequestContext requestContext, String collectionId, Map<String, Object> data) {
-    String response = "";
-    try {
-      String contentUpdateBaseUrl = ProjectUtil.getConfigValue(JsonKey.LEARNING_SERVICE_BASE_URL);
-      Request request = new Request();
-      request.put("content", data);
-      response =
-              HttpUtil.sendPatchRequest(
-                      contentUpdateBaseUrl
-                              + PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_CONTENT_UPDATE_URL)
-                              + collectionId, JsonUtil.serialize(request),
-                      headerMap);
-    } catch (Exception e) {
-      logger.error(requestContext, "Error while doing system update to collection " + e.getMessage(), e);
-    }
-    return JsonKey.SUCCESS.equalsIgnoreCase(response);
-  }
+//  public static boolean updateCollection(RequestContext requestContext, String collectionId, Map<String, Object> data) {
+//    String response = "";
+//    try {
+//      String contentUpdateBaseUrl = ProjectUtil.getConfigValue(JsonKey.LEARNING_SERVICE_BASE_URL);
+//      Request request = new Request();
+//      request.put("content", data);
+//      response =
+//              HttpUtil.sendPatchRequest(
+//                      contentUpdateBaseUrl
+//                              + PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_CONTENT_UPDATE_URL)
+//                              + collectionId, JsonUtil.serialize(request),
+//                      headerMap);
+//    } catch (Exception e) {
+//      logger.error(requestContext, "Error while doing system update to collection " + e.getMessage(), e);
+//    }
+//    return JsonKey.SUCCESS.equalsIgnoreCase(response);
+//  }
 }

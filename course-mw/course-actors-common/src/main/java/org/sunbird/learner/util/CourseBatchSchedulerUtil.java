@@ -134,7 +134,7 @@ public final class CourseBatchSchedulerUtil {
       } else {
         logger.info(requestContext, "No channel value available in content with Id " + courseId);
       }
-      response = updateCourseContent(requestContext, courseId, contentName, val);
+      response = true;
     } else {
       logger.info(requestContext, "EKstep content not found for course id==" + courseId);
     }
@@ -163,22 +163,22 @@ public final class CourseBatchSchedulerUtil {
     return val;
   }
 
-  public static boolean updateCourseContent(RequestContext requestContext, String courseId, String contentName, int val) {
-    String response = "";
-    try {
-      String contentUpdateBaseUrl = ProjectUtil.getConfigValue(JsonKey.LEARNING_SERVICE_BASE_URL);
-      response =
-          HttpUtil.sendPatchRequest(
-              contentUpdateBaseUrl
-                  + PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_CONTENT_UPDATE_URL)
-                  + courseId,
-              "{\"request\": {\"content\": {\"" + contentName + "\": " + val + "}}}",
-              getBasicHeader());
-    } catch (Exception e) {
-      logger.error(requestContext, "Error while updating content value " + e.getMessage(), e);
-    }
-    return JsonKey.SUCCESS.equalsIgnoreCase(response);
-  }
+//  public static boolean updateCourseContent(RequestContext requestContext, String courseId, String contentName, int val) {
+//    String response = "";
+//    try {
+//      String contentUpdateBaseUrl = ProjectUtil.getConfigValue(JsonKey.LEARNING_SERVICE_BASE_URL);
+//      response =
+//          HttpUtil.sendPatchRequest(
+//              contentUpdateBaseUrl
+//                  + PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_CONTENT_UPDATE_URL)
+//                  + courseId,
+//              "{\"request\": {\"content\": {\"" + contentName + "\": " + val + "}}}",
+//              getBasicHeader());
+//    } catch (Exception e) {
+//      logger.error(requestContext, "Error while updating content value " + e.getMessage(), e);
+//    }
+//    return JsonKey.SUCCESS.equalsIgnoreCase(response);
+//  }
 
   @SuppressWarnings("unchecked")
   public static Map<String, Object> getCourseObject(RequestContext requestContext, String courseId, Map<String, String> headers) {

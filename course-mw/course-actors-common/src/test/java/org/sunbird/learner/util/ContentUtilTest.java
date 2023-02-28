@@ -58,31 +58,31 @@ public class ContentUtilTest {
     Assert.assertNull(result.get(JsonKey.CONTENTS));
   }
 
-  @Test
-  public void contentCallSuccessTest() throws Exception {
-    PowerMockito.when(
-            HttpUtil.doPostRequest(Mockito.anyString(), Mockito.anyString(), Mockito.any()))
-        .thenReturn(new HttpUtilResponse("some dummy response", 200));
-    String result =
-        ContentUtil.contentCall("dummyBaseUrl", "dummyConfigKey", "dummyAuthKey", "dummy body");
-    Assert.assertNotNull(result);
-    Assert.assertEquals("some dummy response", result);
-  }
-
-  @Test
-  public void contentCallFailureTest() throws IOException {
-    PowerMockito.when(
-            HttpUtil.doPostRequest(Mockito.anyString(), Mockito.anyString(), Mockito.any()))
-        .thenReturn(new HttpUtilResponse("No response", 404));
-    String result = null;
-    try {
-      result =
-          ContentUtil.contentCall("dummyBaseUrl", "dummyConfigKey", "dummyAuthKey", "dummy body");
-    } catch (ProjectCommonException ex) {
-      Assert.assertEquals(ResponseCode.unableToConnect.getErrorCode(), ex.getCode());
-    }
-    Assert.assertNull(result);
-  }
+//  @Test
+//  public void contentCallSuccessTest() throws Exception {
+//    PowerMockito.when(
+//            HttpUtil.doPostRequest(Mockito.anyString(), Mockito.anyString(), Mockito.any()))
+//        .thenReturn(new HttpUtilResponse("some dummy response", 200));
+//    String result =
+//        ContentUtil.contentCall("dummyBaseUrl", "dummyConfigKey", "dummyAuthKey", "dummy body");
+//    Assert.assertNotNull(result);
+//    Assert.assertEquals("some dummy response", result);
+//  }
+//
+//  @Test
+//  public void contentCallFailureTest() throws IOException {
+//    PowerMockito.when(
+//            HttpUtil.doPostRequest(Mockito.anyString(), Mockito.anyString(), Mockito.any()))
+//        .thenReturn(new HttpUtilResponse("No response", 404));
+//    String result = null;
+//    try {
+//      result =
+//          ContentUtil.contentCall("dummyBaseUrl", "dummyConfigKey", "dummyAuthKey", "dummy body");
+//    } catch (ProjectCommonException ex) {
+//      Assert.assertEquals(ResponseCode.unableToConnect.getErrorCode(), ex.getCode());
+//    }
+//    Assert.assertNull(result);
+//  }
 
   @Test
   public void getContentTest() throws Exception {

@@ -27,7 +27,6 @@ public enum ACTOR_NAMES {
   CACHE_MANAGEMENT_ACTOR(CacheManagementActor.class, "cache-management-actor"),
   PAGE_MANAGEMENT_ACTOR(PageManagementActor.class, "page-management-actor"),
   SEARCH_HANDLER_ACTOR(SearchHandlerActor.class, "search-handler-actor"),
-  TEXTBOOK_TOC_ACTOR(TextbookTocActor.class, "textbook-toc-actor"),
   HEALTH_ACTOR(HealthActor.class, "health-actor"),
   COURSEBATCH_CERTIFICATE_ACTOR(
       CourseBatchCertificateActor.class, "course-batch-certificate-actor"),

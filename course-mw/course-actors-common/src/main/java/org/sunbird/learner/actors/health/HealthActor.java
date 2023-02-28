@@ -155,7 +155,7 @@ public class HealthActor extends BaseActor {
     responseList.add(ProjectUtil.createCheckResponse(LMS_SERVICE, false, null));
     responseList.add(ProjectUtil.createCheckResponse(JsonKey.ACTOR_SERVICE, false, null));
     try {
-      cassandraOperation.getAllRecords(null, pagesDbInfo.getKeySpace(), pagesDbInfo.getTableName());
+//      cassandraOperation.getAllRecords(null, pagesDbInfo.getKeySpace(), pagesDbInfo.getTableName());
       responseList.add(ProjectUtil.createCheckResponse(JsonKey.CASSANDRA_SERVICE, false, null));
     } catch (Exception e) {
       responseList.add(ProjectUtil.createCheckResponse(JsonKey.CASSANDRA_SERVICE, true, e));

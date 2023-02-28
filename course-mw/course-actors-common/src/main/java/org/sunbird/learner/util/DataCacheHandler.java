@@ -31,8 +31,8 @@ public class DataCacheHandler implements Runnable {
   @Override
   public void run() {
     logger.info(null, "DataCacheHandler:run: Cache refresh started.");
-    cache(pageMap, "page_management");
-    cache(sectionMap, "page_section");
+//    cache(pageMap, "page_management");
+//    cache(sectionMap, "page_section");
     logger.info(null, "DataCacheHandler:run: Cache refresh completed.");
   }
 

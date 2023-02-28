@@ -1,9 +1,11 @@
+#!/bin/bash
+
 export actor_hostname=actor-service
 export api_actor_provider=local
 export background_actor_provider=local
 export bind_hostname=0.0.0.0
 export ekstep_api_base_url="https://staging.sunbirded.org"
-export content_read_url = "/api/content/v1/read/"
+export content_read_url="/api/content/v1/read/"
 export ekstep_authorization=
 export X_AUTH_TOKEN=
 export learning_content_props_to_add=mimeType,contentType,name,code,description,keywords,framework,copyright,topic

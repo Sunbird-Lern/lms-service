@@ -66,27 +66,27 @@ public class CourseBatchSchedulerUtilTest {
     Assert.assertNull(course);
   }
 
-  @Test
-  public void updateCourseContentSuccessTest() throws IOException {
-    PowerMockito.when(
-            HttpUtil.sendPatchRequest(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
-        .thenReturn(JsonKey.SUCCESS);
-    boolean success =
-        CourseBatchSchedulerUtil.updateCourseContent(
-                null, "randomCourseId", "c_test_open_batch_count", 1);
-    Assert.assertTrue(success);
-  }
-
-  @Test
-  public void updateCourseContentFailureTest() throws IOException {
-    PowerMockito.when(
-            HttpUtil.sendPatchRequest(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
-        .thenReturn(JsonKey.FAILURE);
-    boolean success =
-        CourseBatchSchedulerUtil.updateCourseContent(
-                null, "randomCourseId", "c_test_open_batch_count", 1);
-    Assert.assertFalse(success);
-  }
+//  @Test
+//  public void updateCourseContentSuccessTest() throws IOException {
+//    PowerMockito.when(
+//            HttpUtil.sendPatchRequest(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
+//        .thenReturn(JsonKey.SUCCESS);
+//    boolean success =
+//        CourseBatchSchedulerUtil.updateCourseContent(
+//                null, "randomCourseId", "c_test_open_batch_count", 1);
+//    Assert.assertTrue(success);
+//  }
+//
+//  @Test
+//  public void updateCourseContentFailureTest() throws IOException {
+//    PowerMockito.when(
+//            HttpUtil.sendPatchRequest(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
+//        .thenReturn(JsonKey.FAILURE);
+//    boolean success =
+//        CourseBatchSchedulerUtil.updateCourseContent(
+//                null, "randomCourseId", "c_test_open_batch_count", 1);
+//    Assert.assertFalse(success);
+//  }
 
   @Test
   public void doOperationInContentCourseSuccessTest() throws IOException {

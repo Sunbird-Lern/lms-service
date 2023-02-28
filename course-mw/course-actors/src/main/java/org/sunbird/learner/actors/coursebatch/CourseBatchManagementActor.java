@@ -136,7 +136,7 @@ public class CourseBatchManagementActor extends BaseActor {
     TelemetryUtil.telemetryProcessingCall(request, targetObject, correlatedObject, actorMessage.getContext());
 
   //  updateBatchCount(courseBatch);
-      updateCollection(actorMessage.getRequestContext(), esCourseMap, contentDetails);
+//      updateCollection(actorMessage.getRequestContext(), esCourseMap, contentDetails);
     if (courseNotificationActive()) {
       batchOperationNotifier(actorMessage, courseBatch, null);
     }
@@ -220,7 +220,7 @@ public class CourseBatchManagementActor extends BaseActor {
     rollUp.put("l1", courseBatch.getCourseId());
     TelemetryUtil.addTargetObjectRollUp(rollUp, targetObject);
     TelemetryUtil.telemetryProcessingCall(courseBatchMap, targetObject, correlatedObject, actorMessage.getContext());
-    updateCollection(actorMessage.getRequestContext(), esCourseMap, contentDetails);
+//    updateCollection(actorMessage.getRequestContext(), esCourseMap, contentDetails);
     if (courseNotificationActive()) {
       batchOperationNotifier(actorMessage, courseBatch, participantsMap);
     }
@@ -685,21 +685,21 @@ public class CourseBatchManagementActor extends BaseActor {
     return template;
   }
 
-  private void updateCollection(RequestContext requestContext, Map<String, Object> courseBatch, Map<String, Object> contentDetails) {
-    List<Map<String, Object>> batches = (List<Map<String, Object>>) contentDetails.getOrDefault("batches", new ArrayList<>());
-    Map<String, Object> data =  new HashMap<>();
-    data.put("batchId", courseBatch.getOrDefault(JsonKey.BATCH_ID, ""));
-    data.put("name", courseBatch.getOrDefault(JsonKey.NAME, ""));
-    data.put("createdFor", courseBatch.getOrDefault(JsonKey.COURSE_CREATED_FOR, new ArrayList<>()));
-    data.put("startDate", courseBatch.getOrDefault(JsonKey.START_DATE, ""));
-    data.put("endDate", courseBatch.getOrDefault(JsonKey.END_DATE, null));
-    data.put("enrollmentType", courseBatch.getOrDefault(JsonKey.ENROLLMENT_TYPE, ""));
-    data.put("status", courseBatch.getOrDefault(JsonKey.STATUS, ""));
-    data.put("enrollmentEndDate", getEnrollmentEndDate((String) courseBatch.getOrDefault(JsonKey.ENROLLMENT_END_DATE, null), (String) courseBatch.getOrDefault(JsonKey.END_DATE, null)));
-    batches.removeIf(map -> StringUtils.equalsIgnoreCase((String) courseBatch.getOrDefault(JsonKey.BATCH_ID, ""), (String) map.get("batchId")));
-    batches.add(data);
-    ContentUtil.updateCollection(requestContext, (String) courseBatch.getOrDefault(JsonKey.COURSE_ID, ""), new HashMap<String, Object>() {{ put("batches", batches);}});
-  }
+//  private void updateCollection(RequestContext requestContext, Map<String, Object> courseBatch, Map<String, Object> contentDetails) {
+//    List<Map<String, Object>> batches = (List<Map<String, Object>>) contentDetails.getOrDefault("batches", new ArrayList<>());
+//    Map<String, Object> data =  new HashMap<>();
+//    data.put("batchId", courseBatch.getOrDefault(JsonKey.BATCH_ID, ""));
+//    data.put("name", courseBatch.getOrDefault(JsonKey.NAME, ""));
+//    data.put("createdFor", courseBatch.getOrDefault(JsonKey.COURSE_CREATED_FOR, new ArrayList<>()));
+//    data.put("startDate", courseBatch.getOrDefault(JsonKey.START_DATE, ""));
+//    data.put("endDate", courseBatch.getOrDefault(JsonKey.END_DATE, null));
+//    data.put("enrollmentType", courseBatch.getOrDefault(JsonKey.ENROLLMENT_TYPE, ""));
+//    data.put("status", courseBatch.getOrDefault(JsonKey.STATUS, ""));
+//    data.put("enrollmentEndDate", getEnrollmentEndDate((String) courseBatch.getOrDefault(JsonKey.ENROLLMENT_END_DATE, null), (String) courseBatch.getOrDefault(JsonKey.END_DATE, null)));
+//    batches.removeIf(map -> StringUtils.equalsIgnoreCase((String) courseBatch.getOrDefault(JsonKey.BATCH_ID, ""), (String) map.get("batchId")));
+//    batches.add(data);
+//    ContentUtil.updateCollection(requestContext, (String) courseBatch.getOrDefault(JsonKey.COURSE_ID, ""), new HashMap<String, Object>() {{ put("batches", batches);}});
+//  }
 
   private Object getEnrollmentEndDate(String enrollmentEndDate, String endDate) {
     SimpleDateFormat dateFormatter = ProjectUtil.getDateFormatter(dateFormat);

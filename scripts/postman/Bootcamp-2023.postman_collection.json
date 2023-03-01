@@ -230,7 +230,7 @@
 					]
 				},
 				{
-					"name": "Get All Indicies Copy",
+					"name": "Get All Indicies",
 					"item": [
 						{
 							"name": "Get All Indices",
@@ -431,6 +431,38 @@
 					"response": []
 				},
 				{
+					"name": "Content Search",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"request\": {\n        \"query\": \"bccreator_table6_mar2023\",\n        \"filters\": {\n            \"primaryCategory\": \"Course\"\n        },\n        \"fields\": [\n            \"name\",\n            \"status\",\n            \"createdBy\",\n            \"creator\"\n        ]\n    }\n}"
+						},
+						"url": {
+							"raw": "https://staging.sunbirded.org/api/content/v1/search",
+							"protocol": "https",
+							"host": [
+								"staging",
+								"sunbirded",
+								"org"
+							],
+							"path": [
+								"api",
+								"content",
+								"v1",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Creates a Batch",
 					"event": [
 						{
@@ -463,7 +495,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"request\": {\n        \"courseId\": \"do_21349929706079846413\",\n        \"name\": \"Open Batch for MACHINE LEARNING\",\n        \"description\": \"Open Batch From 2023-03-02 To 2023-03-12\",\n        \"enrollmentType\": \"open\",\n        \"startDate\": \"2023-03-02\",\n        \"endDate\": \"2023-03-12\",\n        \"createdFor\": [\n            \"01374279726315929680\"\n        ],\n        \"mentors\": []\n    }\n}"
+							"raw": "{\n    \"request\": {\n        \"courseId\": \"{{course_id}}\",\n        \"name\": \"Open Batch for MACHINE LEARNING\",\n        \"description\": \"Open Batch From 2023-03-02 To 2023-03-12\",\n        \"enrollmentType\": \"open\",\n        \"startDate\": \"2023-03-02\",\n        \"endDate\": \"2023-03-12\",\n        \"createdFor\": [\n            \"01374279726315929680\"\n        ],\n        \"mentors\": []\n    }\n}"
 						},
 						"url": {
 							"raw": "{{host}}/v1/course/batch/create",
@@ -712,7 +744,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"request\": {\n        \"id\": \"{{batch_id}}\",\n        \"courseId\": \"do_21349929706079846413\",\n        \"startDate\": \"2023-03-12\",\n        \"endDate\": \"2023-03-15\",\n        \"status\": 1\n    }\n}",
+							"raw": "{\n    \"request\": {\n        \"id\": \"{{batch_id}}\",\n        \"courseId\": \"{{course_id}}\",\n        \"startDate\": \"2023-03-12\",\n        \"endDate\": \"2023-03-15\",\n        \"status\": 1\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -852,7 +884,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"request\": {\n        \"filters\": {\n            \"courseId\": [\"do_21349929706079846413\"]\n        },\n        \"fields\": [\"courseId\",\"batchId\",\"startDate\",\"endDate\",\"status\",\"cert_templates\",\"createdFor\"],\n        \"limit\": 100\n    }\n}",
+							"raw": "{\n    \"request\": {\n        \"filters\": {\n            \"courseId\": [\"{{course_id}}\"]\n        },\n        \"fields\": [\"courseId\",\"batchId\",\"startDate\",\"endDate\",\"status\",\"cert_templates\",\"createdFor\"],\n        \"limit\": 100\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -995,7 +1027,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"request\": {\n      \"courseId\": \"do_21349929706079846413\",\n      \"batchId\": \"{{batch_id}}\"\n    }\n}",
+							"raw": "{\n  \"request\": {\n      \"courseId\": \"{{course_id}}\",\n      \"batchId\": \"{{batch_id}}\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1045,7 +1077,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"request\": {\n        \"courseId\": \"do_21349929706079846413\",\n        \"batchId\": \"{{batch_id}}\"\n    }\n}",
+							"raw": "{\n    \"request\": {\n        \"courseId\": \"{{course_id}}\",\n        \"batchId\": \"{{batch_id}}\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1065,149 +1097,29 @@
 						}
 					},
 					"response": []
-				},
-				{
-					"name": "List Batch Participants",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							},
-							{
-								"key": "x-authenticated-user-token",
-								"value": "{{keycloak_access_token}}",
-								"type": "text"
-							},
-							{
-								"key": "Authorization",
-								"value": "{{kong_api_key}}",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"request\": {\n        \"batch\": {\n            \"batchId\": \"{{batch_id}}\",\n            \"active\": true\n        }\n    }\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{host}}/v1/batch/participants/list",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"v1",
-								"batch",
-								"participants",
-								"list"
-							]
-						},
-						"description": "This API is associated with fetching and listing existing batches\n  - The format of the resource URL is '{{host}}/course/v1/batch/search'\n  - The **_/batch/list_** endpoint executes \"Lists the existing batches\" request to fetch the existing batches.\n  - It is a must to provide values for required parameters "
-					},
-					"response": [
-						{
-							"name": "List Batch Participants",
-							"originalRequest": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"name": "Content-Type",
-										"type": "text",
-										"value": "application/json"
-									},
-									{
-										"key": "Authorization",
-										"value": "Bearer {{api_key}}",
-										"disabled": true
-									},
-									{
-										"key": "x-authenticated-user-token",
-										"value": "{{user_token}}",
-										"disabled": true
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n    \"request\": {\n        \"batch\": {\n            \"batchId\": \"0137428102714490882\",\n            \"active\": true\n        }\n    }\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{host}}/v1/batch/participants/list",
-									"host": [
-										"{{host}}"
-									],
-									"path": [
-										"v1",
-										"batch",
-										"participants",
-										"list"
-									]
-								}
-							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "json",
-							"header": [
-								{
-									"key": "Referrer-Policy",
-									"value": "origin-when-cross-origin, strict-origin-when-cross-origin"
-								},
-								{
-									"key": "X-Frame-Options",
-									"value": "DENY"
-								},
-								{
-									"key": "X-XSS-Protection",
-									"value": "1; mode=block"
-								},
-								{
-									"key": "x-response-length",
-									"value": "39"
-								},
-								{
-									"key": "X-Content-Type-Options",
-									"value": "nosniff"
-								},
-								{
-									"key": "Access-Control-Allow-Origin",
-									"value": "*"
-								},
-								{
-									"key": "X-Permitted-Cross-Domain-Policies",
-									"value": "master-only"
-								},
-								{
-									"key": "content-length",
-									"value": "270"
-								},
-								{
-									"key": "Content-Type",
-									"value": "application/json"
-								},
-								{
-									"key": "Date",
-									"value": "Tue, 28 Feb 2023 13:05:32 GMT"
-								}
-							],
-							"cookie": [],
-							"body": "{\n    \"id\": \"api.batch.participants.list\",\n    \"ver\": \"v1\",\n    \"ts\": \"2023-02-28 18:35:32:894+0530\",\n    \"params\": {\n        \"resmsgid\": null,\n        \"msgid\": \"7ae170da-cef1-4009-a97a-8ead9ee412ca\",\n        \"err\": null,\n        \"status\": \"success\",\n        \"errmsg\": null\n    },\n    \"responseCode\": \"OK\",\n    \"result\": {\n        \"batch\": {\n            \"count\": 0,\n            \"participants\": []\n        }\n    }\n}"
-						}
-					]
 				}
 			],
-			"description": "Folder for batch"
+			"description": "Folder for batch",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.collectionVariables.set(\"course_id\", \"do_21374339869156966411336\");"
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
 		}
 	],
 	"variable": [
@@ -1221,6 +1133,10 @@
 		},
 		{
 			"key": "batch_id",
+			"value": ""
+		},
+		{
+			"key": "course_id",
 			"value": ""
 		}
 	]

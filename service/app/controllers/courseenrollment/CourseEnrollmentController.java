@@ -106,7 +106,7 @@ public class CourseEnrollmentController extends BaseController {
           req.getRequest().put(JsonKey.COURSE_ID, req.getRequest().get(courseId));
           String userId = (String) req.getContext().getOrDefault(JsonKey.REQUESTED_FOR, req.getContext().get(JsonKey.REQUESTED_BY));
           validator.validateRequestedBy(userId);
-          // req.getRequest().put(JsonKey.USER_ID, userId);
+          req.getRequest().put(JsonKey.USER_ID, userId);
           validator.validateEnrollCourse(req);
           return null;
         },
@@ -125,7 +125,7 @@ public class CourseEnrollmentController extends BaseController {
           req.getRequest().put(JsonKey.COURSE_ID, req.getRequest().get(courseId));
           String userId = (String) req.getContext().getOrDefault(JsonKey.REQUESTED_FOR, req.getContext().get(JsonKey.REQUESTED_BY));
           validator.validateRequestedBy(userId);
-//          req.getRequest().put(JsonKey.USER_ID, userId);
+          req.getRequest().put(JsonKey.USER_ID, userId);
           validator.validateUnenrollCourse(req);
           return null;
         },

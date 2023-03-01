@@ -198,6 +198,7 @@ public class HealthActor extends BaseActor {
         responseList.add(ProjectUtil.createCheckResponse(JsonKey.EKSTEP_SERVICE, false, null));
       } else {
         responseList.add(ProjectUtil.createCheckResponse(JsonKey.EKSTEP_SERVICE, true, null));
+        isallHealthy = false;
       }
     } catch (Exception e) {
       responseList.add(ProjectUtil.createCheckResponse(JsonKey.EKSTEP_SERVICE, true, null));

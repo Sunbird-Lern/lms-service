@@ -21,6 +21,7 @@ POST     /private/v2/user/courses/list	    @controllers.courseenrollment.CourseE
 POST     /v1/course/enroll	    		@controllers.courseenrollment.CourseEnrollmentController.enrollCourse(request: play.mvc.Http.Request)
 POST     /v1/course/unenroll             @controllers.courseenrollment.CourseEnrollmentController.unenrollCourse(request: play.mvc.Http.Request)
 POST     /v1/course/admin/enroll	    		@controllers.courseenrollment.CourseEnrollmentController.adminEnrollCourse(request: play.mvc.Http.Request)
+POST     /v1/course/admin/bulk/enroll	    		@controllers.courseenrollment.CourseEnrollmentController.adminMultiUserEnrollCourse(request: play.mvc.Http.Request)
 POST     /v1/course/admin/unenroll             @controllers.courseenrollment.CourseEnrollmentController.adminUnenrollCourse(request: play.mvc.Http.Request)
 POST /v1/batch/bulk/enrollment          @controllers.bulkapimanagement.BulkUploadController.batchEnrollmentBulkUpload(request: play.mvc.Http.Request)
 POST /v1/batch/bulk/unenrollment          @controllers.bulkapimanagement.BulkUploadController.batchUnEnrollmentBulkUpload(request: play.mvc.Http.Request)

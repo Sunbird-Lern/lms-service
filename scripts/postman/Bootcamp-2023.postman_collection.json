@@ -315,12 +315,12 @@
 								},
 								{
 									"key": "username",
-									"value": "contentreviewertn@yopmail.com",
+									"value": "bccreator_table1_mar2023",
 									"type": "text"
 								},
 								{
 									"key": "password",
-									"value": "Test@123",
+									"value": "Password@1",
 									"type": "text"
 								}
 							]
@@ -364,7 +364,7 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJiZW1mME1NR1RrNnVocVBwNW51bjA2T0pxSHJReTBwOCJ9.FSHIAdPdyJ-0ijYr7HPZUJ0ST974ccXZXZIhVXoZluI"
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJsQkt5OXM1UXlFb1NFYUtsdWJsMG9NcWVLb3Y5NzJUbiJ9.gmyfWgJAyq747WmPZXkArZGCQbuMyuyJPxqRPoPTDnw"
 							},
 							{
 								"key": "Content-Type",

@@ -1,0 +1,1227 @@
+{
+	"info": {
+		"_postman_id": "eecf866e-2964-4781-972e-da5bdd167c55",
+		"name": "Bootcamp-2023",
+		"description": "The Course Batch Management API resources perform operations related to management of batches for courses on the Sunbird Platform. A Batch is used to arrange (courses) in specific sets or groups.The basic operations include Creation, Updation,joining ,listing.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "1419050"
+	},
+	"item": [
+		{
+			"name": "Elasticsearch",
+			"item": [
+				{
+					"name": "Health Check",
+					"item": [
+						{
+							"name": "Health API",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{es_host}}/_cluster/health?pretty",
+									"host": [
+										"{{es_host}}"
+									],
+									"path": [
+										"_cluster",
+										"health"
+									],
+									"query": [
+										{
+											"key": "pretty",
+											"value": null
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Create ES Indices",
+					"item": [
+						{
+							"name": "Course Batch",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.variables.set('index_name', 'course-batch');"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"settings\": {\n        \"index\": {\n            \"number_of_shards\": \"5\",\n            \"number_of_replicas\": \"1\",\n            \"analysis\": {\n                \"filter\": {\n                    \"mynGram\": {\n                        \"token_chars\": [\n                            \"letter\",\n                            \"digit\",\n                            \"whitespace\",\n                            \"punctuation\",\n                            \"symbol\"\n                        ],\n                        \"min_gram\": \"1\",\n                        \"type\": \"ngram\",\n                        \"max_gram\": \"20\"\n                    }\n                },\n                \"analyzer\": {\n                    \"cs_index_analyzer\": {\n                        \"filter\": [\n                            \"lowercase\",\n                            \"mynGram\"\n                        ],\n                        \"type\": \"custom\",\n                        \"tokenizer\": \"standard\"\n                    },\n                    \"keylower\": {\n                        \"filter\": \"lowercase\",\n                        \"type\": \"custom\",\n                        \"tokenizer\": \"keyword\"\n                    },\n                    \"cs_search_analyzer\": {\n                        \"filter\": [\n                            \"lowercase\",\n                            \"standard\"\n                        ],\n                        \"type\": \"custom\",\n                        \"tokenizer\": \"standard\"\n                    }\n                }\n            }\n        }\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{es_host}}/{{index_name}}",
+									"host": [
+										"{{es_host}}"
+									],
+									"path": [
+										"{{index_name}}"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Course Batch",
+									"originalRequest": {
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"settings\": {\n        \"index\": {\n            \"number_of_shards\": \"5\",\n            \"number_of_replicas\": \"1\",\n            \"analysis\": {\n                \"filter\": {\n                    \"mynGram\": {\n                        \"token_chars\": [\n                            \"letter\",\n                            \"digit\",\n                            \"whitespace\",\n                            \"punctuation\",\n                            \"symbol\"\n                        ],\n                        \"min_gram\": \"1\",\n                        \"type\": \"ngram\",\n                        \"max_gram\": \"20\"\n                    }\n                },\n                \"analyzer\": {\n                    \"cs_index_analyzer\": {\n                        \"filter\": [\n                            \"lowercase\",\n                            \"mynGram\"\n                        ],\n                        \"type\": \"custom\",\n                        \"tokenizer\": \"standard\"\n                    },\n                    \"keylower\": {\n                        \"filter\": \"lowercase\",\n                        \"type\": \"custom\",\n                        \"tokenizer\": \"keyword\"\n                    },\n                    \"cs_search_analyzer\": {\n                        \"filter\": [\n                            \"lowercase\",\n                            \"standard\"\n                        ],\n                        \"type\": \"custom\",\n                        \"tokenizer\": \"standard\"\n                    }\n                }\n            }\n        }\n    }\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{es_host}}/{{index_name}}",
+											"host": [
+												"{{es_host}}"
+											],
+											"path": [
+												"{{index_name}}"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Warning",
+											"value": "299 Elasticsearch-6.8.22-71fcb50 \"Deprecated big difference between max_gram and min_gram in NGram Tokenizer,expected difference must be less than or equal to: [1]\""
+										},
+										{
+											"key": "content-type",
+											"value": "application/json; charset=UTF-8"
+										},
+										{
+											"key": "content-encoding",
+											"value": "gzip"
+										},
+										{
+											"key": "content-length",
+											"value": "79"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"acknowledged\": true,\n    \"shards_acknowledged\": true,\n    \"index\": \"course-batch\"\n}"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Create ES Indices Mapping",
+					"item": [
+						{
+							"name": "Course Batch",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.variables.set('index_name', 'course-batch');"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"dynamic\": false,\n    \"properties\": {\n        \"all_fields\": {\n            \"type\": \"text\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"text\",\n                    \"analyzer\": \"keylower\"\n                }\n            },\n            \"analyzer\": \"cs_index_analyzer\",\n            \"search_analyzer\": \"cs_search_analyzer\"\n        },\n        \"batchId\": {\n            \"type\": \"text\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"text\",\n                    \"analyzer\": \"keylower\",\n                    \"fielddata\": true\n                }\n            },\n            \"copy_to\": [\n                \"all_fields\"\n            ],\n            \"analyzer\": \"cs_index_analyzer\",\n            \"search_analyzer\": \"cs_search_analyzer\",\n            \"fielddata\": true\n        },\n        \"courseId\": {\n            \"type\": \"text\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"text\",\n                    \"analyzer\": \"keylower\",\n                    \"fielddata\": true\n                }\n            },\n            \"copy_to\": [\n                \"all_fields\"\n            ],\n            \"analyzer\": \"cs_index_analyzer\",\n            \"search_analyzer\": \"cs_search_analyzer\",\n            \"fielddata\": true\n        },\n        \"createdBy\": {\n            \"type\": \"text\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"text\",\n                    \"analyzer\": \"keylower\",\n                    \"fielddata\": true\n                }\n            },\n            \"copy_to\": [\n                \"all_fields\"\n            ],\n            \"analyzer\": \"cs_index_analyzer\",\n            \"search_analyzer\": \"cs_search_analyzer\",\n            \"fielddata\": true\n        },\n        \"createdDate\": {\n            \"type\": \"text\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"text\",\n                    \"analyzer\": \"keylower\",\n                    \"fielddata\": true\n                }\n            },\n            \"copy_to\": [\n                \"all_fields\"\n            ],\n            \"analyzer\": \"cs_index_analyzer\",\n            \"search_analyzer\": \"cs_search_analyzer\",\n            \"fielddata\": true\n        },\n        \"createdFor\": {\n            \"type\": \"text\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"text\",\n                    \"analyzer\": \"keylower\",\n                    \"fielddata\": true\n                }\n            },\n            \"copy_to\": [\n                \"all_fields\"\n            ],\n            \"analyzer\": \"cs_index_analyzer\",\n            \"search_analyzer\": \"cs_search_analyzer\",\n            \"fielddata\": true\n        },\n        \"description\": {\n            \"type\": \"text\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"text\",\n                    \"analyzer\": \"keylower\",\n                    \"fielddata\": true\n                }\n            },\n            \"copy_to\": [\n                \"all_fields\"\n            ],\n            \"analyzer\": \"cs_index_analyzer\",\n            \"search_analyzer\": \"cs_search_analyzer\",\n            \"fielddata\": true\n        },\n        \"endDate\": {\n            \"type\": \"date\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"date\"\n                }\n            }\n        },\n        \"enrollmentEndDate\": {\n            \"type\": \"date\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"date\"\n                }\n            }\n        },\n        \"enrollmentType\": {\n            \"type\": \"text\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"text\",\n                    \"analyzer\": \"keylower\",\n                    \"fielddata\": true\n                }\n            },\n            \"copy_to\": [\n                \"all_fields\"\n            ],\n            \"analyzer\": \"cs_index_analyzer\",\n            \"search_analyzer\": \"cs_search_analyzer\",\n            \"fielddata\": true\n        },\n        \"id\": {\n            \"type\": \"text\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"text\",\n                    \"analyzer\": \"keylower\",\n                    \"fielddata\": true\n                }\n            },\n            \"copy_to\": [\n                \"all_fields\"\n            ],\n            \"analyzer\": \"cs_index_analyzer\",\n            \"search_analyzer\": \"cs_search_analyzer\",\n            \"fielddata\": true\n        },\n        \"identifier\": {\n            \"type\": \"text\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"text\",\n                    \"analyzer\": \"keylower\",\n                    \"fielddata\": true\n                }\n            },\n            \"copy_to\": [\n                \"all_fields\"\n            ],\n            \"analyzer\": \"cs_index_analyzer\",\n            \"search_analyzer\": \"cs_search_analyzer\",\n            \"fielddata\": true\n        },\n        \"mentors\": {\n            \"type\": \"text\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"text\",\n                    \"analyzer\": \"keylower\",\n                    \"fielddata\": true\n                }\n            },\n            \"copy_to\": [\n                \"all_fields\"\n            ],\n            \"analyzer\": \"cs_index_analyzer\",\n            \"search_analyzer\": \"cs_search_analyzer\",\n            \"fielddata\": true\n        },\n        \"name\": {\n            \"type\": \"text\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"text\",\n                    \"analyzer\": \"keylower\",\n                    \"fielddata\": true\n                }\n            },\n            \"copy_to\": [\n                \"all_fields\"\n            ],\n            \"analyzer\": \"cs_index_analyzer\",\n            \"search_analyzer\": \"cs_search_analyzer\",\n            \"fielddata\": true\n        },\n        \"startDate\": {\n            \"type\": \"date\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"date\"\n                }\n            }\n        },\n        \"status\": {\n            \"type\": \"long\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"long\"\n                }\n            }\n        },\n        \"updatedDate\": {\n            \"type\": \"text\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"text\",\n                    \"analyzer\": \"keylower\",\n                    \"fielddata\": true\n                }\n            },\n            \"copy_to\": [\n                \"all_fields\"\n            ],\n            \"analyzer\": \"cs_index_analyzer\",\n            \"search_analyzer\": \"cs_search_analyzer\",\n            \"fielddata\": true\n        },\n        \"participantCount\": {\n            \"type\": \"long\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"long\"\n                }\n            }\n        },\n        \"completedCount\": {\n            \"type\": \"long\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"long\"\n                }\n            }\n        },\n        \"reportUpdatedOn\": {\n            \"type\": \"date\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"date\"\n                }\n            }\n        },\n        \"cert_templates\": {\n            \"type\": \"nested\"\n        }\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{es_host}}/{{index_name}}/_mapping/_doc",
+									"host": [
+										"{{es_host}}"
+									],
+									"path": [
+										"{{index_name}}",
+										"_mapping",
+										"_doc"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Course Batch",
+									"originalRequest": {
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"dynamic\": false,\n    \"properties\": {\n        \"all_fields\": {\n            \"type\": \"text\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"text\",\n                    \"analyzer\": \"keylower\"\n                }\n            },\n            \"analyzer\": \"cs_index_analyzer\",\n            \"search_analyzer\": \"cs_search_analyzer\"\n        },\n        \"batchId\": {\n            \"type\": \"text\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"text\",\n                    \"analyzer\": \"keylower\",\n                    \"fielddata\": true\n                }\n            },\n            \"copy_to\": [\n                \"all_fields\"\n            ],\n            \"analyzer\": \"cs_index_analyzer\",\n            \"search_analyzer\": \"cs_search_analyzer\",\n            \"fielddata\": true\n        },\n        \"courseId\": {\n            \"type\": \"text\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"text\",\n                    \"analyzer\": \"keylower\",\n                    \"fielddata\": true\n                }\n            },\n            \"copy_to\": [\n                \"all_fields\"\n            ],\n            \"analyzer\": \"cs_index_analyzer\",\n            \"search_analyzer\": \"cs_search_analyzer\",\n            \"fielddata\": true\n        },\n        \"createdBy\": {\n            \"type\": \"text\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"text\",\n                    \"analyzer\": \"keylower\",\n                    \"fielddata\": true\n                }\n            },\n            \"copy_to\": [\n                \"all_fields\"\n            ],\n            \"analyzer\": \"cs_index_analyzer\",\n            \"search_analyzer\": \"cs_search_analyzer\",\n            \"fielddata\": true\n        },\n        \"createdDate\": {\n            \"type\": \"text\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"text\",\n                    \"analyzer\": \"keylower\",\n                    \"fielddata\": true\n                }\n            },\n            \"copy_to\": [\n                \"all_fields\"\n            ],\n            \"analyzer\": \"cs_index_analyzer\",\n            \"search_analyzer\": \"cs_search_analyzer\",\n            \"fielddata\": true\n        },\n        \"createdFor\": {\n            \"type\": \"text\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"text\",\n                    \"analyzer\": \"keylower\",\n                    \"fielddata\": true\n                }\n            },\n            \"copy_to\": [\n                \"all_fields\"\n            ],\n            \"analyzer\": \"cs_index_analyzer\",\n            \"search_analyzer\": \"cs_search_analyzer\",\n            \"fielddata\": true\n        },\n        \"description\": {\n            \"type\": \"text\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"text\",\n                    \"analyzer\": \"keylower\",\n                    \"fielddata\": true\n                }\n            },\n            \"copy_to\": [\n                \"all_fields\"\n            ],\n            \"analyzer\": \"cs_index_analyzer\",\n            \"search_analyzer\": \"cs_search_analyzer\",\n            \"fielddata\": true\n        },\n        \"endDate\": {\n            \"type\": \"date\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"date\"\n                }\n            }\n        },\n        \"enrollmentEndDate\": {\n            \"type\": \"date\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"date\"\n                }\n            }\n        },\n        \"enrollmentType\": {\n            \"type\": \"text\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"text\",\n                    \"analyzer\": \"keylower\",\n                    \"fielddata\": true\n                }\n            },\n            \"copy_to\": [\n                \"all_fields\"\n            ],\n            \"analyzer\": \"cs_index_analyzer\",\n            \"search_analyzer\": \"cs_search_analyzer\",\n            \"fielddata\": true\n        },\n        \"id\": {\n            \"type\": \"text\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"text\",\n                    \"analyzer\": \"keylower\",\n                    \"fielddata\": true\n                }\n            },\n            \"copy_to\": [\n                \"all_fields\"\n            ],\n            \"analyzer\": \"cs_index_analyzer\",\n            \"search_analyzer\": \"cs_search_analyzer\",\n            \"fielddata\": true\n        },\n        \"identifier\": {\n            \"type\": \"text\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"text\",\n                    \"analyzer\": \"keylower\",\n                    \"fielddata\": true\n                }\n            },\n            \"copy_to\": [\n                \"all_fields\"\n            ],\n            \"analyzer\": \"cs_index_analyzer\",\n            \"search_analyzer\": \"cs_search_analyzer\",\n            \"fielddata\": true\n        },\n        \"mentors\": {\n            \"type\": \"text\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"text\",\n                    \"analyzer\": \"keylower\",\n                    \"fielddata\": true\n                }\n            },\n            \"copy_to\": [\n                \"all_fields\"\n            ],\n            \"analyzer\": \"cs_index_analyzer\",\n            \"search_analyzer\": \"cs_search_analyzer\",\n            \"fielddata\": true\n        },\n        \"name\": {\n            \"type\": \"text\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"text\",\n                    \"analyzer\": \"keylower\",\n                    \"fielddata\": true\n                }\n            },\n            \"copy_to\": [\n                \"all_fields\"\n            ],\n            \"analyzer\": \"cs_index_analyzer\",\n            \"search_analyzer\": \"cs_search_analyzer\",\n            \"fielddata\": true\n        },\n        \"startDate\": {\n            \"type\": \"date\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"date\"\n                }\n            }\n        },\n        \"status\": {\n            \"type\": \"long\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"long\"\n                }\n            }\n        },\n        \"updatedDate\": {\n            \"type\": \"text\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"text\",\n                    \"analyzer\": \"keylower\",\n                    \"fielddata\": true\n                }\n            },\n            \"copy_to\": [\n                \"all_fields\"\n            ],\n            \"analyzer\": \"cs_index_analyzer\",\n            \"search_analyzer\": \"cs_search_analyzer\",\n            \"fielddata\": true\n        },\n        \"participantCount\": {\n            \"type\": \"long\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"long\"\n                }\n            }\n        },\n        \"completedCount\": {\n            \"type\": \"long\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"long\"\n                }\n            }\n        },\n        \"reportUpdatedOn\": {\n            \"type\": \"date\",\n            \"fields\": {\n                \"raw\": {\n                    \"type\": \"date\"\n                }\n            }\n        },\n        \"cert_templates\": {\n            \"type\": \"nested\"\n        }\n    }\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{es_host}}/{{index_name}}/_mapping/_doc",
+											"host": [
+												"{{es_host}}"
+											],
+											"path": [
+												"{{index_name}}",
+												"_mapping",
+												"_doc"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Warning",
+											"value": "299 Elasticsearch-6.8.22-71fcb50 \"Deprecated big difference between max_gram and min_gram in NGram Tokenizer,expected difference must be less than or equal to: [1]\""
+										},
+										{
+											"key": "Warning",
+											"value": "299 Elasticsearch-6.8.22-71fcb50 \"[types removal] The parameter include_type_name should be explicitly specified in put mapping requests to prepare for 7.0. In 7.0 include_type_name will default to 'false', and requests are expected to omit the type name in mapping definitions.\""
+										},
+										{
+											"key": "content-type",
+											"value": "application/json; charset=UTF-8"
+										},
+										{
+											"key": "content-encoding",
+											"value": "gzip"
+										},
+										{
+											"key": "content-length",
+											"value": "47"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"acknowledged\": true\n}"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Get All Indicies Copy",
+					"item": [
+						{
+							"name": "Get All Indices",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{es_host}}/_cat/indices?v",
+									"host": [
+										"{{es_host}}"
+									],
+									"path": [
+										"_cat",
+										"indices"
+									],
+									"query": [
+										{
+											"key": "v",
+											"value": null
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Auth Token",
+			"item": [
+				{
+					"name": "User token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let jsonResponse = pm.response.json();",
+									"",
+									"// Set global variable",
+									"// pm.variables.set('refresh_token', jsonResponse.refresh_token);",
+									"// pm.globals.set(\"refresh_token\", jsonResponse.result.identifier);",
+									"pm.collectionVariables.set(\"refresh_token\", jsonResponse.refresh_token);",
+									"// pm.collectionVariables.set(\"variable_key\", \"variable_value\");",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							},
+							{
+								"key": "Cookie",
+								"value": "connect.sid=s%3Ad3chYLP8OfuB2bWgfEFohiWpDxM7GFol.gOPmzH3d2nP9enZ5qSHlVx1e%2BozTleCjXtfz7LUycCk"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "client_id",
+									"value": "{{auth_client_id}}",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "{{auth_client_secret}}",
+									"type": "text"
+								},
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "contentreviewertn@yopmail.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "Test@123",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://staging.sunbirded.org/auth/realms/sunbird/protocol/openid-connect/token",
+							"protocol": "https",
+							"host": [
+								"staging",
+								"sunbirded",
+								"org"
+							],
+							"path": [
+								"auth",
+								"realms",
+								"sunbird",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let jsonResponse = pm.response.json();",
+									"pm.collectionVariables.set(\"keycloak_access_token\", jsonResponse.result.access_token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJiZW1mME1NR1RrNnVocVBwNW51bjA2T0pxSHJReTBwOCJ9.FSHIAdPdyJ-0ijYr7HPZUJ0ST974ccXZXZIhVXoZluI"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							},
+							{
+								"key": "Cookie",
+								"value": "connect.sid=s%3Ad3chYLP8OfuB2bWgfEFohiWpDxM7GFol.gOPmzH3d2nP9enZ5qSHlVx1e%2BozTleCjXtfz7LUycCk"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "refresh_token",
+									"value": "{{refresh_token}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://staging.sunbirded.org/auth/v1/refresh/token",
+							"protocol": "https",
+							"host": [
+								"staging",
+								"sunbirded",
+								"org"
+							],
+							"path": [
+								"auth",
+								"v1",
+								"refresh",
+								"token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Batch",
+			"item": [
+				{
+					"name": "health",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/health",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"health"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Creates a Batch",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let jsonResponse = pm.response.json();",
+									"pm.collectionVariables.set(\"batch_id\", jsonResponse.result.batchId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-authenticated-user-token",
+								"value": "{{keycloak_access_token}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{kong_api_key}}",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"request\": {\n        \"courseId\": \"do_21349929706079846413\",\n        \"name\": \"Open Batch for MACHINE LEARNING\",\n        \"description\": \"Open Batch From 2023-03-02 To 2023-03-12\",\n        \"enrollmentType\": \"open\",\n        \"startDate\": \"2023-03-02\",\n        \"endDate\": \"2023-03-12\",\n        \"createdFor\": [\n            \"01374279726315929680\"\n        ],\n        \"mentors\": []\n    }\n}"
+						},
+						"url": {
+							"raw": "{{host}}/v1/course/batch/create",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"v1",
+								"course",
+								"batch",
+								"create"
+							]
+						},
+						"description": "This API is associated with creation of a batch \n  - The Format of the resource URL is '{{host}}/v1/course/batch/create' \n  - The **_/batch/create_** endpoint executes \"create batch\" request to create a new batch\n  - It is a must to provide values for required parameters  "
+					},
+					"response": [
+						{
+							"name": "Creates a Batch",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-authenticated-user-token",
+										"value": "{{user_token}}",
+										"disabled": true
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{api_key}}",
+										"disabled": true
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"request\": {\n\t\t\"courseId\": \"do_21349929706079846413\",\n\t\t\"name\": \"Open Batch for MACHINE LEARNING\",\n\t\t\"description\": \"Open Batch From 2023-03-02 To 2023-03-12\",\n\t\t\"enrollmentType\": \"open\",\n\t\t\"startDate\": \"2023-03-02\",\n\t\t\"endDate\": \"2023-03-12\",\n\t\t\"createdBy\": \"9d92839b-6f7e-447e-a1a2-505af40ea40f\",\n\t\t\"createdFor\": [\"01374279726315929680\"],\n\t\t\"mentors\": []\n\t}\n}"
+								},
+								"url": {
+									"raw": "{{host}}/v1/course/batch/create",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"v1",
+										"course",
+										"batch",
+										"create"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Referrer-Policy",
+									"value": "origin-when-cross-origin, strict-origin-when-cross-origin"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "1; mode=block"
+								},
+								{
+									"key": "x-response-length",
+									"value": "54"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "X-Permitted-Cross-Domain-Policies",
+									"value": "master-only"
+								},
+								{
+									"key": "content-length",
+									"value": "281"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Date",
+									"value": "Wed, 01 Mar 2023 05:11:29 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"api.course.batch.create\",\n    \"ver\": \"v1\",\n    \"ts\": \"2023-03-01 10:41:28:950+0530\",\n    \"params\": {\n        \"resmsgid\": null,\n        \"msgid\": \"eec506db-da2f-42ea-92fb-bf6837007775\",\n        \"err\": null,\n        \"status\": \"success\",\n        \"errmsg\": null\n    },\n    \"responseCode\": \"OK\",\n    \"result\": {\n        \"response\": \"SUCCESS\",\n        \"batchId\": \"0137432938112696320\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Read Batch",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "x-authenticated-user-token",
+								"value": "{{keycloak_access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{kong_api_key}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{host}}/v1/course/batch/read/{{batch_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"v1",
+								"course",
+								"batch",
+								"read",
+								"{{batch_id}}"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Read Batch",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{api_key}}",
+										"disabled": true
+									},
+									{
+										"key": "x-authenticated-user-token",
+										"value": "{{user_token}}",
+										"disabled": true
+									}
+								],
+								"url": {
+									"raw": "{{host}}/v1/course/batch/read/0137432938112696320",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"v1",
+										"course",
+										"batch",
+										"read",
+										"0137432938112696320"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Referrer-Policy",
+									"value": "origin-when-cross-origin, strict-origin-when-cross-origin"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "1; mode=block"
+								},
+								{
+									"key": "x-response-length",
+									"value": "580"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "X-Permitted-Cross-Domain-Policies",
+									"value": "master-only"
+								},
+								{
+									"key": "content-length",
+									"value": "805"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Date",
+									"value": "Wed, 01 Mar 2023 05:12:25 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"api.course.batch.read\",\n    \"ver\": \"v1\",\n    \"ts\": \"2023-03-01 10:42:25:748+0530\",\n    \"params\": {\n        \"resmsgid\": null,\n        \"msgid\": \"6b1333ff-226c-4601-a772-a5e90d8bb73d\",\n        \"err\": null,\n        \"status\": \"success\",\n        \"errmsg\": null\n    },\n    \"responseCode\": \"OK\",\n    \"result\": {\n        \"response\": {\n            \"identifier\": \"0137432938112696320\",\n            \"createdFor\": [\n                \"01374279726315929680\"\n            ],\n            \"endDate\": \"2023-03-12\",\n            \"description\": \"Open Batch From 2023-03-02 To 2023-03-12\",\n            \"updatedDate\": null,\n            \"batchId\": \"0137432938112696320\",\n            \"cert_templates\": null,\n            \"createdDate\": \"2023-03-01 10:41:28:350+0530\",\n            \"createdBy\": \"9d92839b-6f7e-447e-a1a2-505af40ea40f\",\n            \"mentors\": [],\n            \"name\": \"Open Batch for MACHINE LEARNING\",\n            \"id\": \"0137432938112696320\",\n            \"enrollmentType\": \"open\",\n            \"courseId\": \"do_21349929706079846413\",\n            \"enrollmentEndDate\": null,\n            \"collectionId\": \"do_21349929706079846413\",\n            \"startDate\": \"2023-03-02\",\n            \"status\": 0\n        }\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Course Batch Update",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "x-authenticated-user-token",
+								"value": "{{keycloak_access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{kong_api_key}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"request\": {\n        \"id\": \"{{batch_id}}\",\n        \"courseId\": \"do_21349929706079846413\",\n        \"startDate\": \"2023-03-12\",\n        \"endDate\": \"2023-03-15\",\n        \"status\": 1\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/v1/course/batch/update",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"v1",
+								"course",
+								"batch",
+								"update"
+							]
+						},
+						"description": "This API is associated with updating a batch on the Sunbird Platform.\n  - The **_/batch/update_** endpoint executes \"Update a batch\" request to update an existing batch.\n  - It is a must to provide values for required parameters "
+					},
+					"response": [
+						{
+							"name": "Course Batch Update",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "x-authenticated-user-token",
+										"value": "{{user_token}}",
+										"disabled": true
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{api_key}}",
+										"disabled": true
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"request\": {\n        \"id\": \"0137432938112696320\",\n        \"courseId\": \"do_21349929706079846413\",\n        \"startDate\": \"2023-03-12\",\n        \"endDate\": \"2023-03-15\",\n        \"status\": 1\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/v1/course/batch/update",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"v1",
+										"course",
+										"batch",
+										"update"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Referrer-Policy",
+									"value": "origin-when-cross-origin, strict-origin-when-cross-origin"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "1; mode=block"
+								},
+								{
+									"key": "x-response-length",
+									"value": "2"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "X-Permitted-Cross-Domain-Policies",
+									"value": "master-only"
+								},
+								{
+									"key": "content-length",
+									"value": "229"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Date",
+									"value": "Wed, 01 Mar 2023 05:13:07 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"api.course.batch.update\",\n    \"ver\": \"v1\",\n    \"ts\": \"2023-03-01 10:43:07:309+0530\",\n    \"params\": {\n        \"resmsgid\": null,\n        \"msgid\": \"f4635379-205c-46d2-9b28-6294bcd631b5\",\n        \"err\": null,\n        \"status\": \"success\",\n        \"errmsg\": null\n    },\n    \"responseCode\": \"OK\",\n    \"result\": {}\n}"
+						}
+					]
+				},
+				{
+					"name": "Batch Search",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "x-authenticated-user-token",
+								"value": "{{keycloak_access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{kong_api_key}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"request\": {\n        \"filters\": {\n            \"courseId\": [\"do_21349929706079846413\"]\n        },\n        \"fields\": [\"courseId\",\"batchId\",\"startDate\",\"endDate\",\"status\",\"cert_templates\",\"createdFor\"],\n        \"limit\": 100\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/v1/course/batch/search",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"v1",
+								"course",
+								"batch",
+								"search"
+							]
+						},
+						"description": "This API is associated with fetching and listing existing batches\n  - The format of the resource URL is '{{host}}/course/v1/batch/search'\n  - The **_/batch/list_** endpoint executes \"Lists the existing batches\" request to fetch the existing batches.\n  - It is a must to provide values for required parameters "
+					},
+					"response": [
+						{
+							"name": "Batch Search",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{api_key}}"
+									},
+									{
+										"key": "x-authenticated-user-token",
+										"value": "{{user_token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"request\": {\n        \"filters\": {\n            \"courseId\": [\"do_21349929706079846413\"]\n        },\n        \"fields\": [\"courseId\",\"batchId\",\"startDate\",\"endDate\",\"status\",\"cert_templates\",\"createdFor\"],\n        \"limit\": 2000\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/v1/course/batch/search",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"v1",
+										"course",
+										"batch",
+										"search"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Referrer-Policy",
+									"value": "origin-when-cross-origin, strict-origin-when-cross-origin"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "1; mode=block"
+								},
+								{
+									"key": "x-response-length",
+									"value": "566"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "X-Permitted-Cross-Domain-Policies",
+									"value": "master-only"
+								},
+								{
+									"key": "content-length",
+									"value": "793"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 28 Feb 2023 13:01:02 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"api.course.batch.search\",\n    \"ver\": \"v1\",\n    \"ts\": \"2023-02-28 18:31:02:965+0530\",\n    \"params\": {\n        \"resmsgid\": null,\n        \"msgid\": \"9da9d9fd-5507-4550-bbdb-1ec33f926b77\",\n        \"err\": null,\n        \"status\": \"success\",\n        \"errmsg\": null\n    },\n    \"responseCode\": \"OK\",\n    \"result\": {\n        \"response\": {\n            \"count\": 3,\n            \"content\": [\n                {\n                    \"endDate\": \"2023-03-12\",\n                    \"batchId\": \"0137427955426017281\",\n                    \"cert_templates\": null,\n                    \"courseId\": \"do_21349929706079846413\",\n                    \"startDate\": \"2023-02-28\",\n                    \"status\": 1\n                },\n                {\n                    \"createdFor\": [\n                        \"01269878797503692810\"\n                    ],\n                    \"endDate\": \"2023-03-15\",\n                    \"batchId\": \"0137428102714490882\",\n                    \"cert_templates\": {},\n                    \"courseId\": \"do_21349929706079846413\",\n                    \"startDate\": \"2023-03-12\",\n                    \"status\": 0\n                },\n                {\n                    \"createdFor\": [\n                        \"01269878797503692810\"\n                    ],\n                    \"endDate\": \"2023-03-12\",\n                    \"batchId\": \"0137428014776647681\",\n                    \"cert_templates\": null,\n                    \"courseId\": \"do_21349929706079846413\",\n                    \"startDate\": \"2023-02-28\",\n                    \"status\": 1\n                }\n            ]\n        }\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Course Enrol",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "x-authenticated-user-token",
+								"value": "{{keycloak_access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{kong_api_key}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"request\": {\n      \"courseId\": \"do_21349929706079846413\",\n      \"batchId\": \"{{batch_id}}\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/v1/course/enroll",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"v1",
+								"course",
+								"enroll"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Course unenrol",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "x-authenticated-user-token",
+								"value": "{{keycloak_access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{kong_api_key}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"request\": {\n        \"courseId\": \"do_21349929706079846413\",\n        \"batchId\": \"{{batch_id}}\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/v1/course/unenroll",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"v1",
+								"course",
+								"unenroll"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Batch Participants",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "x-authenticated-user-token",
+								"value": "{{keycloak_access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{kong_api_key}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"request\": {\n        \"batch\": {\n            \"batchId\": \"{{batch_id}}\",\n            \"active\": true\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/v1/batch/participants/list",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"v1",
+								"batch",
+								"participants",
+								"list"
+							]
+						},
+						"description": "This API is associated with fetching and listing existing batches\n  - The format of the resource URL is '{{host}}/course/v1/batch/search'\n  - The **_/batch/list_** endpoint executes \"Lists the existing batches\" request to fetch the existing batches.\n  - It is a must to provide values for required parameters "
+					},
+					"response": [
+						{
+							"name": "List Batch Participants",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{api_key}}",
+										"disabled": true
+									},
+									{
+										"key": "x-authenticated-user-token",
+										"value": "{{user_token}}",
+										"disabled": true
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"request\": {\n        \"batch\": {\n            \"batchId\": \"0137428102714490882\",\n            \"active\": true\n        }\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/v1/batch/participants/list",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"v1",
+										"batch",
+										"participants",
+										"list"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Referrer-Policy",
+									"value": "origin-when-cross-origin, strict-origin-when-cross-origin"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "1; mode=block"
+								},
+								{
+									"key": "x-response-length",
+									"value": "39"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "X-Permitted-Cross-Domain-Policies",
+									"value": "master-only"
+								},
+								{
+									"key": "content-length",
+									"value": "270"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 28 Feb 2023 13:05:32 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"api.batch.participants.list\",\n    \"ver\": \"v1\",\n    \"ts\": \"2023-02-28 18:35:32:894+0530\",\n    \"params\": {\n        \"resmsgid\": null,\n        \"msgid\": \"7ae170da-cef1-4009-a97a-8ead9ee412ca\",\n        \"err\": null,\n        \"status\": \"success\",\n        \"errmsg\": null\n    },\n    \"responseCode\": \"OK\",\n    \"result\": {\n        \"batch\": {\n            \"count\": 0,\n            \"participants\": []\n        }\n    }\n}"
+						}
+					]
+				}
+			],
+			"description": "Folder for batch"
+		}
+	],
+	"variable": [
+		{
+			"key": "refresh_token",
+			"value": ""
+		},
+		{
+			"key": "keycloak_access_token",
+			"value": ""
+		},
+		{
+			"key": "batch_id",
+			"value": ""
+		}
+	]
+}

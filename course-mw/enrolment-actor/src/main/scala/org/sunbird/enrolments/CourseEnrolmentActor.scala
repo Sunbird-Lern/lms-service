@@ -69,6 +69,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             case "enrol" => enroll(request)
             case "multiUserEnrol" => multiUserEnroll(request)
             case "unenrol" => unEnroll(request)
+            case "multiUserUnenrol" => bulkUnEnroll(request)
             case "listEnrol" => list(request)
             case _ => ProjectCommonException.throwClientErrorException(ResponseCode.invalidRequestData,
                 ResponseCode.invalidRequestData.getErrorMessage)
@@ -85,6 +86,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     def multiUserEnroll(request: Request): Unit = {
         val courseId: String = request.get(JsonKey.COURSE_ID).asInstanceOf[String]
         val userIds : util.List[String] = request.get(JsonKey.USER_IDs).asInstanceOf[util.List[String]]
+        logger.info(null, "enrol --- > userList : "+userIds)
         val batchId: String = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
         (0 until userIds.size()).foreach (x => {
             enrolUser(request, courseId, batchId, userIds.get(x))
@@ -109,16 +111,35 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val userId: String = request.get(JsonKey.USER_ID).asInstanceOf[String]
         val batchId: String = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
         val batchData: CourseBatch = courseBatchDao.readById(courseId, batchId, request.getRequestContext)
+        unerolUser(request, courseId, userId, batchId, batchData)
+    }
+
+    private def unerolUser(request: Request, courseId: String, userId: String, batchId: String, batchData: CourseBatch): Unit = {
         val enrolmentData: UserCourses = userCoursesDao.read(request.getRequestContext, userId, courseId, batchId)
         getUpdatedStatus(enrolmentData)
         validateEnrolment(batchData, enrolmentData, false)
-        val data: java.util.Map[String, AnyRef] = new java.util.HashMap[String, AnyRef]() {{ put(JsonKey.ACTIVE, ProjectUtil.ActiveStatus.INACTIVE.getValue.asInstanceOf[AnyRef]) }}
-        upsertEnrollment(userId,courseId, batchId, data, false, request.getRequestContext)
+        val data: util.Map[String, AnyRef] = new util.HashMap[String, AnyRef]() {
+            {
+                put(JsonKey.ACTIVE, ProjectUtil.ActiveStatus.INACTIVE.getValue.asInstanceOf[AnyRef])
+            }
+        }
+        upsertEnrollment(userId, courseId, batchId, data, false, request.getRequestContext)
         logger.info(request.getRequestContext, "CourseEnrolmentActor :: unEnroll :: Deleting redis for key " + getCacheKey(userId))
         cacheUtil.delete(getCacheKey(userId))
         sender().tell(successResponse(), self)
         generateTelemetryAudit(userId, courseId, batchId, data, "unenrol", JsonKey.UPDATE, request.getContext)
         notifyUser(userId, batchData, JsonKey.REMOVE)
+    }
+
+    def bulkUnEnroll(request: Request): Unit = {
+        val courseId: String = request.get(JsonKey.COURSE_ID).asInstanceOf[String]
+        val userIds : util.List[String] = request.get(JsonKey.USER_IDs).asInstanceOf[util.List[String]]
+        logger.info(null, "bulk unenrol userList : "+userIds)
+        val batchId: String = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
+        val batchData: CourseBatch = courseBatchDao.readById(courseId, batchId, request.getRequestContext)
+        (0 until userIds.size()).foreach(x => {
+            unerolUser(request, courseId, userIds.get(x), batchId, batchData)
+        })
     }
 
     def list(request: Request): Unit = {

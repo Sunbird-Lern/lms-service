@@ -86,7 +86,6 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     def multiUserEnroll(request: Request): Unit = {
         val courseId: String = request.get(JsonKey.COURSE_ID).asInstanceOf[String]
         val userIds : util.List[String] = request.get(JsonKey.USER_IDs).asInstanceOf[util.List[String]]
-        logger.info(null, "enrol --- > userList : "+userIds)
         val batchId: String = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
         (0 until userIds.size()).foreach (x => {
             enrolUser(request, courseId, batchId, userIds.get(x))

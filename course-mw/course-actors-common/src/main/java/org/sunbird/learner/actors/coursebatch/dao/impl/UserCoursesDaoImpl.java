@@ -3,6 +3,8 @@ package org.sunbird.learner.actors.coursebatch.dao.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import com.sun.xml.bind.v2.TODO;
 import org.apache.commons.collections.CollectionUtils;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.models.response.Response;
@@ -12,6 +14,8 @@ import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.actors.coursebatch.dao.UserCoursesDao;
 import org.sunbird.learner.util.Util;
 import org.sunbird.models.user.courses.UserCourses;
+
+import static org.sunbird.common.models.util.JsonKey.COURSE_BATCH_DB;
 
 public class UserCoursesDaoImpl implements UserCoursesDao {
 
@@ -142,6 +146,18 @@ public class UserCoursesDaoImpl implements UserCoursesDao {
       primaryKey.put(JsonKey.COURSE_ID_KEY, courseIdList);
     }
     Response response = cassandraOperation.getRecordByIdentifier(requestContext, KEYSPACE_NAME, USER_ENROLMENTS, primaryKey, null);
+    List<Map<String, Object>> userCoursesList = (List<Map<String, Object>>) response.get(JsonKey.RESPONSE);
+    if (CollectionUtils.isEmpty(userCoursesList)) {
+      return null;
+    } else {
+      return userCoursesList;
+    }
+  }
+  @Override
+  public List<Map<String, Object>> courseListEnrolments(RequestContext requestContext) {
+    Map<String, Object> filters = new HashMap<>();
+    // TODO Need to set the course type PIAA
+    Response response = cassandraOperation.getRecords(requestContext, KEYSPACE_NAME, COURSE_BATCH_DB, filters, null);
     List<Map<String, Object>> userCoursesList = (List<Map<String, Object>>) response.get(JsonKey.RESPONSE);
     if (CollectionUtils.isEmpty(userCoursesList)) {
       return null;

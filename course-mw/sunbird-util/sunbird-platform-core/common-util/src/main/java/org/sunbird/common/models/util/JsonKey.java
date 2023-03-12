@@ -448,6 +448,7 @@ public final class JsonKey {
   public static final String RESOURCE_ID = "resourceId";
   public static final String RESPONSE = "response";
   public static final String RESULT = "result";
+  public static final String PAGE_NUM = "pageNum";
   public static final String RETIRED = "retired";
   public static final String RETRY_COUNT = "retryCount";
   public static final String ROLE = "role";

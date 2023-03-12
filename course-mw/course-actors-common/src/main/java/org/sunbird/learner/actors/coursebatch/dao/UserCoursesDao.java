@@ -65,4 +65,7 @@ public interface UserCoursesDao {
   
   
   List<Map<String, Object>> listEnrolments(RequestContext requestContext, String userId, List<String> courseIdList);
+
+
+  List<Map<String, Object>> courseListEnrolments(RequestContext requestContext);
 }

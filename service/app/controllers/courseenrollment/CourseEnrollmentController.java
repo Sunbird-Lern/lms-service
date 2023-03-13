@@ -263,7 +263,7 @@ public class CourseEnrollmentController extends BaseController {
                     Map<String, String[]> queryParams = new HashMap<>(httpRequest.queryString());
                     String courseId = req.getRequest().containsKey(JsonKey.COURSE_ID) ? JsonKey.COURSE_ID : JsonKey.COLLECTION_ID;
                     req.getRequest().put(JsonKey.COURSE_ID, req.getRequest().get(courseId));
-                    validator.validateUnenrollCourse(req);
+                    validator.validateBulkUnenrollCourse(req);
                     return null;
                 },
                 getAllRequestHeaders(httpRequest),

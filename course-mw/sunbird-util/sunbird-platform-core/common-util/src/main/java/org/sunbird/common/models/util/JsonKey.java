@@ -1013,5 +1013,8 @@ public final class JsonKey {
   public static final String GCP="gcloud";
   public static final String TEMPLATE_URL = "templateUrl";
   public static final String AUTH_ENABLED = "AuthenticationEnabled";
+  public static final String OBSERV_API_SERVICE_HOST="obsrv_api_service_host";
+  public static final String OBSERV_API_SERVICE_PORT="obsrv_api_service_port";
+  public static final String OBSERV_API_SERVICE_ENDPOINT="obsrv_api_service_endpoint";
   private JsonKey() {}
 }

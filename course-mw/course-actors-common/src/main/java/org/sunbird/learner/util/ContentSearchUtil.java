@@ -1,9 +1,11 @@
 package org.sunbird.learner.util;
 
 import akka.dispatch.Mapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.BaseRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
@@ -30,6 +32,7 @@ public class ContentSearchUtil {
 
   private static String contentSearchURL = null;
   private static LoggerUtil logger = new LoggerUtil(ContentSearchUtil.class);
+  private static ObjectMapper mapper = new ObjectMapper();
 
   static {
     String baseUrl = System.getenv(JsonKey.SUNBIRD_API_MGR_BASE_URL);
@@ -103,32 +106,23 @@ public class ContentSearchUtil {
   }
 
   public static Map<String, Object> searchContentSync(
-          RequestContext requestContext, String urlQueryString, String queryRequestBody, Map<String, String> headers) {
+          RequestContext requestContext, String urlQueryString, String queryRequestBody, Map<String, String> headers) throws UnirestException {
     Unirest.clearDefaultHeaders();
     String urlString =
         StringUtils.isNotBlank(urlQueryString)
             ? contentSearchURL + urlQueryString
             : contentSearchURL;
 
-    BaseRequest request =
-        Unirest.post(urlString).headers(getUpdatedHeaders(headers)).body(queryRequestBody);
+    HttpResponse<String> searchResponse = Unirest.post(urlString).headers(getUpdatedHeaders(headers)).body(queryRequestBody).asString();
     try {
-      HttpResponse<JsonNode> response = RestUtil.execute(request);
-      if (RestUtil.isSuccessful(response)) {
-        JSONObject result = response.getBody().getObject().getJSONObject("result");
-        Map<String, Object> resultMap = jsonToMap(result);
-        Object contents = resultMap.get(JsonKey.CONTENT);
-        resultMap.remove(JsonKey.CONTENT);
-        resultMap.put(JsonKey.CONTENTS, contents);
-        String resmsgId = RestUtil.getFromResponse(response, "params.resmsgid");
-        String apiId = RestUtil.getFromResponse(response, "id");
-        Map<String, Object> param = new HashMap<>();
-        param.put(JsonKey.RES_MSG_ID, resmsgId);
-        param.put(JsonKey.API_ID, apiId);
-        resultMap.put(JsonKey.PARAMS, param);
+      if (null != searchResponse && searchResponse.getStatus() == 200) {
+        Map<String, Object> responseData = new ObjectMapper().readValue(searchResponse.getBody(), Map.class);
+        Map<String, Object> resultMap = (Map<String, Object>) responseData.get(JsonKey.RESULT);
+        resultMap.put(JsonKey.CONTENTS, resultMap.get(JsonKey.CONTENT));
+        resultMap.put(JsonKey.PARAMS, responseData.get(JsonKey.PARAMS));
         return resultMap;
       } else {
-        logger.info(requestContext, "Composite search resturned failed response :: " + response.getStatus());
+        logger.info(requestContext, "Composite search returned failed response :: " + searchResponse.getStatus());
         return new HashMap<>();
       }
     } catch (Exception e) {

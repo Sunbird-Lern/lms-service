@@ -71,6 +71,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             case "unenrol" => unEnroll(request)
             case "multiUserUnenrol" => bulkUnEnroll(request)
             case "listEnrol" => list(request)
+            case "courseEval" => courseEval(request)
             case _ => ProjectCommonException.throwClientErrorException(ResponseCode.invalidRequestData,
                 ResponseCode.invalidRequestData.getErrorMessage)
         }
@@ -386,6 +387,21 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         } else 0}
         enrolmentData.setStatus(getCompletionStatus(enrolmentData.getProgress, leafNodesCount))
     }
+
+    def courseEval(request: Request): Unit = {
+        logger.info(request.getRequestContext, "started course eval - request - "+ request)
+        val courseId: String = request.get(JsonKey.COURSE_ID).asInstanceOf[String]
+        val userIds: util.List[String] = request.get(JsonKey.USER_IDs).asInstanceOf[util.List[String]]
+        val batchId: String = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
+        val map = new util.HashMap[String, Object]()
+        map.put(JsonKey.STATUS, Integer.valueOf(5))
+        (0 until userIds.size()).foreach(x => {
+            logger.info(request.getRequestContext, "started course eval - userId -"+ userIds.get(x))
+            userCoursesDao.updateV2(request.getRequestContext, userIds.get(x), courseId, batchId, map)
+            logger.info(request.getRequestContext, "completed course eval - userId -"+ userIds.get(x))
+        })
+    }
+
 }
 
 

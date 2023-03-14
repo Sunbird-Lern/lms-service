@@ -25,6 +25,10 @@ public class CourseEnrollmentRequestValidator extends BaseRequestValidator {
     validateMultiUserEnroll(courseRequestDto);
   }
 
+  public void validateBulkCourseEval(Request courseRequestDto) {
+    validateMultiUserEnroll(courseRequestDto);
+  }
+
   private void commonValidations(Request courseRequestDto) {
     validateParam(
         (String) courseRequestDto.getRequest().get(JsonKey.COURSE_ID),

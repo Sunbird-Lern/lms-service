@@ -110,17 +110,21 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val courseId: String = request.get(JsonKey.COURSE_ID).asInstanceOf[String]
         val userId: String = request.get(JsonKey.USER_ID).asInstanceOf[String]
         val batchId: String = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
+        val comment: String = request.getOrDefault(JsonKey.COMMENT, "").asInstanceOf[String]
         val batchData: CourseBatch = courseBatchDao.readById(courseId, batchId, request.getRequestContext)
-        unerolUser(request, courseId, userId, batchId, batchData)
+        unerolUser(request, courseId, userId, batchId, batchData, comment)
     }
 
-    private def unerolUser(request: Request, courseId: String, userId: String, batchId: String, batchData: CourseBatch): Unit = {
+    private def unerolUser(request: Request, courseId: String, userId: String, batchId: String, batchData: CourseBatch, comment: String): Unit = {
         val enrolmentData: UserCourses = userCoursesDao.read(request.getRequestContext, userId, courseId, batchId)
         getUpdatedStatus(enrolmentData)
         validateEnrolment(batchData, enrolmentData, false)
         val data: util.Map[String, AnyRef] = new util.HashMap[String, AnyRef]() {
             {
                 put(JsonKey.ACTIVE, ProjectUtil.ActiveStatus.INACTIVE.getValue.asInstanceOf[AnyRef])
+                if(comment!= null && !comment.isBlank) {
+                    put(JsonKey.COMMENT, comment.asInstanceOf[AnyRef])
+                }
             }
         }
         upsertEnrollment(userId, courseId, batchId, data, false, request.getRequestContext)
@@ -136,9 +140,10 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val userIds : util.List[String] = request.get(JsonKey.USER_IDs).asInstanceOf[util.List[String]]
         logger.info(null, "bulk unenrol userList : "+userIds)
         val batchId: String = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
+        val comment: String = request.get(JsonKey.COMMENT).asInstanceOf[String]
         val batchData: CourseBatch = courseBatchDao.readById(courseId, batchId, request.getRequestContext)
         (0 until userIds.size()).foreach(x => {
-            unerolUser(request, courseId, userIds.get(x), batchId, batchData)
+            unerolUser(request, courseId, userIds.get(x), batchId, batchData, comment)
         })
     }
 
@@ -393,8 +398,11 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val courseId: String = request.get(JsonKey.COURSE_ID).asInstanceOf[String]
         val userIds: util.List[String] = request.get(JsonKey.USER_IDs).asInstanceOf[util.List[String]]
         val batchId: String = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
+        val comment: String = request.get(JsonKey.COMMENT).asInstanceOf[String]
         val map = new util.HashMap[String, Object]()
-        map.put(JsonKey.STATUS, Integer.valueOf(5))
+        map.put(JsonKey.STATUS, Integer.valueOf(3).asInstanceOf[AnyRef])
+        map.get(JsonKey.COMMENT, comment.asInstanceOf[AnyRef])
+
         (0 until userIds.size()).foreach(x => {
             logger.info(request.getRequestContext, "started course eval - userId -"+ userIds.get(x))
             userCoursesDao.updateV2(request.getRequestContext, userIds.get(x), courseId, batchId, map)

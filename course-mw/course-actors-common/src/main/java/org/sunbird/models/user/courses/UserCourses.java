@@ -24,6 +24,7 @@ public class UserCourses implements Serializable {
   private int progress;
   private int status;
   private String userId;
+  private String comment;
 
   public boolean isActive() {
     return active;
@@ -135,5 +136,13 @@ public class UserCourses implements Serializable {
 
   public void setUserId(String userId) {
     this.userId = userId;
+  }
+
+  public String getComment() {
+    return comment;
+  }
+
+  public void setComment(String comment) {
+    this.comment = comment;
   }
 }

@@ -1013,5 +1013,6 @@ public final class JsonKey {
   public static final String GCP="gcloud";
   public static final String TEMPLATE_URL = "templateUrl";
   public static final String AUTH_ENABLED = "AuthenticationEnabled";
+  public static final String COMMENT = "comment";
   private JsonKey() {}
 }

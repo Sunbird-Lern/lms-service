@@ -2,7 +2,6 @@ package org.sunbird.aggregate
 
 import java.util
 import com.google.gson.Gson
-import com.mashape.unirest.http.Unirest
 
 import javax.inject.Inject
 import javax.ws.rs.core.MediaType
@@ -48,7 +47,9 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
       val result: util.Map[String, AnyRef] = if (null != redisData && !redisData.isEmpty) {
         JsonUtil.deserialize(redisData, new util.HashMap[String, AnyRef]().getClass)
       } else {
-        val druidResponse = getResponseFromDruid(batchId = batchId, courseId = collectionId, granularity, groupByKeys = groupByKeys)
+        val obsrvApiServiceUtil = new ObsrvApiServiceUtil()
+        val query: String = buildQuery(batchId = batchId, courseId = collectionId, granularity, groupByKeys = groupByKeys)
+        val druidResponse: String = obsrvApiServiceUtil.callObsrvService(query)
         val transformedResult = transform(druidResponse, groupByKeys)
         if (!transformedResult.isEmpty) cacheUtil.set(key, JsonUtil.serialize(transformedResult), ttl)
         transformedResult
@@ -110,15 +111,8 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     transformedResult
   }
 
-
-  private def getUpdatedHeaders(headers: util.Map[String, String]): util.Map[String, String] = {
-    headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-    headers.put("Connection", "Keep-Alive")
-    headers
-  }
-
-  def getResponseFromDruid(batchId: String, courseId: String, date: String, groupByKeys: List[String]): String = {
-    val druidQuery =
+  private def buildQuery(batchId: String, courseId: String, date: String, groupByKeys: List[String]) = {
+    val query =
       s"""{
          |  "context": {
          |    "dataSource": "$dataSource"
@@ -203,14 +197,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
          |  }
          |}
          |}""".stripMargin.replaceAll("null", " ")
-    println("Druid Query" + JsonUtil.serialize(druidQuery))
-    val host: String = ProjectUtil.getConfigValue(JsonKey.OBSERV_API_SERVICE_HOST)
-    val port: String = ProjectUtil.getConfigValue(JsonKey.OBSERV_API_SERVICE_PORT)
-    val endPoint: String = ProjectUtil.getConfigValue(JsonKey.OBSERV_API_SERVICE_ENDPOINT)
-    val request = Unirest.post(s"http://$host:$port$endPoint").headers(getUpdatedHeaders(new util.HashMap[String, String]())).body(druidQuery)
-    val response = request.asString().getBody
-    println("=====Druid Response======" + response)
-    response
+    query
   }
 
   def getCacheKey(batchId: String, intervals: String, groupByKeys: List[String]): String = {

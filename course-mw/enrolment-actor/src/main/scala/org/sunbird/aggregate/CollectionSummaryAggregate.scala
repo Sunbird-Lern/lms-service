@@ -120,6 +120,10 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
   def getResponseFromDruid(batchId: String, courseId: String, date: String, groupByKeys: List[String]): String = {
     val druidQuery =
       s"""{
+         |  "context": {
+         |    "dataSource": "$dataSource"
+         |  },
+         |  "query": {
          |  "queryType": "groupBy",
          |  "dataSource": "$dataSource",
          |  "dimensions": [
@@ -197,11 +201,12 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
          |      }
          |    ]
          |  }
+         |}
          |}""".stripMargin.replaceAll("null", " ")
     println("Druid Query" + JsonUtil.serialize(druidQuery))
-    val host: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("druid_proxy_api_host"))) ProjectUtil.getConfigValue("druid_proxy_api_host") else "localhost"
-    val port: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("druid_proxy_api_port"))) ProjectUtil.getConfigValue("druid_proxy_api_port") else "8081"
-    val endPoint: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("druid_proxy_api_endpoint"))) ProjectUtil.getConfigValue("druid_proxy_api_endpoint") else "/druid/v2/"
+    val host: String = ProjectUtil.getConfigValue(JsonKey.OBSERV_API_SERVICE_HOST)
+    val port: String = ProjectUtil.getConfigValue(JsonKey.OBSERV_API_SERVICE_PORT)
+    val endPoint: String = ProjectUtil.getConfigValue(JsonKey.OBSERV_API_SERVICE_ENDPOINT)
     val request = Unirest.post(s"http://$host:$port$endPoint").headers(getUpdatedHeaders(new util.HashMap[String, String]())).body(druidQuery)
     val response = request.asString().getBody
     println("=====Druid Response======" + response)

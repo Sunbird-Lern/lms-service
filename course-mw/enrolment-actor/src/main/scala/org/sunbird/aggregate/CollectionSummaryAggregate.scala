@@ -204,9 +204,9 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
          |}
          |}""".stripMargin.replaceAll("null", " ")
     println("Druid Query" + JsonUtil.serialize(druidQuery))
-    val host: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue(JsonKey.OBSERV_API_SERVICE_HOST))) ProjectUtil.getConfigValue(JsonKey.OBSERV_API_SERVICE_HOST) else "localhost"
-    val port: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue(JsonKey.OBSERV_API_SERVICE_PORT))) ProjectUtil.getConfigValue(JsonKey.OBSERV_API_SERVICE_PORT) else "8888"
-    val endPoint: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue(JsonKey.OBSERV_API_SERVICE_ENDPOINT))) ProjectUtil.getConfigValue(JsonKey.OBSERV_API_SERVICE_ENDPOINT) else "/obsrv/v1/query"
+    val host: String = ProjectUtil.getConfigValue(JsonKey.OBSERV_API_SERVICE_HOST)
+    val port: String = ProjectUtil.getConfigValue(JsonKey.OBSERV_API_SERVICE_PORT)
+    val endPoint: String = ProjectUtil.getConfigValue(JsonKey.OBSERV_API_SERVICE_ENDPOINT)
     val request = Unirest.post(s"http://$host:$port$endPoint").headers(getUpdatedHeaders(new util.HashMap[String, String]())).body(druidQuery)
     val response = request.asString().getBody
     println("=====Druid Response======" + response)

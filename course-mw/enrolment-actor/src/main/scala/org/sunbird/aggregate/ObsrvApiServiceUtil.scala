@@ -12,13 +12,13 @@ class ObsrvApiServiceUtil {
 
   def callObsrvService(druidQuery: String): String = {
     try{
-      println("Druid Query" + JsonUtil.serialize(druidQuery))
+      ProjectLogger.log("Druid Query :: "  + JsonUtil.serialize(druidQuery));
       val baseUrl: String = ProjectUtil.getConfigValue(JsonKey.OBSERV_API_SERVICE_BASE_URL)
       val endPoint: String = ProjectUtil.getConfigValue(JsonKey.OBSERV_API_SERVICE_ENDPOINT)
       val request = Unirest.post(s"$baseUrl$endPoint")
         .headers(getUpdatedHeaders(new util.HashMap[String, String]())).body(druidQuery)
       val response = request.asString().getBody
-      println("=====Druid Response======" + response)
+      ProjectLogger.log("=====Druid Response====== "  + response)
       response
     } catch {
       case ex: Exception =>

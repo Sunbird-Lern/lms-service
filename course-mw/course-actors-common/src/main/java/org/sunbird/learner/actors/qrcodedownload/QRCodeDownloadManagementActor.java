@@ -270,7 +270,9 @@ public class QRCodeDownloadManagementActor extends BaseActor {
           storageType = CloudStorageUtil.CloudStorageType.GCLOUD;
         } else if (cloudStorage.equalsIgnoreCase(AZURE_STR)) {
           storageType = CloudStorageUtil.CloudStorageType.AZURE;
-        } else {
+        } else if (cloudStorage.equalsIgnoreCase(OCI_STR)) {
+          storageType = CloudStorageUtil.CloudStorageType.OCI;
+        }else {
           ProjectCommonException.throwClientErrorException(
                   ResponseCode.errorUnsupportedCloudStorage,
                   ProjectUtil.formatMessage(

@@ -393,21 +393,28 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         enrolmentData.setStatus(getCompletionStatus(enrolmentData.getProgress, leafNodesCount))
     }
 
-    def courseEval(request: Request): Unit = {
-        logger.info(request.getRequestContext, "started course eval - request - "+ request)
-        val courseId: String = request.get(JsonKey.COURSE_ID).asInstanceOf[String]
-        val userIds: util.List[String] = request.get(JsonKey.USER_IDs).asInstanceOf[util.List[String]]
-        val batchId: String = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
-        val comment: String = request.get(JsonKey.COMMENT).asInstanceOf[String]
-        val map = new util.HashMap[String, Object]()
-        map.put(JsonKey.STATUS, Integer.valueOf(3).asInstanceOf[AnyRef])
-        map.get(JsonKey.COMMENT, comment.asInstanceOf[AnyRef])
+     def courseEval(request: Request): Unit = {
+        logger.info(request.getRequestContext,"Actor current thread reaching actor method courseEval - "+ Thread.currentThread().getId());
+         val courseId: String = request.get(JsonKey.COURSE_ID).asInstanceOf[String]
+         val userIds: util.List[String] = request.get(JsonKey.USER_IDs).asInstanceOf[util.List[String]]
+         val batchId: String = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
+         val comment: String = request.getOrDefault(JsonKey.COMMENT, "").asInstanceOf[String]
+         // creating request map
+         val map: _root_.java.util.HashMap[_root_.java.lang.String, _root_.java.lang.Object] = createCourseEvalRequestMap(comment, Integer.valueOf(3))
+         // creating cassandra column map
+         val data = CassandraUtil.changeCassandraColumnMapping(map)
+         // collecting response
+         (0 until(userIds.size())).foreach(x => {
+             userCoursesDao.updateV2(request.getRequestContext, userIds.get(0), courseId, batchId, data)
+         })
+         sender().tell(successResponse(), self)
+    }
 
-        (0 until userIds.size()).foreach(x => {
-            logger.info(request.getRequestContext, "started course eval - userId -"+ userIds.get(x))
-            userCoursesDao.updateV2(request.getRequestContext, userIds.get(x), courseId, batchId, map)
-            logger.info(request.getRequestContext, "completed course eval - userId -"+ userIds.get(x))
-        })
+    private def createCourseEvalRequestMap(comment: String, statusCode: Integer) = {
+        val map = new util.HashMap[String, Object]()
+        map.put(JsonKey.STATUS, statusCode.asInstanceOf[AnyRef])
+        map.put(JsonKey.COMMENT, comment.asInstanceOf[AnyRef])
+        map
     }
 
 }

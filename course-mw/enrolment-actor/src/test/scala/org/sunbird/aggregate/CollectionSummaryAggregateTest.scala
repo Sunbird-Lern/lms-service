@@ -3,12 +3,12 @@ package org.sunbird.aggregate
 import java.io.IOException
 import java.util
 import java.util.concurrent.TimeUnit
-
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.TestKit
 import com.datastax.driver.core.Cluster
 import com.google.gson.Gson
 import com.mashape.unirest.http.Unirest
+
 import javax.ws.rs.core.MediaType
 import okhttp3.mockwebserver.{MockResponse, MockWebServer}
 import org.apache.commons.lang3.StringUtils
@@ -23,9 +23,10 @@ import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
 import org.sunbird.common.request.Request
 import org.sunbird.common.responsecode.ResponseCode
+import org.sunbird.common.util.JsonUtil
 import redis.clients.jedis.Jedis
-import scala.collection.JavaConverters._
 
+import scala.collection.JavaConverters._
 import scala.concurrent.duration.FiniteDuration
 
 class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeAndAfterAll with MockFactory {
@@ -35,7 +36,7 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
   val gson = new Gson()
   EmbeddedCassandraServerHelper.startEmbeddedCassandra(80000L)
   var server = new MockWebServer()
-  server.start(8082)
+  server.start(8888)
   var jedis: Jedis = _
   val redisConnect = new RedisCacheUtil()
 
@@ -109,12 +110,14 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
   }
 
   "CollectionSummaryActivityAgg" should "return success response from druid" in {
+
     val groupByKeys = new util.ArrayList[String]
     groupByKeys.add("dist")
     groupByKeys.add("state")
     mockDruid("[{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":null,\"userCount\":2.000977198748901,\"edata_type\":\"enrol\",\"state\":null}},{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":null,\"userCount\":1.0002442201269182,\"edata_type\":\"complete\",\"state\":null}},{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":\"PUNE\",\"userCount\":1.0002442201269182,\"edata_type\":\"enrol\",\"state\":\"Maharashtra\"}},{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":\"Tumkur\",\"userCount\":1.0002442201269182,\"edata_type\":\"enrol\",\"state\":\"Karnataka\"}},{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":\"DADRA AND NAGAR HAVELI(UT)\",\"userCount\":1.0002442201269182,\"edata_type\":\"enrol\",\"state\":\"Dadra & Nagar Haveli\"}},{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":\"PUNE\",\"userCount\":1.0002442201269182,\"edata_type\":\"complete\",\"state\":\"Maharashtra\"}},{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":\"DADRA AND NAGAR HAVELI(UT)\",\"userCount\":1.0002442201269182,\"edata_type\":\"complete\",\"state\":\"Dadra & Nagar Haveli\"}}]")
     val query = "{\"request\":{\"filters\":{\"collectionId\":\"do_31309287232935526411138\",\"batchId\":\"0130929928739635201\"},\"groupBy\":[],\"intervals\":\"20120-01-23/2020-09-24\"}}"
-    Unirest.post(s"http://localhost:8082/obsrv/v1/query").headers(getUpdatedHeaders(new util.HashMap[String, String]())).body(query)
+    val obsrvApiServiceUtil = new ObsrvApiServiceUtil
+    obsrvApiServiceUtil.callObsrvService(JsonUtil.serialize(query))
     val response = callActor(getRequest("0130929928739635201", "do_31309287232935526411138", "LAST_7DAYS", groupByKeys), Props(new CollectionSummaryAggregate()(new RedisCacheUtil())))
     assert(response.getResponseCode == ResponseCode.OK)
     val result = response.getResult
@@ -171,7 +174,7 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
   def mockDruid(response: String): Unit = {
     server.enqueue(new MockResponse().setBody(response))
     server.enqueue(new MockResponse().setHeader("Authorization", ""))
-    server.url("http://localhost:8082/obsrv/v1/query")
+    server.url("http://localhost:8888/obsrv/v1/query")
     val headers = new util.HashMap[String, String]()
     headers.put("Authorization", "")
   }

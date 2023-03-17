@@ -23,9 +23,7 @@ import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
 import org.sunbird.common.request.Request
 import org.sunbird.common.responsecode.ResponseCode
-import org.sunbird.learner.util.JsonUtil
 import redis.clients.jedis.Jedis
-import redis.embedded.RedisServer
 import scala.collection.JavaConverters._
 
 import scala.concurrent.duration.FiniteDuration
@@ -43,8 +41,8 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
 
   override def afterAll() {
     super.afterAll()
-    server.shutdown()
     EmbeddedCassandraServerHelper.cleanEmbeddedCassandra()
+
   }
 
   override def beforeAll() {

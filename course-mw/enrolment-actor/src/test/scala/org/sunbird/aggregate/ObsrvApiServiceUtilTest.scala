@@ -33,6 +33,6 @@ class ObsrvApiServiceUtilTest extends FlatSpec with Matchers with BeforeAndAfter
   }
 
   override def afterAll() {
-    server.close()
+    server.shutdown()
   }
 }

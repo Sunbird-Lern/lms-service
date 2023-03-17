@@ -43,8 +43,8 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
 
   override def afterAll() {
     super.afterAll()
+    server.shutdown()
     EmbeddedCassandraServerHelper.cleanEmbeddedCassandra()
-    server.close()
   }
 
   override def beforeAll() {

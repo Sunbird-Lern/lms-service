@@ -125,6 +125,7 @@ public final class JsonKey {
   public static final String CONTENT_NAME = "contentName";
   public static final String CONTENT_PROGRESS = "progress";
   public static final String CONTENT_TYPE = "contentType";
+  public static final String COOKIE = "Cookie";
   public static final String CONTENT_VERSION = "contentVersion";
   public static final String CONTENTS = "contents";
   public static final String CONTEXT = "context";
@@ -497,6 +498,7 @@ public final class JsonKey {
   public static final String START_TIME = "startTime";
   public static final String STATE = "state";
   public static final String STATUS = "status";
+  public static final String  PRIMARYCATEGORY = "primaryCategory";
   public static final String STATUS_CODE = "statusCode";
   public static final String SUB_SECTIONS = "subSections";
   public static final String SUBJECT = "subject";
@@ -628,6 +630,7 @@ public final class JsonKey {
   public static final String SUNBIRD_AUTHORIZATION = "sunbird_authorization";
   public static final String SUNBIRD_CS_BASE_URL = "sunbird_cs_base_url";
   public static final String SUNBIRD_CS_SEARCH_PATH = "sunbird_cs_search_path";
+  public static final String SUNBIRD_CS_COMPOSITE_SEARCH_PATH = "sunbird_cs_composite_search_path";
   public static final String SUNBIRD_LMS_TELEMETRY = "Sunbird_LMS_Telemetry";
   public static final String SUNBIRD_LMS_AUTHORIZATION = "sunbird_authorization";
   public static final String ETS = "ets";

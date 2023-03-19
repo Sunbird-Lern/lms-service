@@ -118,4 +118,8 @@ public class UserCoursesService {
   public List<String> getParticipantsList(String batchId, boolean active, RequestContext requestContext) {
     return userCourseDao.getBatchParticipants(requestContext, batchId, active);
   }
+
+  public List<String> getCourseParticipantsList(String courseId, boolean active, RequestContext requestContext) {
+    return userCourseDao.getCourseParticipants(requestContext, courseId, active);
+  }
 }

@@ -50,6 +50,12 @@ public class ContentSearchUtil {
     return headers;
   }
 
+  private static Map<String, String> getUpdatedCourseHeaders(Map<String, String> headers) {
+    Map<String, String> headerMap = new HashMap<>();
+    headerMap.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+    headerMap.put(JsonKey.COOKIE, headers.get(JsonKey.COOKIE));
+    return headerMap;
+  }
   /*public static Future<Map<String, Object>> searchContent(
           RequestContext requestContext, String urlQueryString, String queryRequestBody, Map<String, String> headers, ExecutionContextExecutor ec) {
     return searchContent(requestContext,null, queryRequestBody, headers, ec);
@@ -112,6 +118,49 @@ public class ContentSearchUtil {
 
     BaseRequest request =
         Unirest.post(urlString).headers(getUpdatedHeaders(headers)).body(queryRequestBody);
+    try {
+      HttpResponse<JsonNode> response = RestUtil.execute(request);
+      if (RestUtil.isSuccessful(response)) {
+        JSONObject result = response.getBody().getObject().getJSONObject("result");
+        Map<String, Object> resultMap = jsonToMap(result);
+        Object contents = resultMap.get(JsonKey.CONTENT);
+        resultMap.remove(JsonKey.CONTENT);
+        resultMap.put(JsonKey.CONTENTS, contents);
+        String resmsgId = RestUtil.getFromResponse(response, "params.resmsgid");
+        String apiId = RestUtil.getFromResponse(response, "id");
+        Map<String, Object> param = new HashMap<>();
+        param.put(JsonKey.RES_MSG_ID, resmsgId);
+        param.put(JsonKey.API_ID, apiId);
+        resultMap.put(JsonKey.PARAMS, param);
+        return resultMap;
+      } else {
+        logger.info(requestContext, "Composite search resturned failed response :: " + response.getStatus());
+        return new HashMap<>();
+      }
+    } catch (Exception e) {
+      logger.error(requestContext, "Exception occurred while calling composite search service :: ", e);
+      return new HashMap<>();
+    }
+  }
+
+  public static Map<String, Object> searchContentCompositeSync(
+          RequestContext requestContext, String urlQueryString, String queryRequestBody, Map<String, String> headers) {
+    Unirest.clearDefaultHeaders();
+    contentSearchURL = null;
+    String baseUrl = System.getenv(JsonKey.SUNBIRD_API_MGR_BASE_URL);
+    String searchPath = System.getenv(JsonKey.SUNBIRD_CS_COMPOSITE_SEARCH_PATH);
+    if (StringUtils.isBlank(searchPath))
+      searchPath = PropertiesCache.getInstance().getProperty(JsonKey.SUNBIRD_CS_COMPOSITE_SEARCH_PATH);
+    //contentSearchURL = "https://uphrh.in/content/composite/v1/search";
+    contentSearchURL = baseUrl + searchPath;
+
+    String urlString =
+            StringUtils.isNotBlank(urlQueryString)
+                    ? contentSearchURL + urlQueryString
+                    : contentSearchURL;
+
+    BaseRequest request =
+            Unirest.post(urlString).headers(getUpdatedCourseHeaders(headers)).body(queryRequestBody);
     try {
       HttpResponse<JsonNode> response = RestUtil.execute(request);
       if (RestUtil.isSuccessful(response)) {

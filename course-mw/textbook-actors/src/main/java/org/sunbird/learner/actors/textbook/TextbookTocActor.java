@@ -855,7 +855,7 @@ public class TextbookTocActor extends BaseActor {
     String textBookTocFileName = textbookId + "_" + textBookNameSlug + "_" + contentVersionKey;
     String prefix =
         TEXTBOOK_TOC_FOLDER + separator + textBookTocFileName + fileExtension.getDotExtension();
-
+    //No need to make any changes here as the uri is being generated based on the cloud service providers
     String cloudPath = getUri(prefix, false);
     logger.info(null, 
         "Timed:TextbookTocActor:getTocUrl duration for get cloud path url: "

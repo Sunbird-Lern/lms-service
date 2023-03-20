@@ -1,7 +1,6 @@
 package org.sunbird.common.models.util;
 
 import java.util.Arrays;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -783,7 +782,7 @@ public final class JsonKey {
       "application/vnd.ekstep.content-collection";
   public static final String VERSION_KEY = "versionKey";
   public static final String CSV_SEPERATOR = ",";
-  public static final String CONTENT_CLOUD_STORAGE_TYPE = "sunbird_content_cloud_storage_type";
+  public static final String CONTENT_CLOUD_STORAGE_TYPE = "sunbird_cloud_service_provider";
   public static final String CONTENT_CLOUD_STORAGE_CONTAINER =
       "sunbird_content_cloud_storage_container";
   public static final String AZURE_STR = "azure";
@@ -792,6 +791,11 @@ public final class JsonKey {
 
   public static final String OCI_STR = "oci";
   public static final String CLOUD_FOLDER_CONTENT = "sunbird_cloud_content_folder";
+  public static final String CLOUD_STORE_BASE_PATH = "cloud_storage_base_url";
+  public static final String CLOUD_STORAGE_CNAME_URL= "cloud_storage_cname_url";
+  public static final String CLOUD_STORAGE_DIAL_BUCKET_NAME = "cloud_storage_dial_bucketname";
+  public static final String DIAL_STORAGE_BASE_PATH_PLACEHOLDER="cloud_storage_path_prefix_dial";
+  public static final String CLOUD_STORE_BASE_PATH_PLACEHOLDER = "cloud_store_base_path_placeholder";
   public static final String TO_URL = "toUrl";
   public static final String TTL = "ttl";
   public static final String TEXTBOOK_TOC_CSV_TTL = "sunbird_texbook_toc_csv_ttl";
@@ -1075,6 +1079,8 @@ public final class JsonKey {
   public static final String OLD_CREATED_DATE = "oldCreatedDate";
   public static final String X_LOGGING_HEADERS = "X_LOGGING_HEADERS";
   public static final String LAST_CONTENT_ACCESS_TIME = "lastcontentaccesstime";
+  public static final String GCP="gcloud";
+  public static final String TEMPLATE_URL = "templateUrl";
 
   private JsonKey() {}
 }

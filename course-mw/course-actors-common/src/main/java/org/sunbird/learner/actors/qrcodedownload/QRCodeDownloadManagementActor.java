@@ -19,8 +19,6 @@ import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerUtil;
-import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.Request;
@@ -234,12 +232,24 @@ public class QRCodeDownloadManagementActor extends BaseActor {
       if (null != obj && obj instanceof List) {
         List<Map<String, Object>> listOfMap = (List<Map<String, Object>>) obj;
         if (CollectionUtils.isNotEmpty(listOfMap)) {
-          return (String) listOfMap.get(0).get("url");
+          //check if template url contains dail storage base path placeholder,if yes then append it with cname url and dial bucket name
+          String templateUrl = (String) listOfMap.get(0).get("url");
+          String dailStorageBasePathPlaceHolder = getConfigValue(DIAL_STORAGE_BASE_PATH_PLACEHOLDER);
+          templateUrl = resolvePlaceholder(templateUrl, dailStorageBasePathPlaceHolder,getConfigValue(CLOUD_STORAGE_DIAL_BUCKET_NAME));
+          return templateUrl;
         }
       }
     }
     return "";
   }
+
+  private String resolvePlaceholder(String templateUrl, String placeHolder,String containerName) {
+    if (templateUrl.contains(placeHolder))
+      templateUrl = templateUrl.replace(placeHolder, CloudStorageUtil.getBaseUrl()
+                      + "/" + containerName);
+    return templateUrl;
+  }
+
 
   /**
    * Uploading the generated csv to aws
@@ -276,11 +286,11 @@ public class QRCodeDownloadManagementActor extends BaseActor {
           ProjectCommonException.throwClientErrorException(
                   ResponseCode.errorUnsupportedCloudStorage,
                   ProjectUtil.formatMessage(
-                          ResponseCode.errorUnsupportedCloudStorage.getErrorMessage(), cloudStorage));
+                          ResponseCode.errorUnsupportedCloudStorage.getErrorMessage()));
           return null;
         }
         String fileUrl =
-                CloudStorageUtil.upload(storageType,
+                CloudStorageUtil.upload(cloudStorage,
                         getConfigValue(CONTENT_CLOUD_STORAGE_CONTAINER),
                         objectKey,
                         file.getAbsolutePath());

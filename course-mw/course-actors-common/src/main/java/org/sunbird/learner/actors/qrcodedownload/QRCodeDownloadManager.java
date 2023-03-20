@@ -111,7 +111,7 @@ public class QRCodeDownloadManager {
                         JsonKey.AUTHORIZATION,
                         PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_AUTHORIZATION));
             }
-            logger.info(null, "QRCodeDownloadManager:: getQRCodeImageUrl:: invoking DIAL service for QR Code Images:: " + String.join(",", dialCodes));
+            logger.info(null, "QRCodeDownloadManager:: getQRCodeImageUrl:: invoking DIAL service for QR Code Images:: " + params);
             String response = HttpUtil.sendPostRequest(dialServiceUrl + PropertiesCache.getInstance().getProperty(JsonKey.SUNBIRD_DIAL_SERVICE_SEARCH_URL), params, headers);
             Map<String, Object> data = new ObjectMapper().readValue(response, Map.class);
             logger.info(null, "QRCodeDownloadManager:: getQRCodeImageUrl:: QR Code List response:: ", null, (Map<String, Object>) data.get(JsonKey.PARAMS));

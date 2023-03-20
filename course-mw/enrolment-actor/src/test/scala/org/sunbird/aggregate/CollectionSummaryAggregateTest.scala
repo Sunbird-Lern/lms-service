@@ -37,7 +37,7 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
   val gson = new Gson()
   EmbeddedCassandraServerHelper.startEmbeddedCassandra(80000L)
   var server = new MockWebServer()
-  server.start(8082)
+  server.start(8888)
   var jedis: Jedis = _
   val redisConnect = new RedisCacheUtil()
 
@@ -116,7 +116,7 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
     groupByKeys.add("state")
     mockDruid("[{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":null,\"userCount\":2.000977198748901,\"edata_type\":\"enrol\",\"state\":null}},{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":null,\"userCount\":1.0002442201269182,\"edata_type\":\"complete\",\"state\":null}},{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":\"PUNE\",\"userCount\":1.0002442201269182,\"edata_type\":\"enrol\",\"state\":\"Maharashtra\"}},{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":\"Tumkur\",\"userCount\":1.0002442201269182,\"edata_type\":\"enrol\",\"state\":\"Karnataka\"}},{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":\"DADRA AND NAGAR HAVELI(UT)\",\"userCount\":1.0002442201269182,\"edata_type\":\"enrol\",\"state\":\"Dadra & Nagar Haveli\"}},{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":\"PUNE\",\"userCount\":1.0002442201269182,\"edata_type\":\"complete\",\"state\":\"Maharashtra\"}},{\"version\":\"v1\",\"timestamp\":\"1901-01-01T00:00:00.000Z\",\"event\":{\"district\":\"DADRA AND NAGAR HAVELI(UT)\",\"userCount\":1.0002442201269182,\"edata_type\":\"complete\",\"state\":\"Dadra & Nagar Haveli\"}}]")
     val query = "{\"request\":{\"filters\":{\"collectionId\":\"do_31309287232935526411138\",\"batchId\":\"0130929928739635201\"},\"groupBy\":[],\"intervals\":\"20120-01-23/2020-09-24\"}}"
-    Unirest.post(s"http://localhost:8082/druid/v2/").headers(getUpdatedHeaders(new util.HashMap[String, String]())).body(query)
+    Unirest.post(s"http://localhost:8888/obsrv/v1/query").headers(getUpdatedHeaders(new util.HashMap[String, String]())).body(query)
     val response = callActor(getRequest("0130929928739635201", "do_31309287232935526411138", "LAST_7DAYS", groupByKeys), Props(new CollectionSummaryAggregate()(new RedisCacheUtil())))
     assert(response.getResponseCode == ResponseCode.OK)
     val result = response.getResult
@@ -173,7 +173,7 @@ class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeA
   def mockDruid(response: String): Unit = {
     server.enqueue(new MockResponse().setBody(response))
     server.enqueue(new MockResponse().setHeader("Authorization", ""))
-    server.url("http://localhost:8082/druid/v2/")
+    server.url("http://localhost:8888/obsrv/v1/query")
     val headers = new util.HashMap[String, String]()
     headers.put("Authorization", "")
   }

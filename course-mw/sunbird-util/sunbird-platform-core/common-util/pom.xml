@@ -272,10 +272,10 @@
             <url>https://oss.sonatype.org/content/repositories/orgsunbird-1021</url>
         </repository>
 <!-- Below repository added for testing -->
-        <!-- <repository>
+        <repository>
             <id>cloud-store</id>
             <url>https://oss.sonatype.org/content/repositories/orgsunbird-1144/</url>
-        </repository> -->
+        </repository>
     </repositories>
     <build>
         <pluginManagement>

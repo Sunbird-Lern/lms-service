@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 public class QRCodeDownloadManager {
     public LoggerUtil logger = new LoggerUtil(this.getClass());
-    private static final List<String> fields = Arrays.asList("identifier", "dialcodes", "name");
+    private static final List<String> fields = Arrays.asList("identifier", "dialcodes", "name","channel");
     private static final Map<String, String> filtersHelperMap =
             new HashMap<String, String>() {
                 {

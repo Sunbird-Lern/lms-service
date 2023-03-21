@@ -72,6 +72,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             case "multiUserUnenrol" => bulkUnEnroll(request)
             case "listEnrol" => list(request)
             case "courseEval" => courseEval(request)
+            case "notIssueCertificate" => notIssueCertificate(request)
             case _ => ProjectCommonException.throwClientErrorException(ResponseCode.invalidRequestData,
                 ResponseCode.invalidRequestData.getErrorMessage)
         }
@@ -408,6 +409,23 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
              userCoursesDao.updateV2(request.getRequestContext, userIds.get(0), courseId, batchId, data)
          })
          sender().tell(successResponse(), self)
+    }
+
+    def notIssueCertificate(request: Request): Unit = {
+        logger.info(request.getRequestContext, "Actor current thread reaching actor method notIssueCertificate - " + Thread.currentThread().getId());
+        val courseId: String = request.get(JsonKey.COURSE_ID).asInstanceOf[String]
+        val userIds: util.List[String] = request.get(JsonKey.USER_IDs).asInstanceOf[util.List[String]]
+        val batchId: String = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
+        val comment: String = request.getOrDefault(JsonKey.COMMENT, "").asInstanceOf[String]
+        // creating request map
+        val map: _root_.java.util.HashMap[_root_.java.lang.String, _root_.java.lang.Object] = createCourseEvalRequestMap(comment, Integer.valueOf(4))
+        // creating cassandra column map
+        val data = CassandraUtil.changeCassandraColumnMapping(map)
+        // collecting response
+        (0 until (userIds.size())).foreach(x => {
+            userCoursesDao.updateV2(request.getRequestContext, userIds.get(0), courseId, batchId, data)
+        })
+        sender().tell(successResponse(), self)
     }
 
     private def createCourseEvalRequestMap(comment: String, statusCode: Integer) = {

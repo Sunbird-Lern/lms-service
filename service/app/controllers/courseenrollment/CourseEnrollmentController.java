@@ -286,4 +286,20 @@ public class CourseEnrollmentController extends BaseController {
                 getAllRequestHeaders(httpRequest),
                 httpRequest);
     }
+
+    public CompletionStage<Result> adminNotIssueCertificate(Http.Request httpRequest) {
+        return handleRequest(
+                courseEnrolmentActor, "notIssueCertificate",
+                httpRequest.body().asJson(),
+                (request) -> {
+                    Request req = (Request) request;
+                    Map<String, String[]> queryParams = new HashMap<>(httpRequest.queryString());
+                    String courseId = req.getRequest().containsKey(JsonKey.COURSE_ID) ? JsonKey.COURSE_ID : JsonKey.COLLECTION_ID;
+                    req.getRequest().put(JsonKey.COURSE_ID, req.getRequest().get(courseId));
+                    validator.validateBulkCourseEval(req);
+                    return null;
+                },
+                getAllRequestHeaders(httpRequest),
+                httpRequest);
+    }
 }

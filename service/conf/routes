@@ -25,6 +25,7 @@ POST     /v1/course/admin/bulk/enroll	    @controllers.courseenrollment.CourseEn
 POST     /v1/course/admin/unenroll          @controllers.courseenrollment.CourseEnrollmentController.adminUnenrollCourse(request: play.mvc.Http.Request)
 POST     /v1/course/admin/bulk/unenroll             @controllers.courseenrollment.CourseEnrollmentController.adminBulkUnenrollCourse(request: play.mvc.Http.Request)
 POST     /v1/course/admin/course/eval             @controllers.courseenrollment.CourseEnrollmentController.adminSubmitEvaluation(request: play.mvc.Http.Request)
+POST     /v1/course/admin/course/notissuecertificate             @controllers.courseenrollment.CourseEnrollmentController.adminNotIssueCertificate(request: play.mvc.Http.Request)
 POST     /v1/batch/bulk/enrollment          @controllers.bulkapimanagement.BulkUploadController.batchEnrollmentBulkUpload(request: play.mvc.Http.Request)
 POST     /v1/batch/bulk/unenrollment          @controllers.bulkapimanagement.BulkUploadController.batchUnEnrollmentBulkUpload(request: play.mvc.Http.Request)
 POST     /v1/content/state/read	        @controllers.LearnerController.getContentState(request: play.mvc.Http.Request)

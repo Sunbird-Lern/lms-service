@@ -125,27 +125,6 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
                 throw e
         }
     }
-    def getEvaluationList(request: Request, courseIds:java.util.List[String]): Response = {
-        val userId = request.get(JsonKey.USER_ID).asInstanceOf[String]
-        logger.info(request.getRequestContext, "CourseEnrolmentActor :: list :: UserId = " + userId)
-
-        val activeEnrolments: java.util.List[java.util.Map[String, AnyRef]] = getActiveEnrollments(userId, courseIds, request.getRequestContext)
-        logger.info(request.getRequestContext, "CourseEnrolmentActor :: list size :: " + activeEnrolments.size() + " :: UserId = " + userId)
-
-        val students: java.util.List[java.util.Map[String, AnyRef]] = {
-            if (CollectionUtils.isNotEmpty(activeEnrolments)) {
-                val studentIds: java.util.List[String] = activeEnrolments.map(e => e.getOrDefault(JsonKey.USER_ID, "").asInstanceOf[String]).distinct.filter(id => StringUtils.isNotBlank(id)).toList.asJava
-                val studentList: java.util.List[java.util.Map[String, AnyRef]] = addStudentDetails(activeEnrolments, studentIds, request)
-                val updatedEnrolmentList = updateProgressData(studentList, userId, studentIds, request.getRequestContext)
-                addBatchDetails(updatedEnrolmentList, request)
-            } else new java.util.ArrayList[java.util.Map[String, AnyRef]]()
-        }
-        val resp: Response = new Response()
-        val sortedEnrolment = students.filter(ae => ae.get("lastContentAccessTime") != null).toList.sortBy(_.get("lastContentAccessTime").asInstanceOf[Date])(Ordering[Date].reverse).toList
-        val finalEnrolments = sortedEnrolment ++ students.asScala.filter(e => e.get("lastContentAccessTime") == null).toList
-        resp.put(JsonKey.COURSES, finalEnrolments.asJava)
-        resp
-    }
 
     def getCourseParticipants(request: Request, courseId: String): Response = {
         val active = true
@@ -175,10 +154,6 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
                     courseUserMap.put(courseId, response)
                 }
                 courseUserMap
-                //val dataMap = courseIds.map(x => x -> getEvaluationList(request, x.toList.asInstanceOf)).toMap
-                //courseIds.forEach(getEvaluationList(request,courseIds).asInstanceOf).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
-//                for (courseId <- courseIds)
-//                    getEvaluationList(request, courseId.split(",").).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
             } else new util.HashMap[String, Response]()
         }
 
@@ -210,18 +185,6 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             new util.ArrayList[java.util.Map[String, AnyRef]]()
         }
     }
-    def getCourseEnvironment(requestContext: RequestContext): java.util.List[java.util.Map[String, AnyRef]] = {
-        val enrolments: java.util.List[java.util.Map[String, AnyRef]] = userCoursesDao.courseListEnrolments(requestContext)
-        if (CollectionUtils.isNotEmpty(enrolments)) {
-            val activeEnrolments = enrolments.filter(e => e.getOrDefault(JsonKey.ACTIVE, false.asInstanceOf[AnyRef]).asInstanceOf[Boolean])
-            val sortedEnrolment = activeEnrolments.filter(ae => ae.get(JsonKey.COURSE_ENROLL_DATE) != null).toList.sortBy(_.get(JsonKey.COURSE_ENROLL_DATE).asInstanceOf[Date])(Ordering[Date].reverse).toList
-            val finalEnrolments = sortedEnrolment ++ activeEnrolments.filter(e => e.get(JsonKey.COURSE_ENROLL_DATE) == null).toList
-            finalEnrolments.take(Integer.parseInt(ProjectUtil.getConfigValue("enrollment_list_size"))).toList.asJava
-
-        } else {
-            new util.ArrayList[java.util.Map[String, AnyRef]]()
-        }
-    }
 
     def addCourseDetails(activeEnrolments: java.util.List[java.util.Map[String, AnyRef]], courseIds: java.util.List[String] , request:Request): java.util.List[java.util.Map[String, AnyRef]] = {
         val requestBody: String =  prepareSearchRequest(courseIds, request)
@@ -241,28 +204,6 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             enrolment.put(JsonKey.CONTENT_ID, enrolment.get(JsonKey.COURSE_ID))
             enrolment.put(JsonKey.COLLECTION_ID, enrolment.get(JsonKey.COURSE_ID))
             enrolment.put(JsonKey.CONTENT, courseContent)
-            enrolment
-        }).toList.asJava
-    }
-
-    def addStudentDetails(activeEnrolments: java.util.List[java.util.Map[String, AnyRef]], studentIds: java.util.List[String], request: Request): java.util.List[java.util.Map[String, AnyRef]] = {
-        val requestBody: String = prepareSearchRequest(studentIds, request)
-        val searchResult: java.util.Map[String, AnyRef] = ContentSearchUtil.searchContentSync(request.getRequestContext, request.getContext.getOrDefault(JsonKey.URL_QUERY_STRING, "").asInstanceOf[String], requestBody, request.get(JsonKey.HEADER).asInstanceOf[java.util.Map[String, String]])
-        val studentList: java.util.List[java.util.Map[String, AnyRef]] = searchResult.getOrDefault(JsonKey.CONTENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
-        val studentMap = {
-            if (CollectionUtils.isNotEmpty(studentList)) {
-                studentList.map(ev => ev.get(JsonKey.IDENTIFIER).asInstanceOf[String] -> ev).toMap
-            } else Map()
-        }
-        activeEnrolments.filter(enrolment => studentMap.containsKey(enrolment.get(JsonKey.USER_ID))).map(enrolment => {
-            val studentContent = studentMap.get(enrolment.get(JsonKey.COURSE_ID))
-            enrolment.put(JsonKey.USERNAME, studentContent.get(JsonKey.USERNAME))
-            enrolment.put(JsonKey.DESCRIPTION, studentContent.get(JsonKey.DESCRIPTION))
-            enrolment.put(JsonKey.LEAF_NODE_COUNT, studentContent.get(JsonKey.LEAF_NODE_COUNT))
-            enrolment.put(JsonKey.COURSE_LOGO_URL, studentContent.get(JsonKey.APP_ICON))
-            enrolment.put(JsonKey.RESULT, enrolment.get(JsonKey.RESULT))
-            enrolment.put(JsonKey.DATE, enrolment.get(JsonKey.DATE))
-            enrolment.put(JsonKey.CONTENT, studentContent)
             enrolment
         }).toList.asJava
     }

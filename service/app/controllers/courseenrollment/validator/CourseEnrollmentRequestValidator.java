@@ -13,8 +13,20 @@ public class CourseEnrollmentRequestValidator extends BaseRequestValidator {
     commonValidations(courseRequestDto);
   }
 
+  public void validateMultiUserEnrollCourse(Request courseRequestDto) {
+    validateMultiUserEnroll(courseRequestDto);
+  }
+
   public void validateUnenrollCourse(Request courseRequestDto) {
     commonValidations(courseRequestDto);
+  }
+
+  public void validateBulkUnenrollCourse(Request courseRequestDto) {
+    validateMultiUserEnroll(courseRequestDto);
+  }
+
+  public void validateBulkCourseEval(Request courseRequestDto) {
+    validateMultiUserEnroll(courseRequestDto);
   }
 
   private void commonValidations(Request courseRequestDto) {
@@ -30,6 +42,18 @@ public class CourseEnrollmentRequestValidator extends BaseRequestValidator {
         (String) courseRequestDto.getRequest().get(JsonKey.USER_ID),
         ResponseCode.mandatoryParamsMissing,
         JsonKey.USER_ID);
+  }
+
+  private void validateMultiUserEnroll(Request courseRequestDto) {
+    validateParam(
+            (String) courseRequestDto.getRequest().get(JsonKey.COURSE_ID),
+            ResponseCode.mandatoryParamsMissing,
+            JsonKey.COURSE_ID+"/"+JsonKey.COLLECTION_ID);
+    validateParam(
+            (String) courseRequestDto.getRequest().get(JsonKey.BATCH_ID),
+            ResponseCode.mandatoryParamsMissing,
+            JsonKey.BATCH_ID);
+    validateListParam(courseRequestDto.getRequest(), JsonKey.USER_IDs);
   }
 
   public void validateEnrolledCourse(Request courseRequestDto) {

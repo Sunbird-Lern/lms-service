@@ -118,4 +118,8 @@ public class UserCoursesService {
   public List<String> getCourseParticipantsList(String courseId, boolean active, RequestContext requestContext) {
     return userCourseDao.getCourseParticipants(requestContext, courseId, active);
   }
+
+  public List<Map<String, Object>> getCourseParticipantsDetails(String courseId, boolean active, RequestContext requestContext) {
+    return userCourseDao.getCourseParticipantDetails(requestContext, courseId, active);
+  }
 }

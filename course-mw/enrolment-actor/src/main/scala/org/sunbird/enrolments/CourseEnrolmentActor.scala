@@ -129,13 +129,14 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     def getCourseParticipants(request: Request, courseId: String): Response = {
         val active = true
         var participants = userCoursesService.getCourseParticipantsList(courseId, active, request.getRequestContext)
-        if (CollectionUtils.isEmpty(participants)) participants = new util.ArrayList[String]
+        if (CollectionUtils.isEmpty(participants)) participants = new java.util.ArrayList[String]
         val resp: Response = new Response()
         val result = new java.util.HashMap[String, Any]
         result.put(JsonKey.COUNT, participants.size)
         result.put(JsonKey.PARTICIPANTS, participants)
         resp.put(JsonKey.COURSE_ID, result)
         resp
+
     }
     def getCourseList(request: Request): Response = {
         val activePIAACourseEnrolments: java.util.List[java.util.Map[String, AnyRef]] = addCourseListDetails(request)
@@ -148,13 +149,26 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val courseEnrolments = {
             if (CollectionUtils.isNotEmpty(courseMap)) {
                 val courseIds =  courseMap.keySet.toList
-                val courseUserMap = new util.HashMap[String, Response]()
+                val courseUserMap = new util.HashMap[String, java.util.List[java.util.Map[String, AnyRef]]]()
                 for (courseId <- courseIds) {
-                    var response = getCourseParticipants(request, courseId)
-                    courseUserMap.put(courseId, response)
+                    val activeEnrolments: java.util.List[java.util.Map[String, AnyRef]] = userCoursesService.getCourseParticipantsDetails(courseId, true, request.getRequestContext)
+                    val enrolments: java.util.List[java.util.Map[String, AnyRef]] = {
+                        if (CollectionUtils.isNotEmpty(activeEnrolments)) {
+                            val courseIds: java.util.List[String] = activeEnrolments.map(e => e.getOrDefault(JsonKey.COURSE_ID, "").asInstanceOf[String]).distinct.filter(id => StringUtils.isNotBlank(id)).toList.asJava
+                            val userIds: java.util.List[String] = activeEnrolments.map(e => e.getOrDefault(JsonKey.USER_ID, "").asInstanceOf[String]).distinct.filter(id => StringUtils.isNotBlank(id)).toList.asJava
+                            val enrolmentList: java.util.List[java.util.Map[String, AnyRef]] = addCourseDetails(activeEnrolments, courseIds, request)
+                            val updatedEnrolmentList = updateProgressData(enrolmentList)
+                            addBatchDetails(updatedEnrolmentList, request)
+                        } else new java.util.ArrayList[java.util.Map[String, AnyRef]]()
+                    }
+                    //val resp: Response = new Response()
+                    val sortedEnrolment = enrolments.filter(ae => ae.get("lastContentAccessTime") != null).toList.sortBy(_.get("lastContentAccessTime").asInstanceOf[Date])(Ordering[Date].reverse).toList
+                    val finalEnrolments = sortedEnrolment ++ enrolments.asScala.filter(e => e.get("lastContentAccessTime") == null).toList
+                    //resp.put(JsonKey.COURSES, finalEnrolments.asJava)
+                    courseUserMap.put(courseId, finalEnrolments)
                 }
                 courseUserMap
-            } else new util.HashMap[String, Response]()
+            } else new util.HashMap[String, java.util.List[java.util.Map[String, AnyRef]]]()
         }
 
         val resp = new Response()
@@ -360,6 +374,16 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     }
 
     def updateProgressData(enrolments: java.util.List[java.util.Map[String, AnyRef]], userId: String, courseIds: java.util.List[String], requestContext: RequestContext): util.List[java.util.Map[String, AnyRef]] = {
+        enrolments.map(enrolment => {
+            val leafNodesCount: Int = enrolment.getOrDefault("leafNodesCount", 0.asInstanceOf[AnyRef]).asInstanceOf[Int]
+            val progress: Int = enrolment.getOrDefault("progress", 0.asInstanceOf[AnyRef]).asInstanceOf[Int]
+            enrolment.put("status", getCompletionStatus(progress, leafNodesCount).asInstanceOf[AnyRef])
+            enrolment.put("completionPercentage", getCompletionPerc(progress, leafNodesCount).asInstanceOf[AnyRef])
+        })
+        enrolments
+    }
+
+    def updateProgressData(enrolments: java.util.List[java.util.Map[String, AnyRef]]): util.List[java.util.Map[String, AnyRef]] = {
         enrolments.map(enrolment => {
             val leafNodesCount: Int = enrolment.getOrDefault("leafNodesCount", 0.asInstanceOf[AnyRef]).asInstanceOf[Int]
             val progress: Int = enrolment.getOrDefault("progress", 0.asInstanceOf[AnyRef]).asInstanceOf[Int]

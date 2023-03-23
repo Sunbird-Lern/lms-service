@@ -115,12 +115,16 @@ public class ContentSearchUtil {
         StringUtils.isNotBlank(urlQueryString)
             ? contentSearchURL + urlQueryString
             : contentSearchURL;
-
+    logger.info(requestContext, "Headers inside the searchContentSync"+ headers);
     BaseRequest request =
         Unirest.post(urlString).headers(getUpdatedHeaders(headers)).body(queryRequestBody);
+    logger.info(requestContext, "request inside the searchContentSync"+ request);
+    logger.info(requestContext, "getUpdatedHeaders(headers) inside the searchContentSync"+ getUpdatedHeaders(headers));
     try {
       HttpResponse<JsonNode> response = RestUtil.execute(request);
+      logger.info(requestContext, "response inside the searchContentSync"+ response);
       if (RestUtil.isSuccessful(response)) {
+        logger.info(requestContext, "inside the response###"+ response);
         JSONObject result = response.getBody().getObject().getJSONObject("result");
         Map<String, Object> resultMap = jsonToMap(result);
         Object contents = resultMap.get(JsonKey.CONTENT);

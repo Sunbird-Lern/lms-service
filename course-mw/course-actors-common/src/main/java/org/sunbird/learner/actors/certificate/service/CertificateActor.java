@@ -28,7 +28,7 @@ public class CertificateActor extends BaseActor {
   private static enum ResponseMessage {
     SUBMITTED("Certificates issue action for Course Batch Id {0} submitted Successfully!"),
     FAILED("Certificates issue action for Course Batch Id {0} Failed!"),
-    COURSE_TYPE("Course type is not PIAA Assessment for Course Batch Id {0} ");
+    PIAA_SUBMITTED("Certificates will be issued for Course Batch Id {0} after evaluation ");
     private String value;
 
     private ResponseMessage(String value) {
@@ -48,6 +48,9 @@ public class CertificateActor extends BaseActor {
     switch (requestedOperation) {
       case "issueCertificate":
         issueCertificate(request);
+        break;
+      case "issueCertificateForPIAA":
+        issueCertificateForPIAA(request);
         break;
       default:
         onReceiveUnsupportedOperation(request.getOperation());
@@ -72,8 +75,9 @@ public class CertificateActor extends BaseActor {
     Response response = new Response();
     Map<String, Object> resultData = new HashMap<>();
     if(courseDetailsResponse.get(JsonKey.PRIMARYCATEGORY).equals("PIAA Assessment")){
-      resultData.put(
-              JsonKey.STATUS, MessageFormat.format(ResponseMessage.SUBMITTED.getValue(), batchId));
+      //Do Nothing
+    }else{
+      resultData.put(JsonKey.STATUS, MessageFormat.format(ResponseMessage.SUBMITTED.getValue(), batchId));
       resultData.put(JsonKey.BATCH_ID, batchId);
       resultData.put(JsonKey.COURSE_ID, courseId);
       resultData.put(JsonKey.COLLECTION_ID, courseId);
@@ -86,19 +90,43 @@ public class CertificateActor extends BaseActor {
         resultData.put(
                 JsonKey.STATUS, MessageFormat.format(ResponseMessage.FAILED.getValue(), batchId));
       }
-    }else{
-      logger.info(request.getRequestContext(), "We could not generate issueCertificate for courseId="
-              + courseId + ", batchId=" + batchId);
-      resultData.put(
-              JsonKey.STATUS, MessageFormat.format(ResponseMessage.COURSE_TYPE.getValue(), batchId));
-      resultData.put(JsonKey.BATCH_ID, batchId);
-      resultData.put(JsonKey.COURSE_ID, courseId);
-      resultData.put(JsonKey.COLLECTION_ID, courseId);
-      response.put(JsonKey.RESULT, resultData);
     }
     sender().tell(response, self());
   }
 
+  private void issueCertificateForPIAA(Request request) {
+    logger.info(request.getRequestContext(), "issueCertificateForPIAA request=" + request.getRequest());
+    final String batchId = (String) request.getRequest().get(JsonKey.BATCH_ID);
+    final String courseId = (String) request.getRequest().get(JsonKey.COURSE_ID);
+    List<String> userIds = (List<String>) request.getRequest().get(JsonKey.USER_IDs);
+    final boolean reIssue = isReissue(request.getContext().get(CourseJsonKey.REISSUE));
+    Map<String, Object> courseBatchResponse =
+            CourseBatchUtil.validateCourseBatch(request.getRequestContext(), courseId, batchId);
+    if (null == courseBatchResponse.get("cert_templates")) {
+      ProjectCommonException.throwClientErrorException(
+              ResponseCode.CLIENT_ERROR, "No certificate templates associated with " + batchId);
+    }
+    Map<String, Object> courseDetailsResponse =
+            CourseBatchUtil.getCourseDetails(request.getRequestContext(), courseId);
+    Response response = new Response();
+    Map<String, Object> resultData = new HashMap<>();
+    if(courseDetailsResponse.get(JsonKey.PRIMARYCATEGORY).equals("PIAA Assessment")){
+      resultData.put(JsonKey.STATUS, MessageFormat.format(ResponseMessage.PIAA_SUBMITTED.getValue(), batchId));
+      resultData.put(JsonKey.BATCH_ID, batchId);
+      resultData.put(JsonKey.COURSE_ID, courseId);
+      resultData.put(JsonKey.COLLECTION_ID, courseId);
+      response.put(JsonKey.RESULT, resultData);
+      try {
+        pushInstructionEvent(batchId, courseId, userIds, reIssue);
+      } catch (Exception e) {
+        logger.error(request.getRequestContext(), "issueCertificate pushInstructionEvent error for courseId="
+                + courseId + ", batchId=" + batchId, e);
+        resultData.put(
+                JsonKey.STATUS, MessageFormat.format(ResponseMessage.FAILED.getValue(), batchId));
+      }
+    }
+    sender().tell(response, self());
+  }
   private boolean isReissue(Object queryString) {
     if (queryString != null) {
       if (queryString instanceof String[]) {

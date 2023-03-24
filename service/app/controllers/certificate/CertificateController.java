@@ -41,6 +41,23 @@ public class CertificateController extends BaseController {
         httpRequest);
   }
 
+    public CompletionStage<Result> issueCertificateForPIAA(Http.Request httpRequest) {
+        return handleRequest(
+                certificateActorRef,
+                CourseActorOperations.ISSUE_PIAA_CERTIFICATE.getValue(),
+                httpRequest.body().asJson(),
+                (request) -> {
+                    Request req = (Request) request;
+                    String courseId = req.getRequest().containsKey(JsonKey.COURSE_ID) ? JsonKey.COURSE_ID : JsonKey.COLLECTION_ID;
+                    req.getRequest().put(JsonKey.COURSE_ID, req.getRequest().get(courseId));
+                    new CertificateRequestValidator().validateIssueCertificateRequest(req);
+                    req.getContext().put(REISSUE, httpRequest.queryString().get(REISSUE));
+                    return null;
+                },
+                getAllRequestHeaders(httpRequest),
+                httpRequest);
+    }
+
   public CompletionStage<Result> addCertificate(Http.Request httpRequest) {
     return handleRequest(
         courseBatchCertificateActorRef,

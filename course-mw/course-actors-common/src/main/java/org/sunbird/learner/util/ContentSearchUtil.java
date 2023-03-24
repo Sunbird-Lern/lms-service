@@ -150,18 +150,18 @@ public class ContentSearchUtil {
   public static Map<String, Object> searchContentCompositeSync(
           RequestContext requestContext, String urlQueryString, String queryRequestBody, Map<String, String> headers) {
     Unirest.clearDefaultHeaders();
-    contentSearchURL = null;
+    String contentCompositeSearchURL = null;
     String baseUrl = System.getenv(JsonKey.SUNBIRD_API_MGR_BASE_URL);
     String searchPath = System.getenv(JsonKey.SUNBIRD_CS_COMPOSITE_SEARCH_PATH);
     if (StringUtils.isBlank(searchPath))
       searchPath = PropertiesCache.getInstance().getProperty(JsonKey.SUNBIRD_CS_COMPOSITE_SEARCH_PATH);
     //contentSearchURL = "https://uphrh.in/content/composite/v1/search";
-    contentSearchURL = baseUrl + searchPath;
+    contentCompositeSearchURL = baseUrl + searchPath;
 
     String urlString =
             StringUtils.isNotBlank(urlQueryString)
-                    ? contentSearchURL + urlQueryString
-                    : contentSearchURL;
+                    ? contentCompositeSearchURL + urlQueryString
+                    : contentCompositeSearchURL;
 
     BaseRequest request =
             Unirest.post(urlString).headers(getUpdatedCourseHeaders(headers)).body(queryRequestBody);

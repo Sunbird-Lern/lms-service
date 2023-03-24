@@ -586,6 +586,7 @@ public final class JsonKey {
   public static final String URL_ACTION_ID = "url_action_ids";
   public static final String URLS = "urls";
   public static final String USER = "user";
+  public static final String USERS = "users";
   public static final String USER_ACTION_ROLE = "user_action_role";
   public static final String USER_AUTH_DB = "userAuth_db";
   public static final String USER_COUNT = "userCount";

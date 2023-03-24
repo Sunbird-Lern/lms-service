@@ -1,0 +1,9 @@
+dependencies:
+- name: lms_opa_policies
+  repository: file://../lms_opa_policies
+  version: 0.1.0
+- name: common
+  repository: https://keshavprasadms.github.io/sunbird-helmchart-templates
+  version: 0.1.0
+digest: sha256:2614997e4b7cd2fc3a014ca16054d0b26607db14e991d7973ea84cfd480ca855
+generated: "2023-03-08T17:30:18.238996779+05:30"

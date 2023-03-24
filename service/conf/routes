@@ -17,6 +17,7 @@ GET      /v1/user/courses/list/:uid	    @controllers.courseenrollment.CourseEnro
 GET      /private/v1/user/courses/list/:uid	    @controllers.courseenrollment.CourseEnrollmentController.privateGetEnrolledCourses(uid:String, request: play.mvc.Http.Request)
 POST     /v2/user/courses/list	    @controllers.courseenrollment.CourseEnrollmentController.getUserEnrolledCourses(request: play.mvc.Http.Request)
 POST     /v2/user/courses/admin/list	    @controllers.courseenrollment.CourseEnrollmentController.adminGetUserEnrolledCourses(request: play.mvc.Http.Request)
+POST     /v2/user/courses/admin/evaluationList	    @controllers.courseenrollment.CourseEnrollmentController.adminGetUserEnrolledCoursesEvaluationList(request: play.mvc.Http.Request)
 POST     /private/v2/user/courses/list	    @controllers.courseenrollment.CourseEnrollmentController.privateGetUserEnrolledCourses(request: play.mvc.Http.Request)
 POST     /v1/course/enroll	    		@controllers.courseenrollment.CourseEnrollmentController.enrollCourse(request: play.mvc.Http.Request)
 POST     /v1/course/unenroll             @controllers.courseenrollment.CourseEnrollmentController.unenrollCourse(request: play.mvc.Http.Request)

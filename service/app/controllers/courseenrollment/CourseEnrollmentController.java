@@ -207,6 +207,27 @@ public class CourseEnrollmentController extends BaseController {
                 httpRequest);
     }
 
+    public CompletionStage<Result> adminGetUserEnrolledCoursesEvaluationList(Http.Request httpRequest) {
+        return handleRequest(
+                courseEnrolmentActor, "evaluationListEnrol",
+                httpRequest.body().asJson(),
+                (req) -> {
+                    Request request = (Request) req;
+                    request
+                            .getContext()
+                            .put(JsonKey.TYPE, httpRequest.queryString().get(JsonKey.TYPE));
+                    request
+                            .getContext()
+                            .put(JsonKey.RESULT, httpRequest.queryString().get(JsonKey.RESULT));
+                    request
+                            .getContext()
+                            .put(JsonKey.PAGE_NUM, httpRequest.queryString().get(JsonKey.PAGE_NUM));
+                    return null;
+                },
+                getAllRequestHeaders((httpRequest)),
+                httpRequest);
+    }
+
     public CompletionStage<Result> adminEnrollCourse(Http.Request httpRequest) {
         return handleRequest(courseEnrolmentActor, "enrol",
                 httpRequest.body().asJson(),

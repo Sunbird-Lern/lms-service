@@ -5,7 +5,7 @@ import java.text.{MessageFormat, SimpleDateFormat}
 import java.time.format.DateTimeFormatter
 import java.time.{LocalDate, LocalDateTime, LocalTime, ZoneId}
 import java.util
-import java.util.{Comparator, Date, HashMap}
+import java.util.{Comparator, Date, HashMap, Optional}
 import akka.actor.ActorRef
 import com.fasterxml.jackson.databind.ObjectMapper
 
@@ -14,7 +14,7 @@ import org.apache.commons.collections4.{CollectionUtils, MapUtils}
 import org.apache.commons.lang3.StringUtils
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
-import org.sunbird.common.models.util.ProjectUtil.{EnrolmentType, convertJsonStringToMap}
+import org.sunbird.common.models.util.ProjectUtil.{EnrolmentType, convertJsonStringToMap, isNotNull}
 import org.sunbird.common.models.util._
 import org.sunbird.common.request.{Request, RequestContext}
 import org.sunbird.common.responsecode.ResponseCode
@@ -164,19 +164,6 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
                 throw e
         }
     }
-
-    def getCourseParticipants(request: Request, courseId: String): Response = {
-        val active = true
-        var participants = userCoursesService.getCourseParticipantsList(courseId, active, request.getRequestContext)
-        if (CollectionUtils.isEmpty(participants)) participants = new java.util.ArrayList[String]
-        val resp: Response = new Response()
-        val result = new java.util.HashMap[String, Any]
-        result.put(JsonKey.COUNT, participants.size)
-        result.put(JsonKey.PARTICIPANTS, participants)
-        resp.put(JsonKey.COURSE_ID, result)
-        resp
-
-    }
     def getCourseList(request: Request): Response = {
         val activePIAACourseEnrolments: java.util.List[java.util.Map[String, AnyRef]] = addCourseListDetails(request)
         val courseMap = {
@@ -188,30 +175,38 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val courseEnrolments = {
             if (CollectionUtils.isNotEmpty(courseMap)) {
                 val courseIds =  courseMap.keySet.toList
-                val courseUserMap = new util.HashMap[String, java.util.List[java.util.Map[String, AnyRef]]]()
+                val courseUserMap = new util.HashMap[String, java.util.Map[String, AnyRef]]()
                 for (courseId <- courseIds) {
-                    val activeEnrolments: java.util.List[java.util.Map[String, AnyRef]] = userCoursesService.getCourseParticipantsDetails(courseId, true, request.getRequestContext)
-                    val enrolments: java.util.List[java.util.Map[String, AnyRef]] = {
-                        if (CollectionUtils.isNotEmpty(activeEnrolments)) {
-                            val courseIds: java.util.List[String] = activeEnrolments.map(e => e.getOrDefault(JsonKey.COURSE_ID, "").asInstanceOf[String]).distinct.filter(id => StringUtils.isNotBlank(id)).toList.asJava
-                            val userIds: java.util.List[String] = activeEnrolments.map(e => e.getOrDefault(JsonKey.USER_ID, "").asInstanceOf[String]).distinct.filter(id => StringUtils.isNotBlank(id)).toList.asJava
-                            val enrolmentList: java.util.List[java.util.Map[String, AnyRef]] = addCourseDetails(activeEnrolments, courseIds, request)
-                            val updatedEnrolmentList = updateProgressData(enrolmentList)
-                            addBatchDetails(updatedEnrolmentList, request)
+                    // get list of participants for a given course ID
+                    val participantListByCourseId: java.util.List[java.util.Map[String, AnyRef]] = userCoursesService.getCourseParticipantsDetails(courseId, true, request.getRequestContext)
+                    // iterate through the list to create final response
+                    val participants: java.util.List[java.util.Map[String, AnyRef]] = {
+                        if (CollectionUtils.isNotEmpty(participantListByCourseId)) {
+                            val userIds: java.util.List[String] = participantListByCourseId.map(e => e.getOrDefault(JsonKey.USER_ID, "").asInstanceOf[String]).distinct.filter(id => StringUtils.isNotBlank(id)).toList.asJava
+                            // populate user data
+                            for (userId <- userIds) {
+                                val activeUserDetails: Optional[java.util.Map[String, AnyRef]]
+                                = userCoursesService.getParticipantsDetails(userId, true, request.getRequestContext)
+                                if(isNotNull(activeUserDetails.get())) {
+                                    participantListByCourseId.map(x => {
+                                        if(x.get(JsonKey.USER_ID)==activeUserDetails.get().get(JsonKey.USER_ID)) {
+                                            x.put(JsonKey.FIRST_NAME, activeUserDetails.get().get(JsonKey.FIRST_NAME))
+                                            x.put(JsonKey.LAST_NAME, activeUserDetails.get().get(JsonKey.LAST_NAME))
+                                            courseUserMap.put(userId, x)
+                                        }
+                                    })
+                                }
+                            }
+                            participantListByCourseId
                         } else new java.util.ArrayList[java.util.Map[String, AnyRef]]()
                     }
-                    //val resp: Response = new Response()
-                    val sortedEnrolment = enrolments.filter(ae => ae.get("lastContentAccessTime") != null).toList.sortBy(_.get("lastContentAccessTime").asInstanceOf[Date])(Ordering[Date].reverse).toList
-                    val finalEnrolments = sortedEnrolment ++ enrolments.asScala.filter(e => e.get("lastContentAccessTime") == null).toList
-                    //resp.put(JsonKey.COURSES, finalEnrolments.asJava)
-                    courseUserMap.put(courseId, finalEnrolments)
                 }
-                courseUserMap
-            } else new util.HashMap[String, java.util.List[java.util.Map[String, AnyRef]]]()
+                courseUserMap.values()
+            } else new util.ArrayList[util.Map[String, AnyRef]]()
         }
 
         val resp = new Response()
-        resp.put(JsonKey.COURSES, courseEnrolments)
+        resp.put(JsonKey.USERS, courseEnrolments)
         resp
     }
     def evaluationList(request: Request): Unit = {

@@ -16,6 +16,7 @@ import scala.concurrent.Future;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class UserCoursesService {
   private UserCoursesDao userCourseDao = UserCoursesDaoImpl.getInstance();
@@ -115,11 +116,11 @@ public class UserCoursesService {
     return userCourseDao.getBatchParticipants(requestContext, batchId, active);
   }
 
-  public List<String> getCourseParticipantsList(String courseId, boolean active, RequestContext requestContext) {
-    return userCourseDao.getCourseParticipants(requestContext, courseId, active);
-  }
-
   public List<Map<String, Object>> getCourseParticipantsDetails(String courseId, boolean active, RequestContext requestContext) {
     return userCourseDao.getCourseParticipantDetails(requestContext, courseId, active);
+  }
+
+  public Optional<Map<String, Object>> getParticipantsDetails(String userId, boolean active, RequestContext requestContext) {
+    return userCourseDao.getParticipantsDetails(requestContext, userId, active);
   }
 }

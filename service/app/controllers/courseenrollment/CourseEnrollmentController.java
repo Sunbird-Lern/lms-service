@@ -3,7 +3,6 @@ package controllers.courseenrollment;
 import akka.actor.ActorRef;
 import controllers.BaseController;
 import controllers.courseenrollment.validator.CourseEnrollmentRequestValidator;
-import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
@@ -12,13 +11,7 @@ import play.mvc.Result;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletionStage;
 
 public class CourseEnrollmentController extends BaseController {
@@ -214,6 +207,27 @@ public class CourseEnrollmentController extends BaseController {
                 httpRequest);
     }
 
+    public CompletionStage<Result> adminGetUserEnrolledCoursesEvaluationList(Http.Request httpRequest) {
+        return handleRequest(
+                courseEnrolmentActor, "evaluationListEnrol",
+                httpRequest.body().asJson(),
+                (req) -> {
+                    Request request = (Request) req;
+                    request
+                            .getContext()
+                            .put(JsonKey.TYPE, httpRequest.queryString().get(JsonKey.TYPE));
+                    request
+                            .getContext()
+                            .put(JsonKey.RESULT, httpRequest.queryString().get(JsonKey.RESULT));
+                    request
+                            .getContext()
+                            .put(JsonKey.PAGE_NUM, httpRequest.queryString().get(JsonKey.PAGE_NUM));
+                    return null;
+                },
+                getAllRequestHeaders((httpRequest)),
+                httpRequest);
+    }
+
     public CompletionStage<Result> adminEnrollCourse(Http.Request httpRequest) {
         return handleRequest(courseEnrolmentActor, "enrol",
                 httpRequest.body().asJson(),
@@ -229,6 +243,22 @@ public class CourseEnrollmentController extends BaseController {
                 httpRequest);
     }
 
+    public CompletionStage<Result> adminMultiUserEnrollCourse(Http.Request httpRequest) {
+        return handleRequest(courseEnrolmentActor, "multiUserEnrol",
+                httpRequest.body().asJson(),
+                (request) -> {
+                    Request req = (Request) request;
+                    Map<String, String[]> queryParams = new HashMap<>(httpRequest.queryString());
+                    String courseId = req.getRequest().containsKey(JsonKey.COURSE_ID) ? JsonKey.COURSE_ID : JsonKey.COLLECTION_ID;
+                    req.getRequest().put(JsonKey.COURSE_ID, req.getRequest().get(courseId));
+                    validator.validateMultiUserEnrollCourse(req);
+                    return null;
+                },
+                getAllRequestHeaders(httpRequest),
+                httpRequest);
+    }
+
+
     public CompletionStage<Result> adminUnenrollCourse(Http.Request httpRequest) {
         return handleRequest(
                 courseEnrolmentActor, "unenrol",
@@ -239,6 +269,55 @@ public class CourseEnrollmentController extends BaseController {
                     String courseId = req.getRequest().containsKey(JsonKey.COURSE_ID) ? JsonKey.COURSE_ID : JsonKey.COLLECTION_ID;
                     req.getRequest().put(JsonKey.COURSE_ID, req.getRequest().get(courseId));
                     validator.validateUnenrollCourse(req);
+                    return null;
+                },
+                getAllRequestHeaders(httpRequest),
+                httpRequest);
+    }
+
+    public CompletionStage<Result> adminBulkUnenrollCourse(Http.Request httpRequest) {
+        return handleRequest(
+                courseEnrolmentActor, "multiUserUnenrol",
+                httpRequest.body().asJson(),
+                (request) -> {
+                    Request req = (Request) request;
+                    Map<String, String[]> queryParams = new HashMap<>(httpRequest.queryString());
+                    String courseId = req.getRequest().containsKey(JsonKey.COURSE_ID) ? JsonKey.COURSE_ID : JsonKey.COLLECTION_ID;
+                    req.getRequest().put(JsonKey.COURSE_ID, req.getRequest().get(courseId));
+                    validator.validateBulkUnenrollCourse(req);
+                    return null;
+                },
+                getAllRequestHeaders(httpRequest),
+                httpRequest);
+    }
+
+
+    public CompletionStage<Result> adminSubmitEvaluation(Http.Request httpRequest) {
+        return handleRequest(
+                courseEnrolmentActor, "courseEval",
+                httpRequest.body().asJson(),
+                (request) -> {
+                    Request req = (Request) request;
+                    Map<String, String[]> queryParams = new HashMap<>(httpRequest.queryString());
+                    String courseId = req.getRequest().containsKey(JsonKey.COURSE_ID) ? JsonKey.COURSE_ID : JsonKey.COLLECTION_ID;
+                    req.getRequest().put(JsonKey.COURSE_ID, req.getRequest().get(courseId));
+                    validator.validateBulkCourseEval(req);
+                    return null;
+                },
+                getAllRequestHeaders(httpRequest),
+                httpRequest);
+    }
+
+    public CompletionStage<Result> adminNotIssueCertificate(Http.Request httpRequest) {
+        return handleRequest(
+                courseEnrolmentActor, "notIssueCertificate",
+                httpRequest.body().asJson(),
+                (request) -> {
+                    Request req = (Request) request;
+                    Map<String, String[]> queryParams = new HashMap<>(httpRequest.queryString());
+                    String courseId = req.getRequest().containsKey(JsonKey.COURSE_ID) ? JsonKey.COURSE_ID : JsonKey.COLLECTION_ID;
+                    req.getRequest().put(JsonKey.COURSE_ID, req.getRequest().get(courseId));
+                    validator.validateBulkCourseEval(req);
                     return null;
                 },
                 getAllRequestHeaders(httpRequest),

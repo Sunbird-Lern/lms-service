@@ -1,7 +1,6 @@
 package org.sunbird.learner.actors.coursebatch.service;
 
 import org.sunbird.common.ElasticSearchHelper;
-import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.util.JsonKey;
@@ -9,17 +8,15 @@ import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.datasecurity.OneWayHashing;
 import org.sunbird.common.request.RequestContext;
-import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.learner.actors.coursebatch.dao.UserCoursesDao;
 import org.sunbird.learner.actors.coursebatch.dao.impl.UserCoursesDaoImpl;
-import org.sunbird.models.user.courses.UserCourses;
 import scala.concurrent.Future;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class UserCoursesService {
   private UserCoursesDao userCourseDao = UserCoursesDaoImpl.getInstance();
@@ -117,5 +114,13 @@ public class UserCoursesService {
 
   public List<String> getParticipantsList(String batchId, boolean active, RequestContext requestContext) {
     return userCourseDao.getBatchParticipants(requestContext, batchId, active);
+  }
+
+  public List<Map<String, Object>> getCourseParticipantsDetails(String courseId, boolean active, RequestContext requestContext) {
+    return userCourseDao.getCourseParticipantDetails(requestContext, courseId, active);
+  }
+
+  public Optional<Map<String, Object>> getParticipantsDetails(String userId, boolean active, RequestContext requestContext) {
+    return userCourseDao.getParticipantsDetails(requestContext, userId, active);
   }
 }

@@ -65,6 +65,7 @@ public final class JsonKey {
   public static final String APPROVED_BY_NAME = "approvedByName";
   public static final String APPROVED_DATE = "approvedDate";
   public static final String ASSESSMENT = "assessment";
+  public static final String ASSESSMENT_NAME = "Assessment Name";
   public static final String ASSESSMENT_EVENTS = "assessments";
   public static final String ASSESSMENT_TS = "assessmentTs";
   public static final String ASSESSMENT_ANSWERS = "answers";
@@ -125,6 +126,7 @@ public final class JsonKey {
   public static final String CONTENT_NAME = "contentName";
   public static final String CONTENT_PROGRESS = "progress";
   public static final String CONTENT_TYPE = "contentType";
+  public static final String COOKIE = "Cookie";
   public static final String CONTENT_VERSION = "contentVersion";
   public static final String CONTENTS = "contents";
   public static final String CONTEXT = "context";
@@ -448,6 +450,7 @@ public final class JsonKey {
   public static final String RESOURCE_ID = "resourceId";
   public static final String RESPONSE = "response";
   public static final String RESULT = "result";
+  public static final String PAGE_NUM = "pageNum";
   public static final String RETIRED = "retired";
   public static final String RETRY_COUNT = "retryCount";
   public static final String ROLE = "role";
@@ -496,6 +499,7 @@ public final class JsonKey {
   public static final String START_TIME = "startTime";
   public static final String STATE = "state";
   public static final String STATUS = "status";
+  public static final String  PRIMARYCATEGORY = "primaryCategory";
   public static final String STATUS_CODE = "statusCode";
   public static final String SUB_SECTIONS = "subSections";
   public static final String SUBJECT = "subject";
@@ -583,6 +587,7 @@ public final class JsonKey {
   public static final String URL_ACTION_ID = "url_action_ids";
   public static final String URLS = "urls";
   public static final String USER = "user";
+  public static final String USERS = "users";
   public static final String USER_ACTION_ROLE = "user_action_role";
   public static final String USER_AUTH_DB = "userAuth_db";
   public static final String USER_COUNT = "userCount";
@@ -627,6 +632,7 @@ public final class JsonKey {
   public static final String SUNBIRD_AUTHORIZATION = "sunbird_authorization";
   public static final String SUNBIRD_CS_BASE_URL = "sunbird_cs_base_url";
   public static final String SUNBIRD_CS_SEARCH_PATH = "sunbird_cs_search_path";
+  public static final String SUNBIRD_CS_COMPOSITE_SEARCH_PATH = "sunbird_cs_composite_search_path";
   public static final String SUNBIRD_LMS_TELEMETRY = "Sunbird_LMS_Telemetry";
   public static final String SUNBIRD_LMS_AUTHORIZATION = "sunbird_authorization";
   public static final String ETS = "ets";
@@ -1013,5 +1019,6 @@ public final class JsonKey {
   public static final String GCP="gcloud";
   public static final String TEMPLATE_URL = "templateUrl";
   public static final String AUTH_ENABLED = "AuthenticationEnabled";
+  public static final String COMMENT = "comment";
   private JsonKey() {}
 }

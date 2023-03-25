@@ -2,6 +2,8 @@ package org.sunbird.learner.actors.coursebatch.dao;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.request.RequestContext;
 import org.sunbird.models.user.courses.UserCourses;
@@ -62,7 +64,10 @@ public interface UserCoursesDao {
    * @param active
    */
   List<String> getBatchParticipants(RequestContext requestContext, String batchId, boolean active);
-  
+  List<Map<String, Object>> getCourseParticipantDetails(RequestContext requestContext, String courseId, boolean active);
+  Optional<Map<String, Object>> getParticipantsDetails(RequestContext requestContext, String userId, boolean active);
+
   
   List<Map<String, Object>> listEnrolments(RequestContext requestContext, String userId, List<String> courseIdList);
+
 }

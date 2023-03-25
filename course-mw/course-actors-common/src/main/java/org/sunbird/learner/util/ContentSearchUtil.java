@@ -162,7 +162,7 @@ public class ContentSearchUtil {
             StringUtils.isNotBlank(urlQueryString)
                     ? contentCompositeSearchURL + urlQueryString
                     : contentCompositeSearchURL;
-
+  logger.info(requestContext,"Url string is "+urlString);
     BaseRequest request =
             Unirest.post(urlString).headers(getUpdatedCourseHeaders(headers)).body(queryRequestBody);
     try {

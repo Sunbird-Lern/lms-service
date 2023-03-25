@@ -193,6 +193,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
                                             x.put(JsonKey.FIRST_NAME, activeUserDetails.get().get(JsonKey.FIRST_NAME))
                                             x.put(JsonKey.LAST_NAME, activeUserDetails.get().get(JsonKey.LAST_NAME))
                                             x.put(JsonKey.ASSESSMENT_NAME, courseMap.get(courseId).get(JsonKey.NAME))
+                                            x.put(JsonKey.CREATED_BY, courseMap.get(courseId).get(JsonKey.CREATED_BY))
                                             courseUserMap.put(userId, x)
                                         }
                                     })

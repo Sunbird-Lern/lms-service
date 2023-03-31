@@ -1015,7 +1015,6 @@ public final class JsonKey {
   public static final String SUNBIRD_DIAL_SERVICE_BASE_URL = "sunbird_dial_service_base_url";
   public static final String SUNBIRD_DIAL_SERVICE_SEARCH_URL = "sunbird_dial_service_search_url";
   public static final String AUTH_ENABLED = "AuthenticationEnabled";
-  public static final String OBSERV_API_SERVICE_BASE_URL="obsrv_api_service_base_url";
-  public static final String OBSERV_API_SERVICE_ENDPOINT="obsrv_api_service_endpoint";
+
   private JsonKey() {}
 }

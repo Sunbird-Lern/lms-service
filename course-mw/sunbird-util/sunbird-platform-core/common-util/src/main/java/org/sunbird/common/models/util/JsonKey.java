@@ -193,7 +193,7 @@ public final class JsonKey {
   public static final String EKSTEP_CONTENT_SEARCH_BASE_URL = "ekstep_content_search_base_url";
   public static final String EKSTEP_CONTENT_SEARCH_URL = "ekstep_content_search_url";
   public static final String EKSTEP_CONTENT_UPDATE_URL = "ekstep.content.update.url";
-  public static final String EKSTEP_SERVICE = "EkStep service";
+  public static final String EKSTEP_SERVICE = "Content service";
   public static final String EKSTEP_TAG_API_URL = "ekstep.tag.api.url";
   public static final String EMAIL = "email";
   public static final String EMAIL_REQUEST = "emailReq";
@@ -1015,6 +1015,7 @@ public final class JsonKey {
   public static final String SUNBIRD_DIAL_SERVICE_BASE_URL = "sunbird_dial_service_base_url";
   public static final String SUNBIRD_DIAL_SERVICE_SEARCH_URL = "sunbird_dial_service_search_url";
   public static final String AUTH_ENABLED = "AuthenticationEnabled";
+  public static final String CONTENT_READ_URL = "content_read_url";
 
   private JsonKey() {}
 }

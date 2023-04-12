@@ -225,7 +225,6 @@ public interface ResponseMessage {
     String USER_PHONE_UPDATE_FAILED = "user phone update is failed.";
     String ES_UPDATE_FAILED = "Data insertion to ES failed.";
     String UPDATE_FAILED = "Data updation failed due to invalid Request";
-    String INVALID_TYPE_VALUE = "Type value should be organisation OR location .";
     String INVALID_LOCATION_ID = "Please provide valid location id.";
     String INVALID_HASHTAG_ID =
         "Please provide different hashTagId.This HashTagId is associated with some other organization.";
@@ -243,7 +242,6 @@ public interface ResponseMessage {
     String NOT_SUPPORTED = "Not Supported.";
     String USERNAME_USERID_MISSING = "Please provide either userName or userId.";
     String ISSUER_ID_REQUIRED = "Please provide issuer ID.";
-    String ISSUER_LIST_REQUIRED = "Please provide issuer list.";
     String ROOT_ORG_ID_REQUIRED = "Please provide root organisation ID.";
     String RECIPIENT_EMAIL_REQUIRED = "Please provide recipient email.";
     String ASSERTION_EVIDENCE_REQUIRED = "Please provide valid assertion url as an evidence.";
@@ -255,7 +253,6 @@ public interface ResponseMessage {
     String SLUG_REQUIRED = "Slug is required .";
     String INVALID_ISSUER_ID = "Invalid issuer ID.";
     String REVOCATION_REASON_REQUIRED = "Please provide revocation reason.";
-    String ALREADY_REVOKED = "Assertion is already revoked.";
     String INVALID_RECIPIENT_TYPE = "Please provide a valid recipient type.";
     String CUSTOM_SERVER_ERROR = "{0}";
     String PAGE_NOT_EXIST = "Requested page does not exist.";
@@ -268,14 +265,12 @@ public interface ResponseMessage {
     String INVALID_VALUE = "Invalid {0}: {1}. Valid values are: {2}.";
     String PARENT_CODE_AND_PARENT_ID_MISSING = "Please provide either parentCode or parentId.";
     String INVALID_PARAMETER = "Please provide valid {0}.";
-    String INVALID_PARENT_ID = "Please provide valid parentId.";
     String INVALID_LOCATION_DELETE_REQUEST =
         "One or more locations have a parent reference to given location and hence cannot be deleted.";
     String LOCATION_TYPE_CONFLICTS = "Location type conflicts with its parent location type.";
     String MANDATORY_PARAMETER_MISSING = "Mandatory parameter {0} is missing.";
     String ERROR_MANDATORY_PARAMETER_EMPTY = "Mandatory parameter {0} is empty.";
     String ERROR_NO_FRAMEWORK_FOUND = "No framework found.";
-    String INVALID_LOCN_ID = "Please provide valid locationId.";
     String UPDATE_NOT_ALLOWED = "Update of {0} is not allowed.";
     String MANDATORY_HEADER_MISSING = "Mandatory header {0} is missing.";
     String INVALID_PARAMETER_VALUE =
@@ -294,13 +289,10 @@ public interface ResponseMessage {
         "No root organisation found which is associated with given {0}.";
     String OR_FORMAT = "{0} or {1}";
     String AND_FORMAT = "{0} and {1}";
-    String DOT_FORMAT = "{0}.{1}";
     String DEPENDENT_PARAMETER_MISSING = "Missing parameter {0} which is dependent on {1}.";
     String DEPENDENT_PARAMS_MISSING = "Missing parameter value in {0}.";
     String EXTERNALID_NOT_FOUND =
         "External ID (id: {0}, idType: {1}, provider: {2}) not found for given user.";
-    String PARSING_FAILED = "Failed to parse {0}.";
-    String EXTERNAL_ID_FORMAT = "externalId (id: {0}, idType: {1}, provider: {2})";
     String EXTERNALID_ASSIGNED_TO_OTHER_USER =
         "External ID (id: {0}, idType: {1}, provider: {2}) already assigned to another user.";
     String MANDATORY_CONFIG_PARAMETER_MISSING =
@@ -557,7 +549,6 @@ public interface ResponseMessage {
     String EMAIL_BODY_ERROR = "EMAIL_BODY_ERROR";
     String RECIPIENT_ADDRESS_ERROR = "RECIPIENT_ADDRESS_ERROR";
     String ISSUER_ID_REQUIRED = "ISSUER_ID_REQUIRED";
-    String ISSUER_LIST_REQUIRED = "ISSUER_LIST_REQUIRED";
     String ROOT_ORG_ID_REQUIRED = "BADGE_ROOT_ORG_ID_REQUIRED";
     String RECIPIENT_EMAIL_REQUIRED = "RECIPIENT_EMAIL_REQUIRED";
     String ASSERTION_EVIDENCE_REQUIRED = "ASSERTION_EVIDENCE_REQUIRED";
@@ -639,13 +630,11 @@ public interface ResponseMessage {
     String INVALID_VALUE = "INVALID_VALUE";
     String PARENT_CODE_AND_PARENT_ID_MISSING = "PARENT_CODE_AND_PARENT_ID_MISSING";
     String INVALID_PARAMETER = "INVALID_PARAMETER";
-    String INVALID_PARENT_ID = "INVALID_PARENT_ID";
     String INVALID_LOCATION_DELETE_REQUEST = "INVALID_LOCATION_DELETE_REQUEST";
     String LOCATION_TYPE_CONFLICTS = "LOCATION_TYPE_CONFLICTS";
     String MANDATORY_PARAMETER_MISSING = "MANDATORY_PARAMETER_MISSING";
     String ERROR_MANDATORY_PARAMETER_EMPTY = "ERROR_MANDATORY_PARAMETER_EMPTY";
     String ERROR_NO_FRAMEWORK_FOUND = "ERROR_NO_FRAMEWORK_FOUND";
-    String INVALID_LOCN_ID = "INVALID_LOCATION_ID";
     String UPDATE_NOT_ALLOWED = "UPDATE_NOT_ALLOWED";
     String MANDATORY_HEADER_MISSING = "MANDATORY_HEADER_MISSING";
     String INVALID_PARAMETER_VALUE = "INVALID_PARAMETER_VALUE";
@@ -654,7 +643,6 @@ public interface ResponseMessage {
     String FILE_ATTACHMENT_SIZE_NOT_CONFIGURED = "ATTACHMENT_SIZE_NOT_CONFIGURED";
     String EMPTY_FILE = "EMPTY_FILE";
     String INVALID_COLUMNS = "INVALID_COLUMNS";
-    String INVALID_COLUMN = "INVALID_COLUMN";
     String CONFLICTING_ORG_LOCATIONS = "CONFLICTING_ORG_LOCATIONS";
     String UNABLE_TO_COMMUNICATE_WITH_ACTOR = "UNABLE_TO_COMMUNICATE_WITH_ACTOR";
     String EMPTY_HEADER_LINE = "EMPTY_HEADER_LINE";

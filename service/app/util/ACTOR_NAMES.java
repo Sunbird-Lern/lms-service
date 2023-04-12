@@ -3,7 +3,6 @@ package util;
 import org.sunbird.aggregate.CollectionSummaryAggregate;
 import org.sunbird.enrolments.CourseEnrolmentActor;
 import org.sunbird.enrolments.ContentConsumptionActor;
-import org.sunbird.enrolments.CourseEnrolmentActor;
 import org.sunbird.group.GroupAggregatesActor;
 import org.sunbird.learner.actors.BackgroundJobManager;
 import org.sunbird.learner.actors.PageManagementActor;
@@ -19,7 +18,6 @@ import org.sunbird.learner.actors.health.HealthActor;
 import org.sunbird.learner.actors.qrcodedownload.QRCodeDownloadManagementActor;
 import org.sunbird.learner.actors.search.SearchHandlerActor;
 import org.sunbird.learner.actors.syncjobmanager.EsSyncActor;
-import org.sunbird.learner.actors.textbook.TextbookTocActor;
 
 public enum ACTOR_NAMES {
   COURSE_BATCH_MANAGEMENT_ACTOR(CourseBatchManagementActor.class, "course-batch-management-actor"),
@@ -27,7 +25,6 @@ public enum ACTOR_NAMES {
   CACHE_MANAGEMENT_ACTOR(CacheManagementActor.class, "cache-management-actor"),
   PAGE_MANAGEMENT_ACTOR(PageManagementActor.class, "page-management-actor"),
   SEARCH_HANDLER_ACTOR(SearchHandlerActor.class, "search-handler-actor"),
-  TEXTBOOK_TOC_ACTOR(TextbookTocActor.class, "textbook-toc-actor"),
   HEALTH_ACTOR(HealthActor.class, "health-actor"),
   COURSEBATCH_CERTIFICATE_ACTOR(
       CourseBatchCertificateActor.class, "course-batch-certificate-actor"),

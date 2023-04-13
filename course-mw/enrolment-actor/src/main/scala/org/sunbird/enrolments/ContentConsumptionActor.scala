@@ -32,6 +32,11 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     private val enrolmentDBInfo = Util.dbInfoMap.get(JsonKey.LEARNER_COURSE_DB)
     val dateFormatter = ProjectUtil.getDateFormatter
 
+    //Added default fields in env varible:
+    //content.default.fields=contentid,userid,batchid,courseid,completedcount,completionpercentage,lastcompletedtime,status,viewcount
+    val defaultFields: Set[String] = if(ProjectUtil.getConfigValue("content.default.fields")!=null) ProjectUtil.getConfigValue("content.default.fields").split(",").toSet else Set[String]("contentid","userid","batchid","courseid","completedcount","completionpercentage","lastcompletedtime","status","viewcount")
+    val jsonFields = Set[String]("progressdetails")
+
     override def onReceive(request: Request): Unit = {
         Util.initializeContext(request, TelemetryEnvKey.BATCH, this.getClass.getName)
 
@@ -126,7 +131,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                             val courseId = if (entry._2.head.containsKey(JsonKey.COURSE_ID)) entry._2.head.getOrDefault(JsonKey.COURSE_ID, "").asInstanceOf[String] else entry._2.head.getOrDefault(JsonKey.COLLECTION_ID, "").asInstanceOf[String]
                             if(entry._2.head.containsKey(JsonKey.COLLECTION_ID)) entry._2.head.remove(JsonKey.COLLECTION_ID)
                             val contentIds = entry._2.map(e => e.getOrDefault(JsonKey.CONTENT_ID, "").asInstanceOf[String]).asJava
-                            val existingContents = getContentsConsumption(userId, courseId, contentIds, batchId, request.getRequestContext).groupBy(x => x.get("contentId").asInstanceOf[String]).map(e => e._1 -> e._2.toList.head).toMap
+                            val existingContents = getContentsConsumption(userId, courseId, contentIds, batchId, defaultFields, request.getRequestContext).groupBy(x => x.get("contentId").asInstanceOf[String]).map(e => e._1 -> e._2.toList.head).toMap
                             val contents:List[java.util.Map[String, AnyRef]] = entry._2.toList.map(inputContent => {
                                 val existingContent = existingContents.getOrElse(inputContent.get("contentId").asInstanceOf[String], new java.util.HashMap[String, AnyRef])
                                 CassandraUtil.changeCassandraColumnMapping(processContentConsumption(inputContent, existingContent, userId))
@@ -191,7 +196,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         }
     }
 
-    def getContentsConsumption(userId: String, courseId : String, contentIds: java.util.List[String], batchId: String, requestContext: RequestContext):java.util.List[java.util.Map[String, AnyRef]] = {
+    def getContentsConsumption(userId: String, courseId : String, contentIds: java.util.List[String], batchId: String, fields: java.util.Set[String], requestContext: RequestContext):java.util.List[java.util.Map[String, AnyRef]] = {
         val filters = new java.util.HashMap[String, AnyRef]() {{
             put("userid", userId)
             put("courseid", courseId)
@@ -199,7 +204,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             if(CollectionUtils.isNotEmpty(contentIds))
                 put("contentid", contentIds)
         }}
-        val response = cassandraOperation.getRecords(requestContext, consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, filters, null)
+        val response = cassandraOperation.getRecords(requestContext, consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, filters, fields.toList)
         response.getResult.getOrDefault(JsonKey.RESPONSE, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
     }
 
@@ -207,6 +212,9 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         val inputStatus = inputContent.getOrDefault(JsonKey.STATUS, 0.asInstanceOf[AnyRef]).asInstanceOf[Number].intValue()
         val updatedContent = new java.util.HashMap[String, AnyRef]()
         updatedContent.putAll(inputContent)
+        val parsedMap = new java.util.HashMap[String, AnyRef]()
+        jsonFields.flatMap(f => if(inputContent.containsKey(f)) Some(parsedMap.put(f,mapper.writeValueAsString(inputContent.get(f)))) else None)
+        updatedContent.putAll(parsedMap)
         val inputCompletedTime = parseDate(inputContent.getOrDefault(JsonKey.LAST_COMPLETED_TIME, "").asInstanceOf[String])
         val inputAccessTime = parseDate(inputContent.getOrDefault(JsonKey.LAST_ACCESS_TIME, "").asInstanceOf[String])
         if(MapUtils.isNotEmpty(existingContent)) {
@@ -313,12 +321,17 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         val courseId = request.get(JsonKey.COURSE_ID).asInstanceOf[String]
         val contentIds = request.getRequest.getOrDefault(JsonKey.CONTENT_IDS, new java.util.ArrayList[String]()).asInstanceOf[java.util.List[String]]
         val fields = request.getRequest.getOrDefault(JsonKey.FIELDS, new java.util.ArrayList[String](){{ add(JsonKey.PROGRESS) }}).asInstanceOf[java.util.List[String]]
-        val contentsConsumed = getContentsConsumption(userId, courseId, contentIds, batchId, request.getRequestContext)
+        val finalFields = defaultFields ++ fields
+        val contentsConsumed = getContentsConsumption(userId, courseId, contentIds, batchId, finalFields.asJava, request.getRequestContext)
         val response = new Response
         if(CollectionUtils.isNotEmpty(contentsConsumed)) {
             val filteredContents = contentsConsumed.map(m => {
                 ProjectUtil.removeUnwantedFields(m, JsonKey.DATE_TIME, JsonKey.USER_ID, JsonKey.ADDED_BY, JsonKey.LAST_UPDATED_TIME, JsonKey.OLD_LAST_ACCESS_TIME, JsonKey.OLD_LAST_UPDATED_TIME, JsonKey.OLD_LAST_COMPLETED_TIME)
                 m.put(JsonKey.COLLECTION_ID, m.getOrDefault(JsonKey.COURSE_ID, ""))
+                jsonFields.foreach(field =>
+                    if(fields.contains(field))
+                        m.put(field, mapper.readTree(m.get(field).asInstanceOf[String]))
+                )
                 val formattedMap = JsonUtil.convertWithDateFormat(m, classOf[util.Map[String, Object]], dateFormatter)
                 if (fields.contains(JsonKey.ASSESSMENT_SCORE))
                     formattedMap.putAll(mapAsJavaMap(Map(JsonKey.ASSESSMENT_SCORE -> getScore(userId, courseId, m.get("contentId").asInstanceOf[String], batchId, request.getRequestContext))))

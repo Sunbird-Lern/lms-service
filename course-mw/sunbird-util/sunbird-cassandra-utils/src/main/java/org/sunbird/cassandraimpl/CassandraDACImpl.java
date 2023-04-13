@@ -32,7 +32,7 @@ public class CassandraDACImpl extends CassandraOperationImpl {
     try {
       Select select;
       if (CollectionUtils.isNotEmpty(fields)) {
-        select = QueryBuilder.select((String[]) fields.toArray()).from(keySpace, table);
+       select = QueryBuilder.select(fields.toArray()).from(keySpace, table);
       } else {
         select = QueryBuilder.select().all().from(keySpace, table);
       }

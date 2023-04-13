@@ -53,6 +53,10 @@ POST		 /v1/batch/participants/list			@controllers.coursemanagement.CourseBatchCo
 POST    /v1/textbook/toc/upload/:textbookId           @controllers.textbook.TextbookController.uploadTOC(textbookId:String, request: play.mvc.Http.Request)
 GET    /v1/textbook/toc/download/:textbookId           @controllers.textbook.TextbookController.getTocUrl(textbookId:String, request: play.mvc.Http.Request)
 
+# Collection TOC CSV APIs
+POST    /v1/collection/toc/upload/:collectionId           @controllers.collectionhierarchy.CollectionHierarchyController.uploadTOC(collectionId:String, request: play.mvc.Http.Request)
+GET    /v1/collection/toc/download/:collectionId           @controllers.collectionhierarchy.CollectionHierarchyController.getTOCUrl(collectionId:String, request: play.mvc.Http.Request)
+
 
 # Certificate APIs
 POST /v1/course/batch/cert/issue           @controllers.certificate.CertificateController.issueCertificate(request: play.mvc.Http.Request)

@@ -146,4 +146,48 @@ public class UserCoursesDaoImpl implements UserCoursesDao {
       return userCoursesList;
     }
   }
+
+  /**
+   * Gets user courses data
+   *
+   * @param courseId the course id
+   * @param batchId the batch id
+   * @param requestContext the request context
+   * @return List of user courses
+   */
+  @Override
+  public List<UserCourses> read(String courseId, String batchId, RequestContext requestContext) {
+    Map<String, Object> primaryKey = new HashMap<>();
+    primaryKey.put(JsonKey.BATCH_ID, batchId);
+    primaryKey.put(JsonKey.COURSE_ID, courseId);
+    Response response = cassandraOperation.getRecordsByProperties(requestContext, KEYSPACE_NAME, TABLE_NAME, primaryKey);
+    List<Map<String, Object>> userCoursesList =
+            (List<Map<String, Object>>) response.get(JsonKey.RESPONSE);
+    if (CollectionUtils.isEmpty(userCoursesList)) {
+      return null;
+    }
+    try {
+      return userCoursesList.stream().map(el -> mapper.convertValue(el, UserCourses.class)).collect(Collectors.toList());
+    } catch (Exception e) {
+    }
+    return null;
+  }
+
+  @Override
+  public UserCourses read(String courseId, RequestContext requestContext, String userId) {
+    Map<String, Object> primaryKey = new HashMap<>();
+    primaryKey.put(JsonKey.COURSE_ID, courseId);
+    primaryKey.put(JsonKey.USER_ID, userId);
+    Response response = cassandraOperation.getRecordsByProperties(requestContext, KEYSPACE_NAME, TABLE_NAME, primaryKey);
+    List<Map<String, Object>> userCoursesList =
+            (List<Map<String, Object>>) response.get(JsonKey.RESPONSE);
+    if (CollectionUtils.isEmpty(userCoursesList)) {
+      return null;
+    }
+    try {
+      return mapper.convertValue((Map<String, Object>) userCoursesList.get(0), UserCourses.class);
+    } catch (Exception e) {
+    }
+    return null;
+  }
 }

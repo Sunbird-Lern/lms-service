@@ -21,7 +21,7 @@ import org.sunbird.common.request.RequestValidator;
 import play.mvc.Http;
 import play.mvc.Result;
 import util.Attrs;
-import util.Common;
+import org.sunbird.common.Common;
 
 /**
  * This controller will handle all the request related to page api's.

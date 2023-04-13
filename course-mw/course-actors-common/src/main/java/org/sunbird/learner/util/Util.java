@@ -51,6 +51,7 @@ public final class Util {
         JsonKey.LEARNER_CONTENT_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "user_content_consumption"));
     dbInfoMap.put(
         JsonKey.COURSE_MANAGEMENT_DB, getDbInfoObject(KEY_SPACE_NAME, "course_management"));
+    dbInfoMap.put(JsonKey.COURSE_USER_ENROLMENTS_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "user_enrolments"));
     dbInfoMap.put(JsonKey.PAGE_MGMT_DB, getDbInfoObject(KEY_SPACE_NAME, "page_management"));
     dbInfoMap.put(JsonKey.PAGE_SECTION_DB, getDbInfoObject(KEY_SPACE_NAME, "page_section"));
     dbInfoMap.put(JsonKey.SECTION_MGMT_DB, getDbInfoObject(KEY_SPACE_NAME, "page_section"));
@@ -70,6 +71,8 @@ public final class Util {
     dbInfoMap.put(
             JsonKey.ASSESSMENT_AGGREGATOR_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "assessment_aggregator"));
     dbInfoMap.put(JsonKey.USER_ENROLMENTS_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "user_enrolments"));
+    dbInfoMap.put(
+            JsonKey.EVENT_ATTENDANCE_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "event_attendance"));
   }
 
   /**

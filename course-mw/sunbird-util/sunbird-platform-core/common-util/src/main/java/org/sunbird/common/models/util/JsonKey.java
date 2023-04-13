@@ -148,6 +148,8 @@ public final class JsonKey {
   public static final String COURSE_DURATION = "courseDuration";
   public static final String COURSE_ENROLL_DATE = "enrolledDate";
   public static final String COURSE_ID = "courseId";
+  public static final String ENROLLABLE_ITEM_ID = "enrollableItemId";
+  public static final String FIXED_BATCH_ID = "fixedBatchId";
   public static final String COURSE_IDS = "courseIds";
   public static final String COURSE_LIST = "courseList";
   public static final String COURSE_LOGO_URL = "courseLogoUrl";
@@ -199,6 +201,7 @@ public final class JsonKey {
   public static final String EKSTEP_CONCEPT_URL = "ekstep_concept_base_url";
   public static final String EKSTEP_CONTENT_SEARCH_BASE_URL = "ekstep_content_search_base_url";
   public static final String EKSTEP_CONTENT_SEARCH_URL = "ekstep_content_search_url";
+  public static final String EKSTEP_CONTENT_COUNT_URL = "ekstep_content_count_url";
   public static final String EKSTEP_CONTENT_UPDATE_URL = "ekstep.content.update.url";
   public static final String EKSTEP_CONTENT_URL = "content_url";
   public static final String EKSTEP_COURSE_PUBLISH_URL = "ekstep_course_publish_url";
@@ -406,6 +409,7 @@ public final class JsonKey {
   public static final String PAGE = "page";
   public static final String PAGE_ID = "pageId";
   public static final String PAGE_MGMT_DB = "page_mgmt_db";
+  public static final String COURSE_USER_ENROLMENTS_DB = "course_user_enrolments_db";
   public static final String PAGE_NAME = "name";
   public static final String PAGE_SECTION = "page_section";
   public static final String PAGE_SECTION_DB = "page_section_db";
@@ -1065,7 +1069,57 @@ public final class JsonKey {
   public static final String USER_ID_KEY = "userid";
   public static final String OLD_CREATED_DATE = "oldCreatedDate";
   public static final String X_LOGGING_HEADERS = "X_LOGGING_HEADERS";
-
+  public static final String EVENT_ATTENDANCE_DB = "eventAttendanceDB";
+  public static final String FROM_DATE = "fromDate";
+  public static final String TO_DATE = "toDate";
+  public static final String ONLINE_PROVIDER = "onlineProvider";
+  public static final String ENROLLED_DATE_DB = "enrolled_date";
+  public static final String ENROLLED_DATE = "enrolledDate";
+  public static final String END_DATE_DB = "end_date";
+  public static final String DAY_START_TIME = " 00:00:00.000";
+  public static final String DAY_END_TIME = " 23:59:59.999";
+  public static final String FULL_NAME = "fullName";
+  public static final String EVENT_ID = "eventId";
+  public static final String JOINED_DATE_TIME = "joinedDateTime";
+  public static final String LEFT_DATE_TIME = "leftDateTime";
+  public static final String FIRST_JOINED_DATE_TIME = "firstJoined";
+  public static final String FIRST_LEFT_DATE_TIME = "firstLeft";
+  public static final String LAST_JOINED_DATE_TIME = "lastJoined";
+  public static final String LAST_LEFT_DATE_TIME = "lastLeft";
+  public static final String START_CURLY_BRACE = "{";
+  public static final String END_CURLY_BRACE = "}";
+  public static final String COLON = ":";
+  public static final String ESCAPE_CHAR_FOR_DOUBLE_QUOTE = "\"";
+  public static final String CONTENT_TYPE_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
+  public static final String ORGANIZER = "Organizer";
+  public static final String PRESENTER = "Presenter";
+  public static final String VIEWER = "Viewer";
+  public static final String BBB_WEBHOOK_RESP_BODY_EVENT = "event";
+  public static final String BIG_BLUE_BUTTON = "bigbluebutton";
+  public static final String RECORD_ID = "recordId";
+  public static final String ONLINE_PROVIDER_DATA = "onlineProviderData";
+  public static final String RECORDINGS = "recordings";
+  public static final String RECORDING_URL = "recordingUrl";
+  public static final String RECORDING_START_TIME = "startTime";
+  public static final String RECORDING_END_TIME = "endTime";
+  public static final String RECORDING = "recording";
+  public static final String ID_KEY = "id";
+  public static final String ONLINE_PROVIDER_EVENT_USER_JOINED = "userJoined";
+  public static final String ONLINE_PROVIDER_EVENT_USER_LEFT = "userLeft";
+  public static final String ONLINE_PROVIDER_EVENT_MEETING_ENDED = "meetingEnded";
+  public static final String ONLINE_PROVIDER_CALLBACK_EVENT = "callbackEvent";
+  public static final String JOINED_LEFT_HISTORY = "joinedLeftHistory";
+  public static final String SE_BOARDS = "se_boards";
+  public static final String SE_MEDIUMS = "se_mediums";
+  public static final String SE_GRADE_LEVELS = "se_gradeLevels";
+  public static final String SE_SUBJECTS = "se_subjects";
+  public static final String PRIMARY_CATEGORY = "primaryCategory";
+  public static final String TOTAL_ENROLLED = "totalEnrolled";
+  public static final String TOTAL_COMPLETED = "totalCompleted";
+  public static final String COURSE_KEY = "Course";
+  public static final String EVENT_KEY = "Event";
+  public static final String EVENT = "event";
+  public static final String ORGANISATION_IDS = "organisationIds";
 
   private JsonKey() {}
 }

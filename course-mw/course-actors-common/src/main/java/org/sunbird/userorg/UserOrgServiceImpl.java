@@ -15,6 +15,7 @@ import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.common.util.KeycloakRequiredActionLinkUtil;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -239,5 +240,39 @@ public class UserOrgServiceImpl implements UserOrgService {
         return getUserById(userId, authToken);
       }
     });
+  }
+
+  /**
+   * Gets the users' data containing name, email and userId
+   *
+   * @param userIds the list of user ids
+   * @return The users' data containing name, email and userId
+   */
+  @Override
+  public List<Map<String, Object>> getUsersByIds(List<String> userIds) {
+    Map<String, Object> filterList = new HashMap<>();
+    filterList.put(JsonKey.USER_ID, userIds);
+    Map<String, Object> requestMap = getRequestMap(filterList);
+    ((Map<String, Object>) requestMap.get(JsonKey.REQUEST)).put(JsonKey.FIELDS, Arrays.asList(JsonKey.USER_ID, JsonKey.FIRST_NAME, JsonKey.LAST_NAME, JsonKey.EMAIL));
+    ((Map<String, Object>) requestMap.get(JsonKey.REQUEST)).put(JsonKey.LIMIT, 500);
+    return getUsersResponse(requestMap);
+  }
+
+  /**
+   * Gets the users' data containing name, email and userId
+   *
+   * @param requestMap the request map
+   * @return The users' data containing name, email and userId
+   */
+  private List<Map<String, Object>> getUsersResponse(Map<String, Object> requestMap) {
+    Map<String, String> headers = getdefaultHeaders();
+    Response response = getUserOrgResponse("/private/user/v1/search", HttpMethod.POST, requestMap, headers);
+    if (response != null) {
+      Map<String, Object> userMap = (Map<String, Object>) response.get(RESPONSE);
+      if (userMap != null) {
+        return (List<Map<String, Object>>) userMap.get(CONTENT);
+      }
+    }
+    return null;
   }
 }

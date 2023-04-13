@@ -118,8 +118,11 @@ public class ContentSearchUtil {
         JSONObject result = response.getBody().getObject().getJSONObject("result");
         Map<String, Object> resultMap = jsonToMap(result);
         Object contents = resultMap.get(JsonKey.CONTENT);
+        Object events = resultMap.get(JsonKey.EVENT_KEY);
         resultMap.remove(JsonKey.CONTENT);
+        resultMap.remove(JsonKey.EVENT_KEY);
         resultMap.put(JsonKey.CONTENTS, contents);
+        resultMap.put(JsonKey.EVENTS, events);
         String resmsgId = RestUtil.getFromResponse(response, "params.resmsgid");
         String apiId = RestUtil.getFromResponse(response, "id");
         Map<String, Object> param = new HashMap<>();

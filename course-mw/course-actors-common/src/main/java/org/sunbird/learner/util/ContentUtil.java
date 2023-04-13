@@ -129,7 +129,8 @@ public final class ContentUtil {
     Map<String, String> headers = new HashMap<>();
     try {
       String fieldsStr = StringUtils.join(fields, ",");
-      String baseContentreadUrl = ProjectUtil.getConfigValue(JsonKey.EKSTEP_BASE_URL) + PropertiesCache.getInstance().getProperty(JsonKey.CONTENT_READ_URL) + courseId + "?fields=" + fieldsStr;      headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+      String baseContentreadUrl = ProjectUtil.getConfigValue(JsonKey.EKSTEP_BASE_URL) + PropertiesCache.getInstance().getProperty(JsonKey.CONTENT_READ_URL) + courseId + "?fields=" + fieldsStr;
+      headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
       headers.put(JsonKey.AUTHORIZATION, PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_AUTHORIZATION));
 
       logger.info(null, "making call for content read ==" + courseId);

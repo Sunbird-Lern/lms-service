@@ -37,23 +37,47 @@ iii. Run Cassandra
 ```shell
 docker run -p 9042:9042 --name sunbird_cassandra -v $sunbird_dbs_path/cassandra/data:/var/lib/cassandra -v $sunbird_dbs_path/cassandra/logs:/opt/cassandra/logs -v $sunbird_dbs_path/cassandra/backups:/mnt/backups --network sunbird_db_network -d cassandra:3.11.6
 ```
-iv. Copy the sunbird_courses.cql file https://raw.githubusercontent.com/Sunbird-Lern/sunbird-course-service/bootcamp/scripts/sunbird_courses.cql to /sunbird-dbs/cassandra/backups folder.
-
-OR
+Fork the below projects and clone it from git,
 ```shell
-chmod -R 777 sunbird-dbs/cassandra
-
-wget -O sunbird-dbs/cassandra/backups/sunbird_courses.cql" https://raw.githubusercontent.com/Sunbird-Lern/sunbird-course-service/bootcamp/scripts/sunbird_courses.cql
+git clone https://github.com/Sunbird-Lern/sunbird-utils/<latest-branch>
 ```
-
-v. To start the Cassandra cypher shell run the below command.
+Open a new Terminal In the path,
+#### (Project base path)/sunbird-utils
+Run the below command,
 ```shell
-docker exec -it sunbird_cassandra cqlsh
-```
-vi. Load database schema by executing below command in cypher shell.
+mvn clean install -DskipTests
+``` 
+Make sure the build is success and then,
+open a new Terminal In the path,
+#### (Project base path)/sunbird-utils/sunbird-cassandra-migration/cassandra-migration,
+Run below command,
 ```shell
-source '/mnt/backups/sunbird_courses.cql'
+mvn clean install -DskipTests
+``` 
+## One should execute only one of the commands listed below.
+### Command 1:
+```shell
+java -jar \
+-Dcassandra.migration.scripts.locations=filesystem:<absolute or relative path>/db/migration/cassandra \
+-Dcassandra.migration.cluster.contactpoints=localhost \
+-Dcassandra.migration.cluster.port=9042 \
+-Dcassandra.migration.cluster.username=username \
+-Dcassandra.migration.cluster.password=password \
+-Dcassandra.migration.keyspace.name=keyspace_name \
+target/*-jar-with-dependencies.jar migrate
+``` 
+### replace keyspace_name as sunbird_courses and 
+### Command 2:
+```shell
+java -cp "cassandra-migration-0.0.1-SNAPSHOT-jar-with-dependencies.jar" com.contrastsecurity.cassandra.migration.utils.MigrationScriptEntryPoint
 ```
+The system environment listed below is required for command 2.
+### System Env
+```shell
+sunbird_cassandra_keyspace=<keyspace_name>
+sunbird_cassandra_migration_location="filesystem:<absolute or relative path>/db/migration/cassandra"
+``` 
+
 ### Elasticsearch database setup in docker:
 i. Get the ES image using below command:
 ```shell

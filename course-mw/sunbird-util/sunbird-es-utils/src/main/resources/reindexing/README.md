@@ -66,7 +66,7 @@ java -jar \
 -Dcassandra.migration.keyspace.name=keyspace_name \
 target/*-jar-with-dependencies.jar migrate
 ``` 
-### replace keyspace_name as sunbird_courses and 
+### replace keyspace_name as sunbird_courses and sunbird
 ### Command 2:
 ```shell
 java -cp "cassandra-migration-0.0.1-SNAPSHOT-jar-with-dependencies.jar" com.contrastsecurity.cassandra.migration.utils.MigrationScriptEntryPoint

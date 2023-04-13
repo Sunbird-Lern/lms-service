@@ -5,21 +5,22 @@ import static java.util.Arrays.asList;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class FileExtension {
 
-  private String type;
-  private List<String> seperators;
+  private static String type;
+  private static List<String> seperators;
 
   public FileExtension(String extension, List<String> seperators) {
     this.type = extension;
     this.seperators = seperators;
   }
 
-  public String getExtension() {
+  public static String getExtension() {
     return type;
   }
 
-  public String getDotExtension() {
+  public static String getDotExtension() {
     return "." + type;
   }
 
@@ -27,7 +28,7 @@ public class FileExtension {
     return getSeperator(0);
   }
 
-  public String getSeperator(int i) {
+  public static String getSeperator(int i) {
     return seperators.get(i);
   }
 

@@ -118,8 +118,10 @@ public class UserCoursesDaoImpl implements UserCoursesDao {
   public List<String> getBatchParticipants(RequestContext requestContext, String batchId, boolean active) {
     Map<String, Object> queryMap = new HashMap<>();
     queryMap.put(JsonKey.BATCH_ID, batchId);
+    String[] parts = batchId.split("-");
+    String batchIdStr = parts[0];
     Response response =
-            cassandraOperation.getRecordsByIndexedProperty(KEYSPACE_NAME, USER_ENROLMENTS, "batchid", batchId, requestContext);
+            cassandraOperation.getRecordsByIndexedProperty(KEYSPACE_NAME, USER_ENROLMENTS, "batchid", batchIdStr, requestContext);
         /*cassandraOperation.getRecords(
                 requestContext, KEYSPACE_NAME, USER_ENROLMENTS, queryMap, Arrays.asList(JsonKey.USER_ID, JsonKey.ACTIVE));*/
     List<Map<String, Object>> userCoursesList =

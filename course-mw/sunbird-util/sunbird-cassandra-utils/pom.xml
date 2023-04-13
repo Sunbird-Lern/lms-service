@@ -107,12 +107,24 @@
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-checkstyle-plugin</artifactId>
+					<version>2.17</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
 					<version>3.0.0-M4</version>
 					<configuration>
+						<useSystemClassLoader>false</useSystemClassLoader>
+						<forkCount>0</forkCount>
 						<argLine>
 							--illegal-access=warn
 						</argLine>
+						<argLine>@{argLine} -Xmx1024m -XX:MaxPermSize=256m</argLine>
+						<includes>
+							<include>**/*Spec.java</include>
+							<include>**/*Test.java</include>
+						</includes>
 					</configuration>
 				</plugin>
 			</plugins>

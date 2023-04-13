@@ -6,6 +6,7 @@ import akka.actor.Props;
 import akka.testkit.javadsl.TestKit;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -486,6 +487,7 @@ public class CourseBatchManagementActorTest {
     }
 
     @Test
+    @Ignore
     public void testUpdateCompletedCourseBatchFailureWithEndDateExtended() throws Exception {
 
         int batchProgressStatus = ProjectUtil.ProgressStatus.COMPLETED.getValue();

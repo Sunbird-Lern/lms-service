@@ -25,7 +25,6 @@
     7. sunbird_es_cluster (optional): name of the elasticsearch cluster
     8. sunbird_learner_actor_host: host running for learner actor
     9. sunbird_learner_actor_port: port on which learner actor is running.
-    10. ekstep_content_search_base_url : provide base url for EkStep content search
     11. ekstep_authorization : provide authorization for value for content search
     12. sunbird_pg_host: postgres host name or ip
     13. sunbird_pg_port: postgres port number
@@ -62,7 +61,6 @@
     44.sunbird_badger_baseurl=http://badger-service:8000
     45.sunbird_remote_req_router_path=
     46.sunbird_remote_bg_req_router_path=
-    47.sunbird_api_base_url=http://content-service:
     48.sunbird_authorization={}
     49.telemetry_pdata_id={{env}}.sunbird.learning.service
     50.telemetry_pdata_pid=actor-service

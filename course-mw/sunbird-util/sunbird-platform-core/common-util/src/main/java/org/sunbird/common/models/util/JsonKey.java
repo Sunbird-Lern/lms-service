@@ -569,6 +569,9 @@ public final class JsonKey {
   public static final String SUNBIRD_DIAL_SERVICE_SEARCH_URL = "sunbird_dial_service_search_url";
   public static final String AUTH_ENABLED = "AuthenticationEnabled";
   public static final String CONTENT_READ_URL = "content_read_url";
-
+  public static final String TAG = "tag";
+  public static final String EXHAUST_API_BASE_URL = "exhaust_api_base_url";
+  public static final String EXHAUST_API_SUBMIT_ENDPOINT = "exhaust_api_submit_endpoint";
+  public static final String EXHAUST_API_LIST_ENDPOINT = "exhaust_api_list_endpoint";
   private JsonKey() {}
 }

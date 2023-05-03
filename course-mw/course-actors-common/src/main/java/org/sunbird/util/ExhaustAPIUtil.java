@@ -1,26 +1,26 @@
 package org.sunbird.util;
 
-import akka.dispatch.Mapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.request.BaseRequest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.sunbird.common.exception.ProjectCommonException;
+import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.PropertiesCache;
-import org.sunbird.common.models.util.RestUtil;
 import org.sunbird.common.request.RequestContext;
+import org.sunbird.common.responsecode.ResponseCode;
 import scala.concurrent.ExecutionContextExecutor;
-import scala.concurrent.Future;
 
 import javax.ws.rs.core.MediaType;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ExhaustAPIUtil {
 
@@ -32,6 +32,8 @@ public class ExhaustAPIUtil {
     String baseUrl = System.getenv(JsonKey.EXHAUST_API_BASE_URL);
     String submitPath = System.getenv(JsonKey.EXHAUST_API_SUBMIT_ENDPOINT);
     String listPath = System.getenv(JsonKey.EXHAUST_API_LIST_ENDPOINT);
+    if (StringUtils.isBlank(baseUrl))
+      baseUrl = PropertiesCache.getInstance().getProperty(JsonKey.EXHAUST_API_BASE_URL);
     if (StringUtils.isBlank(submitPath))
       submitPath = PropertiesCache.getInstance().getProperty(JsonKey.EXHAUST_API_SUBMIT_ENDPOINT);
     if (StringUtils.isBlank(listPath))
@@ -51,115 +53,77 @@ public class ExhaustAPIUtil {
     return headers;
   }
 
-  public static Future<Map<String, Object>> submitJobRequest( RequestContext requestContext,
-      Object requestBody,
+  public static Response submitJobRequest( RequestContext requestContext,
+      String queryRequestBody,
       ExecutionContextExecutor ec) {
+    Unirest.clearDefaultHeaders();
+    Response responseObj = null;
 
-    //Unirest.clearDefaultHeaders();
-    BaseRequest request = Unirest.post(exhaustAPISubmitURL).body(requestBody);
-    Future<HttpResponse<JsonNode>> response = RestUtil.executeAsync(request);
+    try {
 
-    return response.map(
-        new Mapper<HttpResponse<JsonNode>, Map<String, Object>>() {
-          @Override
-          public Map<String, Object> apply(HttpResponse<JsonNode> response) {
-            try {
-              if (RestUtil.isSuccessful(response)) {
-                JSONObject result = response.getBody().getObject().getJSONObject("result");
-                Map<String, Object> resultMap = jsonToMap(result);
-                Object contents = resultMap.get(JsonKey.REQUEST);
-                resultMap.put(JsonKey.REQUEST, contents);
-                String resmsgId = RestUtil.getFromResponse(response, "params.resmsgid");
-                String apiId = RestUtil.getFromResponse(response, "id");
-                Map<String, Object> param = new HashMap<>();
-                param.put(JsonKey.RES_MSG_ID, resmsgId);
-                param.put(JsonKey.API_ID, apiId);
-                resultMap.put(JsonKey.PARAMS, param);
-                return resultMap;
-              } else {
-                logger.debug(requestContext, "Submit job request failed. Error response = " + response.getBody());
-                return null;
-              }
-            } catch (Exception e) {
-              logger.error(requestContext, "Submit job request - Exception occurred with error message = " + e.getMessage(), e);
-              return null;
-            }
-          }
-        },
-        ec);
+      mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);
+      HttpResponse<String> apiResponse =
+              Unirest.post(exhaustAPISubmitURL).headers(getUpdatedHeaders(null)).body(queryRequestBody).asString();
+      if (null != apiResponse) {
+        responseObj = mapper.readValue(apiResponse.getBody(), Response.class);
+        if (responseObj.getResponseCode().getResponseCode() == ResponseCode.OK.getResponseCode()) {
+          logger.info(requestContext, "Exhaust API submit report call success");
+        } else {
+          logger.info(requestContext, "Exhaust API submit report call failed");
+        }
+      }
+    } catch (JsonMappingException e) {
+      logger.error(requestContext, "Exhaust API submit report call failed : JsonMappingException : " + e.getMessage(), e);
+      ProjectCommonException.throwServerErrorException(
+              ResponseCode.customServerError, e.getMessage());
+    } catch (UnirestException e) {
+      logger.error(requestContext, "Exhaust API submit report call failed : UnirestException : " + e.getMessage(), e);
+      ProjectCommonException.throwServerErrorException(
+              ResponseCode.customServerError, e.getMessage());
+    } catch (JsonProcessingException e) {
+      logger.error(requestContext, "Exhaust API submit report call failed : JsonProcessingException : " + e.getMessage(), e);
+      ProjectCommonException.throwServerErrorException(
+              ResponseCode.customServerError, e.getMessage());
+    } catch (Exception e) {
+      logger.error(requestContext, "Exhaust API submit report call failed : " + e.getMessage(), e);
+      ProjectCommonException.throwServerErrorException(
+              ResponseCode.customServerError, e.getMessage());
+    }
+    return responseObj;
   }
-  public static Future<Map<String, Object>> listJobRequest( RequestContext requestContext,
+  public static Response listJobRequest( RequestContext requestContext,
                                                               String queryParam,
                                                               ExecutionContextExecutor ec) {
-
     Unirest.clearDefaultHeaders();
-    BaseRequest request =
-            Unirest.get(exhaustAPIListURL+queryParam).headers(getUpdatedHeaders(null));
-    Future<HttpResponse<JsonNode>> response = RestUtil.executeAsync(request);
-
-    return response.map(
-            new Mapper<HttpResponse<JsonNode>, Map<String, Object>>() {
-              @Override
-              public Map<String, Object> apply(HttpResponse<JsonNode> response) {
-                try {
-                  if (RestUtil.isSuccessful(response)) {
-                    JSONObject result = response.getBody().getObject().getJSONObject("result");
-                    Map<String, Object> resultMap = jsonToMap(result);
-                    Object contents = resultMap.get(JsonKey.REQUEST);
-                    resultMap.put(JsonKey.REQUEST, contents);
-                    String resmsgId = RestUtil.getFromResponse(response, "params.resmsgid");
-                    String apiId = RestUtil.getFromResponse(response, "id");
-                    Map<String, Object> param = new HashMap<>();
-                    param.put(JsonKey.RES_MSG_ID, resmsgId);
-                    param.put(JsonKey.API_ID, apiId);
-                    resultMap.put(JsonKey.PARAMS, param);
-                    return resultMap;
-                  } else {
-                    logger.debug(requestContext, "Submit job request failed. Error response = " + response.getBody());
-                    return null;
-                  }
-                } catch (Exception e) {
-                  logger.error(requestContext, "Submit job request - Exception occurred with error message = " + e.getMessage(), e);
-                  return null;
-                }
-              }
-            },
-            ec);
-  }
-
-
-  public static Map<String, Object> jsonToMap(JSONObject object) throws JSONException {
-    Map<String, Object> map = new HashMap<String, Object>();
-
-    Iterator<String> keysItr = object.keys();
-    while (keysItr.hasNext()) {
-      String key = keysItr.next();
-      Object value = object.get(key);
-
-      if (value instanceof JSONArray) {
-        value = toList((JSONArray) value);
-      } else if (value instanceof JSONObject) {
-        value = jsonToMap((JSONObject) value);
+    Response responseObj = null;
+    try {
+      HttpResponse<String> apiResponse =
+              Unirest.get(exhaustAPIListURL+queryParam).headers(getUpdatedHeaders(null)).asString();
+      if (null != apiResponse) {
+        responseObj = mapper.readValue(apiResponse.getBody(), Response.class);
+        if (responseObj.getResponseCode().getResponseCode() == ResponseCode.OK.getResponseCode()) {
+          logger.info(requestContext, "Exhaust API report list call success");
+        } else {
+          logger.info(requestContext, "Exhaust API report list call failed" + responseObj.getResponseCode().getResponseCode() + responseObj.getResponseCode().getErrorMessage());
+        }
       }
-      if (value == JSONObject.NULL) {
-        value = null;
-      }
-      map.put(key, value);
+    } catch (JsonMappingException e) {
+      logger.error(requestContext, "Exhaust API report list call failed : JsonMappingException : " + e.getMessage(), e);
+      ProjectCommonException.throwServerErrorException(
+              ResponseCode.customServerError, e.getMessage());
+    } catch (UnirestException e) {
+      logger.error(requestContext, "Exhaust API report list call failed : UnirestException : " + e.getMessage(), e);
+      ProjectCommonException.throwServerErrorException(
+              ResponseCode.customServerError, e.getMessage());
+    } catch (JsonProcessingException e) {
+      logger.error(requestContext, "Exhaust API report list call failed : JsonProcessingException : " + e.getMessage(), e);
+      ProjectCommonException.throwServerErrorException(
+              ResponseCode.customServerError, e.getMessage());
+    } catch (Exception e) {
+      logger.error(requestContext, "Exhaust API report list call failed : " + e.getMessage(), e);
+      ProjectCommonException.throwServerErrorException(
+              ResponseCode.customServerError, e.getMessage());
     }
-    return map;
-  }
-
-  public static List<Object> toList(JSONArray array) throws JSONException {
-    List<Object> list = new ArrayList<Object>();
-    for (int i = 0; i < array.length(); i++) {
-      Object value = array.get(i);
-      if (value instanceof JSONArray) {
-        value = toList((JSONArray) value);
-      } else if (value instanceof JSONObject) {
-        value = jsonToMap((JSONObject) value);
-      }
-      list.add(value);
-    }
-    return list;
+    return responseObj;
   }
 }

@@ -573,5 +573,10 @@ public final class JsonKey {
   public static final String EXHAUST_API_BASE_URL = "exhaust_api_base_url";
   public static final String EXHAUST_API_SUBMIT_ENDPOINT = "exhaust_api_submit_endpoint";
   public static final String EXHAUST_API_LIST_ENDPOINT = "exhaust_api_list_endpoint";
+  public static final String ENCRYPTIONKEY = "encryptionKey";
+  public static final String DATASET = "dataset";
+  public static final String DATASETCONFIG = "datasetConfig";
+  public static final String OUTPUT_FORMAT = "output_format";
+
   private JsonKey() {}
 }

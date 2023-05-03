@@ -1,18 +1,8 @@
 package controllers.exhaustjob.validator;
 
-import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.BaseRequestValidator;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
@@ -25,6 +15,13 @@ public class ExhaustJobRequestValidator extends BaseRequestValidator {
     validateParam(
         (String) request.getRequest().get(JsonKey.TAG),
         ResponseCode.mandatoryParamsMissing, JsonKey.TAG);
+    validateParam(
+            (String) request.getRequest().get(JsonKey.DATASET),
+            ResponseCode.mandatoryParamsMissing, JsonKey.DATASET);
+    if(StringUtils.isBlank((String)request.getRequest().get(JsonKey.REQUESTED_BY))){
+      request.getRequest().put(JsonKey.REQUESTED_BY,request.getContext().get(JsonKey.REQUESTED_BY));
+    }
+
   }
 
 }

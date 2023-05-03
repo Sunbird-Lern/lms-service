@@ -207,11 +207,11 @@ public class HealthActor extends BaseActor {
 
     finalResponseMap.put(JsonKey.CHECKS, responseList);
     finalResponseMap.put(JsonKey.NAME, "Complete health check api");
-    //if (isallHealthy) {
+    if (isallHealthy) {
       finalResponseMap.put(JsonKey.Healthy, true);
-    //} else {
-     // finalResponseMap.put(JsonKey.Healthy, false);
-    //}
+    } else {
+      finalResponseMap.put(JsonKey.Healthy, false);
+    }
     Response response = new Response();
     response.getResult().put(JsonKey.RESPONSE, finalResponseMap);
     sender().tell(response, self());

@@ -62,13 +62,22 @@ public final class ContentUtil {
             PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_AUTHORIZATION));
       }
       logger.info(null, "making call for content search ==" + params);
-      String response =
-          HttpUtil.sendPostRequest(
-              baseSearchUrl
-                  + PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_CONTENT_SEARCH_URL),
-              params,
-              headers);
-      logger.info(null, "Content search response", null, new HashMap<>(){{put("response", response);}});
+      String response = "";
+      if(Boolean.parseBoolean(ProjectUtil.getConfigValue(JsonKey.CONTENT_SERVICE_MOCK_ENABLED))){
+        ContentSearchMock.setup();
+        String mockUrl = ProjectUtil.getConfigValue(JsonKey.CONTENT_SEARCH_MOCK_URL);
+        response =  HttpUtil.sendPostRequest(mockUrl,params,headers);
+        ContentSearchMock.teardown();
+      }else{
+       response =
+                HttpUtil.sendPostRequest(
+                        baseSearchUrl
+                                + PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_CONTENT_SEARCH_URL),
+                        params,
+                        headers);
+      }
+      String finalResponse = response;
+      logger.info(null, "Content search response", null, new HashMap<>(){{put("response", finalResponse);}});
       Map<String, Object> data = mapper.readValue(response, Map.class);
       if (MapUtils.isNotEmpty(data)) {
         String resmsgId = (String) ((Map<String, Object>) data.get("params")).get("resmsgid");
@@ -132,11 +141,18 @@ public final class ContentUtil {
       String baseContentreadUrl = ProjectUtil.getConfigValue(JsonKey.EKSTEP_BASE_URL) + PropertiesCache.getInstance().getProperty(JsonKey.CONTENT_READ_URL) + courseId + "?fields=" + fieldsStr;
       headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
       headers.put(JsonKey.AUTHORIZATION, PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_AUTHORIZATION));
-
       logger.info(null, "making call for content read ==" + courseId);
-      String response = HttpUtil.sendGetRequest(baseContentreadUrl, headers);
-
-      logger.info(null, "Content read response", null, new HashMap<>(){{put("response", response);}});
+      String response = "";
+      if(Boolean.parseBoolean(ProjectUtil.getConfigValue(JsonKey.CONTENT_SERVICE_MOCK_ENABLED))){
+        ContentSearchMock.setup();
+       String mockUrl = ProjectUtil.getConfigValue(JsonKey.CONTENT_READ_MOCK_URL);
+       response =  HttpUtil.sendGetRequest(mockUrl, headers);
+        ContentSearchMock.teardown();
+      }else{
+       response = HttpUtil.sendGetRequest(baseContentreadUrl, headers);
+      }
+      String finalResponse = response;
+      logger.info(null, "Content read response", null, new HashMap<>(){{put("response", finalResponse);}});
       Map<String, Object> data = mapper.readValue(response, Map.class);
       if (MapUtils.isNotEmpty(data)) {
         data = (Map<String, Object>) data.get(JsonKey.RESULT);
@@ -153,6 +169,8 @@ public final class ContentUtil {
       logger.error(null, "Error found during content search parse==" + e.getMessage(), e);
     } catch (UnirestException e) {
       logger.error(null, "Error found during content search parse==" + e.getMessage(), e);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
     return resMap;
   }
@@ -186,12 +204,17 @@ public final class ContentUtil {
       String contentUpdateBaseUrl = ProjectUtil.getConfigValue(JsonKey.LEARNING_SERVICE_BASE_URL);
       Request request = new Request();
       request.put("content", data);
-      response =
+      if(Boolean.parseBoolean(ProjectUtil.getConfigValue(JsonKey.CONTENT_SERVICE_MOCK_ENABLED))){
+        ContentSearchMock.setup();
+        String mockUrl = ProjectUtil.getConfigValue(JsonKey.CONTENT_UPDATE_MOCK_URL);
+        response =  HttpUtil.sendPatchRequest(mockUrl,JsonUtil.serialize(request), headerMap);
+        ContentSearchMock.teardown();
+      }else{response =
               HttpUtil.sendPatchRequest(
                       contentUpdateBaseUrl
                               + PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_CONTENT_UPDATE_URL)
                               + collectionId, JsonUtil.serialize(request),
-                      headerMap);
+                      headerMap);}
     } catch (Exception e) {
       logger.error(requestContext, "Error while doing system update to collection " + e.getMessage(), e);
     }

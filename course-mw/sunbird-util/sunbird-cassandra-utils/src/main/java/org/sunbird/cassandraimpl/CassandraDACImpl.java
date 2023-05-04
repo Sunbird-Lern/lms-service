@@ -8,19 +8,18 @@ import com.datastax.driver.core.querybuilder.Select;
 import com.datastax.driver.core.querybuilder.Update;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Executors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.sunbird.common.CassandraUtil;
 import org.sunbird.common.Constants;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.request.RequestContext;
 import org.sunbird.common.responsecode.ResponseCode;
+
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Executors;
 
 public class CassandraDACImpl extends CassandraOperationImpl {
 
@@ -32,7 +31,7 @@ public class CassandraDACImpl extends CassandraOperationImpl {
     try {
       Select select;
       if (CollectionUtils.isNotEmpty(fields)) {
-        select = QueryBuilder.select((String[]) fields.toArray()).from(keySpace, table);
+        select = QueryBuilder.select(fields.toArray()).from(keySpace, table);
       } else {
         select = QueryBuilder.select().all().from(keySpace, table);
       }
@@ -73,7 +72,7 @@ public class CassandraDACImpl extends CassandraOperationImpl {
     try {
       Select select;
       if (CollectionUtils.isNotEmpty(fields)) {
-        select = QueryBuilder.select((String[]) fields.toArray()).from(keySpace, table);
+        select = QueryBuilder.select(fields.toArray()).from(keySpace, table);
       } else {
         select = QueryBuilder.select().all().from(keySpace, table);
       }

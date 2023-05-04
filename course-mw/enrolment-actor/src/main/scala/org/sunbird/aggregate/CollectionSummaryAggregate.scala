@@ -42,6 +42,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
     val collectionId = filters.get(JsonKey.COLLECTION_ID).asInstanceOf[String]
     val granularity = getDate(request.getRequestContext,request.getRequest.getOrDefault("granularity", "ALL").asInstanceOf[String], collectionId, batchId)
     val key = getCacheKey(batchId = batchId, granularity, groupByKeys)
+    println(s"Druid granularity: $granularity & Cache Key: $key")
     try {
       val redisData = cacheUtil.get(key)
       val result: util.Map[String, AnyRef] = if (null != redisData && !redisData.isEmpty) {
@@ -197,8 +198,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
          |    ]
          |  }
          |}""".stripMargin.replaceAll("null", " ")
-    ProjectLogger.log("Druid Query Is " + druidQuery)
-    println("Query" + druidQuery)
+    println("Druid Query" + JsonUtil.serialize(druidQuery))
     val host: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("druid_proxy_api_host"))) ProjectUtil.getConfigValue("druid_proxy_api_host") else "localhost"
     val port: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("druid_proxy_api_port"))) ProjectUtil.getConfigValue("druid_proxy_api_port") else "8081"
     val endPoint: String = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("druid_proxy_api_endpoint"))) ProjectUtil.getConfigValue("druid_proxy_api_endpoint") else "/druid/v2/"

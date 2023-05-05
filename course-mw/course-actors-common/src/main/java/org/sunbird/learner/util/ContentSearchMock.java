@@ -4,9 +4,6 @@ import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
-import org.jetbrains.annotations.NotNull;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -14,29 +11,27 @@ import java.util.Map;
 
 public class ContentSearchMock {
 
-    private ContentSearchMock() {}
     private static final Map<String, MockResponse> RESPONSES = new HashMap<>();
     private static final String CONTENT_TYPE = "Content-Type";
     private static final String HEADER = "application/json";
-
     private static final Dispatcher DISPATCHER = new Dispatcher() {
-        @NotNull
         @Override
         public MockResponse dispatch(RecordedRequest request) {
             String path = request.getPath();
             return RESPONSES.getOrDefault(path, new MockResponse().setResponseCode(404));
         }
     };
-
     private static MockWebServer server;
 
-    @BeforeClass
+    private ContentSearchMock() {
+    }
+
     public static void setup() throws IOException {
         server = new MockWebServer();
         server.setDispatcher(DISPATCHER);
         server.start(9080);
 
-        RESPONSES.put("/content/v3/read",
+        RESPONSES.put("/content/v3/read/" + "do_2137525270494330881314?fields=status,batches,leafNodesCount",
                 new MockResponse()
                         .setHeader(CONTENT_TYPE, HEADER)
                         .setResponseCode(200)
@@ -46,15 +41,20 @@ public class ContentSearchMock {
                         .setHeader(CONTENT_TYPE, HEADER)
                         .setResponseCode(200)
                         .setBody("{\"id\":\"api.content.search\",\"ver\":\"1.0\",\"ts\":\"2023-02-16T07:19:30.405Z\",\"params\":{\"resmsgid\":\"4102b950-adca-11ed-90b2-b7bf811d5c69\",\"msgid\":\"40fbdb80-adca-11ed-a723-4b0cc0e91be5\",\"status\":\"successful\",\"err\":null,\"errmsg\":null},\"responseCode\":\"OK\",\"result\":{\"count\":712392,\"content\":[{\"ownershipType\":[\"createdBy\"],\"publish_type\":\"public\",\"unitIdentifiers\":[\"do_21337599437489766414999\"],\"copyright\":\"Test axis,2126\",\"se_gradeLevelIds\":[\"ekstep_ncert_k-12_gradelevel_class10\"],\"previewUrl\":\"https://obj.stage.sunbirded.org/sunbird-content-staging/content/do_21337600715072307215013/artifact/do_21337600715072307215013_1632814051137_do_21337600715072307215013_1632813407308_pdf_229.pdf\",\"organisationId\":\"c5b2b2b9-fafa-4909-8d5d-f9458d1a3881\",\"keywords\":[\"All_Contents\"],\"subject\":[\"Hindi\"],\"downloadUrl\":\"https://obj.stage.sunbirded.org/sunbird-content-staging/content/do_21337600715072307215013/learning-resource_1671091450835_do_21337600715072307215013_2.ecar\",\"channel\":\"b00bc992ef25f1a9a8d63291e20efc8d\",\"language\":[\"English\"],\"variants\":{\"full\":{\"ecarUrl\":\"https://obj.stage.sunbirded.org/sunbird-content-staging/content/do_21337600715072307215013/learning-resource_1671091450835_do_21337600715072307215013_2.ecar\",\"size\":\"262229\"},\"spine\":{\"ecarUrl\":\"https://obj.stage.sunbirded.org/sunbird-content-staging/content/do_21337600715072307215013/learning-resource_1671091451013_do_21337600715072307215013_2_SPINE.ecar\",\"size\":\"7647\"}},\"source\":\"https://dockstaging.sunbirded.org/api/content/v1/read/do_21337600715072307215013\",\"mimeType\":\"application/pdf\",\"objectType\":\"Content\",\"se_mediums\":[\"English\"],\"appIcon\":\"https://stagingdock.blob.core.windows.net/sunbird-content-dock/content/do_21337600715072307215013/artifact/apple-fruit.thumb.jpg\",\"gradeLevel\":[\"Class 10\"],\"primaryCategory\":\"Learning Resource\",\"appId\":\"staging.dock.portal\",\"artifactUrl\":\"https://obj.stage.sunbirded.org/sunbird-content-staging/content/do_21337600715072307215013/artifact/do_21337600715072307215013_1632814051137_do_21337600715072307215013_1632813407308_pdf_229.pdf\",\"contentEncoding\":\"identity\",\"contentType\":\"PreviousBoardExamPapers\",\"se_gradeLevels\":[\"Class 10\"],\"trackable\":{\"enabled\":\"No\",\"autoBatch\":\"No\"},\"identifier\":\"do_213754130660818944126\",\"se_boardIds\":[\"ekstep_ncert_k-12_board_cbse\"],\"subjectIds\":[\"ekstep_ncert_k-12_subject_hindi\"],\"audience\":[\"Student\"],\"visibility\":\"Default\",\"consumerId\":\"cb069f8d-e4e1-46c5-831f-d4a83b323ada\",\"author\":\"paul1\",\"discussionForum\":{\"enabled\":\"No\"},\"mediaType\":\"content\",\"osId\":\"org.ekstep.quiz.app\",\"lastPublishedBy\":\"9c9b3259-f137-491a-bae5-fe2ad1763647\",\"languageCode\":[\"en\"],\"graph_id\":\"domain\",\"nodeType\":\"DATA_NODE\",\"version\":2,\"pragma\":[\"external\"],\"se_subjects\":[\"Hindi\"],\"prevState\":\"Review\",\"license\":\"CC BY 4.0\",\"lastPublishedOn\":\"2019-11-15 05:41:50:382+0000\",\"size\":270173,\"name\":\"24 aug course\",\"topic\":[\"कर चले हम फ़िदा\"],\"mediumIds\":[\"ekstep_ncert_k-12_medium_english\"],\"attributions\":[]}]}}"));
-        RESPONSES.put("/content/v2/update",
+        RESPONSES.put("/system/v3/content/update/",
                 new MockResponse()
                         .setHeader(CONTENT_TYPE, HEADER)
                         .setResponseCode(200)
                         .setBody("{\"id\":\"api.content.update\",\"ver\":\"4.0\",\"ts\":\"2020-12-10T20:26:07ZZ\",\"params\":{\"resmsgid\":\"80aa9310-b749-411c-a13b-8d9f25af389f\",\"msgid\":null,\"err\":null,\"status\":\"successful\",\"errmsg\":null},\"responseCode\":\"OK\",\"result\":{\"identifier\":\"do_213754130660818944126\",\"node_id\":\"do_213754130660818944126\",\"versionKey\":\"1607631967842\"}}"));
+
+        // Register shutdown hook
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                server.shutdown();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }));
     }
 
-    @AfterClass
-    public static void teardown() throws IOException {
-        server.shutdown();
-    }
 }

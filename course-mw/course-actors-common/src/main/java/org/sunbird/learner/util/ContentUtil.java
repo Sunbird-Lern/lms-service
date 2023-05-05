@@ -77,7 +77,9 @@ public final class ContentUtil {
                         headers);
       }
       String finalResponse = response;
-      logger.info(null, "Content search response", null, new HashMap<>(){{put("response", finalResponse);}});
+      HashMap<String, Object> responseMap = new HashMap<>();
+      responseMap.put("response", finalResponse);
+      logger.info(null, "Content read response", null,responseMap);
       Map<String, Object> data = mapper.readValue(response, Map.class);
       if (MapUtils.isNotEmpty(data)) {
         String resmsgId = (String) ((Map<String, Object>) data.get("params")).get("resmsgid");
@@ -152,7 +154,9 @@ public final class ContentUtil {
        response = HttpUtil.sendGetRequest(baseContentreadUrl, headers);
       }
       String finalResponse = response;
-      logger.info(null, "Content read response", null, new HashMap<>(){{put("response", finalResponse);}});
+      HashMap<String, Object> responseMap = new HashMap<>();
+      responseMap.put("response", finalResponse);
+      logger.info(null, "Content read response", null,responseMap);
       Map<String, Object> data = mapper.readValue(response, Map.class);
       if (MapUtils.isNotEmpty(data)) {
         data = (Map<String, Object>) data.get(JsonKey.RESULT);

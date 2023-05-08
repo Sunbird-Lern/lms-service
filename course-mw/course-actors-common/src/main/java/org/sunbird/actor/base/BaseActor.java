@@ -4,12 +4,9 @@ import akka.actor.UntypedAbstractActor;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.response.ResponseParams;
-import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerUtil;
-import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
-import org.sunbird.learner.util.ContentSearchMock;
 
 public abstract class BaseActor extends UntypedAbstractActor {
 
@@ -23,9 +20,6 @@ public abstract class BaseActor extends UntypedAbstractActor {
       String operation = request.getOperation();
       logger.debug(request.getRequestContext(), "onReceive called for operation: " + operation);
       try {
-        if(Boolean.parseBoolean(ProjectUtil.getConfigValue(JsonKey.CONTENT_SERVICE_MOCK_ENABLED))){
-          ContentSearchMock.setup();
-        }
         onReceive(request);
       } catch (Exception e) {
         logger.error(request.getRequestContext(), "Error while processing the message : " + operation, e);

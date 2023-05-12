@@ -69,7 +69,8 @@ public class ExhaustAPIUtil {
         if (responseObj.getResponseCode().getResponseCode() == ResponseCode.OK.getResponseCode()) {
           logger.info(requestContext, "Exhaust API submit report call success");
         } else {
-          logger.info(requestContext, "Exhaust API submit report call failed");
+          logger.info(requestContext, "Exhaust API submit report call failed : "+responseObj.getResponseCode()
+                  +" : "+responseObj.getParams().getErr() +" : "+responseObj.getParams().getErrmsg());
         }
       }
     } catch (JsonMappingException e) {

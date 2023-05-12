@@ -6,8 +6,6 @@ import javax.inject.Singleton;
 
 import org.sunbird.auth.verifier.KeyManager;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.learner.util.ContentSearchMock;
@@ -41,13 +39,7 @@ public class ApplicationStart {
     setEnvironment(environment);
     ssoPublicKey = System.getenv(JsonKey.SSO_PUBLIC_KEY);
     logger.info(null, "Server started.. with environment: " + env.name());
-    if (Boolean.parseBoolean(ProjectUtil.getConfigValue(JsonKey.CONTENT_SERVICE_MOCK_ENABLED))) {
-      try {
-        ContentSearchMock.setup();
-      } catch (Exception e) {
-        logger.info(null, "Mock service is unable to start:" + e);
-      }
-    }
+    mockServiceSetup();
     checkCassandraConnections();
     SchedulerManager.schedule();
     lifecycle.addStopHook(
@@ -57,6 +49,16 @@ public class ApplicationStart {
     System.out.println("keymanger.init():starts");
     KeyManager.init();
     System.out.println("ApplicationStart:ApplicationStart: End");
+  }
+
+  public static void mockServiceSetup() {
+    if (Boolean.parseBoolean(ProjectUtil.getConfigValue(JsonKey.CONTENT_SERVICE_MOCK_ENABLED))) {
+      try {
+        ContentSearchMock.setup();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
   }
 
   private void checkCassandraConnections() {

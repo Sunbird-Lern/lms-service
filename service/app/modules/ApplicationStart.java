@@ -51,12 +51,12 @@ public class ApplicationStart {
     System.out.println("ApplicationStart:ApplicationStart: End");
   }
 
-  public static void mockServiceSetup() {
+  private void mockServiceSetup() {
     if (Boolean.parseBoolean(ProjectUtil.getConfigValue(JsonKey.CONTENT_SERVICE_MOCK_ENABLED))) {
       try {
         ContentSearchMock.setup();
       } catch (Exception e) {
-        e.printStackTrace();
+        logger.info(null,"Error setting up ContentSearchMock:"+e);
       }
     }
   }

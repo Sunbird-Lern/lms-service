@@ -4,6 +4,7 @@ import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
+import org.sunbird.common.models.util.LoggerUtil;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import java.util.Map;
 public class ContentSearchMock {
 
     private static final Map<String, MockResponse> RESPONSES = new HashMap<>();
+    private static final LoggerUtil logger = new LoggerUtil(ContentSearchMock.class);
     private static final String CONTENT_TYPE = "Content-Type";
     private static final String HEADER = "application/json";
     private static final Dispatcher DISPATCHER = new Dispatcher() {
@@ -52,7 +54,7 @@ public class ContentSearchMock {
             try {
                 server.shutdown();
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.info(null,"Error setting up ContentSearchMock:"+e);
             }
         }));
     }

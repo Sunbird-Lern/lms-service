@@ -2,10 +2,11 @@ package mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import modules.ApplicationStart;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,6 +19,7 @@ import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.learner.util.ContentSearchMock;
 import play.libs.Json;
 
 @RunWith(PowerMockRunner.class)
@@ -82,10 +84,10 @@ public class RequestMapperTest {
   }
 
   @Test
-  public void testMockServiceSetup() {
+  public void testMockServiceSetup() throws IOException {
     boolean response = true;
     if (Boolean.parseBoolean(ProjectUtil.getConfigValue(JsonKey.CONTENT_SERVICE_MOCK_ENABLED))) {
-      ApplicationStart.mockServiceSetup();
+      ContentSearchMock.setup();
       Assert.assertTrue(response);
     }else{
       response = false;

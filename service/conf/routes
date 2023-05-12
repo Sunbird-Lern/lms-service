@@ -71,3 +71,7 @@ POST /v1/group/activity/agg                     @controllers.group.GroupAggContr
 
 #Summary Aggregate
 POST /v1/collection/summary                     @controllers.collectionsummaryaggregate.CollectionSummaryAggregateController.getCollectionSummaryAggregate(request: play.mvc.Http.Request)
+
+#Exhaust Proxy APIs
+POST /v1/jobrequest/submit                      @controllers.exhaustjob.ExhaustJobController.submitJobRequest(request: play.mvc.Http.Request)
+GET /v1/jobrequest/list/:tag                    @controllers.exhaustjob.ExhaustJobController.listJobRequest(tag:String, request: play.mvc.Http.Request)

@@ -3,7 +3,6 @@ package mapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,10 +15,8 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
-import org.sunbird.learner.util.ContentSearchMock;
 import play.libs.Json;
 
 @RunWith(PowerMockRunner.class)
@@ -81,17 +78,5 @@ public class RequestMapperTest {
     innerMap.put(JsonKey.EMAIL, "xyz@gmail.com");
     map.put(requestKey, innerMap);
     return map;
-  }
-
-  @Test
-  public void testMockServiceSetup() throws IOException {
-    boolean response = true;
-    if (Boolean.parseBoolean(ProjectUtil.getConfigValue(JsonKey.CONTENT_SERVICE_MOCK_ENABLED))) {
-      ContentSearchMock.setup();
-      Assert.assertTrue(response);
-    }else{
-      response = false;
-      Assert.assertFalse(response);
-    }
   }
 }

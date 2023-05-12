@@ -9,6 +9,7 @@ import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.learner.util.ContentSearchMock;
+import org.sunbird.learner.util.ContentUtil;
 import org.sunbird.learner.util.SchedulerManager;
 import org.sunbird.learner.util.Util;
 import play.api.Environment;
@@ -51,7 +52,8 @@ public class ApplicationStart {
     System.out.println("ApplicationStart:ApplicationStart: End");
   }
 
-  private void mockServiceSetup() {
+  public static void mockServiceSetup() {
+    LoggerUtil logger = new LoggerUtil(ApplicationStart.class);
     if (Boolean.parseBoolean(ProjectUtil.getConfigValue(JsonKey.CONTENT_SERVICE_MOCK_ENABLED))) {
       try {
         ContentSearchMock.setup();

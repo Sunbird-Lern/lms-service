@@ -13,7 +13,7 @@ import java.util.Map;
 public class ContentSearchMock {
 
     private static final Map<String, MockResponse> RESPONSES = new HashMap<>();
-    private static final LoggerUtil logger = new LoggerUtil(ContentSearchMock.class);
+    private static LoggerUtil logger = new LoggerUtil(ContentSearchMock.class);
     private static final String CONTENT_TYPE = "Content-Type";
     private static final String HEADER = "application/json";
     private static final Dispatcher DISPATCHER = new Dispatcher() {

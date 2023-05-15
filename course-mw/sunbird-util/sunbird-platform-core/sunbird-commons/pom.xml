@@ -30,6 +30,11 @@
           <artifactId>auth-verifier</artifactId>
           <version>1.0-SNAPSHOT</version>
       </dependency>
+      <dependency>
+          <groupId>com.squareup.okhttp3</groupId>
+          <artifactId>mockwebserver</artifactId>
+          <version>4.10.0</version>
+      </dependency>
   </dependencies>	
   <build>
         <plugins>

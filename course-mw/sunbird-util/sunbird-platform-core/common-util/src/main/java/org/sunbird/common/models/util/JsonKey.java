@@ -567,6 +567,7 @@ public final class JsonKey {
   public static final String GCP="gcloud";
   public static final String SUNBIRD_DIAL_SERVICE_BASE_URL = "sunbird_dial_service_base_url";
   public static final String SUNBIRD_DIAL_SERVICE_SEARCH_URL = "sunbird_dial_service_search_url";
+  public static final String CONTENT_SERVICE_MOCK_ENABLED = "content_service_mock_enabled";
   public static final String AUTH_ENABLED = "AuthenticationEnabled";
   public static final String CONTENT_READ_URL = "content_read_url";
   public static final String TAG = "tag";

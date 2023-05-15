@@ -9,6 +9,7 @@ This readme file describes how to install and start course-service in your devel
 ## Sunbird-course-service developement environment setup:
 This readme file contains the instruction to set up and run the sunbird-course-service in local machine.
 
+
 ### System Requirements
 
 ### Prerequisites

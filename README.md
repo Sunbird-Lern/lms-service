@@ -36,11 +36,12 @@ echo $sunbird_dbs_path
 
 1. To get the Cassandra image, use the following command:
 
-For linux and mac m2 users follow the below command:
+To get the Cassandra image, use the following command:
+
 ```shell
 docker pull cassandra:3.11.6 
 ```
-For mac m1 users follow the bellow command:
+For Mac M1 users follow the bellow command:
 ```shell
 docker pull --platform=linux/amd64 cassandra:3.11.6 
 ```
@@ -51,7 +52,6 @@ docker network create sunbird_db_network
 ```
 
 2. To create the Cassandra instance, run the following command:
-For linux and mac m2 users follow the bellow command:
 ```shell
 docker run -p 9042:9042 --name sunbird_cassandra \
  -v $sunbird_dbs_path/cassandra/data:/var/lib/cassandra \
@@ -61,7 +61,7 @@ docker run -p 9042:9042 --name sunbird_cassandra \
 ```
 
 
-For mac m1 users follow the below command:
+For Mac M1 users follow the below command:
 ```shell
 docker run --platform=linux/amd64 -p 9042:9042 --name sunbird_cassandra \
  -v $sunbird_dbs_path/cassandra/data:/var/lib/cassandra \
@@ -95,18 +95,16 @@ To set up Elastic Search in Docker, follow the below steps:
 
 1. Obtain the Elastic Search image by executing the following command:
 
-For linux and mac m2 machice follow the below command: 
 ```shell
 docker pull elasticsearch:6.8.11
 ```
 
-For mac m1 users follow the bellow command:
+For Mac M1 users follow the bellow command:
 ```shell
 docker pull --platform=linux/amd64 elasticsearch:6.8.11
 ```
 
 2. Create an Elastic Search instance by executing the following command to run it in a container:
-For linux and mac m2:
 ```shell
 docker run -p 9200:9200 --name sunbird_es -v 
 $sunbird_dbs_path/es/data:/usr/share/elasticsearch/data -v 
@@ -115,7 +113,7 @@ $sunbird_dbs_path/es/backups:/opt/elasticsearch/backup
 -e "discovery.type=single-node" --network sunbird_db_network 
 -d docker.elastic.co/elasticsearch/elasticsearch:6.8.11
 ```
-For mac m1:
+For Mac M1 users follow the bellow command::
 ```shell
 docker run --platform=linux/amd64 -p 9200:9200 --name sunbird_es -v 
 $sunbird_dbs_path/es/data:/usr/share/elasticsearch/data -v 
@@ -202,7 +200,7 @@ Here's the list of mappings to create and their corresponding links:
 
 ## Setting up Redis in Docker:
 
-To set up Redis database in Docker, please follow the below steps for linux and mac m2:
+To set up Redis database in Docker, please follow the below steps:
 
 1. Pull the Redis image from Docker Hub using the following command:
 ```shell
@@ -217,7 +215,7 @@ docker run --name sunbird_redis -d -p 6379:6379 redis:4.0.0
 docker exec -it sunbird_redis bash
 ``` 
 
-To set up Redis database in Docker, please follow the below steps for mac m1:
+To set up Redis database in Docker for Mac M1, please follow the below steps:
 
 1. Pull the Redis image from Docker Hub using the following command:
 ```shell

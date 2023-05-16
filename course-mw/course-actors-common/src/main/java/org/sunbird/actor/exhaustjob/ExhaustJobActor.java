@@ -11,6 +11,7 @@ import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.util.ExhaustAPIUtil;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class ExhaustJobActor extends BaseActor {
@@ -42,7 +43,9 @@ public class ExhaustJobActor extends BaseActor {
           ProjectCommonException.throwClientErrorException(
                   ResponseCode.internalError, null);
         }
-        String queryRequestBody = mapper.writeValueAsString(request.getRequest());
+        Map<String, Object> requestMapNew = new HashMap<>();
+        requestMapNew.put(JsonKey.REQUEST, requestMap);
+        String queryRequestBody = mapper.writeValueAsString(requestMapNew);
         res = ExhaustAPIUtil.submitJobRequest(request.getRequestContext(), queryRequestBody, context().dispatcher());
     } catch (Exception e) {
       logger.error(request.getRequestContext(), "ExhaustJobActor:submitJobRequest: Error occurred = " + e.getMessage(), e);

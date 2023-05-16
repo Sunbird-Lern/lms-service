@@ -64,8 +64,8 @@ public class ExhaustAPIUtil {
       logger.info(requestContext, "ExhaustJobActor:submitJobRequest: request : " + queryRequestBody);
       HttpResponse<String> apiResponse =
               Unirest.post(exhaustAPISubmitURL).headers(getUpdatedHeaders(null)).body(queryRequestBody).asString();
-      logger.info(requestContext, "Exhaust API submit report apiResponse : " + apiResponse == null?"null" : ""+apiResponse.getStatus());
-      if (null != apiResponse && apiResponse.getStatus() == ResponseCode.OK.getResponseCode()) {
+      logger.info(requestContext, "Exhaust API submit report apiResponse1 : " + apiResponse == null?"null" : ""+apiResponse.getStatus());
+      if (null != apiResponse ) {
         responseObj = mapper.readValue(apiResponse.getBody(), Response.class);
         if (responseObj.getResponseCode().getResponseCode() == ResponseCode.OK.getResponseCode()) {
           logger.info(requestContext, "Exhaust API submit report call success");
@@ -78,7 +78,7 @@ public class ExhaustAPIUtil {
         }
       } else {
         ProjectCommonException.throwServerErrorException(
-                ResponseCode.customServerError, "Exhaust API submit report apiResponse : " + apiResponse );
+                ResponseCode.customServerError, "Exhaust API submit report apiResponse2 : " + apiResponse );
       }
     } catch (JsonMappingException e) {
       logger.error(requestContext, "Exhaust API submit report call failed : JsonMappingException : " + e.getMessage(), e);

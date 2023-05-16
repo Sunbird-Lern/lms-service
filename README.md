@@ -36,8 +36,6 @@ echo $sunbird_dbs_path
 
 1. To get the Cassandra image, use the following command:
 
-To get the Cassandra image, use the following command:
-
 ```shell
 docker pull cassandra:3.11.6 
 ```

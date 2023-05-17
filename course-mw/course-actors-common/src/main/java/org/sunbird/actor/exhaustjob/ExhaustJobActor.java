@@ -64,7 +64,7 @@ public class ExhaustJobActor extends BaseActor {
     Map headerNew = new HashMap<String,Object>();
     headerNew.put(JsonKey.X_CHANNEL_ID, requestHeader.get(JsonKey.X_CHANNEL_ID));
     headerNew.put(JsonKey.X_AUTHENTICATED_USERID, requestHeader.get(JsonKey.X_AUTHENTICATED_USERID));
-
+    headerNew.put(JsonKey.X_AUTHENTICATED_USER_TOKEN, requestHeader.get(JsonKey.X_AUTHENTICATED_USER_TOKEN));
     return headerNew;
   }
   private void listJobRequest(Request request) {

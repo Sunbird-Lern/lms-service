@@ -61,10 +61,10 @@ public class ExhaustAPIUtil {
 
     try {
       mapper = mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);
-      header.remove(JsonKey.CONTENT_LENGTH);
+
       logger.info(requestContext, "ExhaustJobActor:submitJobRequest: request : " + queryRequestBody);
       HttpResponse<String> apiResponse =
-              Unirest.post(exhaustAPISubmitURL).headers(header).body(queryRequestBody).asString();
+              Unirest.post(exhaustAPISubmitURL).headers(getUpdatedHeaders(header)).body(queryRequestBody).asString();
       logger.info(requestContext, "Exhaust API submit report apiResponse1 : " + apiResponse == null?"null" : ""+apiResponse.getStatus());
       if (null != apiResponse ) {
         responseObj = mapper.readValue(apiResponse.getBody(), Response.class);
@@ -108,7 +108,6 @@ public class ExhaustAPIUtil {
     Unirest.clearDefaultHeaders();
     Response responseObj = null;
     try {
-      header.remove(JsonKey.CONTENT_LENGTH);
       HttpResponse<String> apiResponse =
               Unirest.get(exhaustAPIListURL+queryParam).headers(header).asString();
       if (null != apiResponse) {

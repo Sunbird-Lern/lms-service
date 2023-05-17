@@ -62,7 +62,9 @@ public class ExhaustAPIUtil {
     try {
       mapper = mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);
 
-      logger.info(requestContext, "ExhaustJobActor:submitJobRequest: request : " + queryRequestBody);
+      logger.info(requestContext, "ExhaustJobActor:submitJobRequest: url :"+exhaustAPISubmitURL
+              +", header : "+ header
+              +", request : " + queryRequestBody);
       HttpResponse<String> apiResponse =
               Unirest.post(exhaustAPISubmitURL).headers(getUpdatedHeaders(header)).body(queryRequestBody).asString();
       logger.info(requestContext, "Exhaust API submit report apiResponse1 : " + apiResponse == null?"null" : ""+apiResponse.getStatus());

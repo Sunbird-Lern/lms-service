@@ -54,7 +54,7 @@ public class ExhaustAPIUtil {
   }
 
   public static Response submitJobRequest( RequestContext requestContext,
-      String queryRequestBody,
+      String queryRequestBody, Map header,
       ExecutionContextExecutor ec) {
     Unirest.clearDefaultHeaders();
     Response responseObj = null;
@@ -63,7 +63,7 @@ public class ExhaustAPIUtil {
       mapper = mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);
       logger.info(requestContext, "ExhaustJobActor:submitJobRequest: request : " + queryRequestBody);
       HttpResponse<String> apiResponse =
-              Unirest.post(exhaustAPISubmitURL).headers(getUpdatedHeaders(null)).body(queryRequestBody).asString();
+              Unirest.post(exhaustAPISubmitURL).headers(header).body(queryRequestBody).asString();
       logger.info(requestContext, "Exhaust API submit report apiResponse1 : " + apiResponse == null?"null" : ""+apiResponse.getStatus());
       if (null != apiResponse ) {
         responseObj = mapper.readValue(apiResponse.getBody(), Response.class);
@@ -102,13 +102,13 @@ public class ExhaustAPIUtil {
     return responseObj;
   }
   public static Response listJobRequest( RequestContext requestContext,
-                                                              String queryParam,
+                                                              String queryParam, Map header,
                                                               ExecutionContextExecutor ec) {
     Unirest.clearDefaultHeaders();
     Response responseObj = null;
     try {
       HttpResponse<String> apiResponse =
-              Unirest.get(exhaustAPIListURL+queryParam).headers(getUpdatedHeaders(null)).asString();
+              Unirest.get(exhaustAPIListURL+queryParam).headers(header).asString();
       if (null != apiResponse) {
         responseObj = mapper.readValue(apiResponse.getBody(), Response.class);
         if (responseObj.getResponseCode().getResponseCode() == ResponseCode.OK.getResponseCode()) {

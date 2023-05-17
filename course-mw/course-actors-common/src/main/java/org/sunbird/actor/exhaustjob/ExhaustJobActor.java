@@ -46,7 +46,8 @@ public class ExhaustJobActor extends BaseActor {
         Map<String, Object> requestMapNew = new HashMap<>();
         requestMapNew.put(JsonKey.REQUEST, requestMap);
         String queryRequestBody = mapper.writeValueAsString(requestMapNew);
-        res = ExhaustAPIUtil.submitJobRequest(request.getRequestContext(), queryRequestBody, context().dispatcher());
+
+        res = ExhaustAPIUtil.submitJobRequest(request.getRequestContext(), queryRequestBody, (Map) request.getContext().get(JsonKey.HEADER), context().dispatcher());
     } catch (Exception e) {
       logger.error(request.getRequestContext(), "ExhaustJobActor:submitJobRequest: Error occurred = " + e.getMessage(), e);
         ProjectCommonException exception =
@@ -62,7 +63,7 @@ public class ExhaustJobActor extends BaseActor {
     Response res = new Response();
     try{
       logger.info(request.getRequestContext(), "ExhaustJobActor:listJobRequest: called ");
-      res = ExhaustAPIUtil.listJobRequest(request.getRequestContext(), (String)request.getRequest().get(JsonKey.TAG), context().dispatcher());
+      res = ExhaustAPIUtil.listJobRequest(request.getRequestContext(), (String)request.getRequest().get(JsonKey.TAG),  (Map) request.getContext().get(JsonKey.HEADER), context().dispatcher());
     } catch (Exception e) {
       logger.error(request.getRequestContext(), "ExhaustJobActor:listJobRequest: Error occurred = " + e.getMessage(), e);
       ProjectCommonException exception =

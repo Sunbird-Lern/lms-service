@@ -83,6 +83,7 @@ public class ExhaustJobActorTest extends SunbirdApplicationActorTest {
         when(http.headers(Mockito.anyMap())).thenReturn(http);
         when(http.body(Mockito.anyString())).thenReturn(entity);
         when(entity.asString()).thenReturn(response);
+        when(response.getStatus()).thenReturn(200);
         when(response.getBody()).thenReturn("{\n" +
                 "    \"id\": \"ekstep.analytics.dataset.request.submit\",\n" +
                 "    \"ver\": \"1.0\",\n" +
@@ -132,6 +133,7 @@ public class ExhaustJobActorTest extends SunbirdApplicationActorTest {
         when(Unirest.get(Mockito.anyString())).thenReturn(http);
         when(http.headers(Mockito.anyMap())).thenReturn(http);
         when(http.asString()).thenReturn(response);
+        when(response.getStatus()).thenReturn(200);
         when(response.getBody()).thenReturn("{\n" +
                 "    \"id\": \"eekstep.analytics.dataset.request.list\",\n" +
                 "    \"ver\": \"1.0\",\n" +

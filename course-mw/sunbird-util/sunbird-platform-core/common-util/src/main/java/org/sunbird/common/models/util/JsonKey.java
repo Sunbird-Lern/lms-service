@@ -509,6 +509,8 @@ public final class JsonKey {
   public static final String certificateImgUrl = "certificateImgUrl";
   public static final String X_AUTHENTICATED_USER_TOKEN = "x-authenticated-user-token";
   public static final String X_SOURCE_USER_TOKEN = "x-source-user-token";
+  public static final String X_CHANNEL_ID = "x-channel-id";
+  public static final String X_AUTHENTICATED_USERID = "x-authenticated-userid";
   public static final String SUNBIRD_COURSE_DIALCODES_DB = "sunbird_course_dialcodes_db";
   public static final String RECOVERY_EMAIL = "recoveryEmail";
   public static final String RECOVERY_PHONE = "recoveryPhone";
@@ -578,6 +580,8 @@ public final class JsonKey {
   public static final String DATASET = "dataset";
   public static final String DATASETCONFIG = "datasetConfig";
   public static final String OUTPUT_FORMAT = "output_format";
+
+  public static final String CONTENT_LENGTH = "Content-Length";
 
   private JsonKey() {}
 }

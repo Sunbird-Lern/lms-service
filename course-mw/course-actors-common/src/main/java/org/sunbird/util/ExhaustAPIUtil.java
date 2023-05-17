@@ -54,24 +54,28 @@ public class ExhaustAPIUtil {
   }
 
   public static Response submitJobRequest( RequestContext requestContext,
-      String queryRequestBody,
+      String queryRequestBody, Map header,
       ExecutionContextExecutor ec) {
     Unirest.clearDefaultHeaders();
     Response responseObj = null;
 
     try {
+      mapper = mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);
 
-      mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);
+      logger.info(requestContext, "ExhaustJobActor:submitJobRequest: url :"+exhaustAPISubmitURL
+              +", header : "+ header
+              +", request : " + queryRequestBody);
       HttpResponse<String> apiResponse =
-              Unirest.post(exhaustAPISubmitURL).headers(getUpdatedHeaders(null)).body(queryRequestBody).asString();
-      if (null != apiResponse) {
+              Unirest.post(exhaustAPISubmitURL).headers(getUpdatedHeaders(header)).body(queryRequestBody).asString();
+      logger.info(requestContext, "Exhaust API submit report apiResponse1 : " + apiResponse == null?"null" : ""+apiResponse.getStatus());
+      if (null != apiResponse && apiResponse.getStatus()== ResponseCode.OK.getResponseCode()) {
+        logger.info(requestContext, "Exhaust API submit report call success");
         responseObj = mapper.readValue(apiResponse.getBody(), Response.class);
-        if (responseObj.getResponseCode().getResponseCode() == ResponseCode.OK.getResponseCode()) {
-          logger.info(requestContext, "Exhaust API submit report call success");
-        } else {
-          logger.info(requestContext, "Exhaust API submit report call failed : "+responseObj.getResponseCode()
-                  +" : "+responseObj.getParams().getErr() +" : "+responseObj.getParams().getErrmsg());
-        }
+      } else {
+        logger.info(requestContext, "Exhaust API submit report call failed : "+apiResponse.getStatusText()
+                +" : "+apiResponse.getBody());
+        ProjectCommonException.throwServerErrorException(
+                ResponseCode.customServerError, "Exhaust API submit report apiResponse2 : " + apiResponse );
       }
     } catch (JsonMappingException e) {
       logger.error(requestContext, "Exhaust API submit report call failed : JsonMappingException : " + e.getMessage(), e);
@@ -85,7 +89,9 @@ public class ExhaustAPIUtil {
       logger.error(requestContext, "Exhaust API submit report call failed : JsonProcessingException : " + e.getMessage(), e);
       ProjectCommonException.throwServerErrorException(
               ResponseCode.customServerError, e.getMessage());
-    } catch (Exception e) {
+    } catch ( ProjectCommonException e) {
+      throw e;
+    }catch (Exception e) {
       logger.error(requestContext, "Exhaust API submit report call failed : " + e.getMessage(), e);
       ProjectCommonException.throwServerErrorException(
               ResponseCode.customServerError, e.getMessage());
@@ -93,20 +99,25 @@ public class ExhaustAPIUtil {
     return responseObj;
   }
   public static Response listJobRequest( RequestContext requestContext,
-                                                              String queryParam,
+                                                              String queryParam, Map header,
                                                               ExecutionContextExecutor ec) {
     Unirest.clearDefaultHeaders();
     Response responseObj = null;
     try {
+      logger.info(requestContext, "ExhaustJobActor:listJobRequest: url :"+exhaustAPIListURL
+              +", header : "+ header
+              +", request : " + queryParam);
       HttpResponse<String> apiResponse =
-              Unirest.get(exhaustAPIListURL+queryParam).headers(getUpdatedHeaders(null)).asString();
-      if (null != apiResponse) {
+              Unirest.get(exhaustAPIListURL+queryParam).headers(getUpdatedHeaders(header)).asString();
+      logger.info(requestContext, "Exhaust API submit report apiResponse1 : " + apiResponse == null?"null" : ""+apiResponse.getStatus());
+      if (null != apiResponse && apiResponse.getStatus()== ResponseCode.OK.getResponseCode()) {
+        logger.info(requestContext, "Exhaust API submit report call success");
         responseObj = mapper.readValue(apiResponse.getBody(), Response.class);
-        if (responseObj.getResponseCode().getResponseCode() == ResponseCode.OK.getResponseCode()) {
-          logger.info(requestContext, "Exhaust API report list call success");
-        } else {
-          logger.info(requestContext, "Exhaust API report list call failed" + responseObj.getResponseCode().getResponseCode() + responseObj.getResponseCode().getErrorMessage());
-        }
+      } else {
+        logger.info(requestContext, "Exhaust API submit report call failed : "+apiResponse.getStatusText()
+                +" : "+apiResponse.getBody());
+        ProjectCommonException.throwServerErrorException(
+                ResponseCode.customServerError, "Exhaust API submit report apiResponse2 : " + apiResponse );
       }
     } catch (JsonMappingException e) {
       logger.error(requestContext, "Exhaust API report list call failed : JsonMappingException : " + e.getMessage(), e);
@@ -120,6 +131,8 @@ public class ExhaustAPIUtil {
       logger.error(requestContext, "Exhaust API report list call failed : JsonProcessingException : " + e.getMessage(), e);
       ProjectCommonException.throwServerErrorException(
               ResponseCode.customServerError, e.getMessage());
+    } catch ( ProjectCommonException e) {
+      throw e;
     } catch (Exception e) {
       logger.error(requestContext, "Exhaust API report list call failed : " + e.getMessage(), e);
       ProjectCommonException.throwServerErrorException(

@@ -1,15 +1,18 @@
 package org.sunbird.common.models.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.sunbird.common.responsecode.ResponseCode;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import org.sunbird.common.responsecode.ResponseCode;
 
 /**
  * This is a common response class for all the layer. All layer will send same response object.
  *
  * @author Manzarul
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Response implements Serializable, Cloneable {
 
   private static final long serialVersionUID = -3773253896160786443L;

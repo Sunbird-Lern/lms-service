@@ -391,6 +391,7 @@ public interface ResponseMessage {
     String ACTIVITY_ID_MISSING = "ActivityId is mandatory.";
     String ACTIVITY_TYPE_MISSING = "ActivityType is mandatory.";
     String ERR_CALLING_GROUP_API = "Error while calling group api.";
+    String ERR_CALLING_EXHAUST_API = "Error while calling exhaust api";
   }
 
   interface Key {
@@ -729,5 +730,6 @@ public interface ResponseMessage {
     String ACTIVITY_ID_MISSING = "ACTIVITY_ID_MISSING";
     String ACTIVITY_TYPE_MISSING = "ACTIVITY_TYPE_MISSING";
     String ERR_CALLING_GROUP_API = "ERR_CALLING_GROUOP_API";
+    String ERR_CALLING_EXHAUST_API = "ERR_CALLING_EXHAUST_API";
   }
 }

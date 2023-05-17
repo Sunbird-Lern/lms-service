@@ -579,5 +579,7 @@ public final class JsonKey {
   public static final String DATASETCONFIG = "datasetConfig";
   public static final String OUTPUT_FORMAT = "output_format";
 
+  public static final String CONTENT_LENGTH = "Content-Length";
+
   private JsonKey() {}
 }

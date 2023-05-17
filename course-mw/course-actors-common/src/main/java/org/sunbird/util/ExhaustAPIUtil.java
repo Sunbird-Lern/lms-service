@@ -104,6 +104,9 @@ public class ExhaustAPIUtil {
     Unirest.clearDefaultHeaders();
     Response responseObj = null;
     try {
+      logger.info(requestContext, "ExhaustJobActor:listJobRequest: url :"+exhaustAPIListURL
+              +", header : "+ header
+              +", request : " + queryParam);
       HttpResponse<String> apiResponse =
               Unirest.get(exhaustAPIListURL+queryParam).headers(getUpdatedHeaders(header)).asString();
       logger.info(requestContext, "Exhaust API submit report apiResponse1 : " + apiResponse == null?"null" : ""+apiResponse.getStatus());

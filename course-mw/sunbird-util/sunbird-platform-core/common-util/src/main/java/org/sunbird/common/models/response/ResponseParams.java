@@ -1,5 +1,8 @@
 package org.sunbird.common.models.response;
 
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.io.Serializable;
 
 /**
@@ -7,6 +10,7 @@ import java.io.Serializable;
  *
  * @author Manzarul
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ResponseParams implements Serializable {
 
   private static final long serialVersionUID = 6772142067149203497L;

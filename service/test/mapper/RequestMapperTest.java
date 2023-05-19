@@ -2,9 +2,10 @@ package mapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.util.HashMap;
 import java.util.Map;
-import mapper.RequestMapper;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,7 +17,6 @@ import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
-import org.sunbird.helper.ServiceFactory;
 import play.libs.Json;
 
 @RunWith(PowerMockRunner.class)
@@ -67,7 +67,7 @@ public class RequestMapperTest {
     JsonNode node = new ObjectMapper().convertValue(createRequestMap("invalidKey"), JsonNode.class);
     request = (Request) RequestMapper.mapRequest(node, Request.class);
     Assert.assertNotNull(request);
-    Assert.assertEquals(null, request.getRequest().get(JsonKey.FIRST_NAME));
+    Assert.assertNull(request.getRequest().get(JsonKey.FIRST_NAME));
   }
 
   private Map<String, Object> createRequestMap(String requestKey) {

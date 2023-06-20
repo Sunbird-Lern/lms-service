@@ -15,10 +15,6 @@ public interface ResponseMessage {
     String INVALID_OPERATION_NAME =
         "Operation name is invalid. Please provide a valid operation name";
     String INVALID_REQUESTED_DATA = "Requested data for this operation is not valid.";
-    String CONSUMER_ID_MISSING_ERROR = "Consumer id is mandatory.";
-    String CONSUMER_ID_INVALID_ERROR = "Consumer id is invalid.";
-    String DEVICE_ID_MISSING_ERROR = "Device id is mandatory.";
-    String CONTENT_ID_INVALID_ERROR = "Please provide a valid content id.";
     String CONTENT_ID_MISSING_ERROR = "Please provide content id.";
     String COURSE_ID_MISSING_ERROR = "Please provide course id.";
     String API_KEY_MISSING_ERROR = "APi key is mandatory.";
@@ -95,9 +91,6 @@ public interface ResponseMessage {
     String STATUS_CANNOT_BE_UPDATED = "status cann't be updated.";
     String ATTEMPT_ID_MISSING_ERROR = "Please provide attempt id.";
     String LOGIN_TYPE_ERROR = "provide login type as null.";
-    String INVALID_ORG_ID = "Org id does not exist .";
-    String INVALID_ORG_STATUS = "Invalid org status for approve .";
-    String INVALID_ORG_STATUS_TRANSITION = "Can not change state of Org to requeted state .";
     String ADDRESS_REQUIRED_ERROR = "Please provide address.";
     String EDUCATION_REQUIRED_ERROR = "Please provide education details.";
     String JOBDETAILS_REQUIRED_ERROR = "Please provide job details.";
@@ -142,7 +135,6 @@ public interface ResponseMessage {
     String USER_ALREADY_COMPLETED_COURSE = "User already completed given course batch.";
     String COURSE_BATCH_ALREADY_COMPLETED = "Course batch is already completed.";
     String COURSE_BATCH_ENROLLMENT_DATE_ENDED = "Course batch enrollment date has ended.";
-    String EXISTING_ORG_MEMBER = "You already have a membership of this organization.";
     String CONTENT_TYPE_ERROR = "Please add Content-Type header with value application/json";
     String INVALID_PROPERTY_ERROR = "Invalid property {0}.";
     String USER_NAME_OR_ID_ERROR = "Please provide either username or userId.";
@@ -233,7 +225,6 @@ public interface ResponseMessage {
     String USER_PHONE_UPDATE_FAILED = "user phone update is failed.";
     String ES_UPDATE_FAILED = "Data insertion to ES failed.";
     String UPDATE_FAILED = "Data updation failed due to invalid Request";
-    String INVALID_TYPE_VALUE = "Type value should be organisation OR location .";
     String INVALID_LOCATION_ID = "Please provide valid location id.";
     String INVALID_HASHTAG_ID =
         "Please provide different hashTagId.This HashTagId is associated with some other organization.";
@@ -251,7 +242,6 @@ public interface ResponseMessage {
     String NOT_SUPPORTED = "Not Supported.";
     String USERNAME_USERID_MISSING = "Please provide either userName or userId.";
     String ISSUER_ID_REQUIRED = "Please provide issuer ID.";
-    String ISSUER_LIST_REQUIRED = "Please provide issuer list.";
     String ROOT_ORG_ID_REQUIRED = "Please provide root organisation ID.";
     String RECIPIENT_EMAIL_REQUIRED = "Please provide recipient email.";
     String ASSERTION_EVIDENCE_REQUIRED = "Please provide valid assertion url as an evidence.";
@@ -263,15 +253,8 @@ public interface ResponseMessage {
     String SLUG_REQUIRED = "Slug is required .";
     String INVALID_ISSUER_ID = "Invalid issuer ID.";
     String REVOCATION_REASON_REQUIRED = "Please provide revocation reason.";
-    String ALREADY_REVOKED = "Assertion is already revoked.";
     String INVALID_RECIPIENT_TYPE = "Please provide a valid recipient type.";
-    String CUSTOM_CLIENT_ERROR = "Request failed. {0}";
-    String CUSTOM_RESOURCE_NOT_FOUND_ERROR = "{0}";
     String CUSTOM_SERVER_ERROR = "{0}";
-    String INACTIVE_USER = "User is Inactive. Please make it active to proceed.";
-    String USER_INACTIVE_FOR_THIS_ORG =
-        "User is Inactive for this org. Please make it active to proceed.";
-    String USER_UPDATE_FAILED_FOR_THIS_ORG = "user updation failed for this org.";
     String PAGE_NOT_EXIST = "Requested page does not exist.";
     String SECTION_NOT_EXIST = "Requested section does not exist.";
     String ORG_NOT_EXIST = "Requested organisation does not exist.";
@@ -282,14 +265,12 @@ public interface ResponseMessage {
     String INVALID_VALUE = "Invalid {0}: {1}. Valid values are: {2}.";
     String PARENT_CODE_AND_PARENT_ID_MISSING = "Please provide either parentCode or parentId.";
     String INVALID_PARAMETER = "Please provide valid {0}.";
-    String INVALID_PARENT_ID = "Please provide valid parentId.";
     String INVALID_LOCATION_DELETE_REQUEST =
         "One or more locations have a parent reference to given location and hence cannot be deleted.";
     String LOCATION_TYPE_CONFLICTS = "Location type conflicts with its parent location type.";
     String MANDATORY_PARAMETER_MISSING = "Mandatory parameter {0} is missing.";
     String ERROR_MANDATORY_PARAMETER_EMPTY = "Mandatory parameter {0} is empty.";
     String ERROR_NO_FRAMEWORK_FOUND = "No framework found.";
-    String INVALID_LOCN_ID = "Please provide valid locationId.";
     String UPDATE_NOT_ALLOWED = "Update of {0} is not allowed.";
     String MANDATORY_HEADER_MISSING = "Mandatory header {0} is missing.";
     String INVALID_PARAMETER_VALUE =
@@ -308,13 +289,10 @@ public interface ResponseMessage {
         "No root organisation found which is associated with given {0}.";
     String OR_FORMAT = "{0} or {1}";
     String AND_FORMAT = "{0} and {1}";
-    String DOT_FORMAT = "{0}.{1}";
     String DEPENDENT_PARAMETER_MISSING = "Missing parameter {0} which is dependent on {1}.";
     String DEPENDENT_PARAMS_MISSING = "Missing parameter value in {0}.";
     String EXTERNALID_NOT_FOUND =
         "External ID (id: {0}, idType: {1}, provider: {2}) not found for given user.";
-    String PARSING_FAILED = "Failed to parse {0}.";
-    String EXTERNAL_ID_FORMAT = "externalId (id: {0}, idType: {1}, provider: {2})";
     String EXTERNALID_ASSIGNED_TO_OTHER_USER =
         "External ID (id: {0}, idType: {1}, provider: {2}) already assigned to another user.";
     String MANDATORY_CONFIG_PARAMETER_MISSING =
@@ -374,68 +352,24 @@ public interface ResponseMessage {
     String ERROR_SAVING_STORAGE_DETAILS = "Error saving storage details for download link.";
     String ERROR_CSV_NO_DATA_ROWS = "No data rows in CSV.";
     String ERROR_INACTIVE_ORG = "Organisation corresponding to given {0} ({1}) is inactive.";
-    String ERROR_CONFLICTING_VALUES = "Conflicting values for {0} ({1}) and {2} ({3}).";
-    String ERROR_CONFLICTING_ROOT_ORG_ID =
-        "Root organisation ID of API user is conflicting with that of specified organisation ID.";
     String ERROR_UPDATE_SETTING_NOT_ALLOWED = "Update of system setting {0} is not allowed.";
     String ERROR_CREATING_FILE = "Error Reading File";
     String ERROR_PROCESSING_REQUEST = "Something went wrong while Processing Request";
-    String ERROR_UNAVAILABLE_CERTIFICATE = "Certificate is unavailable";
-    String INVALID_TEXTBOOK = "Invalid Textbook. Please Provide Valid Textbook Identifier.";
-    String CSV_ROWS_EXCEEDS = "Number of rows in csv file is more than ";
-    String INVALID_TEXTBOOK_NAME =
-        "Textbook Name given in the file doesn’t match current Textbook name. Please check and upload again.";
-    String DUPLICATE_ROWS =
-        "Duplicate Textbook node found. Please check and upload again. Row number ";
     String REQUIRED_HEADER_MISSING = "Required set of header missing: ";
-    String REQUIRED_FIELD_MISSING =
-        "Required columns missing. Please check and upload again. Mandatory fields are: ";
-    String BLANK_CSV_DATA =
-        "Did not find any Table of Contents data. Please check and upload again.";
-    String EXCEEDS_MAX_CHILDREN = "Number of first level units is more than allowed.";
-    String TEXTBOOK_CHILDREN_EXISTS = "Textbook is already having children.";
-    String TEXTBOOK_UPDATE_FAILURE = "Textbook could not be updated.";
-    String TEXTBOOK_CHILDREN_NOT_EXISTS = "No Children Exists for given TextBook.";
-    String TEXTBOOK_NOT_FOUND = "Textbook not found.";
     String ERROR_PROCESSING_FILE =
         "Something Went Wrong While Reading File. Please Check The File.";
-    String ERR_FILE_NOT_FOUND = "File not found. Please select valid file and upload.";
-    String ERROR_TB_UPDATE = "Error while updating the textbook";
     String ERROR_INVALID_PARAMETER_SIZE =
         "Parameter {0} is of invalid size (expected: {1}, actual: {2}).";
     String INVALID_PAGE_SECTION = "Page section associated with the page is invalid.";
     String ERROR_RATE_LIMIT_EXCEEDED =
         "Your per {0} rate limit has exceeded. You can retry after some time.";
-    String ERROR_INVALID_DIAL_CODE = "The given QR code {0} is not valid.";
-    String ERROR_INVALID_TOPIC = "Topic {0} not found in the framework. Please check and correct.";
-    String ERROR_DIAL_CODE_DUPLICATE_ENTRY =
-        "QR code {0} is associated with more than one section {1}.";
-    String ERROR_DIAL_CODE_ALREADY_ASSOCIATED =
-        "QR code {0} is already associated with a section {1} in the textbook";
-    String DIAL_CODE_LINKING_FAILED = "QR code linking failed.";
-    String ERROR_TEXTBOOK_UPDATE = "{0}";
-
-    String ERROR_INVALID_LINKED_CONTENT_ID = "Linked Content {0} is not valid at row {1}.";
-    String ERROR_DUPLICATE_LINKED_CONTENT = "Duplicate content {0} at row {1}.";
-    String TEACHER_CANNOT_BELONG_TO_CUSTODIAN_ORG =
-        "User type teacher is not supported for custodian organisation users";
-    String ERROR_DUPLICATE_QR_CODE_ENTRY =
-        "CSV file contains more than one entry for {0}. Correct the duplicate entry and try again.";
-    String ERROR_INVALID_TEXTBOOK_UNIT_ID = "Invalid textbook unit id {0} for texbook.";
     String INVALID_REQUEST_TIMEOUT = "Invalid request timeout value {0}.";
-    String ERROR_USER_UPDATE_PASSWORD = "User is created but password couldn't be updated.";
-    String ERROR_BGMS_MISMATCH = "Mismatch in {0} at row - {1}";
-    String ERROR_USER_MIGRATION_FAILED = "User migration failed.";
-    String EMPTY_CONTENTS_FOR_UPDATE_BATCH_STATUS =
-        "Contents should not be empty for batch status update.";
     String IDENTIFIER_VALIDATION_FAILED =
         "Valid identifier is not present in List, Valid supported identifiers are ";
     String FROM_ACCOUNT_ID_MISSING = "From Account id is mandatory.";
     String TO_ACCOUNT_ID_MISSING = "To Account id is mandatory.";
     String FROM_ACCOUNT_ID_NOT_EXISTS = "From Account id not exists";
-    String PARAM_NOT_MATCH = "%s-NOT-MATCH";
     String MANDATORY_HEADER_PARAMETER_MISSING = "Mandatory header parameter {0} is missing.";
-    String RECOVERY_PARAM_MATCH_EXCEPTION = "{0} could not be same as {1}";
     String ERROR_USER_HAS_NOT_CREATED_ANY_COURSE =
         "User hasn't created any course, or may not have a creator role";
     String ERROR_UPLOAD_QRCODE_CSV_FAILED = "Uploading the html file to cloud storage has failed.";
@@ -457,6 +391,7 @@ public interface ResponseMessage {
     String ACTIVITY_ID_MISSING = "ActivityId is mandatory.";
     String ACTIVITY_TYPE_MISSING = "ActivityType is mandatory.";
     String ERR_CALLING_GROUP_API = "Error while calling group api.";
+    String ERR_CALLING_EXHAUST_API = "Error while calling exhaust api";
   }
 
   interface Key {
@@ -465,10 +400,6 @@ public interface ResponseMessage {
     String OPERATION_TIMEOUT = "PROCESS_EXE_TIMEOUT";
     String INVALID_OPERATION_NAME = "INVALID_OPERATION_NAME";
     String INVALID_REQUESTED_DATA = "INVALID_REQUESTED_DATA";
-    String CONSUMER_ID_MISSING_ERROR = "CONSUMER_ID_REQUIRED_ERROR";
-    String CONSUMER_ID_INVALID_ERROR = "CONSUMER_ID_INVALID_ERROR";
-    String DEVICE_ID_MISSING_ERROR = "DEVICE_ID_REQUIRED_ERROR";
-    String CONTENT_ID_INVALID_ERROR = "CONTENT_ID_INVALID_ERROR";
     String CONTENT_ID_MISSING_ERROR = "CONTENT_ID_REQUIRED_ERROR";
     String COURSE_ID_MISSING_ERROR = "COURSE_ID_REQUIRED_ERROR";
     String API_KEY_MISSING_ERROR = "API_KEY_REQUIRED_ERROR";
@@ -619,7 +550,6 @@ public interface ResponseMessage {
     String EMAIL_BODY_ERROR = "EMAIL_BODY_ERROR";
     String RECIPIENT_ADDRESS_ERROR = "RECIPIENT_ADDRESS_ERROR";
     String ISSUER_ID_REQUIRED = "ISSUER_ID_REQUIRED";
-    String ISSUER_LIST_REQUIRED = "ISSUER_LIST_REQUIRED";
     String ROOT_ORG_ID_REQUIRED = "BADGE_ROOT_ORG_ID_REQUIRED";
     String RECIPIENT_EMAIL_REQUIRED = "RECIPIENT_EMAIL_REQUIRED";
     String ASSERTION_EVIDENCE_REQUIRED = "ASSERTION_EVIDENCE_REQUIRED";
@@ -689,15 +619,8 @@ public interface ResponseMessage {
     String SLUG_REQUIRED = "SLUG_REQUIRED";
     String INVALID_ISSUER_ID = "INVALID_ISSUER_ID";
     String REVOCATION_REASON_REQUIRED = "REVOCATION_REASON_REQUIRED";
-    String ALREADY_REVOKED = "ALREADY_REVOKED";
     String INVALID_RECIPIENT_TYPE = "INVALID_RECIPIENT_TYPE";
-    String CUSTOM_CLIENT_ERROR = "CLIENT_ERROR";
-    String CUSTOM_RESOURCE_NOT_FOUND_ERROR = "RESOURCE_NOT_FOUND";
     String CUSTOM_SERVER_ERROR = "SERVER_ERROR";
-    String INACTIVE_USER = "INACTIVE_USER";
-    String USER_INACTIVE_FOR_THIS_ORG = "USER_INACTIVE_FOR_THIS_ORG";
-    String USER_UPDATE_FAILED_FOR_THIS_ORG = "USER_UPDATE_FAILED_FOR_THIS_ORG";
-    String PREFERENCE_KEY_MISSING = "PREFERENCE_KEY_MISSING";
     String PAGE_NOT_EXIST = "PAGE_NOT_EXIST";
     String SECTION_NOT_EXIST = "SECTION_NOT_EXIST";
     String ORG_NOT_EXIST = "ORG_NOT_EXIST";
@@ -708,13 +631,11 @@ public interface ResponseMessage {
     String INVALID_VALUE = "INVALID_VALUE";
     String PARENT_CODE_AND_PARENT_ID_MISSING = "PARENT_CODE_AND_PARENT_ID_MISSING";
     String INVALID_PARAMETER = "INVALID_PARAMETER";
-    String INVALID_PARENT_ID = "INVALID_PARENT_ID";
     String INVALID_LOCATION_DELETE_REQUEST = "INVALID_LOCATION_DELETE_REQUEST";
     String LOCATION_TYPE_CONFLICTS = "LOCATION_TYPE_CONFLICTS";
     String MANDATORY_PARAMETER_MISSING = "MANDATORY_PARAMETER_MISSING";
     String ERROR_MANDATORY_PARAMETER_EMPTY = "ERROR_MANDATORY_PARAMETER_EMPTY";
     String ERROR_NO_FRAMEWORK_FOUND = "ERROR_NO_FRAMEWORK_FOUND";
-    String INVALID_LOCN_ID = "INVALID_LOCATION_ID";
     String UPDATE_NOT_ALLOWED = "UPDATE_NOT_ALLOWED";
     String MANDATORY_HEADER_MISSING = "MANDATORY_HEADER_MISSING";
     String INVALID_PARAMETER_VALUE = "INVALID_PARAMETER_VALUE";
@@ -723,7 +644,6 @@ public interface ResponseMessage {
     String FILE_ATTACHMENT_SIZE_NOT_CONFIGURED = "ATTACHMENT_SIZE_NOT_CONFIGURED";
     String EMPTY_FILE = "EMPTY_FILE";
     String INVALID_COLUMNS = "INVALID_COLUMNS";
-    String INVALID_COLUMN = "INVALID_COLUMN";
     String CONFLICTING_ORG_LOCATIONS = "CONFLICTING_ORG_LOCATIONS";
     String UNABLE_TO_COMMUNICATE_WITH_ACTOR = "UNABLE_TO_COMMUNICATE_WITH_ACTOR";
     String EMPTY_HEADER_LINE = "EMPTY_HEADER_LINE";
@@ -775,55 +695,23 @@ public interface ResponseMessage {
     String ERROR_CSV_NO_DATA_ROWS = "ERROR_CSV_NO_DATA_ROWS";
     String ERROR_INACTIVE_ORG = "ERROR_INACTIVE_ORG";
     String ERROR_DUPLICATE_ENTRIES = "ERROR_DUPLICATE_ENTRIES";
-    String ERROR_CONFLICTING_VALUES = "ERROR_CONFLICTING_VALUES";
-    String ERROR_CONFLICTING_ROOT_ORG_ID = "ERROR_CONFLICTING_ROOT_ORG_ID";
     String ERROR_UPDATE_SETTING_NOT_ALLOWED = "ERROR_UPDATE_SETTING_NOT_ALLOWED";
     String ERROR_CREATING_FILE = "ERROR_CREATING_FILE";
     String ERROR_PROCESSING_REQUEST = "ERROR_PROCESSING_REQUEST";
-    String ERROR_UNAVAILABLE_CERTIFICATE = "ERROR_UNAVAILABLE_CERTIFICATE";
-    String INVALID_TEXTBOOK = "INVALID_TEXTBOOK";
-    String CSV_ROWS_EXCEEDS = "CSV_ROWS_EXCEEDS";
-    String INVALID_TEXTBOOK_NAME = "INVALID_TEXTBOOK_NAME";
-    String DUPLICATE_ROWS = "DUPLICATE_ROWS";
     String ERROR_INVALID_OTP = "ERROR_INVALID_OTP";
     String REQUIRED_HEADER_MISSING = "REQUIRED_HEADER_MISSING";
-    String REQUIRED_FIELD_MISSING = "REQUIRED_FIELD_MISSING";
-    String BLANK_CSV_DATA = "BLANK_CSV_DATA";
-    String EXCEEDS_MAX_CHILDREN = "EXCEEDS_MAX_CHILDREN";
-    String TEXTBOOK_CHILDREN_EXISTS = "TEXTBOOK_CHILDREN_EXISTS";
-    String TEXTBOOK_UPDATE_FAILURE = "TEXTBOOK_UPDATE_FAILURE";
-    String TEXTBOOK_CHILDREN_NOT_EXISTS = "TEXTBOOK_CHILDREN_NOT_EXISTS";
-    String TEXTBOOK_NOT_FOUND = "TEXTBOOK_NOT_FOUND";
     String ERROR_PROCESSING_FILE = "ERROR_PROCESSING_FILE";
-    String ERR_FILE_NOT_FOUND = "ERR_FILE_NOT_FOUND";
-    String ERROR_TB_UPDATE = "ERROR_TB_UPDATE";
     String ERROR_INVALID_PARAMETER_SIZE = "ERROR_INVALID_PARAMETER_SIZE";
     String INVALID_PAGE_SECTION = "INVALID_PAGE_SECTION";
     String ERROR_RATE_LIMIT_EXCEEDED = "ERROR_RATE_LIMIT_EXCEEDED";
     String ERROR_INVALID_CONFIG_PARAM_VALUE = "ERROR_INVALID_CONFIG_PARAM_VALUE";
     String ERROR_MAX_SIZE_EXCEEDED = "ERROR_MAX_SIZE_EXCEEDED";
-    String ERROR_INVALID_DIAL_CODE = "ERROR_INVALID_DIAL_CODE";
-    String ERROR_INVALID_TOPIC = "ERROR_INVALID_TOPIC";
-    String ERROR_DIAL_CODE_DUPLICATE_ENTRY = "ERROR_DIAL_CODE_DUPLICATE_ENTRY";
-    String ERROR_DIAL_CODE_ALREADY_ASSOCIATED = "ERROR_DIAL_CODE_ALREADY_ASSOCIATED";
-    String DIAL_CODE_LINKING_FAILED = "DIAL_CODE_LINKING_FAILED";
-    String ERROR_TEXTBOOK_UPDATE = "ERROR_TEXTBOOK_UPDATE";
-    String ERROR_INVALID_LINKED_CONTENT_ID = "ERROR_INVALID_LINKED_CONTENT_ID";
-    String ERROR_DUPLICATE_LINKED_CONTENT = "DUPLICATE_LINKED_CONTENT";
-    String TEACHER_CANNOT_BELONG_TO_CUSTODIAN_ORG = "TEACHER_CANNOT_BELONG_TO_CUSTODIAN_ORG";
-    String ERROR_DUPLICATE_QR_CODE_ENTRY = "ERROR_DUPLICATE_QR_CODE_ENTRY";
-    String ERROR_INVALID_TEXTBOOK_UNIT_ID = "ERROR_INVALID_TEXTBOOK_UNIT_ID";
     String INVALID_REQUEST_TIMEOUT = "INVALID_REQUEST_TIMEOUT";
-    String ERROR_BGMS_MISMATCH = "ERROR_BGMS_MISMATCH";
-    String ERROR_USER_MIGRATION_FAILED = "ERROR_USER_MIGRATION_FAILED";
     String VALID_IDENTIFIER_ABSENSE = "IDENTIFIER IN LIST IS NOT SUPPORTED OR INCORRECT";
     String FROM_ACCOUNT_ID_MISSING = "FROM_ACCOUNT_ID_MISSING";
     String TO_ACCOUNT_ID_MISSING = "TO_ACCOUNT_ID_MISSING";
     String FROM_ACCOUNT_ID_NOT_EXISTS = "FROM_ACCOUNT_ID_NOT_EXISTS";
-    String PARAM_NOT_MATCH = "%s-NOT-MATCH";
     String MANDATORY_HEADER_PARAMETER_MISSING = "MANDATORY_HEADER_PARAMETER_MISSING";
-    String RECOVERY_PARAM_MATCH_EXCEPTION = "RECOVERY_PARAM_MATCH_EXCEPTION";
-    String EMPTY_CONTENTS_FOR_UPDATE_BATCH_STATUS = "EMPTY_CONTENTS_FOR_UPDATE_BATCH_STATUS";
     String ERROR_USER_HAS_NOT_CREATED_ANY_COURSE = "USER_HAS_NOT_CREATED_ANY_COURSE";
     String ERROR_UPLOAD_QRCODE_CSV_FAILED = "ERROR_UPLOAD_QRCODE_CSV_FAILED";
     String ERROR_NO_DIALCODES_LINKED = "ERROR_NO_DIALCODES_LINKED";
@@ -842,5 +730,6 @@ public interface ResponseMessage {
     String ACTIVITY_ID_MISSING = "ACTIVITY_ID_MISSING";
     String ACTIVITY_TYPE_MISSING = "ACTIVITY_TYPE_MISSING";
     String ERR_CALLING_GROUP_API = "ERR_CALLING_GROUOP_API";
+    String ERR_CALLING_EXHAUST_API = "ERR_CALLING_EXHAUST_API";
   }
 }

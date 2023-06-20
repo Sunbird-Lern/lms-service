@@ -55,11 +55,6 @@ GET		 /v1/course/batch/read/:batchId			@controllers.coursemanagement.CourseBatch
 POST     /v1/course/batch/search                @controllers.coursemanagement.CourseBatchController.search(request: play.mvc.Http.Request)
 POST		 /v1/batch/participants/list			@controllers.coursemanagement.CourseBatchController.getParticipants(request: play.mvc.Http.Request)
 
-# Textbook APIs
-POST    /v1/textbook/toc/upload/:textbookId           @controllers.textbook.TextbookController.uploadTOC(textbookId:String, request: play.mvc.Http.Request)
-GET    /v1/textbook/toc/download/:textbookId           @controllers.textbook.TextbookController.getTocUrl(textbookId:String, request: play.mvc.Http.Request)
-
-
 # Certificate APIs
 POST /v1/course/batch/cert/issue           @controllers.certificate.CertificateController.issueCertificate(request: play.mvc.Http.Request)
 PATCH /v1/course/batch/cert/template/add           @controllers.certificate.CertificateController.addCertificate(request: play.mvc.Http.Request)
@@ -76,3 +71,7 @@ POST /v1/group/activity/agg                     @controllers.group.GroupAggContr
 
 #Summary Aggregate
 POST /v1/collection/summary                     @controllers.collectionsummaryaggregate.CollectionSummaryAggregateController.getCollectionSummaryAggregate(request: play.mvc.Http.Request)
+
+#Exhaust Proxy APIs
+POST /v1/jobrequest/submit                      @controllers.exhaustjob.ExhaustJobController.submitJobRequest(request: play.mvc.Http.Request)
+GET /v1/jobrequest/list/:tag                    @controllers.exhaustjob.ExhaustJobController.listJobRequest(tag:String, request: play.mvc.Http.Request)

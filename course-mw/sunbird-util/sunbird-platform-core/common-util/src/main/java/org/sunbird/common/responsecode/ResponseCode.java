@@ -15,17 +15,6 @@ public enum ResponseCode {
       ResponseMessage.Key.INVALID_OPERATION_NAME, ResponseMessage.Message.INVALID_OPERATION_NAME),
   invalidRequestData(
       ResponseMessage.Key.INVALID_REQUESTED_DATA, ResponseMessage.Message.INVALID_REQUESTED_DATA),
-  invalidCustomerId(
-      ResponseMessage.Key.CONSUMER_ID_MISSING_ERROR,
-      ResponseMessage.Message.CONSUMER_ID_MISSING_ERROR),
-  customerIdRequired(
-      ResponseMessage.Key.CONSUMER_ID_INVALID_ERROR,
-      ResponseMessage.Message.CONSUMER_ID_INVALID_ERROR),
-  deviceIdRequired(
-      ResponseMessage.Key.DEVICE_ID_MISSING_ERROR, ResponseMessage.Message.DEVICE_ID_MISSING_ERROR),
-  invalidContentId(
-      ResponseMessage.Key.CONTENT_ID_INVALID_ERROR,
-      ResponseMessage.Message.CONTENT_ID_INVALID_ERROR),
   courseIdRequired(
       ResponseMessage.Key.COURSE_ID_MISSING_ERROR, ResponseMessage.Message.COURSE_ID_MISSING_ERROR),
   contentIdRequired(
@@ -480,23 +469,8 @@ public enum ResponseCode {
       ResponseMessage.Message.REVOCATION_REASON_REQUIRED),
   invalidRecipientType(
       ResponseMessage.Key.INVALID_RECIPIENT_TYPE, ResponseMessage.Message.INVALID_RECIPIENT_TYPE),
-  customClientError(
-      ResponseMessage.Key.CUSTOM_CLIENT_ERROR, ResponseMessage.Message.CUSTOM_CLIENT_ERROR),
-  customResourceNotFound(
-      ResponseMessage.Key.CUSTOM_RESOURCE_NOT_FOUND_ERROR,
-      ResponseMessage.Message.CUSTOM_RESOURCE_NOT_FOUND_ERROR),
   customServerError(
       ResponseMessage.Key.CUSTOM_SERVER_ERROR, ResponseMessage.Message.CUSTOM_SERVER_ERROR),
-  inactiveUser(ResponseMessage.Key.INACTIVE_USER, ResponseMessage.Message.INACTIVE_USER),
-  userInactiveForThisOrg(
-      ResponseMessage.Key.USER_INACTIVE_FOR_THIS_ORG,
-      ResponseMessage.Message.USER_INACTIVE_FOR_THIS_ORG),
-  userUpdateToOrgFailed(
-      ResponseMessage.Key.USER_UPDATE_FAILED_FOR_THIS_ORG,
-      ResponseMessage.Message.USER_UPDATE_FAILED_FOR_THIS_ORG),
-  preferenceKeyMissing(
-      ResponseMessage.Key.USER_UPDATE_FAILED_FOR_THIS_ORG,
-      ResponseMessage.Message.USER_UPDATE_FAILED_FOR_THIS_ORG),
   pageDoesNotExist(ResponseMessage.Key.PAGE_NOT_EXIST, ResponseMessage.Message.PAGE_NOT_EXIST),
   sectionDoesNotExist(
       ResponseMessage.Key.SECTION_NOT_EXIST, ResponseMessage.Message.SECTION_NOT_EXIST),
@@ -683,12 +657,6 @@ public enum ResponseCode {
       ResponseMessage.Key.ERROR_INACTIVE_ORG, ResponseMessage.Message.ERROR_INACTIVE_ORG),
   errorDuplicateEntries(
       ResponseMessage.Key.ERROR_DUPLICATE_ENTRIES, ResponseMessage.Message.ERROR_DUPLICATE_ENTRIES),
-  errorConflictingValues(
-      ResponseMessage.Key.ERROR_CONFLICTING_VALUES,
-      ResponseMessage.Message.ERROR_CONFLICTING_VALUES),
-  errorConflictingRootOrgId(
-      ResponseMessage.Key.ERROR_CONFLICTING_ROOT_ORG_ID,
-      ResponseMessage.Message.ERROR_CONFLICTING_ROOT_ORG_ID),
   errorUpdateSettingNotAllowed(
       ResponseMessage.Key.ERROR_UPDATE_SETTING_NOT_ALLOWED,
       ResponseMessage.Message.ERROR_UPDATE_SETTING_NOT_ALLOWED),
@@ -697,35 +665,10 @@ public enum ResponseCode {
   errorProcessingRequest(
       ResponseMessage.Key.ERROR_PROCESSING_REQUEST,
       ResponseMessage.Message.ERROR_PROCESSING_REQUEST),
-  errorUnavailableCertificate(
-      ResponseMessage.Key.ERROR_UNAVAILABLE_CERTIFICATE,
-      ResponseMessage.Message.ERROR_UNAVAILABLE_CERTIFICATE),
-  invalidTextbook(ResponseMessage.Key.INVALID_TEXTBOOK, ResponseMessage.Message.INVALID_TEXTBOOK),
-  csvRowsExceeds(ResponseMessage.Key.CSV_ROWS_EXCEEDS, ResponseMessage.Message.CSV_ROWS_EXCEEDS),
-  invalidTextbookName(
-      ResponseMessage.Key.INVALID_TEXTBOOK_NAME, ResponseMessage.Message.INVALID_TEXTBOOK_NAME),
-  duplicateRows(ResponseMessage.Key.DUPLICATE_ROWS, ResponseMessage.Message.DUPLICATE_ROWS),
   requiredHeaderMissing(
       ResponseMessage.Key.REQUIRED_HEADER_MISSING, ResponseMessage.Message.REQUIRED_HEADER_MISSING),
-  requiredFieldMissing(
-      ResponseMessage.Key.REQUIRED_FIELD_MISSING, ResponseMessage.Message.REQUIRED_FIELD_MISSING),
-  blankCsvData(ResponseMessage.Key.BLANK_CSV_DATA, ResponseMessage.Message.BLANK_CSV_DATA),
-  exceedMaxChildren(
-      ResponseMessage.Key.EXCEEDS_MAX_CHILDREN, ResponseMessage.Message.EXCEEDS_MAX_CHILDREN),
-  textbookChildrenExist(
-      ResponseMessage.Key.TEXTBOOK_CHILDREN_EXISTS,
-      ResponseMessage.Message.TEXTBOOK_CHILDREN_EXISTS),
-  textbookUpdateFailure(
-      ResponseMessage.Key.TEXTBOOK_UPDATE_FAILURE, ResponseMessage.Message.TEXTBOOK_UPDATE_FAILURE),
-  noChildrenExists(
-      ResponseMessage.Key.TEXTBOOK_CHILDREN_NOT_EXISTS,
-      ResponseMessage.Message.TEXTBOOK_CHILDREN_NOT_EXISTS),
-  textBookNotFound(
-      ResponseMessage.Key.TEXTBOOK_NOT_FOUND, ResponseMessage.Message.TEXTBOOK_NOT_FOUND),
   errorProcessingFile(
       ResponseMessage.Key.ERROR_PROCESSING_FILE, ResponseMessage.Message.ERROR_PROCESSING_FILE),
-  fileNotFound(ResponseMessage.Key.ERR_FILE_NOT_FOUND, ResponseMessage.Message.ERR_FILE_NOT_FOUND),
-  errorTbUpdate(ResponseMessage.Key.ERROR_TB_UPDATE, ResponseMessage.Message.ERROR_TB_UPDATE),
   errorInvalidParameterSize(
       ResponseMessage.Key.ERROR_INVALID_PARAMETER_SIZE,
       ResponseMessage.Message.ERROR_INVALID_PARAMETER_SIZE),
@@ -734,44 +677,8 @@ public enum ResponseCode {
   errorRateLimitExceeded(
       ResponseMessage.Key.ERROR_RATE_LIMIT_EXCEEDED,
       ResponseMessage.Message.ERROR_RATE_LIMIT_EXCEEDED),
-  errorInvalidDialCode(
-      ResponseMessage.Key.ERROR_INVALID_DIAL_CODE, ResponseMessage.Message.ERROR_INVALID_DIAL_CODE),
-  errorInvalidTopic(
-      ResponseMessage.Key.ERROR_INVALID_TOPIC, ResponseMessage.Message.ERROR_INVALID_TOPIC),
-  errorDialCodeDuplicateEntry(
-      ResponseMessage.Key.ERROR_DIAL_CODE_DUPLICATE_ENTRY,
-      ResponseMessage.Message.ERROR_DIAL_CODE_DUPLICATE_ENTRY),
-  errorDialCodeAlreadyAssociated(
-      ResponseMessage.Key.ERROR_DIAL_CODE_ALREADY_ASSOCIATED,
-      ResponseMessage.Message.ERROR_DIAL_CODE_ALREADY_ASSOCIATED),
-  errorDialCodeLinkingFail(
-      ResponseMessage.Key.DIAL_CODE_LINKING_FAILED,
-      ResponseMessage.Message.DIAL_CODE_LINKING_FAILED),
-  errorDialCodeLinkingClientError(
-      ResponseMessage.Key.ERROR_TEXTBOOK_UPDATE, ResponseMessage.Message.ERROR_TEXTBOOK_UPDATE),
-  errorInvalidLinkedContentId(
-      ResponseMessage.Key.ERROR_INVALID_LINKED_CONTENT_ID,
-      ResponseMessage.Message.ERROR_INVALID_LINKED_CONTENT_ID),
-  errorDuplicateLinkedContentId(
-      ResponseMessage.Key.ERROR_DUPLICATE_LINKED_CONTENT,
-      ResponseMessage.Message.ERROR_DUPLICATE_LINKED_CONTENT),
-
-  errorTeacherCannotBelongToCustodianOrg(
-      ResponseMessage.Key.TEACHER_CANNOT_BELONG_TO_CUSTODIAN_ORG,
-      ResponseMessage.Message.TEACHER_CANNOT_BELONG_TO_CUSTODIAN_ORG),
-  errorDduplicateDialCodeEntry(
-      ResponseMessage.Key.ERROR_DUPLICATE_QR_CODE_ENTRY,
-      ResponseMessage.Message.ERROR_DUPLICATE_QR_CODE_ENTRY),
-  errorInvalidTextbookUnitId(
-      ResponseMessage.Key.ERROR_INVALID_TEXTBOOK_UNIT_ID,
-      ResponseMessage.Message.ERROR_INVALID_TEXTBOOK_UNIT_ID),
   invalidRequestTimeout(
       ResponseMessage.Key.INVALID_REQUEST_TIMEOUT, ResponseMessage.Message.INVALID_REQUEST_TIMEOUT),
-  errorBGMSMismatch(
-      ResponseMessage.Key.ERROR_BGMS_MISMATCH, ResponseMessage.Message.ERROR_BGMS_MISMATCH),
-  errorUserMigrationFailed(
-      ResponseMessage.Key.ERROR_USER_MIGRATION_FAILED,
-      ResponseMessage.Message.ERROR_USER_MIGRATION_FAILED),
   invalidIdentifier(
       ResponseMessage.Key.VALID_IDENTIFIER_ABSENSE,
       ResponseMessage.Message.IDENTIFIER_VALIDATION_FAILED),
@@ -785,13 +692,6 @@ public enum ResponseCode {
   mandatoryHeaderParamsMissing(
       ResponseMessage.Key.MANDATORY_HEADER_PARAMETER_MISSING,
       ResponseMessage.Message.MANDATORY_HEADER_PARAMETER_MISSING),
-  recoveryParamsMatchException(
-      ResponseMessage.Key.RECOVERY_PARAM_MATCH_EXCEPTION,
-      ResponseMessage.Message.RECOVERY_PARAM_MATCH_EXCEPTION),
-  PARAM_NOT_MATCH(ResponseMessage.Key.PARAM_NOT_MATCH, ResponseMessage.Message.PARAM_NOT_MATCH),
-  emptyContentsForUpdateBatchStatus(
-      ResponseMessage.Key.EMPTY_CONTENTS_FOR_UPDATE_BATCH_STATUS,
-      ResponseMessage.Message.EMPTY_CONTENTS_FOR_UPDATE_BATCH_STATUS),
   errorUserHasNotCreatedAnyCourse(
       ResponseMessage.Key.ERROR_USER_HAS_NOT_CREATED_ANY_COURSE,
       ResponseMessage.Message.ERROR_USER_HAS_NOT_CREATED_ANY_COURSE),
@@ -830,6 +730,7 @@ public enum ResponseCode {
   OK(200),
   CLIENT_ERROR(400),
   SERVER_ERROR(500),
+  ERROR(ResponseMessage.Key.ERR_CALLING_EXHAUST_API, ResponseMessage.Message.ERR_CALLING_EXHAUST_API),
   RESOURCE_NOT_FOUND(404),
   UNAUTHORIZED(401),
   FORBIDDEN(403),
@@ -896,7 +797,7 @@ public enum ResponseCode {
     if (StringUtils.isBlank(code)) {
       return "";
     }
-    ResponseCode responseCodes[] = ResponseCode.values();
+    ResponseCode[] responseCodes = ResponseCode.values();
     for (ResponseCode actionState : responseCodes) {
       if (actionState.getErrorCode().equals(code)) {
         return actionState.getErrorMessage();
@@ -905,7 +806,7 @@ public enum ResponseCode {
     return "";
   }
 
-  private ResponseCode(int responseCode) {
+  ResponseCode(int responseCode) {
     this.responseCode = responseCode;
   }
 
@@ -952,14 +853,13 @@ public enum ResponseCode {
     } else if (JsonKey.UNAUTHORIZED.equals(errorCode)) {
       return ResponseCode.unAuthorized;
     } else {
-      ResponseCode value = null;
-      ResponseCode responseCodes[] = ResponseCode.values();
+      ResponseCode[] responseCodes = ResponseCode.values();
       for (ResponseCode response : responseCodes) {
         if (response.getErrorCode().equals(errorCode)) {
           return response;
         }
       }
-      return value;
+      return null;
     }
   }
 }

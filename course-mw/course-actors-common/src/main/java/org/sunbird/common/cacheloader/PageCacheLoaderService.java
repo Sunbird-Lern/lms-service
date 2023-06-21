@@ -18,7 +18,6 @@ import java.util.Set;
 
 public class PageCacheLoaderService implements Runnable {
   private CassandraOperation cassandraOperation = ServiceFactory.getInstance();
-  private static final String KEY_SPACE_NAME = "sunbird";
   private static boolean isCacheEnabled = false;
   private static LoggerUtil logger = new LoggerUtil(PageCacheLoaderService.class);
   //      Boolean.parseBoolean(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_CACHE_ENABLE));
@@ -29,7 +28,7 @@ public class PageCacheLoaderService implements Runnable {
   public Map<String, Map<String, Object>> cacheLoader(String tableName) {
     Map<String, Map<String, Object>> map = new HashMap<>();
     try {
-      Response response = cassandraOperation.getAllRecords(null, KEY_SPACE_NAME, tableName);
+      Response response = cassandraOperation.getAllRecords(null, JsonKey.SUNBIRD_KEYSPACE, tableName);
       List<Map<String, Object>> responseList =
           (List<Map<String, Object>>) response.get(JsonKey.RESPONSE);
       if (CollectionUtils.isNotEmpty(responseList)) {

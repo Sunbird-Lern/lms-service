@@ -583,5 +583,13 @@ public final class JsonKey {
 
   public static final String CONTENT_LENGTH = "Content-Length";
 
+  //#Release-5.4.0 - LR-511
+  public static final String SUNBIRD_KEYSPACE = "sunbird_keyspace";
+  public static final String SUNBIRD_COURSE_KEY_SPACE ="sunbird_course_keyspace";
+  public static final String DIALCODE_KEY_SPACE_NAME = "dialcode_keyspace";
+  public static final String REDIS_HOST_VALUE = "sunbird_redis_host";
+  public static final String REDIS_PORT_VALUE = "sunbird_redis_port";
+  public static final String SUNBIRD_REDIS_SCAN_INTERVAL = "sunbird_redis_scan_interval";
+
   private JsonKey() {}
 }

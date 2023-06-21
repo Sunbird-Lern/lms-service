@@ -1,10 +1,9 @@
 package org.sunbird.cache.util
 
 import java.time.Duration
-
 import org.apache.commons.lang3.StringUtils
 import org.sunbird.cache.platform.Platform
-import org.sunbird.common.models.util.LoggerUtil
+import org.sunbird.common.models.util.{JsonKey, LoggerUtil}
 import redis.clients.jedis.{Jedis, JedisPool, JedisPoolConfig}
 
 import scala.collection.JavaConverters._
@@ -19,8 +18,8 @@ class RedisCacheUtil {
 
     implicit val className = "org.sunbird.cache.connector.RedisConnector"
 
-    private val redis_host = Platform.getString("sunbird_redis_host", "localhost")
-    private val redis_port = Platform.getInteger("sunbird_redis_port", 6379)
+    private val redis_host = Platform.getString("sunbird_redis_host", JsonKey.REDIS_HOST_VALUE)
+    private val redis_port = Platform.getString("sunbird_redis_port", JsonKey.REDIS_PORT_VALUE)
     private val index = Platform.getInteger("redis.dbIndex", 0)
 
      println("=====redis_host=====" + redis_host)

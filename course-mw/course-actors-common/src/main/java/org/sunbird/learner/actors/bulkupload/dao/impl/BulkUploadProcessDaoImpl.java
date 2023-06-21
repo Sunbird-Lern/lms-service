@@ -6,6 +6,7 @@ import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerUtil;
+import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.TableNameUtil;
 import org.sunbird.common.request.RequestContext;
 import org.sunbird.helper.ServiceFactory;
@@ -29,7 +30,7 @@ public class BulkUploadProcessDaoImpl implements BulkUploadProcessDao {
   public Response create(BulkUploadProcess bulkUploadProcess, RequestContext requestContext) {
     Map<String, Object> map = mapper.convertValue(bulkUploadProcess, Map.class);
     map.put(JsonKey.CREATED_ON, new Timestamp(Calendar.getInstance().getTimeInMillis()));
-    Response response = cassandraOperation.insertRecord(requestContext, JsonKey.SUNBIRD_KEYSPACE, TableNameUtil.BULK_UPLOAD_PROCESS_TABLENAME, map);
+    Response response = cassandraOperation.insertRecord(requestContext, ProjectUtil.getConfigValue(JsonKey.SUNBIRD_KEYSPACE), TableNameUtil.BULK_UPLOAD_PROCESS_TABLENAME, map);
     // need to send ID along with success msg
     response.put(JsonKey.ID, map.get(JsonKey.ID));
     return response;
@@ -42,12 +43,12 @@ public class BulkUploadProcessDaoImpl implements BulkUploadProcessDao {
       map.remove(JsonKey.CREATED_ON);
     }
     map.put(JsonKey.LAST_UPDATED_ON, new Timestamp(Calendar.getInstance().getTimeInMillis()));
-    return cassandraOperation.updateRecord(requestContext, JsonKey.SUNBIRD_KEYSPACE, TableNameUtil.BULK_UPLOAD_PROCESS_TABLENAME, map);
+    return cassandraOperation.updateRecord(requestContext, ProjectUtil.getConfigValue(JsonKey.SUNBIRD_KEYSPACE), TableNameUtil.BULK_UPLOAD_PROCESS_TABLENAME, map);
   }
 
   @Override
   public BulkUploadProcess read(RequestContext requestContext, String id) {
-    Response response = cassandraOperation.getRecordByIdentifier(requestContext, JsonKey.SUNBIRD_KEYSPACE, TableNameUtil.BULK_UPLOAD_PROCESS_TABLENAME, id, null);
+    Response response = cassandraOperation.getRecordByIdentifier(requestContext, ProjectUtil.getConfigValue(JsonKey.SUNBIRD_KEYSPACE), TableNameUtil.BULK_UPLOAD_PROCESS_TABLENAME, id, null);
     List<Map<String, Object>> list = (List<Map<String, Object>>) response.get(JsonKey.RESPONSE);
     if (CollectionUtils.isEmpty(list)) {
       return null;

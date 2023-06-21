@@ -586,10 +586,16 @@ public final class JsonKey {
   //#Release-5.4.0 - LR-511
   public static final String SUNBIRD_KEYSPACE = "sunbird_keyspace";
   public static final String SUNBIRD_COURSE_KEY_SPACE ="sunbird_course_keyspace";
-  public static final String DIALCODE_KEY_SPACE_NAME = "dialcode_keyspace";
+  public static final String DIALCODE_KEY_SPACE = "dialcode_keyspace";
   public static final String REDIS_HOST_VALUE = "sunbird_redis_host";
   public static final String REDIS_PORT_VALUE = "sunbird_redis_port";
+  public static final String REDIS_INDEX_VALUE = "redis.dbIndex";
   public static final String SUNBIRD_REDIS_SCAN_INTERVAL = "sunbird_redis_scan_interval";
+  public static final String ES_COURSE_INDEX = "es_course_index";
+  public static final String ES_COURSE_BATCH_INDEX = "es_course_batch_index";
+  public static final String ES_USER_INDEX = "es_user_index";
+  public static final String ES_ORGANISATION_INDEX = "es_organisation_index";
+  public static final String ES_USER_COURSES_INDEX = "es_user_courses_index";
 
   private JsonKey() {}
 }

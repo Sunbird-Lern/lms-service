@@ -370,22 +370,11 @@ public class ProjectUtil {
    * @author Manzarul
    */
   public enum EsType {
-    course("cbatch"),
-    courseBatch("course-batch"),
-    content("content"),
-    user("user"),
-    organisation("org"),
-    usercourses("user-courses"),
-    usernotes("usernotes"),
-    userprofilevisibility("userprofilevisibility"),
-    telemetry("telemetry"),
-    location("location"),
-    announcementType("announcementtype"),
-    announcement("announcement"),
-    metrics("metrics"),
-    cbatchstats("cbatchstats"),
-    cbatchassessment("cbatch-assessment"),
-    userfeed("userfeed");
+    course(ProjectUtil.getConfigValue(JsonKey.ES_COURSE_INDEX)),
+    courseBatch(ProjectUtil.getConfigValue(JsonKey.ES_COURSE_BATCH_INDEX)),
+    user(ProjectUtil.getConfigValue(JsonKey.ES_USER_INDEX)),
+    organisation(ProjectUtil.getConfigValue(JsonKey.ES_ORGANISATION_INDEX)),
+    usercourses(ProjectUtil.getConfigValue(JsonKey.ES_USER_COURSES_INDEX));
 
     private String typeName;
 

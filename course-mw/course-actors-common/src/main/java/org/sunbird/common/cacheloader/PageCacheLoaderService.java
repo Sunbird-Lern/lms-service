@@ -8,6 +8,7 @@ import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerUtil;
+import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.util.DataCacheHandler;
 
@@ -28,7 +29,7 @@ public class PageCacheLoaderService implements Runnable {
   public Map<String, Map<String, Object>> cacheLoader(String tableName) {
     Map<String, Map<String, Object>> map = new HashMap<>();
     try {
-      Response response = cassandraOperation.getAllRecords(null, JsonKey.SUNBIRD_KEYSPACE, tableName);
+      Response response = cassandraOperation.getAllRecords(null, ProjectUtil.getConfigValue(JsonKey.SUNBIRD_KEYSPACE), tableName);
       List<Map<String, Object>> responseList =
           (List<Map<String, Object>>) response.get(JsonKey.RESPONSE);
       if (CollectionUtils.isNotEmpty(responseList)) {

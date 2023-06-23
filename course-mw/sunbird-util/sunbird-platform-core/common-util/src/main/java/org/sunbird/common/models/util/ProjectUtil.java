@@ -22,6 +22,7 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.sunbird.common.exception.ProjectCommonException;
+import org.sunbird.common.models.util.url.EsConfigUtil;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 
@@ -370,11 +371,11 @@ public class ProjectUtil {
    * @author Manzarul
    */
   public enum EsType {
-    course(ProjectUtil.getConfigValue(JsonKey.ES_COURSE_INDEX)),
-    courseBatch(ProjectUtil.getConfigValue(JsonKey.ES_COURSE_BATCH_INDEX)),
-    user(ProjectUtil.getConfigValue(JsonKey.ES_USER_INDEX)),
-    organisation(ProjectUtil.getConfigValue(JsonKey.ES_ORGANISATION_INDEX)),
-    usercourses(ProjectUtil.getConfigValue(JsonKey.ES_USER_COURSES_INDEX));
+    course(EsConfigUtil.getConfigValue(JsonKey.ES_COURSE_INDEX)),
+    courseBatch(EsConfigUtil.getConfigValue(JsonKey.ES_COURSE_BATCH_INDEX)),
+    user(EsConfigUtil.getConfigValue(JsonKey.ES_USER_INDEX)),
+    organisation(EsConfigUtil.getConfigValue(JsonKey.ES_ORGANISATION_INDEX)),
+    usercourses(EsConfigUtil.getConfigValue(JsonKey.ES_USER_COURSES_INDEX));
 
     private String typeName;
 

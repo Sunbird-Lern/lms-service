@@ -38,7 +38,7 @@ import java.util.Map;
 @PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*", "sun.security.ssl.*", "javax.net.ssl.*" , "javax.crypto.*"})
 public class CassandraDACImplTest extends BaseTest {
 
-    String keyspace = ProjectUtil.getConfigValue(JsonKey.SUNBIRD_COURSE_KEY_SPACE);
+    String keyspace = ProjectUtil.getConfigValue(JsonKey.SUNBIRD_COURSE_KEYSPACE);
     String table = TableNameUtil.ASSESSMENT_AGGREGATOR_TABLENAME;
     String user_consumption_table = TableNameUtil.USER_CONTENT_CONSUMPTION_TABLENAME;
     Timestamp timestamp = new Timestamp(System.currentTimeMillis());

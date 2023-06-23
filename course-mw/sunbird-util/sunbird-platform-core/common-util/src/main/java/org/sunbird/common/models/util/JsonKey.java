@@ -585,8 +585,8 @@ public final class JsonKey {
 
   //#Release-5.4.0 - LR-511
   public static final String SUNBIRD_KEYSPACE = "sunbird_keyspace";
-  public static final String SUNBIRD_COURSE_KEY_SPACE ="sunbird_course_keyspace";
-  public static final String DIALCODE_KEY_SPACE = "dialcode_keyspace";
+  public static final String SUNBIRD_COURSE_KEYSPACE ="sunbird_course_keyspace";
+  public static final String DIALCODE_KEYSPACE = "dialcode_keyspace";
   public static final String REDIS_HOST_VALUE = "sunbird_redis_host";
   public static final String REDIS_PORT_VALUE = "sunbird_redis_port";
   public static final String REDIS_INDEX_VALUE = "redis.dbIndex";

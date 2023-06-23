@@ -45,9 +45,9 @@ public final class Util {
   /** This method will initialize the cassandra data base property */
   private static void initializeDBProperty() {
     dbInfoMap.put(
-        JsonKey.LEARNER_COURSE_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_COURSE_KEY_SPACE), TableNameUtil.USER_ENROLLMENTS_TABLENAME));
+        JsonKey.LEARNER_COURSE_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_COURSE_KEYSPACE), TableNameUtil.USER_ENROLLMENTS_TABLENAME));
     dbInfoMap.put(
-        JsonKey.LEARNER_CONTENT_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_COURSE_KEY_SPACE), TableNameUtil.USER_CONTENT_CONSUMPTION_TABLENAME));
+        JsonKey.LEARNER_CONTENT_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_COURSE_KEYSPACE), TableNameUtil.USER_CONTENT_CONSUMPTION_TABLENAME));
     dbInfoMap.put(
         JsonKey.COURSE_MANAGEMENT_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_KEYSPACE), TableNameUtil.COURSE_MANAGEMENT_TABLENAME));
     dbInfoMap.put(JsonKey.PAGE_MGMT_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_KEYSPACE), TableNameUtil.PAGE_MANAGEMENT_TABLENAME));
@@ -57,18 +57,18 @@ public final class Util {
     dbInfoMap.put(JsonKey.ASSESSMENT_ITEM_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_KEYSPACE), TableNameUtil.ASSESSMENT_ITEM_TABLENAME));
 
     dbInfoMap.put(
-        JsonKey.BULK_OP_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_COURSE_KEY_SPACE), TableNameUtil.BULK_UPLOAD_PROCESS_TABLENAME));
-    dbInfoMap.put(JsonKey.COURSE_BATCH_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_COURSE_KEY_SPACE), TableNameUtil.COURSE_BATCH_TABLENAME));
+        JsonKey.BULK_OP_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_COURSE_KEYSPACE), TableNameUtil.BULK_UPLOAD_PROCESS_TABLENAME));
+    dbInfoMap.put(JsonKey.COURSE_BATCH_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_COURSE_KEYSPACE), TableNameUtil.COURSE_BATCH_TABLENAME));
     dbInfoMap.put(JsonKey.CLIENT_INFO_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_KEYSPACE), TableNameUtil.CLIENT_INFO_TABLENAME));
     dbInfoMap.put(JsonKey.USER_AUTH_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_KEYSPACE), TableNameUtil.USER_AUTH_TABLENAME));
     dbInfoMap.put(
         JsonKey.SUNBIRD_COURSE_DIALCODES_DB,
-        getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.DIALCODE_KEY_SPACE), TableNameUtil.DIALCODE_IMAGES_TABLENAME));
+        getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.DIALCODE_KEYSPACE), TableNameUtil.DIALCODE_IMAGES_TABLENAME));
     dbInfoMap.put(
-            JsonKey.GROUP_ACTIVITY_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_COURSE_KEY_SPACE), TableNameUtil.USER_ACTIVITY_AGG_TABLENAME));
+            JsonKey.GROUP_ACTIVITY_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_COURSE_KEYSPACE), TableNameUtil.USER_ACTIVITY_AGG_TABLENAME));
     dbInfoMap.put(
-            JsonKey.ASSESSMENT_AGGREGATOR_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_COURSE_KEY_SPACE), TableNameUtil.ASSESSMENT_AGGREGATOR_TABLENAME));
-    dbInfoMap.put(JsonKey.USER_ENROLMENTS_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_COURSE_KEY_SPACE), TableNameUtil.USER_ENROLMENTS_TABLENAME));
+            JsonKey.ASSESSMENT_AGGREGATOR_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_COURSE_KEYSPACE), TableNameUtil.ASSESSMENT_AGGREGATOR_TABLENAME));
+    dbInfoMap.put(JsonKey.USER_ENROLMENTS_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_COURSE_KEYSPACE), TableNameUtil.USER_ENROLMENTS_TABLENAME));
   }
 
   /**

@@ -51,10 +51,7 @@ public class CloudStorageUtil {
             Some.apply("r"), Some.apply("application/pdf"));
   }
 
-	public static String getAnalyticsSignedUrl(String storageType, String container, String objectKey) {
-		BaseStorageService analyticsStorageService = getStorageService(storageType);
-		return getSignedUrl(analyticsStorageService, storageType, container, objectKey);
-	}
+
 
 	private static BaseStorageService getStorageService(String storageType) {
 		String storageKey = PropertiesCache.getInstance().getProperty(JsonKey.ACCOUNT_NAME);

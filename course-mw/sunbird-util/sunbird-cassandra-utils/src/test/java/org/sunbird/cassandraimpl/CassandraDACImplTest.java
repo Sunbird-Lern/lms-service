@@ -18,6 +18,9 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.BaseTest;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.models.response.Response;
+import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.ProjectUtil;
+import org.sunbird.common.models.util.TableNameUtil;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.helper.CassandraConnectionManager;
@@ -35,9 +38,9 @@ import java.util.Map;
 @PowerMockIgnore({"jdk.internal.reflect.*", "javax.management.*", "sun.security.ssl.*", "javax.net.ssl.*" , "javax.crypto.*"})
 public class CassandraDACImplTest extends BaseTest {
 
-    String keyspace = "sunbird_courses";
-    String table = "assessment_aggregator";
-    String user_consumption_table = "user_content_consumption";
+    String keyspace = ProjectUtil.getConfigValue(JsonKey.SUNBIRD_COURSE_KEYSPACE);
+    String table = TableNameUtil.ASSESSMENT_AGGREGATOR_TABLENAME;
+    String user_consumption_table = TableNameUtil.USER_CONTENT_CONSUMPTION_TABLENAME;
     Timestamp timestamp = new Timestamp(System.currentTimeMillis());
     @Mock
     CassandraConnectionManager connectionManager;

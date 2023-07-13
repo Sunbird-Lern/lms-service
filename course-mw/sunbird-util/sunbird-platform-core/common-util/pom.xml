@@ -219,7 +219,7 @@
         <dependency>
             <groupId>org.sunbird</groupId>
             <artifactId>cloud-store-sdk</artifactId>
-            <version>1.4.4</version>
+            <version>1.4.6</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.sun.jersey</groupId>
@@ -267,7 +267,7 @@
     </dependencies>
 
     <repositories>
-        <repository>
+       <repository>
             <id>cloud-store</id>
             <url>https://oss.sonatype.org/content/repositories/orgsunbird-1021</url>
         </repository>

@@ -15,6 +15,8 @@ public final class JsonKey {
   public static final String MW_SYSTEM_PORT = "sunbird_mw_system_port";
   public static final String ACCOUNT_KEY = "sunbird_account_key";
   public static final String ACCOUNT_NAME = "sunbird_account_name";
+
+  public static final String ACCOUNT_ENDPOINT = "sunbird_account_endpoint";
   public static final String DOWNLOAD_LINK_EXPIRY_TIMEOUT = "download_link_expiry_timeout";
   public static final String SIGNED_URL = "signedUrl";
   public static final String ACTION_NAME = "actionName";
@@ -451,6 +453,7 @@ public final class JsonKey {
   public static final String AWS_STR = "aws";
   public static final String GCLOUD_STR = "gcloud";
 
+  public static final String OCI_STR = "oci";
   public static final String CLOUD_FOLDER_CONTENT = "sunbird_cloud_content_folder";
   public static final String CLOUD_STORE_BASE_PATH = "cloud_storage_base_url";
   public static final String CLOUD_STORAGE_CNAME_URL= "cloud_storage_cname_url";

@@ -123,7 +123,10 @@ public class QRCodeDownloadManager {
                     Map<String, String> resMap = new HashMap<>();
 
                     for(Map<String, Object> qrImageObj : qrCodeImagesList) {
-                        resMap.put(qrImageObj.get("identifier").toString(), qrImageObj.get("imageUrl").toString());
+                        if(qrImageObj.get("imageUrl") != null )
+                            resMap.put(qrImageObj.get("identifier").toString(), qrImageObj.get("imageUrl").toString());
+                        else
+                            resMap.put(qrImageObj.get("identifier").toString(), "");
                     }
                     return resMap;
                 }

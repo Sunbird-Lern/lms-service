@@ -68,11 +68,11 @@
             <version>3.11.3.Final</version>
         </dependency>
         <!-- for Azure file storage -->
-        <dependency>
+        <!--<dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-storage</artifactId>
             <version>5.4.0</version>
-        </dependency>
+        </dependency>-->
         <!-- https://mvnrepository.com/artifact/org.apache.velocity/velocity-tools -->
         <dependency>
             <groupId>org.apache.velocity</groupId>

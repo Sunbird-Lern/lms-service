@@ -427,12 +427,12 @@ public final class JsonKey {
           "sunbird_course_batch_notification_signature";
   public static final String SIGNATURE = "signature";
   public static final String OPEN_BATCH_LEARNER_ENROL = "openBatchLearnerEnrol";
-  public static final String CONTENT_CLOUD_STORAGE_TYPE = "sunbird_cloud_service_provider";
-  public static final String CONTENT_CLOUD_STORAGE_CONTAINER =
-          "sunbird_content_cloud_storage_container";
+  public static final String CONTENT_CLOUD_STORE_TYPE = "sunbird_cloud_service_provider";
+  public static final String CONTENT_CLOUD_STORE_CONTAINER =
+          "sunbird_content_CLOUD_STORE_container";
   public static final String CLOUD_FOLDER_CONTENT = "sunbird_cloud_content_folder";
-  public static final String CLOUD_STORE_BASE_PATH = "cloud_storage_base_url";
-  public static final String CLOUD_STORAGE_CNAME_URL= "cloud_storage_cname_url";
+  public static final String CLOUD_STORE_BASE_PATH = "CLOUD_STORE_base_url";
+  public static final String CLOUD_STORE_CNAME_URL= "CLOUD_STORE_cname_url";
   public static final String CLOUD_STORE_BASE_PATH_PLACEHOLDER = "cloud_store_base_path_placeholder";
   public static final String TTL = "ttl";
 

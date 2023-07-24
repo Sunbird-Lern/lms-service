@@ -345,7 +345,7 @@ public interface ResponseMessage {
     String ERROR_SYSTEM_SETTING_NOT_FOUND = "System Setting not found for id: {0}";
     String ERROR_NO_ROOT_ORG_ASSOCIATED = "Not able to associate with root org";
     String ERROR_INACTIVE_CUSTODIAN_ORG = "Custodian organisation is inactive.";
-    String ERROR_UNSUPPORTED_CLOUD_STORAGE = "Unsupported cloud storage type {0}.";
+    String ERROR_UNSUPPORTED_CLOUD_STORE = "Unsupported cloud storage type {0}.";
     String ERROR_UNSUPPORTED_FIELD = "Unsupported field {0}.";
     String ERROR_GENERATE_DOWNLOAD_LINK = "Error in generating download link.";
     String ERROR_DOWNLOAD_LINK_UNAVAILABLE = "Download link is unavailable.";
@@ -687,7 +687,7 @@ public interface ResponseMessage {
     String ERROR_SYSTEM_SETTING_NOT_FOUND = "ERROR_SYSTEM_SETTING_NOT_FOUND";
     String ERROR_NO_ROOT_ORG_ASSOCIATED = "ERROR_NO_ROOT_ORG_ASSOCIATED";
     String ERROR_INACTIVE_CUSTODIAN_ORG = "ERROR_INACTIVE_CUSTODIAN_ORG";
-    String ERROR_UNSUPPORTED_CLOUD_STORAGE = "ERROR_ UNSUPPORTED_CLOUD_STORAGE";
+    String ERROR_UNSUPPORTED_CLOUD_STORE = "ERROR_ UNSUPPORTED_CLOUD_STORE";
     String ERROR_UNSUPPORTED_FIELD = "ERROR_UNSUPPORTED_FIELD";
     String ERROR_GENERATE_DOWNLOAD_LINK = "ERROR_GENERATING_DOWNLOAD_LINK";
     String ERROR_DOWNLOAD_LINK_UNAVAILABLE = "ERROR_DOWNLOAD_LINK_UNAVAILABLE";

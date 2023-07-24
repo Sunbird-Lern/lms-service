@@ -160,7 +160,7 @@ public class QRCodeDownloadManagementActor extends BaseActor {
       if (file.isFile()) {
         objectKey += file.getName();
         //CSP related changes
-        String cloudStorage = getConfigValue(CONTENT_CLOUD_STORAGE_TYPE);
+        String cloudStorage = getConfigValue(CONTENT_CLOUD_STORE_TYPE);
         if (cloudStorage == null) {
           ProjectCommonException.throwClientErrorException(
                   ResponseCode.errorUnsupportedCloudStorage,
@@ -170,7 +170,7 @@ public class QRCodeDownloadManagementActor extends BaseActor {
         }
         String fileUrl =
                 CloudStorageUtil.upload(cloudStorage,
-                        getConfigValue(CONTENT_CLOUD_STORAGE_CONTAINER),
+                        getConfigValue(CONTENT_CLOUD_STORE_CONTAINER),
                         objectKey,
                         file.getAbsolutePath());
         if (StringUtils.isBlank(fileUrl))

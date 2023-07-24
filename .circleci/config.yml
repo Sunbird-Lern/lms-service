@@ -13,7 +13,7 @@ jobs:
       - run:
           name: redis
           command: sudo apt install redis-server -y
-      - run: mvn clean install -DforkCount=1 -e
+      - run: mvn clean install -DCLOUD_STORE_GROUP_ID=org.sunbird -DCLOUD_STORE_ARTIFACT_ID=cloud-store-sdk -DCLOUD_STORE_VERSION=1.4.6
       - run: cd course-mw/enrolment-actor && mvn scoverage:report
       - run: cd course-mw/sunbird-util/cache-utils && mvn scoverage:report
       - run: cd service && mvn play2:dist

@@ -25,7 +25,7 @@ node('build-slave') {
                     env.NODE_ENV = "build"
                     print "Environment will be : ${env.NODE_ENV}"
                     sh 'git log -1'
-                    sh 'mvn clean install -DskipTests=true -DCLOUD_STORE_ARTIFACT_ID=cloud-store-sdk -DCLOUD_STORE_VERSION=1.4.6 '
+                    sh 'mvn clean install -DskipTests=true -DCLOUD_STORE_GROUP_ID=org.sunbird -DCLOUD_STORE_ARTIFACT_ID=cloud-store-sdk -DCLOUD_STORE_VERSION=1.4.6'
                 }
 
                 // stage('Unit Tests') {

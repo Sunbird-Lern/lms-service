@@ -638,8 +638,8 @@ public enum ResponseCode {
       ResponseMessage.Key.ERROR_INACTIVE_CUSTODIAN_ORG,
       ResponseMessage.Message.ERROR_INACTIVE_CUSTODIAN_ORG),
   errorUnsupportedCloudStorage(
-      ResponseMessage.Key.ERROR_UNSUPPORTED_CLOUD_STORE,
-      ResponseMessage.Message.ERROR_UNSUPPORTED_CLOUD_STORE),
+      ResponseMessage.Key.ERROR_UNSUPPORTED_CLOUD_STORAGE,
+      ResponseMessage.Message.ERROR_UNSUPPORTED_CLOUD_STORAGE),
   errorUnsupportedField(
       ResponseMessage.Key.ERROR_UNSUPPORTED_FIELD, ResponseMessage.Message.ERROR_UNSUPPORTED_FIELD),
   errorGenerateDownloadLink(

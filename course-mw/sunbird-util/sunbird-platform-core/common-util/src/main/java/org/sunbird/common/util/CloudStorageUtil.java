@@ -13,7 +13,7 @@ import org.sunbird.common.models.util.PropertiesCache;
 import scala.Option;
 import scala.Some;
 
-import static org.sunbird.common.models.util.JsonKey.CLOUD_STORE_CNAME_URL;
+import static org.sunbird.common.models.util.JsonKey.CLOUD_STORAGE_CNAME_URL;
 import static org.sunbird.common.models.util.JsonKey.CLOUD_STORE_BASE_PATH;
 import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
 
@@ -89,7 +89,7 @@ public class CloudStorageUtil {
   }
 
   public static String getBaseUrl() {
-    String baseUrl = getConfigValue(CLOUD_STORE_CNAME_URL);
+    String baseUrl = getConfigValue(CLOUD_STORAGE_CNAME_URL);
     if(StringUtils.isEmpty(baseUrl))
       baseUrl = getConfigValue(CLOUD_STORE_BASE_PATH);
     return baseUrl;

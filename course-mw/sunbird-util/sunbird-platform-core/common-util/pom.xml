@@ -16,7 +16,7 @@
         <mockito.core.version>2.22.0</mockito.core.version>
         <powermock.api.mockito2.version>2.0.7</powermock.api.mockito2.version>
         <powermock.module.junit4.version>2.0.0-beta.5</powermock.module.junit4.version>
-        <CLOUD_STORE_GROUP_ID>org.sunbird</CLOUD_STORE_GROUP_ID>
+        <CLOUD_STORAGE_GROUP_ID>org.sunbird</CLOUD_STORAGE_GROUP_ID>
         <CLOUD_STORE_ARTIFACT_ID>cloud-store-sdk</CLOUD_STORE_ARTIFACT_ID>
         <CLOUD_STORE_VERSION>1.4.6</CLOUD_STORE_VERSION>
     </properties>
@@ -214,7 +214,7 @@
             <version>18.0</version>
         </dependency>
         <dependency>
-            <groupId>${CLOUD_STORE_GROUP_ID}</groupId>
+            <groupId>${CLOUD_STORAGE_GROUP_ID}</groupId>
             <artifactId>${CLOUD_STORE_ARTIFACT_ID}</artifactId>
             <version>${CLOUD_STORE_VERSION}</version>
             <exclusions>

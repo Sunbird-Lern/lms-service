@@ -147,8 +147,8 @@ public class CourseBatchCertificateActor extends BaseActor {
     if (MapUtils.isNotEmpty(templateDetails) && templateDetails.containsKey(key)) {
       // replace the actual cloud url with the template value
       templateUrl = (String) templateDetails.get(key);
-      if (templateUrl.contains(CloudStorageUtil.getBaseUrl() +"/"+getConfigValue(CONTENT_CLOUD_STORE_CONTAINER)))
-        templateUrl = templateUrl.replace(CloudStorageUtil.getBaseUrl()+"/"+getConfigValue(CONTENT_CLOUD_STORE_CONTAINER), getConfigValue(CLOUD_STORE_BASE_PATH_PLACEHOLDER));
+      if (templateUrl.contains(CloudStorageUtil.getBaseUrl() +"/"+getConfigValue(CONTENT_CLOUD_STORAGE_CONTAINER)))
+        templateUrl = templateUrl.replace(CloudStorageUtil.getBaseUrl()+"/"+getConfigValue(CONTENT_CLOUD_STORAGE_CONTAINER), getConfigValue(CLOUD_STORE_BASE_PATH_PLACEHOLDER));
     }
     return templateUrl;
   }
@@ -197,7 +197,7 @@ public class CourseBatchCertificateActor extends BaseActor {
         String notifyTemplateData = (String) template.get(CourseJsonKey.NOTIFY_TEMPLATE);
         //Modify the placeholder with the actual configured cloud base path as ES should have the actual cloud path
         if (notifyTemplateData.contains(getConfigValue(CLOUD_STORE_BASE_PATH_PLACEHOLDER)))
-          notifyTemplateData = notifyTemplateData.replace(getConfigValue(CLOUD_STORE_BASE_PATH_PLACEHOLDER), CloudStorageUtil.getBaseUrl()+"/"+getConfigValue(CONTENT_CLOUD_STORE_CONTAINER));
+          notifyTemplateData = notifyTemplateData.replace(getConfigValue(CLOUD_STORE_BASE_PATH_PLACEHOLDER), CloudStorageUtil.getBaseUrl()+"/"+getConfigValue(CONTENT_CLOUD_STORAGE_CONTAINER));
         template.put(
                 CourseJsonKey.NOTIFY_TEMPLATE,
                 mapper.readValue(notifyTemplateData,

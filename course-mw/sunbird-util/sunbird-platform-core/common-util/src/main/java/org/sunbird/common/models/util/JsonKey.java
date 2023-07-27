@@ -185,7 +185,6 @@ public final class JsonKey {
   public static final String LAST_ACCESS_TIME = "lastAccessTime";
   public static final String LAST_COMPLETED_TIME = "lastCompletedTime";
   public static final String LAST_LOGIN_TIME = "lastLoginTime";
-  public static final String LAST_LOGOUT_TIME = "lastLogoutTime";
   public static final String LAST_NAME = "lastName";
   public static final String LAST_UPDATED_TIME = "lastUpdatedTime";
   public static final String LEAF_NODE_COUNT = "leafNodesCount";
@@ -434,15 +433,12 @@ public final class JsonKey {
   public static final String CLOUD_STORE_BASE_PATH = "cloud_storage_base_url";
   public static final String CLOUD_STORAGE_CNAME_URL= "cloud_storage_cname_url";
   public static final String CLOUD_STORE_BASE_PATH_PLACEHOLDER = "cloud_store_base_path_placeholder";
-  public static final String TTL = "ttl";
-
   public static final String MIME_TYPE = "mimeType";
   public static final String COLLECTION_MIME_TYPE = "application/vnd.ekstep.content-collection";
   public static final String BULK_ORG_UPLOAD = "bulkOrgUpload";
   public static final String LOCATION_CODES = "locationCodes";
   public static final String BATCH_DETAILS = "batchDetails";
   public static final String DIAL_CODES = "dialcodes";
-  public static final String NO = "No";
   public static final String YES = "Yes";
 
   public static final String BATCHES = "batches";
@@ -503,6 +499,8 @@ public final class JsonKey {
   public static final String CREATOR_DETAILS_FIELDS = "sunbird_user_search_cretordetails_fields";
   public static final String SUNBIRD_QRCODE_COURSES_LIMIT ="sunbird_user_qrcode_courses_limit";
   public static final String ACCESS_TOKEN_PUBLICKEY_BASEPATH = "accesstoken.publickey.basepath";
+  public static final String ACCESS_TOKEN_PUBLICKEY_KEYPREFIX = "accesstoken.publickey.keyprefix";
+  public static final String ACCESS_TOKEN_PUBLICKEY_KEYCOUNT = "accesstoken.publickey.keycount";
   public static final String SHA_256_WITH_RSA = "SHA256withRSA";
   public static final String SUB = "sub";
   public static final String DOT_SEPARATOR = ".";

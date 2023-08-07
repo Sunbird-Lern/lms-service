@@ -525,21 +525,6 @@ public class ProjectUtil {
     }
   }
 
-  /** @author Manzarul */
-  public enum AzureContainer {
-    userProfileImg("userprofileimg"),
-    orgImage("orgimg");
-    private String name;
-
-    private AzureContainer(String name) {
-      this.name = name;
-    }
-
-    public String getName() {
-      return name;
-    }
-  }
-
   public static VelocityContext getContext(Map<String, Object> map) {
     propertiesCache = PropertiesCache.getInstance();
     VelocityContext context = new VelocityContext();

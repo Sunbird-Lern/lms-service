@@ -103,10 +103,6 @@ public final class JsonKey {
   public static final String DATE_HISTOGRAM = "DATE_HISTOGRAM";
   public static final String DATE_TIME = "dateTime";
   public static final String DB_IP = "db.ip";
-  public static final String DB_KEYSPACE = "db.keyspace";
-  public static final String DB_PASSWORD = "db.password";
-  public static final String DB_PORT = "db.port";
-  public static final String DB_USERNAME = "db.username";
   public static final String DEFAULT_CONSUMER_ID = "internal";
   public static final String DEFAULT_ROOT_ORG_ID = "ORG_001";
   public static final String DEGREE = "degree";
@@ -130,10 +126,8 @@ public final class JsonKey {
   public static final String EMAIL_SERVER_PORT = "sunbird_mail_server_port";
   public static final String EMAIL_SERVER_USERNAME = "sunbird_mail_server_username";
   public static final String EMAIL_TEMPLATE_TYPE = "emailTemplateType";
-  public static final String EMAIL_UNIQUE = "emailUnique";
   public static final String EMAIL_VERIFIED = "emailVerified";
   public static final String EMAIL_VERIFIED_UPDATED = "emailVerifiedUpdated";
-  public static final String EMBEDDED = "embedded";
   public static final String EMBEDDED_MODE = "embedded";
   public static final String ENC_EMAIL = "encEmail";
   public static final String ENC_PHONE = "encPhone";
@@ -191,11 +185,7 @@ public final class JsonKey {
   public static final String LAST_ACCESS_TIME = "lastAccessTime";
   public static final String LAST_COMPLETED_TIME = "lastCompletedTime";
   public static final String LAST_LOGIN_TIME = "lastLoginTime";
-  public static final String LAST_LOGOUT_TIME = "lastLogoutTime";
   public static final String LAST_NAME = "lastName";
-  public static final String LAST_READ_CONTENT_STATUS = "lastReadContentStatus";
-  public static final String LAST_READ_CONTENT_VERSION = "lastReadContentVersion";
-  public static final String LAST_READ_CONTENTID = "lastReadContentId";
   public static final String LAST_UPDATED_TIME = "lastUpdatedTime";
   public static final String LEAF_NODE_COUNT = "leafNodesCount";
   public static final String LEARNER_CONTENT_DB = "learnerContent_db";
@@ -323,9 +313,7 @@ public final class JsonKey {
   public static final String SUNBIRD_ALLOWED_LOGIN = "sunbird_allowed_login";
   public static final String SUNBIRD_CASSANDRA_IP = "sunbird_cassandra_host";
   public static final String SUNBIRD_CASSANDRA_MODE = "sunbird_cassandra_mode";
-  public static final String SUNBIRD_CASSANDRA_PASSWORD = "sunbird_cassandra_password";
   public static final String SUNBIRD_CASSANDRA_PORT = "sunbird_cassandra_port";
-  public static final String SUNBIRD_CASSANDRA_USER_NAME = "sunbird_cassandra_username";
   public static final String SUNBIRD_ENCRYPTION = "sunbird_encryption";
   public static final String SUNBIRD_ENV_LOGO_URL = "sunbird_env_logo_url";
   public static final String SUNBIRD_ES_CHANNEL = "es.channel.name";
@@ -361,17 +349,10 @@ public final class JsonKey {
   public static final String UPLOADED_BY = "uploadedBy";
   public static final String UPLOADED_DATE = "uploadedDate";
   public static final String URL = "url";
-  public static final String URL_ACTION = "url_action";
-  public static final String URL_ACTION_ID = "url_action_ids";
   public static final String USER = "user";
-  public static final String USER_ACTION_ROLE = "user_action_role";
   public static final String USER_AUTH_DB = "userAuth_db";
-  public static final String USER_COUNT = "userCount";
-  public static final String USER_COUNT_TTL = "userCountTTL";
   public static final String USER_COURSE = "user_course";
   public static final String USER_COURSES = "userCourses";
-  public static final String USER_DB = "user_db";
-  public static final String USER_FOUND = "user exist with this login Id.";
   public static final String USER_ID = "userId";
   public static final String USER_IDs = "userIds";
   public static final String USER_LIST_REQ = "userListReq";
@@ -405,7 +386,6 @@ public final class JsonKey {
   public static final String ADD = "add";
   public static final String REMOVE = "remove";
   public static final String EDIT = "edit";
-  public static final String DEFAULT_FRAMEWORK = "defaultFramework";
   public static final String EXTERNAL_ID_PROVIDER = "externalIdProvider";
   public static final String OK = "ok";
   public static final String RECIPIENT_SEARCH_QUERY = "recipientSearchQuery";
@@ -449,24 +429,16 @@ public final class JsonKey {
   public static final String CONTENT_CLOUD_STORAGE_TYPE = "sunbird_cloud_service_provider";
   public static final String CONTENT_CLOUD_STORAGE_CONTAINER =
           "sunbird_content_cloud_storage_container";
-  public static final String AZURE_STR = "azure";
-  public static final String AWS_STR = "aws";
-  public static final String GCLOUD_STR = "gcloud";
-
-  public static final String OCI_STR = "oci";
   public static final String CLOUD_FOLDER_CONTENT = "sunbird_cloud_content_folder";
   public static final String CLOUD_STORE_BASE_PATH = "cloud_storage_base_url";
   public static final String CLOUD_STORAGE_CNAME_URL= "cloud_storage_cname_url";
   public static final String CLOUD_STORE_BASE_PATH_PLACEHOLDER = "cloud_store_base_path_placeholder";
-  public static final String TTL = "ttl";
-
   public static final String MIME_TYPE = "mimeType";
   public static final String COLLECTION_MIME_TYPE = "application/vnd.ekstep.content-collection";
   public static final String BULK_ORG_UPLOAD = "bulkOrgUpload";
   public static final String LOCATION_CODES = "locationCodes";
   public static final String BATCH_DETAILS = "batchDetails";
   public static final String DIAL_CODES = "dialcodes";
-  public static final String NO = "No";
   public static final String YES = "Yes";
 
   public static final String BATCHES = "batches";
@@ -527,8 +499,7 @@ public final class JsonKey {
   public static final String CREATOR_DETAILS_FIELDS = "sunbird_user_search_cretordetails_fields";
   public static final String SUNBIRD_QRCODE_COURSES_LIMIT ="sunbird_user_qrcode_courses_limit";
   public static final String ACCESS_TOKEN_PUBLICKEY_BASEPATH = "accesstoken.publickey.basepath";
-  public static final String ACCESS_TOKEN_PUBLICKEY_KEYPREFIX = "accesstoken.publickey.keyprefix";
-  public static final String ACCESS_TOKEN_PUBLICKEY_KEYCOUNT = "accesstoken.publickey.keycount";
+
   public static final String SHA_256_WITH_RSA = "SHA256withRSA";
   public static final String SUB = "sub";
   public static final String DOT_SEPARATOR = ".";
@@ -584,7 +555,6 @@ public final class JsonKey {
   public static final String DATASETCONFIG = "datasetConfig";
   public static final String OUTPUT_FORMAT = "output_format";
 
-  public static final String CONTENT_LENGTH = "Content-Length";
 
   private JsonKey() {}
 }

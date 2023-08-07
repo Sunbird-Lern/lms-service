@@ -2,11 +2,11 @@ package org.sunbird.enrolments
 
 import java.util
 import java.util.{Date, TimeZone, UUID}
-
 import com.fasterxml.jackson.databind.ObjectMapper
+
 import javax.inject.Inject
 import org.apache.commons.collections4.{CollectionUtils, MapUtils}
-import org.apache.commons.lang3.StringUtils
+import org.apache.commons.lang.StringUtils
 import org.sunbird.cassandra.CassandraOperation
 import org.sunbird.common.CassandraUtil
 import org.sunbird.common.exception.ProjectCommonException
@@ -17,6 +17,7 @@ import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.common.util.JsonUtil
 import org.sunbird.helper.ServiceFactory
 import org.sunbird.kafka.client.{InstructionEventGenerator, KafkaClient}
+import org.sunbird.keys.SunbirdKey
 import org.sunbird.learner.constants.{CourseJsonKey, InstructionEvent}
 import org.sunbird.learner.util.Util
 
@@ -59,7 +60,11 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             processEnrolmentSync(request, requestBy, requestedFor)
         } else {
             val requestContext = request.getRequestContext
-            val assessmentEvents = request.getRequest.getOrDefault(JsonKey.ASSESSMENT_EVENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
+ //           val assessmentEvents = request.getRequest.getOrDefault(JsonKey.ASSESSMENT_EVENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
+             val assessmentEvents = request.get(JsonKey.EVALUABLE_FLAG_TAG).asInstanceOf[String] match {
+                 case "true" => populateAssessmentScore(request.get(JsonKey.ASSESS_REQ_BDY).asInstanceOf[String])
+                 case _ => request.getRequest.getOrDefault(JsonKey.ASSESSMENT_EVENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
+             }
             val contentList = request.getRequest.getOrDefault(JsonKey.CONTENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
             val finalContentList = if(CollectionUtils.isNotEmpty(assessmentEvents)) {
               logger.info(requestContext, "Assessment Consumption events exist: " + assessmentEvents.size())
@@ -454,4 +459,12 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             KafkaClient.send(userId, event, topic)
         }
     }
+  private def populateAssessmentScore(body: String): util.List[util.Map[String, AnyRef]] = {
+    val inquiryBaseURL = ProjectUtil.getConfigValue(JsonKey.INQUIRY_BASE_URL)
+    val updRes = HttpUtil.doPostRequest(inquiryBaseURL + PropertiesCache.getInstance.getProperty(JsonKey.INQUIRY_ASSESS_SCORE_URL), body, Map[String, String](SunbirdKey.CONTENT_TYPE_HEADER -> SunbirdKey.APPLICATION_JSON))
+    if (200 != updRes.getStatusCode) ProjectCommonException.throwClientErrorException(ResponseCode.unAuthorized, ProjectUtil.formatMessage(ResponseCode.unAuthorized.getErrorMessage, ""));
+    JsonUtil.deserialize(updRes.getBody, classOf[Response])
+      .getResult.getOrDefault(JsonKey.QUESTIONS, new util.HashMap()).asInstanceOf[java.util.Map[String, AnyRef]]
+      .getOrDefault(JsonKey.ASSESSMENTS, new util.ArrayList[util.HashMap[String, AnyRef]]()).asInstanceOf[util.List[java.util.Map[String, AnyRef]]]
+  }
 }

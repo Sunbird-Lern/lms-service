@@ -106,6 +106,8 @@ public class LearnerController extends BaseController {
       } else {
         innerMap.put(JsonKey.CONTENTS, reqObj.get(JsonKey.CONTENTS));
         innerMap.put(JsonKey.ASSESSMENT_EVENTS, reqObj.getRequest().get(JsonKey.ASSESSMENT_EVENTS));
+        innerMap.put(JsonKey.EVALUABLE_FLAG_TAG, reqObj.getOrDefault(JsonKey.EVALUABLE_FLAG_TAG,"").toString());
+        innerMap.put(JsonKey.ASSESS_REQ_BDY,requestData.toString());
       }
       innerMap.put(JsonKey.USER_ID, reqObj.getRequest().get(JsonKey.USER_ID));
       reqObj.setRequest(innerMap);

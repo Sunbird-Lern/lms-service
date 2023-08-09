@@ -596,6 +596,12 @@ public final class JsonKey {
   public static final String ES_USER_INDEX = "es_user_index";
   public static final String ES_ORGANISATION_INDEX = "es_organisation_index";
   public static final String ES_USER_COURSES_INDEX = "es_user_courses_index";
+  public static final String EVALUABLE_FLAG_TAG="serverEvaluable";
+  public static final String ASSESS_REQ_BDY ="ASSESS_REQ_BODY";
+  public static final String INQUIRY_BASE_URL = "inquiry_api_base_url";
+  public static final String INQUIRY_ASSESS_SCORE_URL = "inquiry_api_assess_score_url";
+  public static final String QUESTIONS = "questions";
+  public static final String ASSESSMENTS="assessments";
 
   private JsonKey() {}
 }

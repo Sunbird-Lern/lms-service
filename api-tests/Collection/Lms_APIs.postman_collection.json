@@ -1,0 +1,1219 @@
+{
+	"info": {
+		"_postman_id": "62875837-0ef2-4b6e-b6c2-9e5f3cc6ded4",
+		"name": "Lms_APIs",
+		"description": "The LMS APIs is a collection of API's for creation and management of batches,enrollment to the courses,content state related APIs,Aggregation Apis",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "4875988",
+		"_collection_link": "https://dark-star-147860.postman.co/workspace/LernBBAPIs~32e17cc4-6806-407e-b8ef-485ad4d0b712/collection/4875988-62875837-0ef2-4b6e-b6c2-9e5f3cc6ded4?action=share&source=collection_link&creator=4875988"
+	},
+	"item": [
+		{
+			"name": "HealthCheck",
+			"item": [
+				{
+					"name": "HealthCheck",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{host}}/health"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "AuthToken",
+			"item": [
+				{
+					"name": "UserToken",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let jsonResponse = pm.response.json();",
+									"",
+									"// Set global variable",
+									"// pm.variables.set('refresh_token', jsonResponse.refresh_token);",
+									"// pm.globals.set(\"refresh_token\", jsonResponse.result.identifier);",
+									"pm.collectionVariables.set(\"refresh_token\", jsonResponse.refresh_token);",
+									"// pm.collectionVariables.set(\"variable_key\", \"variable_value\");",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							},
+							{
+								"key": "Cookie",
+								"value": "connect.sid=s%3Ad3chYLP8OfuB2bWgfEFohiWpDxM7GFol.gOPmzH3d2nP9enZ5qSHlVx1e%2BozTleCjXtfz7LUycCk"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "client_id",
+									"value": "{{client_id}}",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "{{client_secret}}",
+									"type": "text"
+								},
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "tncontentcreator@yopmail.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "test@123",
+									"type": "text"
+								}
+							]
+						},
+						"url": "{{host}}/auth/realms/sunbird/protocol/openid-connect/token"
+					},
+					"response": []
+				},
+				{
+					"name": "RefreshToken",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Extract the locationId from the response and set it to the environment variable",
+									"pm.test(\"Set access_token in environment variable\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.environment.set(\"keycloak_access_token\", responseJson.result.access_token);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{kong_api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							},
+							{
+								"key": "Cookie",
+								"value": "connect.sid=s%3Ad3chYLP8OfuB2bWgfEFohiWpDxM7GFol.gOPmzH3d2nP9enZ5qSHlVx1e%2BozTleCjXtfz7LUycCk"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "refresh_token",
+									"value": "{{refresh_token}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": "{{host}}/auth/v1/refresh/token"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "BatchAPIs",
+			"item": [
+				{
+					"name": "BatchCreation",
+					"item": [
+						{
+							"name": "CreateBatchV1",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Extract the batchId from the response and set it to the environment variable",
+											"pm.test(\"Set batchId in environment variable\", function () {",
+											"    const responseJson = pm.response.json();",
+											"    console.log( responseJson.result.batchId)",
+											"    pm.environment.set(\"batch_id\", responseJson.result.batchId);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{kong_api_key}}",
+										"type": "text"
+									},
+									{
+										"key": "X-Authenticated-User-token",
+										"value": "{{keycloak_access_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"request\": {\n    \"courseId\": \"{{course_id}}\",\n    \"name\": \"{{batch_name}}\",\n    \"description\": \"{{batch_description}}\",\n    \"enrollmentType\": \"open\",\n    \"startDate\": \"{{batch_start_date}}\",\n    \"endDate\": \"{{batch_end_date}}\"\n  }\n}"
+								},
+								"url": "{{host}}/api/course/v1/batch/create"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "BatchUpdation",
+					"item": [
+						{
+							"name": "UpdateBatchV1",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text",
+										"description": "**Accept** relates to content-Type such as **\"MIME\"**, Its used in response body for executing different multi purpose operations.Therefore, its important that the server is correctly set up, so that the MIME types transmitted are recognised and correct to determine what action to do when a resource is fetched."
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text",
+										"description": "The Content Type entity is the media type of the resource.Possible media types can be:- \n\n  - Application/json\n\n  - Multipart/form-data\n\n  - Application/x-www-form-urlencoded"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{kong_api_key}}",
+										"type": "text",
+										"description": "Time Stamp at which **Update a batch** request was sent."
+									},
+									{
+										"key": "X-Authenticated-User-token",
+										"value": "{{keycloak_access_token}}",
+										"type": "text",
+										"description": "This Id Uniquely identifies a request if the same API is executed multiple times."
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"request\": {\n    \"enrollmentType\": \"open\",\n    \"startDate\": \"{{batch_update_date}}\",\n    \"enrollmentEndDate\": \"{{batch_end_date}}\",\n    \"status\": 1,\n    \"courseId\": \"{{course_id}}\",\n    \"id\": \"{{batch_id}}\"\n  }\n}"
+								},
+								"url": "{{host}}/api/course/v1/batch/update"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "BatchRead",
+					"item": [
+						{
+							"name": "ReadBatchV1",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text",
+										"description": "The Content Type entity is the media type of the resource.Possible media types can be:- \n\n  - Application/json\n\n  - Multipart/form-data\n\n  - Application/x-www-form-urlencoded"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text",
+										"description": "Time Stamp at which **Fetch a batch** request was sent."
+									},
+									{
+										"key": "Authorization",
+										"value": "{{kong_api_key}}",
+										"type": "text",
+										"description": "This Id Uniquely identifies a request if the same API is executed multiple times."
+									},
+									{
+										"key": "X-Authenticated-User-token",
+										"value": "{{keycloak_access_token}}",
+										"type": "text",
+										"description": "This Id Uniquely identifies the type of device (Mobile)(desktop) used to access Sunbird."
+									}
+								],
+								"url": "{{host}}/api/course/v1/batch/read/{{batch_id}}"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "BatchSearch",
+					"item": [
+						{
+							"name": "SearchBatchV1",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text",
+										"description": "The Content Type entity is the media type of the resource.Possible media types can be:- \n\n  - Application/json\n\n  - Multipart/form-data\n\n  - Application/x-www-form-urlencoded"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text",
+										"description": "Time Stamp at which **Lists the existing batches** request was sent."
+									},
+									{
+										"key": "Authorization",
+										"value": "{{kong_api_key}}",
+										"type": "text",
+										"description": "This Id Uniquely identifies a request if the same API is executed multiple times."
+									},
+									{
+										"key": "X-Authenticated-User-token",
+										"value": "{{keycloak_access_token}}",
+										"type": "text",
+										"description": "This Id Uniquely identifies the type of device (Mobile)(desktop) used to access Sunbird."
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"request\": {\n    \"filters\": {\n      \"courseId\": \"{{course_id}}\"\n    },\n    \"limit\": 2\n  }\n}"
+								},
+								"url": "{{host}}/api/course/v1/batch/list"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "BatchCertificate",
+					"item": [
+						{
+							"name": "BatchCertificateTemplateAddV1",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{kong_api_key}}",
+										"type": "text"
+									},
+									{
+										"key": "X-Authenticated-User-token",
+										"value": "{{keycloak_access_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"request\": {\n        \"batch\": {\n            \"courseId\": \"{{course_id}}\",\n            \"batchId\": \"{{batch_id}}\",\n            \"template\": {\n                \"identifier\": \"{{asset_id}}\",\n                \"criteria\": {\n                    \"enrollment\": {\n                        \"status\": \"2\"\n                    }\n                },\n                \"signatoryList\": [\n                    {\n                        \"name\": \"string\",\n                        \"id\": \"string\",\n                        \"designation\": \"CEO\",\n                        \"image\": \"string\"\n                    }\n                ],\n                \"issuer\": {\n                    \"name\": \"string\",\n                    \"url\": \"string\",\n                    \"publicKey\": [\n                        7,\n                        8\n                    ]\n                }\n            }\n        }\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{host}}/api/course/batch/cert/v1/template/add"
+							},
+							"response": []
+						},
+						{
+							"name": "BatchCertificateTemplateRemoveV1",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{kong_api_key}}",
+										"type": "text"
+									},
+									{
+										"key": "X-Authenticated-User-token",
+										"value": "{{keycloak_access_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"request\": {\n        \"batch\": {\n            \"courseId\": \"{{course_id}}\",\n            \"batchId\": \"{{batch_id}}\",\n            \"template\": {\n                \"templateId\": \"{{asset_id}}\"\n            }\n        }\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{host}}/api/course/batch/cert/v1/template/remove"
+							},
+							"response": []
+						},
+						{
+							"name": "BatchCertificateIssueV1",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "X-authenticated-user-token",
+										"value": "{{keycloak_access_token}}"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{kong_api_key}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"request\": {\n           \"courseId\": \"{{course_id}}\",\n            \"batchId\": \"{{batch_id}}\",\n            \"userIds\": [\"{{user_id}}\"]\n    }\n}"
+								},
+								"url": "{{host}}/api/course/batch/cert/v1/issue"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "BatchList",
+					"item": [
+						{
+							"name": "ListBatchV1",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "X-Authenticated-User-token",
+										"value": "{{keycloak_access_token}}"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{kong_api_key}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"request\": {\n        \"filters\": {\n            \"batchId\": [\n                \"{{batch-id}}\"\n            ]\n        },\n        \"fields\": [\n            \"name\",\n            \"batchId\",\n            \"startDate\",\n            \"endDate\"\n        ],\n        \"limit\": 133\n    }\n}"
+								},
+								"url": "{{host}}/api/course/v1/batch/list"
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "CourseEnroll",
+			"item": [
+				{
+					"name": "CourseEnrollV1",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{kong_api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "X-Authenticated-User-token",
+								"value": "{{keycloak_access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"request\": {\n      \"courseId\": \"{{course_id}}\",\n      \"batchId\": \"{{batch_id}}\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{host}}/api/course/v1/enroll"
+					},
+					"response": []
+				},
+				{
+					"name": "CourseUnEnrollV1",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Authenticated-User-token",
+								"value": "{{keycloak_access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{kong_api_key}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"request\": {\n      \"courseId\": \"{{course_id}}\",\n      \"batchId\": \"{{batch_id}}\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{host}}/api/course/v1/unenroll"
+					},
+					"response": []
+				},
+				{
+					"name": "CourseEnrollListV1",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Authenticated-User-token",
+								"value": "{{keycloak_access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{kong_api_key}}",
+								"type": "text"
+							}
+						],
+						"url": "{{host}}/api/course/v1/user/enrollment/list/{{user_id}}"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "PageAPIs",
+			"item": [
+				{
+					"name": "create",
+					"item": [
+						{
+							"name": "Create Page",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{kong_api_key}}",
+										"type": "text"
+									},
+									{
+										"key": "X-Authenticated-User-token",
+										"value": "{{keycloak_access_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"id\": \"api.page.create\",\n  \"ts\": \"2020/12/11 16:16:39\",\n  \"params\": {},\n  \"request\": {\n    \"name\": \"Resources\",\n    \"organisationId\": \"{{orgId}}\",\n    \"portalMap\": [\n      {\n        \"id\": 1228383082462412800,\n        \"index\": 1,\n        \"group\": 1\n      },\n      {\n        \"id\": 1228383384379392000,\n        \"index\": 1,\n        \"group\": 2\n      }\n    ],\n    \"appMap\": [\n      {\n        \"id\": 1228383082462412800,\n        \"index\": 1,\n        \"group\": 1\n      },\n      {\n        \"id\": 1228383384379392000,\n        \"index\": 1,\n        \"group\": 2\n      }\n    ]\n  }\n}"
+								},
+								"url": "{{host}}/api/data/v1/page/create",
+								"description": "This API is associated with creating a new page. To create a page first create the page section using section create api.make page name unique.\n   - The endpoint for **Create Page** is `/create`\n   - The fields marked with an asterisk (*) are mandatory. They cannot be null or empty."
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "update",
+					"item": [
+						{
+							"name": "Update Page Information",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text",
+										"description": "(Required) This Id Uniquely identifies a request if the same API is executed multiple times."
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text",
+										"description": "(Required) Time Stamp at which update page information request was sent."
+									},
+									{
+										"key": "Authorization",
+										"value": "{{kong_api_key}}",
+										"type": "text",
+										"description": "(Required) The token/key used to execute the API"
+									},
+									{
+										"key": "X-Authenticated-User-token",
+										"value": "{{keycloak_access_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"id\": \"unique API ID\",\n  \"ts\": \"2013/10/15 16:16:39\",\n  \"params\": {},\n  \"request\": {\n    \"name\": \"Resourcessss\",\n    \"id\": 1228394137835929600,\n    \"portalMap\": [\n      {\n        \"id\": 1228383082462412800,\n        \"index\": 1,\n        \"group\": 1\n      },\n      {\n        \"id\": 1228383384379392000,\n        \"index\": 1,\n        \"group\": 2\n      }\n    ],\n    \"appMap\": [\n      {\n        \"id\": 1228383082462412800,\n        \"index\": 1,\n        \"group\": 1\n      },\n      {\n        \"id\": 1228383384379392000,\n        \"index\": 1,\n        \"group\": 2\n      }\n    ]\n  }\n}"
+								},
+								"url": "{{host}}/api/data/v1/page/update",
+								"description": "This API is associated with updating the page information\n   - The endpoint for **Update Page Information** is `/update`\n   - The fields marked with an asterisk (*) are mandatory. They cannot be null or empty."
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "read",
+					"item": [
+						{
+							"name": "Get Specific Page Resources",
+							"request": {
+								"auth": {
+									"type": "apikey",
+									"apikey": {
+										"key": "Authorization",
+										"value": "{{apiKey}}",
+										"in": "header"
+									}
+								},
+								"method": "GET",
+								"header": [
+									{
+										"description": "(Required) This Id Uniquely identifies a request if the same API is executed multiple times.",
+										"key": "X-msgid",
+										"value": "<string>"
+									},
+									{
+										"description": "(Required) Time Stamp at which get specific page resources request was sent.",
+										"key": "ts",
+										"value": "<string>"
+									},
+									{
+										"description": "(Required) The token/key used to execute the API",
+										"key": "x-authenticated-user-token",
+										"value": "<string>"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/data/v1/page/read/:pageName",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"data",
+										"v1",
+										"page",
+										"read",
+										":pageName"
+									],
+									"variable": [
+										{
+											"key": "pageName",
+											"value": "<string>"
+										}
+									]
+								},
+								"description": "This API is associated with fetching specific resources.\n   - The endpoint for **Get Specific Page Resources** is `/read/{pageName}`\n   - The fields marked with an asterisk (*) are mandatory. They cannot be null or empty."
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "section",
+					"item": [
+						{
+							"name": "create",
+							"item": [
+								{
+									"name": "Create Page Section",
+									"request": {
+										"auth": {
+											"type": "apikey",
+											"apikey": {
+												"key": "Authorization",
+												"value": "{{apiKey}}",
+												"in": "header"
+											}
+										},
+										"method": "POST",
+										"header": [
+											{
+												"description": "(Required) This Id Uniquely identifies a request if the same API is executed multiple times.",
+												"key": "X-msgid",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) Time Stamp at which create section request was sent.",
+												"key": "ts",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) The token/key used to execute the API",
+												"key": "x-authenticated-user-token",
+												"value": "<string>"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"id\": \"<string>\",\n  \"params\": {},\n  \"request\": {\n    \"display\": {\n      \"name\": {\n        \"en\": \"<string>\",\n        \"hi\": \"<string>\"\n      }\n    },\n    \"name\": \"<string>\",\n    \"searchQuery\": {\n      \"request\": {\n        \"filters\": {\n          \"contentType\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"language\": [\n            \"<string>\",\n            \"<string>\"\n          ]\n        },\n        \"limit\": \"<integer>\",\n        \"query\": \"<string>\",\n        \"sort_by\": {\n          \"lastUpdatedOn\": \"<string>\"\n        }\n      }\n    },\n    \"sectionDataType\": \"<string>\"\n  },\n  \"ts\": \"<string>\"\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": "{{baseUrl}}/data/v1/page/section/create",
+										"description": "This API is associated with creating a new section on a page.\n   - The endpoint for **Create Page Section** is `/section/create`\n   - The fields marked with an asterisk (*) are mandatory. They cannot be null or empty."
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "update",
+							"item": [
+								{
+									"name": "Update Page Section",
+									"request": {
+										"auth": {
+											"type": "apikey",
+											"apikey": {
+												"key": "Authorization",
+												"value": "{{apiKey}}",
+												"in": "header"
+											}
+										},
+										"method": "PATCH",
+										"header": [
+											{
+												"description": "(Required) This Id Uniquely identifies a request if the same API is executed multiple times.",
+												"key": "X-msgid",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) Time Stamp at which updating page section request was sent.",
+												"key": "ts",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) The token/key used to execute the API",
+												"key": "x-authenticated-user-token",
+												"value": "<string>"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"id\": \"<string>\",\n  \"params\": {},\n  \"request\": {\n    \"display\": {\n      \"name\": {\n        \"en\": \"<string>\",\n        \"hi\": \"<string>\"\n      }\n    },\n    \"id\": \"<string>\",\n    \"name\": \"<string>\",\n    \"searchQuery\": {\n      \"request\": {\n        \"filters\": {\n          \"mimeType\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"objectType\": [\n            \"<string>\",\n            \"<string>\"\n          ],\n          \"status\": [\n            \"<string>\",\n            \"<string>\"\n          ]\n        },\n        \"limit\": \"<integer>\",\n        \"offset\": \"<integer>\",\n        \"query\": \"<string>\"\n      }\n    },\n    \"sectionDataType\": \"<string>\"\n  },\n  \"ts\": \"<string>\"\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": "{{baseUrl}}/data/v1/page/section/update",
+										"description": "This API is associated with updating content of a section on a page.\n   - The endpoint for **Update Page Section** is `/section/update`\n   - The fields marked with an asterisk (*) are mandatory. They cannot be null or empty."
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "read",
+							"item": [
+								{
+									"name": "Fetch Section Details by Id",
+									"request": {
+										"auth": {
+											"type": "apikey",
+											"apikey": {
+												"key": "Authorization",
+												"value": "{{apiKey}}",
+												"in": "header"
+											}
+										},
+										"method": "GET",
+										"header": [
+											{
+												"description": "(Required) This Id Uniquely identifies a request if the same API is executed multiple times.",
+												"key": "X-msgid",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) Time Stamp at which Fetch Section Details request was sent.",
+												"key": "ts",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) The token/key used to execute the API",
+												"key": "x-authenticated-user-token",
+												"value": "<string>"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/data/v1/page/section/read/:SectionId",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"data",
+												"v1",
+												"page",
+												"section",
+												"read",
+												":SectionId"
+											],
+											"variable": [
+												{
+													"key": "SectionId",
+													"value": "<string>"
+												}
+											]
+										},
+										"description": "This API is associated with fetching specific section details.\n   - The endpoint for **Fetch Section Details by Id** is `/section/read/{sectionId}`\n   - The fields marked with an asterisk (*) are mandatory. They cannot be null or empty."
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "list",
+							"item": [
+								{
+									"name": "Fetch Page Settings",
+									"request": {
+										"auth": {
+											"type": "apikey",
+											"apikey": {
+												"key": "Authorization",
+												"value": "{{apiKey}}",
+												"in": "header"
+											}
+										},
+										"method": "GET",
+										"header": [
+											{
+												"description": "(Required) This Id Uniquely identifies a request if the same API is executed multiple times.",
+												"key": "X-msgid",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) Time Stamp at which fetch settings request was sent.",
+												"key": "ts",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) The token/key used to execute the API",
+												"key": "x-authenticated-user-token",
+												"value": "<string>"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": "{{baseUrl}}/data/v1/page/section/list",
+										"description": "This API is associated with fetching the settings of a page.\n   - The endpoint for **Fetch Page Settings** is `/section/list`\n   - The fields marked with an asterisk (*) are mandatory. They cannot be null or empty."
+									},
+									"response": []
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "ContentAPIs",
+			"item": [
+				{
+					"name": "ContentSearchV1",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{kong_api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "X-Authenticated-User-token",
+								"value": "{{keycloak_access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"request\": {\n        \"query\": \"{{course_id}}\",\n        \"filters\": {\n            \"primaryCategory\": \"Course\"\n        },\n        \"fields\": [\n            \"name\",\n            \"status\",\n            \"createdBy\",\n            \"creator\"\n        ]\n    }\n}"
+						},
+						"url": "{{host}}/api/content/v1/search"
+					},
+					"response": []
+				},
+				{
+					"name": "ContentStateReadV1",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{kong_api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "X-Authenticated-User-token",
+								"value": "{{keycloak_access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"request\": {\n        \"userId\": \"{{user_id}}\",\n        \"courseId\": \"{{course_id}}\",\n        \"batchId\": \"{{batch_id}}\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{host}}/api/course/v1/content/state/read"
+					},
+					"response": []
+				},
+				{
+					"name": "ContentStateUpdateV1",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{kong_api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "X-Authenticated-User-token",
+								"value": "{{keycloak_access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"request\": {\n    \"userId\": \"{{user_id}}\",\n    \"contents\": [\n      {\n        \"contentId\": \"{{content_id}}\",\n        \"batchId\": \"{{batch_id}}\",\n        \"status\": 2,\n        \"courseId\": \"{{course_id}}\",\n        \"lastAccessTime\": \"2020-11-23 12:58:35:179+0000\"\n      }\n    ]\n  }\n}"
+						},
+						"url": "{{host}}/api/course/v1/content/state/update"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "AggregateAPIs",
+			"item": [
+				{
+					"name": "GroupActivityAggregateV1",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{kong_api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "X-Authenticated-User-token",
+								"value": "{{keycloak_access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"request\": {\n    \"groupId\": \"{{group_id}}\",\n    \"activityId\": \"{{activity_id}}\",\n    \"activityType\": \"Course\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{host}}/api/data/v1/group/activity/agg"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"    if (pm.environment.get(\"environment\") === \"local\") {",
+					"        var baseURL = pm.environment.get(\"host\")",
+					"        pm.variables.set(\"baseURL\", baseURL);",
+					"    } else {",
+					"        var baseURL = pm.environment.get(\"host\") + pm.variables.get(\"basePath\");",
+					"        pm.variables.set(\"baseURL\", baseURL);",
+					"    }",
+					"",
+					"    function generateRandomBatchName() {",
+					"    const adjectives = ['Advanced', 'Beginner', 'Intermediate', 'Expert', 'Pro', 'Novice', 'Skilled', 'Enthusiastic'];",
+					"    const subjects = ['Math', 'Science', 'History', 'Literature', 'Programming', 'Languages', 'Art', 'Music'];",
+					"    const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];",
+					"    const randomSubject = subjects[Math.floor(Math.random() * subjects.length)];",
+					"    const randomNumber = Math.floor(Math.random() * 1000);",
+					"    ",
+					"    return `${randomAdjective} ${randomSubject} Batch ${randomNumber}`;",
+					"}",
+					"",
+					"function generateRandomDescription() {",
+					"    const phrases = [",
+					"        'Join this batch to enhance your knowledge and skills.',",
+					"        'In this batch, we explore various topics and concepts.',",
+					"        'Looking for an engaging learning experience? Join this batch now!',",
+					"        'We focus on interactive learning and collaborative discussions.',",
+					"        'This batch is open to learners of all levels.'",
+					"    ];",
+					"    ",
+					"    const randomPhrase = phrases[Math.floor(Math.random() * phrases.length)];",
+					"    return randomPhrase;",
+					"}",
+					"",
+					"const batchName = generateRandomBatchName();",
+					"const batchDescription = generateRandomDescription();",
+					"// Calculate the start date (current date - 5 days)",
+					"const currentDate = new Date();",
+					"const startDate = new Date(currentDate);",
+					"startDate.setDate(currentDate.getDate());",
+					"",
+					"// Calculate the end date (end of 3 months from current date)",
+					"const endDate = new Date(currentDate);",
+					"endDate.setMonth(currentDate.getMonth() + 3, 0); // Set to the last day of the third month",
+					"",
+					"// Format dates as strings (YYYY-MM-DD)",
+					"const formattedStartDate = startDate.toISOString().split('T')[0];",
+					"const formattedEndDate = endDate.toISOString().split('T')[0];",
+					"",
+					"// Get the current date",
+					"const currentUpdateDate = new Date();",
+					"",
+					"// Add 5 days to the current date",
+					"const updateDate = new Date(currentUpdateDate);",
+					"updateDate.setDate(currentUpdateDate.getDate() + 5);",
+					"",
+					"// Format the update date as a string (YYYY-MM-DD)",
+					"const formattedUpdateDate = updateDate.toISOString().split('T')[0];",
+					"",
+					"// Set the environment variable",
+					"pm.environment.set('batch_update_date', formattedUpdateDate);",
+					"",
+					"",
+					"// Set the environment variables",
+					"pm.environment.set('batch_start_date', formattedStartDate);",
+					"pm.environment.set('batch_end_date', formattedEndDate);",
+					"",
+					"",
+					"pm.environment.set('batch_name', batchName);",
+					"pm.environment.set('batch_description', batchDescription);",
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "refresh_token",
+			"value": ""
+		}
+	]
+}

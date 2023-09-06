@@ -1,0 +1,383 @@
+{
+  "id": "api.user.read.4cd4c690-eab6-4938-855a-447c7b1b8ea9",
+  "ver": "v5",
+  "ts": "2023-09-05 14:07:47:872+0000",
+  "params": {
+    "resmsgid": "1281c745-830c-421c-8245-dd5b2b795842",
+    "msgid": "1281c745-830c-421c-8245-dd5b2b795842",
+    "err": null,
+    "status": "SUCCESS",
+    "errmsg": null
+  },
+  "responseCode": "OK",
+  "result": {
+    "response": {
+      "maskedPhone": null,
+      "tcStatus": null,
+      "channel": "tn",
+      "profileUserTypes": [
+        {
+          "type": "administrator"
+        }
+      ],
+      "updatedDate": "2023-08-24 12:10:10:403+0000",
+      "managedBy": null,
+      "flagsValue": 4,
+      "id": "4cd4c690-eab6-4938-855a-447c7b1b8ea9",
+      "recoveryEmail": "xc*@yopmai.com",
+      "identifier": "4cd4c690-eab6-4938-855a-447c7b1b8ea9",
+      "updatedBy": "4cd4c690-eab6-4938-855a-447c7b1b8ea9",
+      "externalIds": [],
+      "roleList": [
+        {
+          "name": "Book Creator",
+          "id": "BOOK_CREATOR"
+        },
+        {
+          "name": "Membership Management",
+          "id": "MEMBERSHIP_MANAGEMENT"
+        },
+        {
+          "name": "Flag Reviewer",
+          "id": "FLAG_REVIEWER"
+        },
+        {
+          "name": "Report Viewer",
+          "id": "REPORT_VIEWER"
+        },
+        {
+          "name": "Program Manager",
+          "id": "PROGRAM_MANAGER"
+        },
+        {
+          "name": "Program Designer",
+          "id": "PROGRAM_DESIGNER"
+        },
+        {
+          "name": "System Administration",
+          "id": "SYSTEM_ADMINISTRATION"
+        },
+        {
+          "name": "Content Curation",
+          "id": "CONTENT_CURATION"
+        },
+        {
+          "name": "Book Reviewer",
+          "id": "BOOK_REVIEWER"
+        },
+        {
+          "name": "Content Creator",
+          "id": "CONTENT_CREATOR"
+        },
+        {
+          "name": "Org Management",
+          "id": "ORG_MANAGEMENT"
+        },
+        {
+          "name": "Course Admin",
+          "id": "COURSE_ADMIN"
+        },
+        {
+          "name": "Org Moderator",
+          "id": "ORG_MODERATOR"
+        },
+        {
+          "name": "Public",
+          "id": "PUBLIC"
+        },
+        {
+          "name": "Admin",
+          "id": "ADMIN"
+        },
+        {
+          "name": "Course Mentor",
+          "id": "COURSE_MENTOR"
+        },
+        {
+          "name": "Content Reviewer",
+          "id": "CONTENT_REVIEWER"
+        },
+        {
+          "name": "Report Admin",
+          "id": "REPORT_ADMIN"
+        },
+        {
+          "name": "Org Admin",
+          "id": "ORG_ADMIN"
+        }
+      ],
+      "rootOrgId": "01269878797503692810",
+      "prevUsedEmail": "",
+      "firstName": "Harish",
+      "isMinor": false,
+      "tncAcceptedOn": 1681803221060,
+      "allTncAccepted": {
+        "reportViewerTnc": {
+          "tncAcceptedOn": "2022-03-22 07:19:32:520+0000",
+          "version": "4.5.0"
+        },
+        "groupsTnc": {
+          "tncAcceptedOn": "2020-11-27 08:49:23:565+0000",
+          "version": "3.5.0"
+        }
+      },
+      "profileDetails": null,
+      "phone": "",
+      "dob": "2001-12-31",
+      "status": 1,
+      "lastName": "",
+      "tncLatestVersion": "v13",
+      "roles": [
+        {
+          "role": "BOOK_CREATOR",
+          "createdDate": null,
+          "updatedBy": "fbe926ac-a395-40e4-a65b-9b4f711d7642",
+          "createdBy": "4cd4c690-eab6-4938-855a-447c7b1b8ea9",
+          "scope": [
+            {
+              "organisationId": "01269878797503692810"
+            }
+          ],
+          "updatedDate": "2022-03-23 10:14:23:517+0000"
+        },
+        {
+          "role": "CONTENT_CREATOR",
+          "createdDate": null,
+          "updatedBy": "fbe926ac-a395-40e4-a65b-9b4f711d7642",
+          "createdBy": "4cd4c690-eab6-4938-855a-447c7b1b8ea9",
+          "scope": [
+            {
+              "organisationId": "01269878797503692810"
+            }
+          ],
+          "updatedDate": "2022-03-23 10:14:23:517+0000"
+        },
+        {
+          "role": "COURSE_MENTOR",
+          "createdDate": null,
+          "updatedBy": "fbe926ac-a395-40e4-a65b-9b4f711d7642",
+          "createdBy": "4cd4c690-eab6-4938-855a-447c7b1b8ea9",
+          "scope": [
+            {
+              "organisationId": "01269878797503692810"
+            }
+          ],
+          "updatedDate": "2022-03-23 10:14:23:514+0000"
+        },
+        {
+          "role": "PROGRAM_DESIGNER",
+          "createdDate": "2021-10-01 15:47:27:885+0000",
+          "updatedBy": "fbe926ac-a395-40e4-a65b-9b4f711d7642",
+          "createdBy": "fbe926ac-a395-40e4-a65b-9b4f711d7642",
+          "scope": [
+            {
+              "organisationId": "01269878797503692810"
+            }
+          ],
+          "updatedDate": "2022-03-23 10:14:23:514+0000"
+        },
+        {
+          "role": "REPORT_VIEWER",
+          "createdDate": "2023-09-04 12:23:01:506+0000",
+          "updatedBy": null,
+          "createdBy": "fbe926ac-a395-40e4-a65b-9b4f711d7642",
+          "scope": [
+            {
+              "organisationId": "01269878797503692810"
+            }
+          ],
+          "updatedDate": null
+        }
+      ],
+      "prevUsedPhone": "",
+      "stateValidated": true,
+      "isDeleted": false,
+      "organisations": [
+        {
+          "organisationId": "01269878797503692810",
+          "approvedBy": null,
+          "channel": "tn",
+          "updatedDate": "2020-04-10 09:12:50:756+0000",
+          "approvaldate": null,
+          "isSystemUpload": false,
+          "isDeleted": false,
+          "id": "01281260876890112010",
+          "isApproved": false,
+          "orgjoindate": "2019-07-25 07:10:14:922+0000",
+          "isSelfDeclaration": false,
+          "updatedBy": "1405f334-ee59-42fc-befb-51986221881e",
+          "orgName": "Tamil nadu",
+          "addedByName": null,
+          "addedBy": null,
+          "associationType": 1,
+          "locationIds": [
+            "bc75cc99-9205-463e-a722-5326857838f8"
+          ],
+          "orgLocation": [
+            {
+              "id": "bc75cc99-9205-463e-a722-5326857838f8",
+              "type": "state"
+            }
+          ],
+          "externalId": "jn004",
+          "userId": "4cd4c690-eab6-4938-855a-447c7b1b8ea9",
+          "isSchool": true,
+          "hashTagId": "01269878797503692810",
+          "isSSO": true,
+          "isRejected": false,
+          "locations": [
+            {
+              "code": "28",
+              "name": "Andhra Pradesh",
+              "id": "bc75cc99-9205-463e-a722-5326857838f8",
+              "type": "state",
+              "parentId": null
+            }
+          ],
+          "position": null,
+          "orgLeftDate": null
+        }
+      ],
+      "provider": null,
+      "countryCode": null,
+      "tncLatestVersionUrl": "https://obj.stage.sunbirded.org/privacy-policy/terms-of-use.html",
+      "maskedEmail": "co**************@yopmail.com",
+      "email": "co**************@yopmail.com",
+      "rootOrg": {
+        "keys": {
+          "exhaustEncryptionKey": [
+            "https://sunbirdstagingpublic.blob.core.windows.net/sunbird-content-staging/organisation/01269878797503692810/namratha_public.pem"
+          ]
+        },
+        "organisationSubType": null,
+        "channel": "tn",
+        "description": "Tamil Nadu",
+        "updatedDate": "2022-09-12 10:08:13:108+0000",
+        "organisationType": 2,
+        "isTenant": true,
+        "provider": null,
+        "id": "01269878797503692810",
+        "email": null,
+        "slug": "tn",
+        "isSSOEnabled": null,
+        "orgName": "Tamil nadu",
+        "updatedBy": "fbe926ac-a395-40e4-a65b-9b4f711d7642",
+        "locationIds": [
+          "91d9baae-14f1-477a-955c-f91bd9037f0b"
+        ],
+        "externalId": "jn004",
+        "orgLocation": [
+          {
+            "id": "bc75cc99-9205-463e-a722-5326857838f8",
+            "type": "state"
+          }
+        ],
+        "isRootOrg": true,
+        "rootOrgId": "01269878797503692810",
+        "imgUrl": null,
+        "isSchool": true,
+        "homeUrl": null,
+        "createdDate": "2019-02-14 11:41:31:097+0000",
+        "createdBy": null,
+        "hashTagId": "01269878797503692810",
+        "status": 1
+      },
+      "tcUpdatedDate": null,
+      "userLocations": [
+        {
+          "code": "3402",
+          "name": "PONDICHERRY",
+          "id": "125a8fbc-5eee-476a-9d84-613fdc90c987",
+          "type": "district",
+          "parentId": "dc76be85-9614-4fed-986f-c6e6de8dd472"
+        },
+        {
+          "code": "34",
+          "name": "Puducherry",
+          "id": "dc76be85-9614-4fed-986f-c6e6de8dd472",
+          "type": "state",
+          "parentId": null
+        }
+      ],
+      "recoveryPhone": "",
+      "userName": "content_creator_tn3941",
+      "userId": "4cd4c690-eab6-4938-855a-447c7b1b8ea9",
+      "declarations": [
+        {
+          "persona": "default",
+          "errorType": null,
+          "orgId": "01269878797503692810",
+          "status": "SUBMITTED",
+          "info": {
+            "declared-email": "",
+            "declared-ext-id": "",
+            "declared-phone": "",
+            "declared-school-name": "MPPS GYARAGONDANAHALLI",
+            "declared-school-udise-code": "28226200403"
+          }
+        },
+        {
+          "persona": "default",
+          "errorType": null,
+          "orgId": "do_2129932778061250561582",
+          "status": null,
+          "info": {}
+        },
+        {
+          "persona": "default",
+          "errorType": null,
+          "orgId": "do_2130059056563322881141",
+          "status": null,
+          "info": {}
+        },
+        {
+          "persona": "default",
+          "errorType": null,
+          "orgId": "do_2130448790797926401216",
+          "status": null,
+          "info": {}
+        },
+        {
+          "persona": "default",
+          "errorType": null,
+          "orgId": "do_2131672085845606401819",
+          "status": null,
+          "info": {}
+        },
+        {
+          "persona": "default",
+          "errorType": null,
+          "orgId": "do_2132818357077442561633",
+          "status": null,
+          "info": {}
+        }
+      ],
+      "promptTnC": false,
+      "lastLoginTime": 0,
+      "createdDate": "2019-07-25 07:10:14:886+0000",
+      "framework": {
+        "board": [
+          "State (Tamil Nadu)"
+        ],
+        "gradeLevel": [
+          "Class 11",
+          "Class 12"
+        ],
+        "id": [
+          "tn_k-12_5"
+        ],
+        "medium": [
+          "English",
+          "Tamil"
+        ],
+        "subject": []
+      },
+      "createdBy": "1405f334-ee59-42fc-befb-51986221881e",
+      "profileUserType": {
+        "subType": null,
+        "type": "administrator"
+      },
+      "tncAcceptedVersion": "v13"
+    }
+  }
+}

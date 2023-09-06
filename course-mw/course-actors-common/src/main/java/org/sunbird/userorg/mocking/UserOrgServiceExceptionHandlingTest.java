@@ -1,16 +1,17 @@
 package org.sunbird.userorg.mocking;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.http.Fault;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.sunbird.userorg.UserOrgService;
 import org.sunbird.userorg.UserOrgServiceImpl;
-import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static org.junit.Assert.*;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class UserOrgServiceExceptionHandlingTest {
 
@@ -42,6 +43,7 @@ public class UserOrgServiceExceptionHandlingTest {
             userOrgService.getUserById("77777", null);
             fail("Expected an exception to be thrown");
         } catch (Exception e) {
+            assertEquals("Invalid input parameters", e.getMessage());
         }
     }
 
@@ -68,11 +70,8 @@ public class UserOrgServiceExceptionHandlingTest {
                         .withHeader("Content-Type", "application/json")
                         .withBody("{}")));
 
-        try {
-            userOrgService.getUserById("66666", "someAuthToken");
-            fail("Expected a timeout exception to be thrown");
-        } catch (TimeoutException e) {
-        }
+        userOrgService.getUserById("66666", "someAuthToken");
+        fail("Expected a timeout exception to be thrown");
     }
 
     @Test
@@ -83,11 +82,10 @@ public class UserOrgServiceExceptionHandlingTest {
                 .willReturn(aResponse()
                         .withFault(Fault.CONNECTION_RESET_BY_PEER)));
 
-        try {
+
             userOrgService.getUserById("77777", "someAuthToken");
             fail("Expected a network error exception to be thrown");
-        } catch (NetworkErrorException e) {
-        }
+
     }
 
     @Test

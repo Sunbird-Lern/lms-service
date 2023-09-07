@@ -1,0 +1,264 @@
+[
+    {
+        "request": {
+          "method": "GET",
+          "urlPattern": "/example"
+        },
+        "response": {
+          "status": 200,
+          "body": "This is another endpoint"
+        }
+    },
+
+  {
+    "request": {
+      "method": "GET",
+      "urlPattern": "/user/v1/read/13317"
+    },
+    "response": {
+      "status": 200,
+        "body": {
+          "id": "api.user.read.4cd4c690-eab6-4938-855a-447c7b1b8ea9",
+          "ver": "v5",
+          "ts": "2023-09-05 14:07:47:872+0000",
+          "params": {
+            "resmsgid": "1281c745-830c-421c-8245-dd5b2b795842",
+            "msgid": "1281c745-830c-421c-8245-dd5b2b795842",
+            "err": null,
+            "status": "SUCCESS",
+            "errmsg": null
+          },
+          "responseCode": "OK",
+          "result": {
+            "response": {
+              "maskedPhone": null,
+              "tcStatus": null,
+              "channel": "tn",
+              "profileUserTypes": [
+                {
+                  "type": "administrator"
+                }
+              ]
+            }
+          }
+        }
+      }
+  },
+
+  {
+    "request": {
+      "method": "GET",
+      "urlPattern": "/v1/user/search/5522"
+    },
+    "response": {
+      "status": 200,
+      "body": {
+        "id": "api.user.search",
+        "ver": "v3",
+        "ts": "2023-09-05 14:18:20:870+0000",
+        "params": {
+          "resmsgid": "68f96c13-815f-4a6c-82e5-13f6dc7558de",
+          "msgid": "68f96c13-815f-4a6c-82e5-13f6dc7558de",
+          "err": null,
+          "status": "SUCCESS",
+          "errmsg": null
+        },
+        "responseCode": "OK",
+        "result": {
+          "response": {
+            "count": 8,
+            "content": [
+              {
+                "lastName": "test",
+                "maskedPhone": null,
+                "tcStatus": null,
+                "rootOrgName": "Tamil Nadu",
+                "roles": [
+                  {
+                    "role": "BOOK_CREATOR",
+                    "createdDate": "2022-12-19 11:31:18:593+0000",
+                    "updatedBy": "fbe926ac-a395-40e4-a65b-9b4f711d7642",
+                    "createdBy": "fbe926ac-a395-40e4-a65b-9b4f711d7642",
+                    "scope": [
+                      {
+                        "organisationId": "01269878797503692810"
+                      }
+                    ],
+                    "updatedDate": "2022-12-19 11:33:34:588+0000",
+                    "userId": "0619fa50-f76e-4595-89f7-e74539f22cae"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+
+  {
+    "request": {
+      "method": "GET",
+      "urlPattern": "/user/v1/org/3995"
+    },
+    "response": {
+      "status": 200,
+      "body": {
+        "id": "api.org.read",
+        "ver": "v1",
+        "ts": "2023-09-05 14:08:14:656+0000",
+        "params": {
+          "resmsgid": "f41aeda124325c7e16d4194c1286eeef",
+          "msgid": "f41aeda124325c7e16d4194c1286eeef",
+          "err": null,
+          "status": "SUCCESS",
+          "errmsg": null
+        },
+        "responseCode": "OK",
+        "result": {
+          "response": {
+            "dateTime": null,
+            "preferredLanguage": null,
+            "keys": {
+              "exhaustEncryptionKey": [
+                "https://sunbirdstagingpublic.blob.core.windows.net/sunbird-content-staging/organisation/01269878797503692810/namratha_public.pem"
+              ]
+            },
+            "organisationSubType": null,
+            "channel": "tn",
+            "approvedBy": null,
+            "description": "Tamil Nadu",
+            "updatedDate": "2022-09-12 10:08:13:108+0000",
+            "organisationType": 2,
+            "addressId": null,
+            "orgType": null,
+            "isTenant": true,
+            "provider": null,
+            "locationId": null,
+            "orgCode": null,
+            "theme": null,
+            "id": "01269878797503692810",
+            "communityId": null,
+            "isApproved": null,
+            "email": null,
+            "slug": "tn",
+            "isSSOEnabled": null,
+            "thumbnail": null,
+            "orgName": "Tamil nadu",
+            "updatedBy": "fbe926ac-a395-40e4-a65b-9b4f711d7642",
+            "locationIds": [
+              "91d9baae-14f1-477a-955c-f91bd9037f0b"
+            ],
+            "externalId": "jn004",
+            "orgLocation": [
+              {
+                "id": "bc75cc99-9205-463e-a722-5326857838f8",
+                "type": "state"
+              }
+            ],
+            "isRootOrg": true,
+            "rootOrgId": "01269878797503692810",
+            "imgUrl": null,
+            "approvedDate": null,
+            "isSchool": true,
+            "homeUrl": null,
+            "orgTypeId": null,
+            "isDefault": null,
+            "createdDate": "2019-02-14 11:41:31:097+0000",
+            "createdBy": null,
+            "parentOrgId": null,
+            "hashTagId": "01269878797503692810",
+            "noOfMembers": null,
+            "status": 1
+          }
+        }
+      }
+    }
+  },
+
+  {
+    "request": {
+      "method": "GET",
+      "urlPattern": "/v1/org/search/9871"
+    },
+    "response": {
+      "status": 200,
+      "body": {
+        "id": "api.org.search",
+        "ver": "v1",
+        "ts": "2023-09-05 14:13:00:255+0000",
+        "params": {
+          "resmsgid": "912d72e9cf93f3e075efac0538f09b0d",
+          "msgid": "912d72e9cf93f3e075efac0538f09b0d",
+          "err": null,
+          "status": "SUCCESS",
+          "errmsg": null
+        },
+        "responseCode": "OK",
+        "result": {
+          "response": {
+            "count": 1,
+            "content": [
+              {
+                "dateTime": null,
+                "preferredLanguage": null,
+                "keys": {
+                  "exhaustEncryptionKey": [
+                    "https://sunbirdstagingpublic.blob.core.windows.net/sunbird-content-staging/organisation/01269878797503692810/namratha_public.pem"
+                  ]
+                },
+                "channel": "tn",
+                "approvedBy": null,
+                "description": "Tamil Nadu",
+                "updatedDate": "2022-09-12 10:08:13:108+0000",
+                "organisationType": 2,
+                "addressId": null,
+                "orgType": null,
+                "isTenant": true,
+                "provider": null,
+                "locationId": null,
+                "orgCode": null,
+                "theme": null,
+                "id": "01269878797503692810",
+                "communityId": null,
+                "isApproved": null,
+                "isBoard": true,
+                "email": null,
+                "slug": "tn",
+                "isSSOEnabled": null,
+                "identifier": "01269878797503692810",
+                "thumbnail": null,
+                "orgName": "Tamil nadu",
+                "updatedBy": "fbe926ac-a395-40e4-a65b-9b4f711d7642",
+                "locationIds": [
+                  "91d9baae-14f1-477a-955c-f91bd9037f0b"
+                ],
+                "externalId": "jn004",
+                "orgLocation": [
+                  {
+                    "id": "bc75cc99-9205-463e-a722-5326857838f8",
+                    "type": "state"
+                  }
+                ],
+                "isRootOrg": true,
+                "rootOrgId": "01269878797503692810",
+                "approvedDate": null,
+                "imgUrl": null,
+                "isSchool": true,
+                "homeUrl": null,
+                "orgTypeId": null,
+                "isDefault": null,
+                "createdDate": "2019-02-14 11:41:31:097+0000",
+                "createdBy": null,
+                "parentOrgId": null,
+                "hashTagId": "01269878797503692810",
+                "noOfMembers": null,
+                "status": 1
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+]

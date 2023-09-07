@@ -67,6 +67,7 @@ public class UserOrgServiceHttpStatusTest {
             userOrgService.getUserById("88888", "someAuthToken");
             fail("Expected an exception to be thrown");
         } catch (Exception e) {
+            System.out.println("\n\n\ntestNotFound");
         }
 
         wireMockServer.stop();
@@ -89,6 +90,7 @@ public class UserOrgServiceHttpStatusTest {
             userOrgService.getUserById("77777", "invalidAuthToken");
             fail("Expected an exception to be thrown");
         } catch (Exception e) {
+            System.out.println("\n\n\ntest UnAuthorized");
         }
 
         wireMockServer.stop();
@@ -112,6 +114,7 @@ public class UserOrgServiceHttpStatusTest {
             userOrgService.getUserById("99999", "someAuthToken");
             fail("Expected an exception to be thrown");
         } catch (Exception e) {
+            System.out.println("\n\n\nerror in server");
         }
 
         wireMockServer.stop();

@@ -1,0 +1,10 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPattern": "/v1/user/search/23382"
+  },
+  "response": {
+    "status": 404,
+    "body": "User not found"
+  }
+}

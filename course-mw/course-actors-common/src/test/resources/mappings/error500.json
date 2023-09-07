@@ -1,0 +1,10 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPattern": "/user/v1/read/18873"
+  },
+  "response": {
+    "status": 500,
+    "body": "Unable to read the user"
+  }
+}

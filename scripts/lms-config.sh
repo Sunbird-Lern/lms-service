@@ -2,9 +2,9 @@
 
 export actor_hostname=actor-service
 export api_actor_provider=local
-export export background_actor_provider=local
+export background_actor_provider=local
 export bind_hostname=0.0.0.0
-export export ekstep_api_base_url="https://dev.lern.sunbird.org"
+export ekstep_api_base_url="https://dev.lern.sunbird.org"
 export content_read_url="/api/content/v1/read/"
 export learning_content_props_to_add=mimeType,contentType,name,code,description,keywords,framework,copyright,topic
 export learning_service_base_url="https://dev.lern.sunbird.org"
@@ -23,7 +23,7 @@ export sunbird_authorization=
 export sunbird_cache_enable=True
 export sunbird_cassandra_consistency_level=quorum
 export sunbird_cassandra_host=localhost
-export sunbird_cassandra_password=password
+export sunbird_cassandra_password=helloworld123
 export sunbird_cassandra_port=9042
 export sunbird_cassandra_username=cassandra
 export sunbird_cert_service_base_url=http://cert-service:9000

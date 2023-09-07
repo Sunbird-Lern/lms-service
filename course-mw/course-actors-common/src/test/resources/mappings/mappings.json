@@ -1,0 +1,10 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPattern": "/another-endpoint"
+  },
+  "response": {
+    "status": 200,
+    "body": "This is another endpoint"
+  }
+}

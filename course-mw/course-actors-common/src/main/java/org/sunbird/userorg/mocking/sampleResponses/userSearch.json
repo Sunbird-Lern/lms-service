@@ -1,0 +1,886 @@
+{
+  "id": "api.user.search",
+  "ver": "v3",
+  "ts": "2023-09-05 14:18:20:870+0000",
+  "params": {
+    "resmsgid": "68f96c13-815f-4a6c-82e5-13f6dc7558de",
+    "msgid": "68f96c13-815f-4a6c-82e5-13f6dc7558de",
+    "err": null,
+    "status": "SUCCESS",
+    "errmsg": null
+  },
+  "responseCode": "OK",
+  "result": {
+    "response": {
+      "count": 8,
+      "content": [
+        {
+          "lastName": "test",
+          "maskedPhone": null,
+          "tcStatus": null,
+          "rootOrgName": "Tamil Nadu",
+          "roles": [
+            {
+              "role": "BOOK_CREATOR",
+              "createdDate": "2022-12-19 11:31:18:593+0000",
+              "updatedBy": "fbe926ac-a395-40e4-a65b-9b4f711d7642",
+              "createdBy": "fbe926ac-a395-40e4-a65b-9b4f711d7642",
+              "scope": [
+                {
+                  "organisationId": "01269878797503692810"
+                }
+              ],
+              "updatedDate": "2022-12-19 11:33:34:588+0000",
+              "userId": "0619fa50-f76e-4595-89f7-e74539f22cae"
+            }
+          ],
+          "channel": "tn",
+          "profileUserTypes": [
+            {
+              "type": "OTHER"
+            }
+          ],
+          "updatedDate": "2019-10-10 13:41:14:694+0000",
+          "prevUsedPhone": "",
+          "stateValidated": true,
+          "isDeleted": false,
+          "organisations": [
+            {
+              "organisationId": "01269878797503692810",
+              "updatedBy": null,
+              "orgName": "Tamil Nadu",
+              "addedByName": null,
+              "addedBy": null,
+              "associationType": 1,
+              "approvedBy": null,
+              "updatedDate": "2021-03-15 08:00:08:697+0000",
+              "userId": "0619fa50-f76e-4595-89f7-e74539f22cae",
+              "approvaldate": null,
+              "isDeleted": false,
+              "hashTagId": "01269878797503692810",
+              "isRejected": false,
+              "id": "012815635353952256484",
+              "position": null,
+              "isApproved": false,
+              "orgjoindate": "2019-07-29 13:40:25:935+0000",
+              "orgLeftDate": null
+            }
+          ],
+          "managedBy": null,
+          "provider": null,
+          "flagsValue": 6,
+          "countryCode": null,
+          "maskedEmail": "cr************@yopmail.com",
+          "id": "0619fa50-f76e-4595-89f7-e74539f22cae",
+          "recoveryEmail": "",
+          "email": "cr************@yopmail.com",
+          "identifier": "0619fa50-f76e-4595-89f7-e74539f22cae",
+          "updatedBy": null,
+          "tcUpdatedDate": null,
+          "recoveryPhone": "",
+          "userName": "testtn",
+          "rootOrgId": "01269878797503692810",
+          "userId": "0619fa50-f76e-4595-89f7-e74539f22cae",
+          "prevUsedEmail": "",
+          "firstName": "creator",
+          "profileLocation": [
+            {
+              "id": "91d9baae-14f1-477a-955c-f91bd9037f0b",
+              "type": "state"
+            }
+          ],
+          "tncAcceptedOn": null,
+          "createdDate": "2019-07-29 13:40:25:686+0000",
+          "framework": {},
+          "allTncAccepted": {},
+          "phone": "",
+          "createdBy": "e50a3a33-fa53-4f9e-a30d-d2b2bd87d762",
+          "profileUserType": {
+            "type": "OTHER"
+          },
+          "dob": null,
+          "tncAcceptedVersion": null,
+          "status": 1
+        },
+        {
+          "lastName": null,
+          "maskedPhone": null,
+          "tcStatus": null,
+          "rootOrgName": "Tamil Nadu",
+          "roles": [],
+          "channel": "tn",
+          "profileUserTypes": [
+            {
+              "type": "OTHER"
+            }
+          ],
+          "updatedDate": "2020-10-08 09:28:18:631+0000",
+          "prevUsedPhone": "",
+          "stateValidated": true,
+          "isDeleted": false,
+          "organisations": [
+            {
+              "organisationId": "01269878797503692810",
+              "updatedBy": null,
+              "orgName": "Tamil Nadu",
+              "addedByName": null,
+              "addedBy": null,
+              "associationType": null,
+              "approvedBy": null,
+              "updatedDate": null,
+              "userId": "8278e59b-1094-40f6-ac1b-0d9672bf21ff",
+              "approvaldate": null,
+              "isDeleted": false,
+              "hashTagId": "01269878797503692810",
+              "isRejected": null,
+              "id": "013088717809401856158286",
+              "position": null,
+              "isApproved": null,
+              "orgjoindate": "2020-08-18 09:31:25:330+0000",
+              "orgLeftDate": null
+            }
+          ],
+          "managedBy": null,
+          "provider": null,
+          "flagsValue": 6,
+          "countryCode": null,
+          "maskedEmail": "ju************@gmail.com",
+          "id": "8278e59b-1094-40f6-ac1b-0d9672bf21ff",
+          "recoveryEmail": "",
+          "email": "ju************@gmail.com",
+          "identifier": "8278e59b-1094-40f6-ac1b-0d9672bf21ff",
+          "updatedBy": "8278e59b-1094-40f6-ac1b-0d9672bf21ff",
+          "tcUpdatedDate": null,
+          "recoveryPhone": "",
+          "userName": "creator2405",
+          "rootOrgId": "01269878797503692810",
+          "userId": "8278e59b-1094-40f6-ac1b-0d9672bf21ff",
+          "prevUsedEmail": "",
+          "firstName": "Creator",
+          "profileLocation": [],
+          "tncAcceptedOn": "2020-10-08T09:27:25.154Z",
+          "createdDate": "2020-08-18 09:31:25:123+0000",
+          "framework": {
+            "gradeLevel": [
+              "Class 2"
+            ],
+            "subject": [
+              "Environmental Science"
+            ],
+            "id": [
+              "tn_k-12_5"
+            ],
+            "medium": [
+              "English"
+            ],
+            "board": [
+              "State (Tamil Nadu)"
+            ]
+          },
+          "allTncAccepted": {},
+          "phone": "",
+          "createdBy": "9e7238ae-c308-4bea-8bbe-faf77b8118ae",
+          "profileUserType": {
+            "type": "OTHER"
+          },
+          "dob": null,
+          "tncAcceptedVersion": "v8",
+          "status": 1
+        },
+        {
+          "lastName": "creator",
+          "maskedPhone": null,
+          "tcStatus": null,
+          "rootOrgName": "Tamil Nadu",
+          "roles": [
+            {
+              "role": "CONTENT_CREATOR",
+              "createdDate": null,
+              "updatedBy": "fbe926ac-a395-40e4-a65b-9b4f711d7642",
+              "createdBy": "3616dc07-0061-40c3-bbf8-9533337bdb8b",
+              "scope": [
+                {
+                  "organisationId": "01269878797503692810"
+                }
+              ],
+              "updatedDate": "2022-06-22 14:16:20:642+0000",
+              "userId": "3616dc07-0061-40c3-bbf8-9533337bdb8b"
+            },
+            {
+              "role": "COURSE_MENTOR",
+              "createdDate": null,
+              "updatedBy": "fbe926ac-a395-40e4-a65b-9b4f711d7642",
+              "createdBy": "3616dc07-0061-40c3-bbf8-9533337bdb8b",
+              "scope": [
+                {
+                  "organisationId": "01269878797503692810"
+                }
+              ],
+              "updatedDate": "2022-06-22 14:16:20:643+0000",
+              "userId": "3616dc07-0061-40c3-bbf8-9533337bdb8b"
+            },
+            {
+              "role": "ORG_MODERATOR",
+              "createdDate": "2022-06-22 14:16:20:643+0000",
+              "updatedBy": null,
+              "createdBy": "fbe926ac-a395-40e4-a65b-9b4f711d7642",
+              "scope": [
+                {
+                  "organisationId": "01269878797503692810"
+                }
+              ],
+              "updatedDate": null,
+              "userId": "3616dc07-0061-40c3-bbf8-9533337bdb8b"
+            },
+            {
+              "role": "PROGRAM_DESIGNER",
+              "createdDate": "2022-06-22 14:16:20:643+0000",
+              "updatedBy": null,
+              "createdBy": "fbe926ac-a395-40e4-a65b-9b4f711d7642",
+              "scope": [
+                {
+                  "organisationId": "01269878797503692810"
+                }
+              ],
+              "updatedDate": null,
+              "userId": "3616dc07-0061-40c3-bbf8-9533337bdb8b"
+            }
+          ],
+          "channel": "tn",
+          "profileUserTypes": [
+            {
+              "type": "OTHER"
+            }
+          ],
+          "updatedDate": "2020-08-01 08:01:58:302+0000",
+          "prevUsedPhone": "",
+          "stateValidated": true,
+          "isDeleted": false,
+          "organisations": [
+            {
+              "organisationId": "01269878797503692810",
+              "updatedBy": "1405f334-ee59-42fc-befb-51986221881e",
+              "orgName": "Tamil Nadu",
+              "addedByName": null,
+              "addedBy": null,
+              "associationType": 1,
+              "approvedBy": null,
+              "updatedDate": "2020-08-01 08:01:58:333+0000",
+              "userId": "3616dc07-0061-40c3-bbf8-9533337bdb8b",
+              "approvaldate": null,
+              "isDeleted": false,
+              "hashTagId": "01269878797503692810",
+              "isRejected": false,
+              "id": "013051095350140928196",
+              "position": null,
+              "isApproved": false,
+              "orgjoindate": "2020-06-26 05:54:05:565+0000",
+              "orgLeftDate": null
+            }
+          ],
+          "managedBy": null,
+          "provider": null,
+          "flagsValue": 6,
+          "countryCode": null,
+          "maskedEmail": "cc***@yopmail.com",
+          "id": "3616dc07-0061-40c3-bbf8-9533337bdb8b",
+          "recoveryEmail": "",
+          "email": "cc***@yopmail.com",
+          "identifier": "3616dc07-0061-40c3-bbf8-9533337bdb8b",
+          "updatedBy": "1405f334-ee59-42fc-befb-51986221881e",
+          "tcUpdatedDate": null,
+          "recoveryPhone": "",
+          "userName": "cc_tn123",
+          "rootOrgId": "01269878797503692810",
+          "userId": "3616dc07-0061-40c3-bbf8-9533337bdb8b",
+          "prevUsedEmail": "",
+          "firstName": "content",
+          "profileLocation": [],
+          "tncAcceptedOn": "2020-07-29T07:11:13.266Z",
+          "createdDate": "2020-06-26 05:54:05:350+0000",
+          "framework": {
+            "gradeLevel": [
+              "Class 10"
+            ],
+            "subject": [
+              "Mathematics"
+            ],
+            "id": [
+              "tn_k-12_5"
+            ],
+            "medium": [
+              "English"
+            ],
+            "board": [
+              "State (Tamil Nadu)"
+            ]
+          },
+          "allTncAccepted": {},
+          "phone": "",
+          "createdBy": "64690b29-eeb8-4963-a890-69277026577d",
+          "profileUserType": {
+            "type": "OTHER"
+          },
+          "dob": null,
+          "tncAcceptedVersion": "v7",
+          "status": 1
+        },
+        {
+          "lastName": null,
+          "maskedPhone": null,
+          "tcStatus": null,
+          "rootOrgName": "Tamil Nadu",
+          "roles": [
+            {
+              "role": "BOOK_CREATOR",
+              "createdDate": null,
+              "updatedBy": null,
+              "createdBy": "ed5e8f24-80d7-42af-af4f-cd2fc401c914",
+              "scope": [
+                {
+                  "organisationId": "01269878797503692810"
+                }
+              ],
+              "updatedDate": null,
+              "userId": "ed5e8f24-80d7-42af-af4f-cd2fc401c914"
+            },
+            {
+              "role": "COURSE_MENTOR",
+              "createdDate": "2022-03-23 10:16:30:698+0000",
+              "createdBy": "fbe926ac-a395-40e4-a65b-9b4f711d7642",
+              "scope": [
+                {
+                  "organisationId": "01269878797503692810"
+                }
+              ],
+              "userId": "ed5e8f24-80d7-42af-af4f-cd2fc401c914"
+            }
+          ],
+          "channel": "tn",
+          "profileUserTypes": [
+            {
+              "type": "TEACHER"
+            }
+          ],
+          "updatedDate": null,
+          "prevUsedPhone": "",
+          "stateValidated": true,
+          "isDeleted": false,
+          "organisations": [
+            {
+              "organisationId": "01269878797503692810",
+              "updatedBy": null,
+              "orgName": "Tamil Nadu",
+              "addedByName": null,
+              "addedBy": null,
+              "associationType": 1,
+              "approvedBy": null,
+              "updatedDate": null,
+              "userId": "ed5e8f24-80d7-42af-af4f-cd2fc401c914",
+              "approvaldate": null,
+              "isDeleted": false,
+              "hashTagId": "01269878797503692810",
+              "isRejected": null,
+              "id": "0129839086851686403",
+              "position": null,
+              "isApproved": null,
+              "orgjoindate": "2020-03-23 07:42:21:869+0000",
+              "orgLeftDate": null
+            }
+          ],
+          "managedBy": null,
+          "provider": null,
+          "flagsValue": 6,
+          "countryCode": null,
+          "maskedEmail": "tn************@yopmail.com",
+          "id": "ed5e8f24-80d7-42af-af4f-cd2fc401c914",
+          "recoveryEmail": "",
+          "email": "tn************@yopmail.com",
+          "identifier": "ed5e8f24-80d7-42af-af4f-cd2fc401c914",
+          "updatedBy": null,
+          "tcUpdatedDate": null,
+          "recoveryPhone": "",
+          "userName": "tnbook_creatorb1541",
+          "rootOrgId": "01269878797503692810",
+          "userId": "ed5e8f24-80d7-42af-af4f-cd2fc401c914",
+          "prevUsedEmail": "",
+          "firstName": "tnBook_creatorb",
+          "profileLocation": [
+            {
+              "id": "91d9baae-14f1-477a-955c-f91bd9037f0b",
+              "type": "state"
+            }
+          ],
+          "tncAcceptedOn": null,
+          "createdDate": "2020-03-23 07:42:21:830+0000",
+          "framework": {},
+          "allTncAccepted": {},
+          "phone": "",
+          "createdBy": "4cd4c690-eab6-4938-855a-447c7b1b8ea9",
+          "profileUserType": {
+            "type": "TEACHER"
+          },
+          "dob": null,
+          "tncAcceptedVersion": null,
+          "status": 1
+        },
+        {
+          "lastName": null,
+          "maskedPhone": null,
+          "tcStatus": null,
+          "rootOrgName": "Tamil Nadu",
+          "roles": [
+            {
+              "role": "CONTENT_CREATOR",
+              "createdDate": null,
+              "updatedBy": null,
+              "createdBy": "b4266f62-1fa7-450a-9aea-79ebf5ec6e2c",
+              "scope": [
+                {
+                  "organisationId": "01269878797503692810"
+                }
+              ],
+              "updatedDate": null,
+              "userId": "b4266f62-1fa7-450a-9aea-79ebf5ec6e2c"
+            }
+          ],
+          "channel": "tn",
+          "profileUserTypes": [
+            {
+              "type": "TEACHER"
+            }
+          ],
+          "updatedDate": null,
+          "prevUsedPhone": "",
+          "stateValidated": true,
+          "isDeleted": false,
+          "organisations": [
+            {
+              "organisationId": "01269878797503692810",
+              "updatedBy": null,
+              "orgName": "Tamil Nadu",
+              "addedByName": null,
+              "addedBy": null,
+              "associationType": 1,
+              "approvedBy": null,
+              "updatedDate": null,
+              "userId": "b4266f62-1fa7-450a-9aea-79ebf5ec6e2c",
+              "approvaldate": null,
+              "isDeleted": false,
+              "hashTagId": "01269878797503692810",
+              "isRejected": null,
+              "id": "01298603311380889616",
+              "position": null,
+              "isApproved": null,
+              "orgjoindate": "2020-03-26 07:44:56:730+0000",
+              "orgLeftDate": null
+            }
+          ],
+          "managedBy": null,
+          "provider": null,
+          "flagsValue": 6,
+          "countryCode": null,
+          "maskedEmail": "tn****************@yopmail.com",
+          "id": "b4266f62-1fa7-450a-9aea-79ebf5ec6e2c",
+          "recoveryEmail": "",
+          "email": "tn****************@yopmail.com",
+          "identifier": "b4266f62-1fa7-450a-9aea-79ebf5ec6e2c",
+          "updatedBy": null,
+          "tcUpdatedDate": null,
+          "recoveryPhone": "",
+          "userName": "tn11content_creator8304",
+          "rootOrgId": "01269878797503692810",
+          "userId": "b4266f62-1fa7-450a-9aea-79ebf5ec6e2c",
+          "prevUsedEmail": "",
+          "firstName": "tn11Content_creator",
+          "profileLocation": [
+            {
+              "id": "91d9baae-14f1-477a-955c-f91bd9037f0b",
+              "type": "state"
+            }
+          ],
+          "tncAcceptedOn": null,
+          "createdDate": "2020-03-26 07:44:56:670+0000",
+          "framework": {},
+          "allTncAccepted": {},
+          "phone": "",
+          "createdBy": "cdf103ab-d179-46fa-b295-d3849e223cee",
+          "profileUserType": {
+            "type": "TEACHER"
+          },
+          "dob": null,
+          "tncAcceptedVersion": null,
+          "status": 1
+        },
+        {
+          "maskedPhone": null,
+          "tcStatus": null,
+          "rootOrgName": "Tamil nadu",
+          "channel": "tn",
+          "profileUserTypes": [
+            {
+              "type": "teacher"
+            }
+          ],
+          "updatedDate": "2023-03-29 10:23:38:237+0000",
+          "managedBy": null,
+          "flagsValue": 4,
+          "id": "5f80d8c0-f23f-4ac1-89a2-c6a6b61011e7",
+          "recoveryEmail": "",
+          "identifier": "5f80d8c0-f23f-4ac1-89a2-c6a6b61011e7",
+          "updatedBy": "5f80d8c0-f23f-4ac1-89a2-c6a6b61011e7",
+          "rootOrgId": "01269878797503692810",
+          "prevUsedEmail": "",
+          "firstName": "bookcreatortn",
+          "profileLocation": [
+            {
+              "id": "030f893b-f2e6-4d73-af3f-02f9174b540a",
+              "type": "district"
+            },
+            {
+              "id": "91d9baae-14f1-477a-955c-f91bd9037f0b",
+              "type": "state"
+            }
+          ],
+          "tncAcceptedOn": "2021-11-10T05:55:14.241Z",
+          "allTncAccepted": {},
+          "profileDetails": null,
+          "phone": "",
+          "dob": "1988-12-31",
+          "status": 1,
+          "lastName": null,
+          "roles": [
+            {
+              "role": "BOOK_CREATOR",
+              "createdDate": "2021-06-28 06:18:23:291+0000",
+              "updatedBy": "1405f334-ee59-42fc-befb-51986221881e",
+              "createdBy": "5f80d8c0-f23f-4ac1-89a2-c6a6b61011e7",
+              "scope": [
+                {
+                  "organisationId": "01269878797503692810"
+                }
+              ],
+              "updatedDate": "2021-06-28 06:19:14:544+0000"
+            },
+            {
+              "role": "CONTENT_CREATOR",
+              "createdDate": "2021-06-28 06:18:23:291+0000",
+              "updatedBy": "1405f334-ee59-42fc-befb-51986221881e",
+              "createdBy": "5f80d8c0-f23f-4ac1-89a2-c6a6b61011e7",
+              "scope": [
+                {
+                  "organisationId": "01269878797503692810"
+                }
+              ],
+              "updatedDate": "2021-06-28 06:19:14:544+0000"
+            }
+          ],
+          "prevUsedPhone": "",
+          "stateValidated": true,
+          "isDeleted": false,
+          "organisations": [
+            {
+              "organisationId": "01269878797503692810",
+              "updatedBy": "1405f334-ee59-42fc-befb-51986221881e",
+              "orgName": "Tamil nadu",
+              "addedByName": null,
+              "addedBy": null,
+              "associationType": 1,
+              "approvedBy": null,
+              "updatedDate": "2020-10-13 11:46:32:917+0000",
+              "userId": "5f80d8c0-f23f-4ac1-89a2-c6a6b61011e7",
+              "approvaldate": null,
+              "isDeleted": false,
+              "hashTagId": "01269878797503692810",
+              "isRejected": false,
+              "id": "01281260752251289613",
+              "position": null,
+              "isApproved": false,
+              "orgjoindate": "2019-07-25 07:10:15:073+0000",
+              "orgLeftDate": null
+            }
+          ],
+          "provider": null,
+          "countryCode": null,
+          "maskedEmail": "bo***********@yopmail.com",
+          "email": "bo***********@yopmail.com",
+          "tcUpdatedDate": null,
+          "recoveryPhone": "",
+          "userName": "book_creator_tn3575",
+          "userId": "5f80d8c0-f23f-4ac1-89a2-c6a6b61011e7",
+          "createdDate": "2019-07-25 07:10:15:027+0000",
+          "framework": {
+            "gradeLevel": [
+              "Class 1"
+            ],
+            "subject": [
+              "English"
+            ],
+            "id": [
+              "tn_k-12_5"
+            ],
+            "medium": [
+              "English"
+            ],
+            "board": [
+              "State (Tamil Nadu)"
+            ]
+          },
+          "createdBy": "1405f334-ee59-42fc-befb-51986221881e",
+          "profileUserType": {
+            "subType": null,
+            "type": "teacher"
+          },
+          "tncAcceptedVersion": "v12"
+        },
+        {
+          "lastName": null,
+          "maskedPhone": null,
+          "tcStatus": null,
+          "rootOrgName": "Tamil Nadu",
+          "roles": [
+            {
+              "role": "CONTENT_CREATOR",
+              "createdDate": null,
+              "updatedBy": "fbe926ac-a395-40e4-a65b-9b4f711d7642",
+              "createdBy": "cdf103ab-d179-46fa-b295-d3849e223cee",
+              "scope": [
+                {
+                  "organisationId": "01269878797503692810"
+                }
+              ],
+              "updatedDate": "2023-06-27 07:45:06:514+0000",
+              "userId": "cdf103ab-d179-46fa-b295-d3849e223cee"
+            },
+            {
+              "role": "COURSE_MENTOR",
+              "createdDate": "2021-12-01 16:00:18:411+0000",
+              "updatedBy": "fbe926ac-a395-40e4-a65b-9b4f711d7642",
+              "createdBy": "fbe926ac-a395-40e4-a65b-9b4f711d7642",
+              "scope": [
+                {
+                  "organisationId": "01269878797503692810"
+                }
+              ],
+              "updatedDate": "2023-06-27 07:45:06:515+0000",
+              "userId": "cdf103ab-d179-46fa-b295-d3849e223cee"
+            },
+            {
+              "role": "REPORT_VIEWER",
+              "createdDate": "2023-06-27 07:45:06:515+0000",
+              "updatedBy": null,
+              "createdBy": "fbe926ac-a395-40e4-a65b-9b4f711d7642",
+              "scope": [
+                {
+                  "organisationId": "01269878797503692810"
+                }
+              ],
+              "updatedDate": null,
+              "userId": "cdf103ab-d179-46fa-b295-d3849e223cee"
+            }
+          ],
+          "channel": "tn",
+          "profileUserTypes": [
+            {
+              "type": "TEACHER"
+            }
+          ],
+          "updatedDate": "2020-10-06 11:23:28:951+0000",
+          "prevUsedPhone": "",
+          "stateValidated": true,
+          "isDeleted": false,
+          "organisations": [
+            {
+              "organisationId": "01269878797503692810",
+              "updatedBy": "1405f334-ee59-42fc-befb-51986221881e",
+              "orgName": "Tamil Nadu",
+              "addedByName": null,
+              "addedBy": null,
+              "associationType": 1,
+              "approvedBy": null,
+              "updatedDate": "2020-10-06 11:23:28:964+0000",
+              "userId": "cdf103ab-d179-46fa-b295-d3849e223cee",
+              "approvaldate": null,
+              "isDeleted": false,
+              "hashTagId": "01269878797503692810",
+              "isRejected": false,
+              "id": "0129839083858411521",
+              "position": null,
+              "isApproved": false,
+              "orgjoindate": "2020-03-23 07:42:21:717+0000",
+              "orgLeftDate": null
+            }
+          ],
+          "managedBy": null,
+          "provider": null,
+          "flagsValue": 6,
+          "countryCode": null,
+          "maskedEmail": "tn***************@yopmail.com",
+          "id": "cdf103ab-d179-46fa-b295-d3849e223cee",
+          "recoveryEmail": "",
+          "email": "tn***************@yopmail.com",
+          "identifier": "cdf103ab-d179-46fa-b295-d3849e223cee",
+          "updatedBy": "1405f334-ee59-42fc-befb-51986221881e",
+          "tcUpdatedDate": null,
+          "recoveryPhone": "",
+          "userName": "tncontent_creator1355",
+          "rootOrgId": "01269878797503692810",
+          "userId": "cdf103ab-d179-46fa-b295-d3849e223cee",
+          "prevUsedEmail": "",
+          "firstName": "tnContent_creator",
+          "profileLocation": [
+            {
+              "id": "91d9baae-14f1-477a-955c-f91bd9037f0b",
+              "type": "state"
+            }
+          ],
+          "tncAcceptedOn": null,
+          "createdDate": "2020-03-23 07:42:21:657+0000",
+          "framework": {},
+          "allTncAccepted": {},
+          "phone": "",
+          "createdBy": "4cd4c690-eab6-4938-855a-447c7b1b8ea9",
+          "profileUserType": {
+            "type": "TEACHER"
+          },
+          "dob": null,
+          "tncAcceptedVersion": null,
+          "status": 1
+        },
+        {
+          "maskedPhone": null,
+          "tcStatus": null,
+          "rootOrgName": "Tamil nadu",
+          "channel": "tn",
+          "profileUserTypes": [
+            {
+              "type": "teacher"
+            }
+          ],
+          "updatedDate": "2023-06-08 04:57:01:873+0000",
+          "managedBy": null,
+          "flagsValue": 4,
+          "id": "a98a2d9d-28eb-4833-a9d3-33ddc15a0697",
+          "recoveryEmail": "",
+          "identifier": "a98a2d9d-28eb-4833-a9d3-33ddc15a0697",
+          "updatedBy": "a98a2d9d-28eb-4833-a9d3-33ddc15a0697",
+          "rootOrgId": "01269878797503692810",
+          "prevUsedEmail": "",
+          "firstName": "New Book creator",
+          "profileLocation": [
+            {
+              "id": "91d9baae-14f1-477a-955c-f91bd9037f0b",
+              "type": "state"
+            },
+            {
+              "id": "1182479d-66f3-41a4-bf6b-f1f2504d47c1",
+              "type": "district"
+            },
+            {
+              "id": "ac5040e1-28a9-44ce-9c33-99d831429c0d",
+              "type": "block"
+            }
+          ],
+          "tncAcceptedOn": "2023-06-08T04:55:57.652Z",
+          "allTncAccepted": {},
+          "profileDetails": null,
+          "phone": "",
+          "dob": null,
+          "status": 1,
+          "lastName": null,
+          "roles": [
+            {
+              "role": "BOOK_CREATOR",
+              "createdDate": "2023-06-08 04:58:44:983+0000",
+              "updatedBy": null,
+              "createdBy": "fbe926ac-a395-40e4-a65b-9b4f711d7642",
+              "scope": [
+                {
+                  "organisationId": "01269878797503692810"
+                }
+              ],
+              "updatedDate": null,
+              "userId": "a98a2d9d-28eb-4833-a9d3-33ddc15a0697"
+            }
+          ],
+          "prevUsedPhone": "",
+          "stateValidated": true,
+          "isDeleted": false,
+          "organisations": [
+            {
+              "organisationId": "01269878797503692810",
+              "updatedBy": null,
+              "orgName": "Tamil nadu",
+              "addedByName": null,
+              "addedBy": null,
+              "associationType": 1,
+              "approvedBy": null,
+              "updatedDate": null,
+              "userId": "a98a2d9d-28eb-4833-a9d3-33ddc15a0697",
+              "approvaldate": null,
+              "isDeleted": false,
+              "hashTagId": "01269878797503692810",
+              "isRejected": null,
+              "id": "013813356480192512102",
+              "position": null,
+              "isApproved": null,
+              "orgjoindate": "2023-06-08 04:55:53:337+0000",
+              "orgLeftDate": null
+            },
+            {
+              "organisationId": "01310491856710860819772",
+              "updatedBy": null,
+              "orgName": "PUPS VELUGANANDAL",
+              "addedByName": null,
+              "addedBy": null,
+              "associationType": 1,
+              "approvedBy": null,
+              "updatedDate": null,
+              "userId": "a98a2d9d-28eb-4833-a9d3-33ddc15a0697",
+              "approvaldate": null,
+              "isDeleted": false,
+              "hashTagId": "01310491856710860819772",
+              "isRejected": null,
+              "id": "013813358849613824101",
+              "position": null,
+              "isApproved": null,
+              "orgjoindate": "2023-06-08 04:55:53:333+0000",
+              "orgLeftDate": null
+            }
+          ],
+          "provider": null,
+          "countryCode": null,
+          "maskedEmail": "re****@yopmail.com",
+          "email": "re****@yopmail.com",
+          "tcUpdatedDate": null,
+          "recoveryPhone": "",
+          "userName": "newbookcreator_oiat",
+          "userId": "a98a2d9d-28eb-4833-a9d3-33ddc15a0697",
+          "createdDate": "2023-06-08 04:55:53:306+0000",
+          "framework": {
+            "gradeLevel": [
+              "Class 1"
+            ],
+            "subject": [],
+            "id": [
+              "tn_k-12_5"
+            ],
+            "medium": [
+              "English",
+              "Tamil"
+            ],
+            "board": [
+              "State (Tamil Nadu)"
+            ]
+          },
+          "createdBy": null,
+          "profileUserType": {
+            "subType": null,
+            "type": "teacher"
+          },
+          "tncAcceptedVersion": "v13"
+        }
+      ]
+    }
+  }
+}

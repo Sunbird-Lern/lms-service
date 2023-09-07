@@ -1,0 +1,10 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPattern": "/user/v1/org/3995"
+  },
+  "response": {
+    "status": 200,
+    "body": "{\"id\":\"api.org.read\",\"ver\":\"v1\",\"ts\":\"2023-09-05 14:08:14:656+0000\",\"params\":{\"resmsgid\":\"f41aeda124325c7e16d4194c1286eeef\",\"msgid\":\"f41aeda124325c7e16d4194c1286eeef\",\"err\":null,\"status\":\"SUCCESS\",\"errmsg\":null},\"responseCode\":\"OK\",\"result\":{\"response\":{\"dateTime\":null,\"preferredLanguage\":null,\"keys\":{\"exhaustEncryptionKey\":[\"https://sunbirdstagingpublic.blob.core.windows.net/sunbird-content-staging/organisation/01269878797503692810/namratha_public.pem\"]},\"organisationSubType\":null,\"channel\":\"tn\",\"approvedBy\":null,\"description\":\"Tamil Nadu\",\"updatedDate\":\"2022-09-12 10:08:13:108+0000\",\"organisationType\":2,\"addressId\":null,\"orgType\":null,\"isTenant\":true,\"provider\":null,\"locationId\":null,\"orgCode\":null,\"theme\":null,\"id\":\"01269878797503692810\",\"communityId\":null,\"isApproved\":null,\"email\":null,\"slug\":\"tn\",\"isSSOEnabled\":null,\"thumbnail\":null,\"orgName\":\"Tamil nadu\",\"updatedBy\":\"fbe926ac-a395-40e4-a65b-9b4f711d7642\",\"locationIds\":[\"91d9baae-14f1-477a-955c-f91bd9037f0b\"],\"externalId\":\"jn004\",\"orgLocation\":[{\"id\":\"bc75cc99-9205-463e-a722-5326857838f8\",\"type\":\"state\"}],\"isRootOrg\":true,\"rootOrgId\":\"01269878797503692810\",\"imgUrl\":null,\"approvedDate\":null,\"isSchool\":true,\"homeUrl\":null,\"orgTypeId\":null,\"isDefault\":null,\"createdDate\":\"2019-02-14 11:41:31:097+0000\",\"createdBy\":null,\"parentOrgId\":null,\"hashTagId\":\"01269878797503692810\",\"noOfMembers\":null,\"status\":1}}}"
+  }
+}

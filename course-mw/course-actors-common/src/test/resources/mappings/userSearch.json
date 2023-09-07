@@ -1,0 +1,10 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPattern": "/v1/user/search/5522"
+  },
+  "response": {
+    "status": 200,
+    "body": "{\"id\":\"api.user.search\",\"ver\":\"v3\",\"ts\":\"2023-09-05 14:18:20:870+0000\",\"params\":{\"resmsgid\":\"68f96c13-815f-4a6c-82e5-13f6dc7558de\",\"msgid\":\"68f96c13-815f-4a6c-82e5-13f6dc7558de\",\"err\":null,\"status\":\"SUCCESS\",\"errmsg\":null},\"responseCode\":\"OK\",\"result\":{\"response\":{\"count\":8,\"content\":[{\"lastName\":\"test\",\"maskedPhone\":null,\"tcStatus\":null,\"rootOrgName\":\"Tamil Nadu\",\"roles\":[{\"role\":\"BOOK_CREATOR\",\"createdDate\":\"2022-12-19 11:31:18:593+0000\",\"updatedBy\":\"fbe926ac-a395-40e4-a65b-9b4f711d7642\",\"createdBy\":\"fbe926ac-a395-40e4-a65b-9b4f711d7642\",\"scope\":[{\"organisationId\":\"01269878797503692810\"}],\"updatedDate\":\"2022-12-19 11:33:34:588+0000\",\"userId\":\"0619fa50-f76e-4595-89f7-e74539f22cae\"}]}]}}}"
+  }
+}

@@ -27,18 +27,16 @@ public class WireMockTest {
 
     @Test
     public void testWireMockServer() throws IOException {
-        String wireMockUrl = "http://localhost:8080/";
-        String endPoint = "another-endpoint";
-        String method = "GET";
+        String wireMockUrl = "http://localhost:8080/user/v1/read/13317";
 
         // Make a GET request to the WireMock server
-        URL url = new URL(wireMockUrl + endPoint);
+        URL url = new URL(wireMockUrl);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod(method);
+        connection.setRequestMethod("GET");
 
         // Get the response code
         int responseCode = connection.getResponseCode();
-        System.out.println("\n\nResponse Code: " + responseCode);
+        System.out.println("\n\nResponse Code:\n" + responseCode + "\n\n");
 
         // Read and print the response body
         BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
@@ -48,7 +46,7 @@ public class WireMockTest {
             responseBody.append(line);
         }
         reader.close();
-        System.out.println("\n\nResponse Body: " + responseBody.toString());
+        System.out.println("\n\nResponse Body:\n" + responseBody.toString() + "\n\n");
 
         // Close the connection
         connection.disconnect();

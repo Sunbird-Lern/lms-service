@@ -1,0 +1,10 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPattern": "/user/v1/read/13317"
+  },
+  "response": {
+    "status": 201,
+    "body": "{\"id\":\"api.user.read.4cd4c690-eab6-4938-855a-447c7b1b8ea9\",\"ver\":\"v5\",\"ts\":\"2023-09-05 14:07:47:872+0000\",\"params\":{\"resmsgid\":\"1281c745-830c-421c-8245-dd5b2b795842\",\"msgid\":\"1281c745-830c-421c-8245-dd5b2b795842\",\"err\":null,\"status\":\"SUCCESS\",\"errmsg\":null},\"responseCode\":\"OK\",\"result\":{\"response\":{\"maskedPhone\":null,\"tcStatus\":null,\"channel\":\"tn\",\"profileUserTypes\":[{\"type\":\"administrator\"}]}}}"
+  }
+}

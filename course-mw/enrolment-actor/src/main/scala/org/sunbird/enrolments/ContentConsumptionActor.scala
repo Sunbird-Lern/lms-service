@@ -65,6 +65,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                 case "true" => populateAssessmentScore(request.get(JsonKey.ASSESS_REQ_BDY).asInstanceOf[String])
                 case _ => request.getRequest.getOrDefault(JsonKey.ASSESSMENT_EVENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
             }
+            logger.info(requestContext, "assessmentEvents events : " + assessmentEvents)
             val contentList = request.getRequest.getOrDefault(JsonKey.CONTENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
             val finalContentList = if(CollectionUtils.isNotEmpty(assessmentEvents)) {
               logger.info(requestContext, "Assessment Consumption events exist: " + assessmentEvents.size())
@@ -463,8 +464,10 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     val inquiryBaseURL = ProjectUtil.getConfigValue(JsonKey.INQUIRY_BASE_URL)
     val updRes = HttpUtil.doPostRequest(inquiryBaseURL + PropertiesCache.getInstance.getProperty(JsonKey.INQUIRY_ASSESS_SCORE_URL), body, Map[String, String](SunbirdKey.CONTENT_TYPE_HEADER -> SunbirdKey.APPLICATION_JSON))
     if (200 != updRes.getStatusCode) ProjectCommonException.throwClientErrorException(ResponseCode.unAuthorized, ProjectUtil.formatMessage(ResponseCode.unAuthorized.getErrorMessage, ""));
-    JsonUtil.deserialize(updRes.getBody, classOf[Response])
+    val assessmentScoreList = JsonUtil.deserialize(updRes.getBody, classOf[Response])
       .getResult.getOrDefault(JsonKey.QUESTIONS, new util.HashMap()).asInstanceOf[java.util.Map[String, AnyRef]]
       .getOrDefault(JsonKey.ASSESSMENTS, new util.ArrayList[util.HashMap[String, AnyRef]]()).asInstanceOf[util.List[java.util.Map[String, AnyRef]]]
+    logger.info(null,"Assessment Score List: " + assessmentScoreList)
+    assessmentScoreList
   }
 }

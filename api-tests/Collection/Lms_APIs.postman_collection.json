@@ -1,0 +1,2211 @@
+{
+	"info": {
+		"_postman_id": "62875837-0ef2-4b6e-b6c2-9e5f3cc6ded4",
+		"name": "Lms_APIs",
+		"description": "The LMS APIs is a collection of API's for creation and management of batches,enrollment to the courses,content state related APIs,Aggregation Apis",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "4875988",
+		"_collection_link": "https://dark-star-147860.postman.co/workspace/LernBBAPIs~32e17cc4-6806-407e-b8ef-485ad4d0b712/collection/4875988-62875837-0ef2-4b6e-b6c2-9e5f3cc6ded4?action=share&source=collection_link&creator=4875988"
+	},
+	"item": [
+		{
+			"name": "HealthCheck",
+			"item": [
+				{
+					"name": "HealthCheck",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{host}}/health"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "AuthToken",
+			"item": [
+				{
+					"name": "UserToken",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let jsonResponse = pm.response.json();",
+									"",
+									"// Set global variable",
+									"// pm.variables.set('refresh_token', jsonResponse.refresh_token);",
+									"// pm.globals.set(\"refresh_token\", jsonResponse.result.identifier);",
+									"pm.collectionVariables.set(\"refresh_token\", jsonResponse.refresh_token);",
+									"// pm.collectionVariables.set(\"variable_key\", \"variable_value\");",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							},
+							{
+								"key": "Cookie",
+								"value": "connect.sid=s%3Ad3chYLP8OfuB2bWgfEFohiWpDxM7GFol.gOPmzH3d2nP9enZ5qSHlVx1e%2BozTleCjXtfz7LUycCk"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "client_id",
+									"value": "{{auth_client_id}}",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "{{auth_client_secret}}",
+									"type": "text"
+								},
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": "{{host}}/auth/realms/sunbird/protocol/openid-connect/token"
+					},
+					"response": []
+				},
+				{
+					"name": "RefreshToken",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Extract the locationId from the response and set it to the environment variable",
+									"pm.test(\"Set access_token in environment variable\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.environment.set(\"keycloak_access_token\", responseJson.result.access_token);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{kong_api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							},
+							{
+								"key": "Cookie",
+								"value": "connect.sid=s%3Ad3chYLP8OfuB2bWgfEFohiWpDxM7GFol.gOPmzH3d2nP9enZ5qSHlVx1e%2BozTleCjXtfz7LUycCk"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "refresh_token",
+									"value": "{{refresh_token}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": "{{host}}/auth/v1/refresh/token"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "BatchAPIs",
+			"item": [
+				{
+					"name": "BatchCreation",
+					"item": [
+						{
+							"name": "CreateBatchV1",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Extract the batchId from the response and set it to the environment variable",
+											"pm.test(\"Set batchId in environment variable\", function () {",
+											"    const responseJson = pm.response.json();",
+											"    console.log( responseJson.result.batchId)",
+											"    pm.environment.set(\"batch_id\", responseJson.result.batchId);",
+											"});",
+											"",
+											"// Parse the response JSON body",
+											"let jsonResponse = pm.response.json();",
+											"",
+											"// Verification",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Content-Type header is present\", () => {",
+											"    pm.response.to.have.header(\"Content-Type\");",
+											"});",
+											"",
+											"pm.test(\"Content-Type header is application/json\", () => {",
+											"    pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/json');",
+											"});",
+											"",
+											"// Validation",
+											"pm.test(\"Validate specific field values\", function () {",
+											"    pm.expect(jsonResponse.id).to.eql(\"api.course.batch.create\");",
+											"    pm.expect(jsonResponse.ver).to.eql(\"v1\");",
+											"    pm.expect(jsonResponse.params.status).to.eql(\"success\");",
+											"    pm.expect(jsonResponse.responseCode).to.eql(\"OK\");",
+											"",
+											"    // You can add more specific validations here if needed",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{kong_api_key}}",
+										"type": "text"
+									},
+									{
+										"key": "X-Authenticated-User-token",
+										"value": "{{keycloak_access_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"request\": {\n    \"courseId\": \"{{course_id}}\",\n    \"name\": \"{{batch_name}}\",\n    \"description\": \"{{batch_description}}\",\n    \"enrollmentType\": \"open\",\n    \"startDate\": \"{{batch_start_date}}\",\n    \"endDate\": \"{{batch_end_date}}\"\n  }\n}"
+								},
+								"url": "{{host}}/api/course/v1/batch/create"
+							},
+							"response": [
+								{
+									"name": "CreateBatchV1",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											},
+											{
+												"key": "Authorization",
+												"value": "{{kong_api_key}}",
+												"type": "text"
+											},
+											{
+												"key": "X-Authenticated-User-token",
+												"value": "{{keycloak_access_token}}",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"request\": {\n    \"courseId\": \"{{course_id}}\",\n    \"name\": \"{{batch_name}}\",\n    \"description\": \"{{batch_description}}\",\n    \"enrollmentType\": \"open\",\n    \"startDate\": \"{{batch_start_date}}\",\n    \"endDate\": \"{{batch_end_date}}\"\n  }\n}"
+										},
+										"url": "{{host}}/api/course/v1/batch/create"
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Date",
+											"value": "Fri, 08 Sep 2023 10:21:33 GMT"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Vary",
+											"value": "Accept-Encoding"
+										},
+										{
+											"key": "X-RateLimit-Limit-hour",
+											"value": "30000"
+										},
+										{
+											"key": "X-RateLimit-Remaining-hour",
+											"value": "29998"
+										},
+										{
+											"key": "referrer-policy",
+											"value": "origin-when-cross-origin, strict-origin-when-cross-origin"
+										},
+										{
+											"key": "x-frame-options",
+											"value": "DENY"
+										},
+										{
+											"key": "x-xss-protection",
+											"value": "1; mode=block"
+										},
+										{
+											"key": "x-response-length",
+											"value": "54"
+										},
+										{
+											"key": "x-content-type-options",
+											"value": "nosniff"
+										},
+										{
+											"key": "access-control-allow-origin",
+											"value": "*"
+										},
+										{
+											"key": "x-permitted-cross-domain-policies",
+											"value": "master-only"
+										},
+										{
+											"key": "x-envoy-upstream-service-time",
+											"value": "55"
+										},
+										{
+											"key": "X-Kong-Upstream-Latency",
+											"value": "58"
+										},
+										{
+											"key": "X-Kong-Proxy-Latency",
+											"value": "58"
+										},
+										{
+											"key": "Via",
+											"value": "kong/0.14.1"
+										},
+										{
+											"key": "Content-Encoding",
+											"value": "gzip"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"id\": \"api.course.batch.create\",\n    \"ver\": \"v1\",\n    \"ts\": \"2023-09-08 10:21:33:761+0000\",\n    \"params\": {\n        \"resmsgid\": null,\n        \"msgid\": \"ebf734ee-880e-4345-adf2-5752e1717b02\",\n        \"err\": null,\n        \"status\": \"success\",\n        \"errmsg\": null\n    },\n    \"responseCode\": \"OK\",\n    \"result\": {\n        \"response\": \"SUCCESS\",\n        \"batchId\": \"0138786333558784001\"\n    }\n}"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "BatchUpdation",
+					"item": [
+						{
+							"name": "UpdateBatchV1",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Parse the response JSON body",
+											"let jsonResponse = pm.response.json();",
+											"",
+											"// Verification",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Content-Type header is present\", () => {",
+											"    pm.response.to.have.header(\"Content-Type\");",
+											"});",
+											"",
+											"pm.test(\"Content-Type header is application/json\", () => {",
+											"    pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/json');",
+											"});",
+											"",
+											"// Validation",
+											"pm.test(\"Validate specific field values\", function () {",
+											"    pm.expect(jsonResponse.id).to.eql(\"api.course.batch.update\");",
+											"    pm.expect(jsonResponse.ver).to.eql(\"v1\");",
+											"    pm.expect(jsonResponse.params.status).to.eql(\"success\");",
+											"    pm.expect(jsonResponse.responseCode).to.eql(\"OK\");",
+											"",
+											"    // You can add more specific validations here if needed",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text",
+										"description": "**Accept** relates to content-Type such as **\"MIME\"**, Its used in response body for executing different multi purpose operations.Therefore, its important that the server is correctly set up, so that the MIME types transmitted are recognised and correct to determine what action to do when a resource is fetched."
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text",
+										"description": "The Content Type entity is the media type of the resource.Possible media types can be:- \n\n  - Application/json\n\n  - Multipart/form-data\n\n  - Application/x-www-form-urlencoded"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{kong_api_key}}",
+										"type": "text",
+										"description": "Time Stamp at which **Update a batch** request was sent."
+									},
+									{
+										"key": "X-Authenticated-User-token",
+										"value": "{{keycloak_access_token}}",
+										"type": "text",
+										"description": "This Id Uniquely identifies a request if the same API is executed multiple times."
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"request\": {\n    \"enrollmentType\": \"open\",\n    \"startDate\": \"2023-09-08\",\n    \"enrollmentEndDate\": \"{{batch_end_date}}\",\n    \"status\": 1,\n    \"courseId\": \"{{course_id}}\",\n    \"id\": \"{{batch_id}}\"\n  }\n}"
+								},
+								"url": "{{host}}/api/course/v1/batch/update"
+							},
+							"response": [
+								{
+									"name": "UpdateBatchV1",
+									"originalRequest": {
+										"method": "PATCH",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text",
+												"description": "**Accept** relates to content-Type such as **\"MIME\"**, Its used in response body for executing different multi purpose operations.Therefore, its important that the server is correctly set up, so that the MIME types transmitted are recognised and correct to determine what action to do when a resource is fetched."
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text",
+												"description": "The Content Type entity is the media type of the resource.Possible media types can be:- \n\n  - Application/json\n\n  - Multipart/form-data\n\n  - Application/x-www-form-urlencoded"
+											},
+											{
+												"key": "Authorization",
+												"value": "{{kong_api_key}}",
+												"type": "text",
+												"description": "Time Stamp at which **Update a batch** request was sent."
+											},
+											{
+												"key": "X-Authenticated-User-token",
+												"value": "{{keycloak_access_token}}",
+												"type": "text",
+												"description": "This Id Uniquely identifies a request if the same API is executed multiple times."
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"request\": {\n    \"enrollmentType\": \"open\",\n    \"startDate\": \"2023-09-08\",\n    \"enrollmentEndDate\": \"{{batch_end_date}}\",\n    \"status\": 1,\n    \"courseId\": \"{{course_id}}\",\n    \"id\": \"{{batch_id}}\"\n  }\n}"
+										},
+										"url": "{{host}}/api/course/v1/batch/update"
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Date",
+											"value": "Fri, 08 Sep 2023 10:23:03 GMT"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										},
+										{
+											"key": "Content-Length",
+											"value": "229"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "X-RateLimit-Limit-hour",
+											"value": "30000"
+										},
+										{
+											"key": "X-RateLimit-Remaining-hour",
+											"value": "29997"
+										},
+										{
+											"key": "referrer-policy",
+											"value": "origin-when-cross-origin, strict-origin-when-cross-origin"
+										},
+										{
+											"key": "x-frame-options",
+											"value": "DENY"
+										},
+										{
+											"key": "x-xss-protection",
+											"value": "1; mode=block"
+										},
+										{
+											"key": "x-response-length",
+											"value": "2"
+										},
+										{
+											"key": "x-content-type-options",
+											"value": "nosniff"
+										},
+										{
+											"key": "access-control-allow-origin",
+											"value": "*"
+										},
+										{
+											"key": "x-permitted-cross-domain-policies",
+											"value": "master-only"
+										},
+										{
+											"key": "x-envoy-upstream-service-time",
+											"value": "46"
+										},
+										{
+											"key": "X-Kong-Upstream-Latency",
+											"value": "49"
+										},
+										{
+											"key": "X-Kong-Proxy-Latency",
+											"value": "10"
+										},
+										{
+											"key": "Via",
+											"value": "kong/0.14.1"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"id\": \"api.course.batch.update\",\n    \"ver\": \"v1\",\n    \"ts\": \"2023-09-08 10:23:03:404+0000\",\n    \"params\": {\n        \"resmsgid\": null,\n        \"msgid\": \"a31a7bbe-c99c-43aa-bc22-3b656c2b6fa2\",\n        \"err\": null,\n        \"status\": \"success\",\n        \"errmsg\": null\n    },\n    \"responseCode\": \"OK\",\n    \"result\": {}\n}"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "BatchRead",
+					"item": [
+						{
+							"name": "ReadBatchV1",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Parse the response JSON body",
+											"let jsonResponse = pm.response.json();",
+											"",
+											"// Verification",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Content-Type header is present\", () => {",
+											"    pm.response.to.have.header(\"Content-Type\");",
+											"});",
+											"",
+											"pm.test(\"Content-Type header is application/json\", () => {",
+											"    pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/json');",
+											"});",
+											"",
+											"// Validation",
+											"pm.test(\"Validate specific field values\", function () {",
+											"    pm.expect(jsonResponse.id).to.eql(\"api.course.batch.read\");",
+											"    pm.expect(jsonResponse.ver).to.eql(\"v1\");",
+											"    pm.expect(jsonResponse.params.status).to.eql(\"success\");",
+											"    pm.expect(jsonResponse.responseCode).to.eql(\"OK\");",
+											"",
+											"    // You can add more specific validations here if needed",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text",
+										"description": "The Content Type entity is the media type of the resource.Possible media types can be:- \n\n  - Application/json\n\n  - Multipart/form-data\n\n  - Application/x-www-form-urlencoded"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text",
+										"description": "Time Stamp at which **Fetch a batch** request was sent."
+									},
+									{
+										"key": "Authorization",
+										"value": "{{kong_api_key}}",
+										"type": "text",
+										"description": "This Id Uniquely identifies a request if the same API is executed multiple times."
+									},
+									{
+										"key": "X-Authenticated-User-token",
+										"value": "{{keycloak_access_token}}",
+										"type": "text",
+										"description": "This Id Uniquely identifies the type of device (Mobile)(desktop) used to access Sunbird."
+									}
+								],
+								"url": "{{host}}/api/course/v1/batch/read/{{batch_id}}"
+							},
+							"response": [
+								{
+									"name": "ReadBatchV1",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text",
+												"description": "The Content Type entity is the media type of the resource.Possible media types can be:- \n\n  - Application/json\n\n  - Multipart/form-data\n\n  - Application/x-www-form-urlencoded"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text",
+												"description": "Time Stamp at which **Fetch a batch** request was sent."
+											},
+											{
+												"key": "Authorization",
+												"value": "{{kong_api_key}}",
+												"type": "text",
+												"description": "This Id Uniquely identifies a request if the same API is executed multiple times."
+											},
+											{
+												"key": "X-Authenticated-User-token",
+												"value": "{{keycloak_access_token}}",
+												"type": "text",
+												"description": "This Id Uniquely identifies the type of device (Mobile)(desktop) used to access Sunbird."
+											}
+										],
+										"url": "{{host}}/api/course/v1/batch/read/{{batch_id}}"
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Date",
+											"value": "Fri, 08 Sep 2023 10:24:16 GMT"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Vary",
+											"value": "Accept-Encoding"
+										},
+										{
+											"key": "X-RateLimit-Limit-hour",
+											"value": "30000"
+										},
+										{
+											"key": "X-RateLimit-Remaining-hour",
+											"value": "29999"
+										},
+										{
+											"key": "referrer-policy",
+											"value": "origin-when-cross-origin, strict-origin-when-cross-origin"
+										},
+										{
+											"key": "x-frame-options",
+											"value": "DENY"
+										},
+										{
+											"key": "x-xss-protection",
+											"value": "1; mode=block"
+										},
+										{
+											"key": "x-response-length",
+											"value": "622"
+										},
+										{
+											"key": "x-content-type-options",
+											"value": "nosniff"
+										},
+										{
+											"key": "access-control-allow-origin",
+											"value": "*"
+										},
+										{
+											"key": "x-permitted-cross-domain-policies",
+											"value": "master-only"
+										},
+										{
+											"key": "x-envoy-upstream-service-time",
+											"value": "6"
+										},
+										{
+											"key": "X-Kong-Upstream-Latency",
+											"value": "9"
+										},
+										{
+											"key": "X-Kong-Proxy-Latency",
+											"value": "37"
+										},
+										{
+											"key": "Via",
+											"value": "kong/0.14.1"
+										},
+										{
+											"key": "X-Proxy-Cache",
+											"value": "HIT"
+										},
+										{
+											"key": "X-Proxy-Cache-Date",
+											"value": "Fri, 08 Sep 2023 10:23:25 GMT"
+										},
+										{
+											"key": "Content-Encoding",
+											"value": "gzip"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"id\": \"api.course.batch.read\",\n    \"ver\": \"v1\",\n    \"ts\": \"2023-09-08 10:23:25:035+0000\",\n    \"params\": {\n        \"resmsgid\": null,\n        \"msgid\": \"c11e68d3-c681-4eb9-b7e3-d051ac9b949c\",\n        \"err\": null,\n        \"status\": \"success\",\n        \"errmsg\": null\n    },\n    \"responseCode\": \"OK\",\n    \"result\": {\n        \"response\": {\n            \"identifier\": \"0138786333558784001\",\n            \"createdFor\": [],\n            \"certTemplates\": {},\n            \"endDate\": \"2023-11-30\",\n            \"description\": \"Join this batch to enhance your knowledge and skills.\",\n            \"updatedDate\": \"2023-09-08 15:53:03:367+0530\",\n            \"batchId\": \"0138786333558784001\",\n            \"cert_templates\": {},\n            \"createdDate\": \"2023-09-08 15:51:33:731+0530\",\n            \"createdBy\": \"155ce3c5-713e-4749-bc1c-95d09c640914\",\n            \"mentors\": [],\n            \"name\": \"Skilled Programming Batch 768\",\n            \"id\": \"0138786333558784001\",\n            \"enrollmentType\": \"open\",\n            \"courseId\": \"do_113776650927300608138\",\n            \"enrollmentEndDate\": \"2023-11-30\",\n            \"collectionId\": \"do_113776650927300608138\",\n            \"startDate\": \"2023-09-08\",\n            \"status\": 1\n        }\n    }\n}"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "BatchSearch",
+					"item": [
+						{
+							"name": "SearchBatchV1",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Parse the response JSON body",
+											"let jsonResponse = pm.response.json();",
+											"",
+											"// Verification",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Content-Type header is present\", () => {",
+											"    pm.response.to.have.header(\"Content-Type\");",
+											"});",
+											"",
+											"pm.test(\"Content-Type header is application/json\", () => {",
+											"    pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/json');",
+											"});",
+											"",
+											"",
+											"// Validation",
+											"pm.test(\"Validate specific field values\", function () {",
+											"    pm.expect(jsonResponse.id).to.eql(\"api.course.batch.search\");",
+											"    pm.expect(jsonResponse.ver).to.eql(\"v1\");",
+											"    pm.expect(jsonResponse.params.status).to.eql(\"success\");",
+											"    pm.expect(jsonResponse.responseCode).to.eql(\"OK\");",
+											"",
+											"    // You can add more specific validations here if needed",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text",
+										"description": "The Content Type entity is the media type of the resource.Possible media types can be:- \n\n  - Application/json\n\n  - Multipart/form-data\n\n  - Application/x-www-form-urlencoded"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text",
+										"description": "Time Stamp at which **Lists the existing batches** request was sent."
+									},
+									{
+										"key": "Authorization",
+										"value": "{{kong_api_key}}",
+										"type": "text",
+										"description": "This Id Uniquely identifies a request if the same API is executed multiple times."
+									},
+									{
+										"key": "X-Authenticated-User-token",
+										"value": "{{keycloak_access_token}}",
+										"type": "text",
+										"description": "This Id Uniquely identifies the type of device (Mobile)(desktop) used to access Sunbird."
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"request\": {\n    \"filters\": {\n      \"courseId\": \"{{course_id}}\"\n    },\n    \"limit\": 2\n  }\n}"
+								},
+								"url": "{{host}}/api/course/v1/batch/list"
+							},
+							"response": [
+								{
+									"name": "SearchBatchV1",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text",
+												"description": "The Content Type entity is the media type of the resource.Possible media types can be:- \n\n  - Application/json\n\n  - Multipart/form-data\n\n  - Application/x-www-form-urlencoded"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text",
+												"description": "Time Stamp at which **Lists the existing batches** request was sent."
+											},
+											{
+												"key": "Authorization",
+												"value": "{{kong_api_key}}",
+												"type": "text",
+												"description": "This Id Uniquely identifies a request if the same API is executed multiple times."
+											},
+											{
+												"key": "X-Authenticated-User-token",
+												"value": "{{keycloak_access_token}}",
+												"type": "text",
+												"description": "This Id Uniquely identifies the type of device (Mobile)(desktop) used to access Sunbird."
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"request\": {\n    \"filters\": {\n      \"courseId\": \"{{course_id}}\"\n    },\n    \"limit\": 2\n  }\n}"
+										},
+										"url": "{{host}}/api/course/v1/batch/list"
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Date",
+											"value": "Fri, 08 Sep 2023 10:25:15 GMT"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Vary",
+											"value": "Accept-Encoding"
+										},
+										{
+											"key": "X-RateLimit-Limit-hour",
+											"value": "30000"
+										},
+										{
+											"key": "X-RateLimit-Remaining-hour",
+											"value": "29998"
+										},
+										{
+											"key": "referrer-policy",
+											"value": "origin-when-cross-origin, strict-origin-when-cross-origin"
+										},
+										{
+											"key": "x-frame-options",
+											"value": "DENY"
+										},
+										{
+											"key": "x-xss-protection",
+											"value": "1; mode=block"
+										},
+										{
+											"key": "x-response-length",
+											"value": "1128"
+										},
+										{
+											"key": "x-content-type-options",
+											"value": "nosniff"
+										},
+										{
+											"key": "access-control-allow-origin",
+											"value": "*"
+										},
+										{
+											"key": "x-permitted-cross-domain-policies",
+											"value": "master-only"
+										},
+										{
+											"key": "x-envoy-upstream-service-time",
+											"value": "11"
+										},
+										{
+											"key": "X-Kong-Upstream-Latency",
+											"value": "13"
+										},
+										{
+											"key": "X-Kong-Proxy-Latency",
+											"value": "11"
+										},
+										{
+											"key": "Via",
+											"value": "kong/0.14.1"
+										},
+										{
+											"key": "Content-Encoding",
+											"value": "gzip"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"id\": \"api.course.batch.search\",\n    \"ver\": \"v1\",\n    \"ts\": \"2023-09-08 10:25:15:235+0000\",\n    \"params\": {\n        \"resmsgid\": null,\n        \"msgid\": \"deaed9d6-6c5e-4b80-83cd-c06e9105aead\",\n        \"err\": null,\n        \"status\": \"success\",\n        \"errmsg\": null\n    },\n    \"responseCode\": \"OK\",\n    \"result\": {\n        \"response\": {\n            \"count\": 6,\n            \"content\": [\n                {\n                    \"identifier\": \"01377666464491929614\",\n                    \"createdFor\": [\n                        \"0137541424673095687\"\n                    ],\n                    \"endDate\": null,\n                    \"description\": \"\",\n                    \"updatedDate\": null,\n                    \"batchId\": \"01377666464491929614\",\n                    \"cert_templates\": null,\n                    \"createdDate\": \"2023-04-17 14:10:56:631+0530\",\n                    \"createdBy\": \"155ce3c5-713e-4749-bc1c-95d09c640914\",\n                    \"mentors\": [\n                        \"6a7bfa76-4b58-4f79-bd26-b9c671211fbd\"\n                    ],\n                    \"name\": \"First batch - DO NOT MODIFY\",\n                    \"id\": \"01377666464491929614\",\n                    \"enrollmentType\": \"open\",\n                    \"courseId\": \"do_113776650927300608138\",\n                    \"enrollmentEndDate\": null,\n                    \"collectionId\": \"do_113776650927300608138\",\n                    \"startDate\": \"2023-04-17\",\n                    \"status\": 1\n                },\n                {\n                    \"identifier\": \"0138756792993136641\",\n                    \"endDate\": \"2023-11-30\",\n                    \"description\": \"We focus on interactive learning and collaborative discussions.\",\n                    \"updatedDate\": null,\n                    \"batchId\": \"0138756792993136641\",\n                    \"cert_templates\": null,\n                    \"createdDate\": \"2023-09-04 11:51:23:367+0530\",\n                    \"createdBy\": \"155ce3c5-713e-4749-bc1c-95d09c640914\",\n                    \"name\": \"Pro Languages Batch 437\",\n                    \"id\": \"0138756792993136641\",\n                    \"enrollmentType\": \"open\",\n                    \"courseId\": \"do_113776650927300608138\",\n                    \"enrollmentEndDate\": null,\n                    \"collectionId\": \"do_113776650927300608138\",\n                    \"startDate\": \"2023-09-04\",\n                    \"status\": 1\n                }\n            ]\n        }\n    }\n}"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "BatchList",
+					"item": [
+						{
+							"name": "ListBatchV1",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Parse the response JSON body",
+											"let jsonResponse = pm.response.json();",
+											"",
+											"// Verification",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Content-Type header is present\", () => {",
+											"    pm.response.to.have.header(\"Content-Type\");",
+											"});",
+											"",
+											"pm.test(\"Content-Type header is application/json\", () => {",
+											"    pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/json');",
+											"});",
+											"",
+											"",
+											"// Validation",
+											"pm.test(\"Validate specific field values\", function () {",
+											"    pm.expect(jsonResponse.id).to.eql(\"api.course.batch.search\");",
+											"    pm.expect(jsonResponse.ver).to.eql(\"v1\");",
+											"    pm.expect(jsonResponse.params.status).to.eql(\"success\");",
+											"    pm.expect(jsonResponse.responseCode).to.eql(\"OK\");",
+											"",
+											"    // Additional validation can be added if needed",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "X-Authenticated-User-token",
+										"value": "{{keycloak_access_token}}"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{kong_api_key}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"request\": {\n        \"filters\": {\n            \"batchId\": [\n                \"{{batch-id}}\"\n            ]\n        },\n        \"fields\": [\n            \"name\",\n            \"batchId\",\n            \"startDate\",\n            \"endDate\"\n        ],\n        \"limit\": 133\n    }\n}"
+								},
+								"url": "{{host}}/api/course/v1/batch/list"
+							},
+							"response": [
+								{
+									"name": "ListBatchV1",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "X-Authenticated-User-token",
+												"value": "{{keycloak_access_token}}"
+											},
+											{
+												"key": "Authorization",
+												"value": "{{kong_api_key}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"request\": {\n        \"filters\": {\n            \"batchId\": [\n                \"{{batch-id}}\"\n            ]\n        },\n        \"fields\": [\n            \"name\",\n            \"batchId\",\n            \"startDate\",\n            \"endDate\"\n        ],\n        \"limit\": 133\n    }\n}"
+										},
+										"url": "{{host}}/api/course/v1/batch/list"
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Date",
+											"value": "Fri, 08 Sep 2023 11:45:32 GMT"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Vary",
+											"value": "Accept-Encoding"
+										},
+										{
+											"key": "X-RateLimit-Limit-hour",
+											"value": "30000"
+										},
+										{
+											"key": "X-RateLimit-Remaining-hour",
+											"value": "29999"
+										},
+										{
+											"key": "referrer-policy",
+											"value": "origin-when-cross-origin, strict-origin-when-cross-origin"
+										},
+										{
+											"key": "x-frame-options",
+											"value": "DENY"
+										},
+										{
+											"key": "x-xss-protection",
+											"value": "1; mode=block"
+										},
+										{
+											"key": "x-response-length",
+											"value": "37"
+										},
+										{
+											"key": "x-content-type-options",
+											"value": "nosniff"
+										},
+										{
+											"key": "access-control-allow-origin",
+											"value": "*"
+										},
+										{
+											"key": "x-permitted-cross-domain-policies",
+											"value": "master-only"
+										},
+										{
+											"key": "x-envoy-upstream-service-time",
+											"value": "10"
+										},
+										{
+											"key": "X-Kong-Upstream-Latency",
+											"value": "13"
+										},
+										{
+											"key": "X-Kong-Proxy-Latency",
+											"value": "61"
+										},
+										{
+											"key": "Via",
+											"value": "kong/0.14.1"
+										},
+										{
+											"key": "Content-Encoding",
+											"value": "gzip"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"id\": \"api.course.batch.search\",\n    \"ver\": \"v1\",\n    \"ts\": \"2023-09-08 11:45:32:359+0000\",\n    \"params\": {\n        \"resmsgid\": null,\n        \"msgid\": \"895b2f39-a79d-4efd-bd9b-7448203da307\",\n        \"err\": null,\n        \"status\": \"success\",\n        \"errmsg\": null\n    },\n    \"responseCode\": \"OK\",\n    \"result\": {\n        \"response\": {\n            \"count\": 0,\n            \"content\": []\n        }\n    }\n}"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "BatchCertificate",
+					"item": [
+						{
+							"name": "BatchCertificateTemplateAddV1",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Parse the response JSON body",
+											"let jsonResponse = pm.response.json();",
+											"",
+											"// Verification",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Content-Type header is present\", () => {",
+											"    pm.response.to.have.header(\"Content-Type\");",
+											"});",
+											"",
+											"pm.test(\"Content-Type header is application/json\", () => {",
+											"    pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/json');",
+											"});",
+											"",
+											"// Validation",
+											"pm.test(\"Validate specific field values\", function () {",
+											"    pm.expect(jsonResponse.id).to.eql(\"api.course.batch.cert.template.add\");",
+											"    pm.expect(jsonResponse.ver).to.eql(\"v1\");",
+											"    pm.expect(jsonResponse.params.status).to.eql(\"success\");",
+											"    pm.expect(jsonResponse.responseCode).to.eql(\"OK\");",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{kong_api_key}}",
+										"type": "text"
+									},
+									{
+										"key": "X-Authenticated-User-token",
+										"value": "{{keycloak_access_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"request\": {\n        \"batch\": {\n            \"courseId\": \"{{course_id}}\",\n            \"batchId\": \"{{batch_id}}\",\n            \"template\": {\n                \"identifier\": \"do_113788048780771328112\",\n                \"criteria\": {\n                    \"enrollment\": {\n                        \"status\": \"2\"\n                    }\n                },\n                \"signatoryList\": [\n                    {\n                        \"name\": \"string\",\n                        \"id\": \"string\",\n                        \"designation\": \"CEO\",\n                        \"image\": \"string\"\n                    }\n                ],\n                \"issuer\": {\n                    \"name\": \"string\",\n                    \"url\": \"string\",\n                    \"publicKey\": [\n                        7,\n                        8\n                    ]\n                }\n            }\n        }\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{host}}/api/course/batch/cert/v1/template/add"
+							},
+							"response": [
+								{
+									"name": "BatchCertificateTemplateAddV1",
+									"originalRequest": {
+										"method": "PATCH",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											},
+											{
+												"key": "Authorization",
+												"value": "{{kong_api_key}}",
+												"type": "text"
+											},
+											{
+												"key": "X-Authenticated-User-token",
+												"value": "{{keycloak_access_token}}",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"request\": {\n        \"batch\": {\n            \"courseId\": \"{{course_id}}\",\n            \"batchId\": \"{{batch_id}}\",\n            \"template\": {\n                \"identifier\": \"do_113788048780771328112\",\n                \"criteria\": {\n                    \"enrollment\": {\n                        \"status\": \"2\"\n                    }\n                },\n                \"signatoryList\": [\n                    {\n                        \"name\": \"string\",\n                        \"id\": \"string\",\n                        \"designation\": \"CEO\",\n                        \"image\": \"string\"\n                    }\n                ],\n                \"issuer\": {\n                    \"name\": \"string\",\n                    \"url\": \"string\",\n                    \"publicKey\": [\n                        7,\n                        8\n                    ]\n                }\n            }\n        }\n    }\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": "{{host}}/api/course/batch/cert/v1/template/add"
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Date",
+											"value": "Fri, 08 Sep 2023 10:03:57 GMT"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Vary",
+											"value": "Accept-Encoding"
+										},
+										{
+											"key": "X-RateLimit-Limit-hour",
+											"value": "30000"
+										},
+										{
+											"key": "X-RateLimit-Remaining-hour",
+											"value": "29999"
+										},
+										{
+											"key": "referrer-policy",
+											"value": "origin-when-cross-origin, strict-origin-when-cross-origin"
+										},
+										{
+											"key": "x-frame-options",
+											"value": "DENY"
+										},
+										{
+											"key": "x-xss-protection",
+											"value": "1; mode=block"
+										},
+										{
+											"key": "x-response-length",
+											"value": "22"
+										},
+										{
+											"key": "x-content-type-options",
+											"value": "nosniff"
+										},
+										{
+											"key": "access-control-allow-origin",
+											"value": "*"
+										},
+										{
+											"key": "x-permitted-cross-domain-policies",
+											"value": "master-only"
+										},
+										{
+											"key": "x-envoy-upstream-service-time",
+											"value": "181"
+										},
+										{
+											"key": "X-Kong-Upstream-Latency",
+											"value": "185"
+										},
+										{
+											"key": "X-Kong-Proxy-Latency",
+											"value": "16"
+										},
+										{
+											"key": "Via",
+											"value": "kong/0.14.1"
+										},
+										{
+											"key": "Content-Encoding",
+											"value": "gzip"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"id\": \"api.course.batch.cert.template.add\",\n    \"ver\": \"v1\",\n    \"ts\": \"2023-09-08 10:03:57:847+0000\",\n    \"params\": {\n        \"resmsgid\": null,\n        \"msgid\": \"c65904b2-2474-4fed-a380-6755a99d4cde\",\n        \"err\": null,\n        \"status\": \"success\",\n        \"errmsg\": null\n    },\n    \"responseCode\": \"OK\",\n    \"result\": {\n        \"response\": \"SUCCESS\"\n    }\n}"
+								}
+							]
+						},
+						{
+							"name": "BatchCertificateTemplateRemoveV1",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Parse the response JSON body",
+											"let jsonResponse = pm.response.json();",
+											"",
+											"// Verification",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Content-Type header is present\", () => {",
+											"    pm.response.to.have.header(\"Content-Type\");",
+											"});",
+											"",
+											"pm.test(\"Content-Type header is application/json\", () => {",
+											"    pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/json');",
+											"});",
+											"",
+											"",
+											"// Validation",
+											"pm.test(\"Validate specific field values\", function () {",
+											"    pm.expect(jsonResponse.id).to.eql(\"api.course.batch.cert.template.remove\");",
+											"    pm.expect(jsonResponse.ver).to.eql(\"v1\");",
+											"    pm.expect(jsonResponse.params.status).to.eql(\"success\");",
+											"    pm.expect(jsonResponse.responseCode).to.eql(\"OK\");",
+											"    pm.expect(jsonResponse.result.response).to.eql(\"SUCCESS\");",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{kong_api_key}}",
+										"type": "text"
+									},
+									{
+										"key": "X-Authenticated-User-token",
+										"value": "{{keycloak_access_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"request\": {\n        \"batch\": {\n            \"courseId\": \"{{course_id}}\",\n            \"batchId\": \"{{batch_id}}\",\n            \"template\": {\n                \"identifier\": \"do_113788048780771328112\"\n            }\n        }\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{host}}/api/course/batch/cert/v1/template/remove"
+							},
+							"response": [
+								{
+									"name": "BatchCertificateTemplateRemoveV1",
+									"originalRequest": {
+										"method": "PATCH",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											},
+											{
+												"key": "Authorization",
+												"value": "{{kong_api_key}}",
+												"type": "text"
+											},
+											{
+												"key": "X-Authenticated-User-token",
+												"value": "{{keycloak_access_token}}",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"request\": {\n        \"batch\": {\n            \"courseId\": \"{{course_id}}\",\n            \"batchId\": \"{{batch_id}}\",\n            \"template\": {\n                \"identifier\": \"do_113788048780771328112\"\n            }\n        }\n    }\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": "{{host}}/api/course/batch/cert/v1/template/remove"
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Date",
+											"value": "Fri, 08 Sep 2023 10:05:06 GMT"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Vary",
+											"value": "Accept-Encoding"
+										},
+										{
+											"key": "X-RateLimit-Limit-hour",
+											"value": "30000"
+										},
+										{
+											"key": "X-RateLimit-Remaining-hour",
+											"value": "29997"
+										},
+										{
+											"key": "referrer-policy",
+											"value": "origin-when-cross-origin, strict-origin-when-cross-origin"
+										},
+										{
+											"key": "x-frame-options",
+											"value": "DENY"
+										},
+										{
+											"key": "x-xss-protection",
+											"value": "1; mode=block"
+										},
+										{
+											"key": "x-response-length",
+											"value": "22"
+										},
+										{
+											"key": "x-content-type-options",
+											"value": "nosniff"
+										},
+										{
+											"key": "access-control-allow-origin",
+											"value": "*"
+										},
+										{
+											"key": "x-permitted-cross-domain-policies",
+											"value": "master-only"
+										},
+										{
+											"key": "x-envoy-upstream-service-time",
+											"value": "59"
+										},
+										{
+											"key": "X-Kong-Upstream-Latency",
+											"value": "63"
+										},
+										{
+											"key": "X-Kong-Proxy-Latency",
+											"value": "15"
+										},
+										{
+											"key": "Via",
+											"value": "kong/0.14.1"
+										},
+										{
+											"key": "Content-Encoding",
+											"value": "gzip"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"id\": \"api.course.batch.cert.template.remove\",\n    \"ver\": \"v1\",\n    \"ts\": \"2023-09-08 10:05:06:969+0000\",\n    \"params\": {\n        \"resmsgid\": null,\n        \"msgid\": \"9c73b81e-d9c2-445e-bbad-846941c94de3\",\n        \"err\": null,\n        \"status\": \"success\",\n        \"errmsg\": null\n    },\n    \"responseCode\": \"OK\",\n    \"result\": {\n        \"response\": \"SUCCESS\"\n    }\n}"
+								}
+							]
+						},
+						{
+							"name": "BatchCertificateIssueV1",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Parse the response JSON body",
+											"let jsonResponse = pm.response.json();",
+											"",
+											"// Verification",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Content-Type header is present\", () => {",
+											"    pm.response.to.have.header(\"Content-Type\");",
+											"});",
+											"",
+											"pm.test(\"Content-Type header is application/json\", () => {",
+											"    pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/json');",
+											"});",
+											"",
+											"// Validation",
+											"pm.test(\"Validate specific field values\", function () {",
+											"    pm.expect(jsonResponse.id).to.eql(\"api.course.batch.cert.issue\");",
+											"    pm.expect(jsonResponse.ver).to.eql(\"v1\");",
+											"    pm.expect(jsonResponse.params.status).to.eql(\"success\");",
+											"    pm.expect(jsonResponse.responseCode).to.eql(\"OK\");",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "X-authenticated-user-token",
+										"value": "{{keycloak_access_token}}"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{kong_api_key}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"request\": {\n        \"courseId\": \"{{course_id}}\",\n        \"batchId\": \"{{batch_id}}\",\n        \"userIds\": [\n            \"{{user_id}}\"\n        ]\n    }\n}"
+								},
+								"url": "{{host}}/api/course/batch/cert/v1/issue"
+							},
+							"response": [
+								{
+									"name": "BatchCertificateIssueV1",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "X-authenticated-user-token",
+												"value": "{{keycloak_access_token}}"
+											},
+											{
+												"key": "Authorization",
+												"value": "{{kong_api_key}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"request\": {\n        \"courseId\": \"{{course_id}}\",\n        \"batchId\": \"{{batch_id}}\",\n        \"userIds\": [\n            \"{{user_id}}\"\n        ]\n    }\n}"
+										},
+										"url": "{{host}}/api/course/batch/cert/v1/issue"
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Date",
+											"value": "Fri, 08 Sep 2023 10:05:45 GMT"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										},
+										{
+											"key": "Connection",
+											"value": "keep-alive"
+										},
+										{
+											"key": "Vary",
+											"value": "Accept-Encoding"
+										},
+										{
+											"key": "X-RateLimit-Limit-hour",
+											"value": "30000"
+										},
+										{
+											"key": "X-RateLimit-Remaining-hour",
+											"value": "29998"
+										},
+										{
+											"key": "referrer-policy",
+											"value": "origin-when-cross-origin, strict-origin-when-cross-origin"
+										},
+										{
+											"key": "x-frame-options",
+											"value": "DENY"
+										},
+										{
+											"key": "x-xss-protection",
+											"value": "1; mode=block"
+										},
+										{
+											"key": "x-response-length",
+											"value": "225"
+										},
+										{
+											"key": "x-content-type-options",
+											"value": "nosniff"
+										},
+										{
+											"key": "access-control-allow-origin",
+											"value": "*"
+										},
+										{
+											"key": "x-permitted-cross-domain-policies",
+											"value": "master-only"
+										},
+										{
+											"key": "x-envoy-upstream-service-time",
+											"value": "12"
+										},
+										{
+											"key": "X-Kong-Upstream-Latency",
+											"value": "14"
+										},
+										{
+											"key": "X-Kong-Proxy-Latency",
+											"value": "1"
+										},
+										{
+											"key": "Via",
+											"value": "kong/0.14.1"
+										},
+										{
+											"key": "Content-Encoding",
+											"value": "gzip"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"id\": \"api.course.batch.cert.issue\",\n    \"ver\": \"v1\",\n    \"ts\": \"2023-09-08 10:05:45:247+0000\",\n    \"params\": {\n        \"resmsgid\": null,\n        \"msgid\": \"3b0520de-14ca-4c27-9d51-26e469c9ef00\",\n        \"err\": null,\n        \"status\": \"success\",\n        \"errmsg\": null\n    },\n    \"responseCode\": \"OK\",\n    \"result\": {\n        \"result\": {\n            \"batchId\": \"0138758519984209923\",\n            \"courseId\": \"do_113776650927300608138\",\n            \"collectionId\": \"do_113776650927300608138\",\n            \"status\": \"Certificates issue action for Course Batch Id 0138758519984209923 submitted Successfully!\"\n        }\n    }\n}"
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "CourseEnroll",
+			"item": [
+				{
+					"name": "CourseEnrollV1",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{kong_api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "X-Authenticated-User-token",
+								"value": "{{keycloak_access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"request\": {\n      \"courseId\": \"{{course_id}}\",\n      \"batchId\": \"{{batch_id}}\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{host}}/api/course/v1/enroll"
+					},
+					"response": []
+				},
+				{
+					"name": "CourseUnEnrollV1",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Authenticated-User-token",
+								"value": "{{keycloak_access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{kong_api_key}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"request\": {\n      \"courseId\": \"{{course_id}}\",\n      \"batchId\": \"{{batch_id}}\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{host}}/api/course/v1/unenroll"
+					},
+					"response": []
+				},
+				{
+					"name": "CourseEnrollListV1",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Authenticated-User-token",
+								"value": "{{keycloak_access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{kong_api_key}}",
+								"type": "text"
+							}
+						],
+						"url": "{{host}}/api/course/v1/user/enrollment/list/{{user_id}}"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ContentAPIs",
+			"item": [
+				{
+					"name": "ContentSearchV1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parse the response JSON body",
+									"let jsonResponse = pm.response.json();",
+									"",
+									"// Verification",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Content-Type header is present\", () => {",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"});",
+									"",
+									"pm.test(\"Content-Type header is application/json\", () => {",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+									"});",
+									"",
+									"// Validation",
+									"pm.test(\"Validate specific field values\", function () {",
+									"    pm.expect(jsonResponse.id).to.eql(\"api.content.search\");",
+									"    pm.expect(jsonResponse.ver).to.eql(\"1.0\");",
+									"    pm.expect(jsonResponse.responseCode).to.eql(\"OK\");",
+									"",
+									"    // Additional validation can be added if needed",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{kong_api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "X-Authenticated-User-token",
+								"value": "{{keycloak_access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"request\": {\n        \"query\": \"{{course_id}}\",\n        \"filters\": {\n            \"primaryCategory\": \"Course\"\n        },\n        \"fields\": [\n            \"name\",\n            \"status\",\n            \"createdBy\",\n            \"creator\"\n        ]\n    }\n}"
+						},
+						"url": "{{host}}/api/content/v1/search"
+					},
+					"response": [
+						{
+							"name": "ContentSearchV1",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "{{kong_api_key}}",
+										"type": "text"
+									},
+									{
+										"key": "X-Authenticated-User-token",
+										"value": "{{keycloak_access_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"request\": {\n        \"query\": \"{{course_id}}\",\n        \"filters\": {\n            \"primaryCategory\": \"Course\"\n        },\n        \"fields\": [\n            \"name\",\n            \"status\",\n            \"createdBy\",\n            \"creator\"\n        ]\n    }\n}"
+								},
+								"url": "{{host}}/api/content/v1/search"
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Fri, 08 Sep 2023 10:31:46 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Vary",
+									"value": "Accept-Encoding"
+								},
+								{
+									"key": "X-RateLimit-Limit-hour",
+									"value": "30000"
+								},
+								{
+									"key": "X-RateLimit-Remaining-hour",
+									"value": "29997"
+								},
+								{
+									"key": "x-powered-by",
+									"value": "Express"
+								},
+								{
+									"key": "vary",
+									"value": "X-HTTP-Method-Override"
+								},
+								{
+									"key": "access-control-allow-origin",
+									"value": "*"
+								},
+								{
+									"key": "access-control-allow-methods",
+									"value": "GET,PUT,POST,PATCH,DELETE,OPTIONS"
+								},
+								{
+									"key": "access-control-allow-headers",
+									"value": "Content-Type, Authorization,cid, user-id, x-auth, Cache-Control, X-Requested-With, *"
+								},
+								{
+									"key": "etag",
+									"value": "W/\"1d0-gmfDS2YIsbvP2jER1frPDEeKlxI\""
+								},
+								{
+									"key": "x-envoy-upstream-service-time",
+									"value": "28"
+								},
+								{
+									"key": "X-Kong-Upstream-Latency",
+									"value": "31"
+								},
+								{
+									"key": "X-Kong-Proxy-Latency",
+									"value": "11"
+								},
+								{
+									"key": "Via",
+									"value": "kong/0.14.1"
+								},
+								{
+									"key": "X-Proxy-Cache",
+									"value": "HIT"
+								},
+								{
+									"key": "X-Proxy-Cache-Date",
+									"value": "Fri, 08 Sep 2023 10:31:24 GMT"
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "gzip"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"api.content.search\",\n    \"ver\": \"1.0\",\n    \"ts\": \"2023-09-08T10:31:24.172Z\",\n    \"params\": {\n        \"resmsgid\": \"dc0524c0-4e32-11ee-826b-63a1868fac2e\",\n        \"msgid\": \"dc010610-4e32-11ee-b07c-cfa90feefa97\",\n        \"status\": \"successful\",\n        \"err\": null,\n        \"errmsg\": null\n    },\n    \"responseCode\": \"OK\",\n    \"result\": {\n        \"count\": 1,\n        \"content\": [\n            {\n                \"identifier\": \"do_113776650927300608138\",\n                \"creator\": \"contentCreator Creator\",\n                \"createdBy\": \"155ce3c5-713e-4749-bc1c-95d09c640914\",\n                \"name\": \"Course 2\",\n                \"objectType\": \"Content\",\n                \"status\": \"Live\"\n            }\n        ]\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "ContentStateReadV1",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{kong_api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "X-Authenticated-User-token",
+								"value": "{{keycloak_access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"request\": {\n        \"userId\": \"{{user_id}}\",\n        \"courseId\": \"{{course_id}}\",\n        \"batchId\": \"{{batch_id}}\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{host}}/api/course/v1/content/state/read"
+					},
+					"response": []
+				},
+				{
+					"name": "ContentStateUpdateV1",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{kong_api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "X-Authenticated-User-token",
+								"value": "{{keycloak_access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"request\": {\n    \"userId\": \"{{user_id}}\",\n    \"contents\": [\n      {\n        \"contentId\": \"{{content_id}}\",\n        \"batchId\": \"{{batch_id}}\",\n        \"status\": 2,\n        \"courseId\": \"{{course_id}}\",\n        \"lastAccessTime\": \"2020-11-23 12:58:35:179+0000\"\n      }\n    ]\n  }\n}"
+						},
+						"url": "{{host}}/api/course/v1/content/state/update"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "AggregateAPIs",
+			"item": [
+				{
+					"name": "GroupActivityAggregateV1",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "{{kong_api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "X-Authenticated-User-token",
+								"value": "{{keycloak_access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"request\": {\n    \"groupId\": \"{{group_id}}\",\n    \"activityId\": \"{{activity_id}}\",\n    \"activityType\": \"Course\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{host}}/api/data/v1/group/activity/agg"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"    if (pm.environment.get(\"environment\") === \"local\") {",
+					"        var baseURL = pm.environment.get(\"host\")",
+					"        pm.variables.set(\"baseURL\", baseURL);",
+					"    } else {",
+					"        var baseURL = pm.environment.get(\"host\") + pm.variables.get(\"basePath\");",
+					"        pm.variables.set(\"baseURL\", baseURL);",
+					"    }",
+					"",
+					"    function generateRandomBatchName() {",
+					"    const adjectives = ['Advanced', 'Beginner', 'Intermediate', 'Expert', 'Pro', 'Novice', 'Skilled', 'Enthusiastic'];",
+					"    const subjects = ['Math', 'Science', 'History', 'Literature', 'Programming', 'Languages', 'Art', 'Music'];",
+					"    const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];",
+					"    const randomSubject = subjects[Math.floor(Math.random() * subjects.length)];",
+					"    const randomNumber = Math.floor(Math.random() * 1000);",
+					"    ",
+					"    return `${randomAdjective} ${randomSubject} Batch ${randomNumber}`;",
+					"}",
+					"",
+					"function generateRandomDescription() {",
+					"    const phrases = [",
+					"        'Join this batch to enhance your knowledge and skills.',",
+					"        'In this batch, we explore various topics and concepts.',",
+					"        'Looking for an engaging learning experience? Join this batch now!',",
+					"        'We focus on interactive learning and collaborative discussions.',",
+					"        'This batch is open to learners of all levels.'",
+					"    ];",
+					"    ",
+					"    const randomPhrase = phrases[Math.floor(Math.random() * phrases.length)];",
+					"    return randomPhrase;",
+					"}",
+					"",
+					"const batchName = generateRandomBatchName();",
+					"const batchDescription = generateRandomDescription();",
+					"// Calculate the start date (current date - 5 days)",
+					"const currentDate = new Date();",
+					"const startDate = new Date(currentDate);",
+					"startDate.setDate(currentDate.getDate());",
+					"",
+					"// Calculate the end date (end of 3 months from current date)",
+					"const endDate = new Date(currentDate);",
+					"endDate.setMonth(currentDate.getMonth() + 3, 0); // Set to the last day of the third month",
+					"",
+					"// Format dates as strings (YYYY-MM-DD)",
+					"const formattedStartDate = startDate.toISOString().split('T')[0];",
+					"const formattedEndDate = endDate.toISOString().split('T')[0];",
+					"",
+					"// Get the current date",
+					"const currentUpdateDate = new Date();",
+					"",
+					"// Add 5 days to the current date",
+					"const updateDate = new Date(currentUpdateDate);",
+					"updateDate.setDate(currentUpdateDate.getDate() + 5);",
+					"",
+					"// Format the update date as a string (YYYY-MM-DD)",
+					"const formattedUpdateDate = updateDate.toISOString().split('T')[0];",
+					"",
+					"// Set the environment variable",
+					"pm.environment.set('batch_update_date', formattedUpdateDate);",
+					"",
+					"",
+					"// Set the environment variables",
+					"pm.environment.set('batch_start_date', formattedStartDate);",
+					"pm.environment.set('batch_end_date', formattedEndDate);",
+					"",
+					"",
+					"pm.environment.set('batch_name', batchName);",
+					"pm.environment.set('batch_description', batchDescription);",
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "refresh_token",
+			"value": ""
+		}
+	]
+}

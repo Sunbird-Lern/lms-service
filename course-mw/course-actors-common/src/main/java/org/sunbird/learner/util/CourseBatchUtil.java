@@ -105,6 +105,7 @@ public class CourseBatchUtil {
     try {
       responseBody = readTemplate(requestContext, templateId);
       response = mapper.readValue(responseBody, Response.class);
+      logger.info(null,response.toString());
       if (!ResponseCode.OK.equals(response.getResponseCode())) {
         throw new ProjectCommonException(
             response.getResponseCode().name(),

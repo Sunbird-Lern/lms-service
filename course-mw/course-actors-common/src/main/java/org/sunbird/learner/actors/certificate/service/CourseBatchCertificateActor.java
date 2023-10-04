@@ -61,6 +61,8 @@ public class CourseBatchCertificateActor extends BaseActor {
     String templateId = (String) template.get(JsonKey.IDENTIFIER);
     validateTemplateDetails(request.getRequestContext(), templateId, template);
     logger.info(request.getRequestContext(), "Validated certificate template to batchID: " +  batchId);
+    logger.info(request.getRequestContext(), "templateId: " +  templateId);
+    logger.info(request.getRequestContext(), "template: " +  template);
     courseBatchDao.addCertificateTemplateToCourseBatch(request.getRequestContext(), courseId, batchId, templateId, template);
     logger.info(request.getRequestContext(), "Added certificate template to batchID: " +  batchId);
     Map<String, Object> courseBatch =

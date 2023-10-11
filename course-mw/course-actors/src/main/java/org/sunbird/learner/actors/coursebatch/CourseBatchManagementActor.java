@@ -597,6 +597,9 @@ public class CourseBatchManagementActor extends BaseActor {
             ekStepContent);
     String status = (String) ((Map<String, Object>)ekStepContent.getOrDefault("content", new HashMap<>())).getOrDefault("status", "");
     Integer leafNodesCount = (Integer) ((Map<String, Object>) ekStepContent.getOrDefault("content", new HashMap<>())).getOrDefault("leafNodesCount", 0);
+    logger.info(requestContext, "CourseBatchManagementActor:printing status = " + status);
+    logger.info(requestContext, "CourseBatchManagementActor:printing leafNodesCount = " + leafNodesCount);
+    logger.info(requestContext, "CourseBatchManagementActor:printing ekStepContent = " + ekStepContent);
     if (null == ekStepContent ||
             ekStepContent.size() == 0 ||
             !validCourseStatus.contains(status) || leafNodesCount == 0) {

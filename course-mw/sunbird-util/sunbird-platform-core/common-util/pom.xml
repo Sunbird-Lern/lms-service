@@ -16,6 +16,9 @@
         <mockito.core.version>2.22.0</mockito.core.version>
         <powermock.api.mockito2.version>2.0.7</powermock.api.mockito2.version>
         <powermock.module.junit4.version>2.0.0-beta.5</powermock.module.junit4.version>
+        <CLOUD_STORAGE_GROUP_ID>org.sunbird</CLOUD_STORAGE_GROUP_ID>
+        <CLOUD_STORE_ARTIFACT_ID>cloud-store-sdk</CLOUD_STORE_ARTIFACT_ID>
+        <CLOUD_STORE_VERSION>1.4.6</CLOUD_STORE_VERSION>
     </properties>
 
     <dependencies>
@@ -66,12 +69,6 @@
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-client</artifactId>
             <version>3.11.3.Final</version>
-        </dependency>
-        <!-- for Azure file storage -->
-        <dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-storage</artifactId>
-            <version>5.4.0</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.velocity/velocity-tools -->
         <dependency>
@@ -217,9 +214,9 @@
             <version>18.0</version>
         </dependency>
         <dependency>
-            <groupId>org.sunbird</groupId>
-            <artifactId>cloud-store-sdk</artifactId>
-            <version>1.4.4</version>
+            <groupId>${CLOUD_STORAGE_GROUP_ID}</groupId>
+            <artifactId>${CLOUD_STORE_ARTIFACT_ID}</artifactId>
+            <version>${CLOUD_STORE_VERSION}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.sun.jersey</groupId>
@@ -267,7 +264,7 @@
     </dependencies>
 
     <repositories>
-        <repository>
+       <repository>
             <id>cloud-store</id>
             <url>https://oss.sonatype.org/content/repositories/orgsunbird-1021</url>
         </repository>

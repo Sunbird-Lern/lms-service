@@ -3,6 +3,8 @@ package org.sunbird.learner.util;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerUtil;
+import org.sunbird.common.models.util.ProjectUtil;
+import org.sunbird.common.models.util.TableNameUtil;
 import org.sunbird.common.request.Request;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.helper.CassandraConnectionManager;
@@ -30,9 +32,6 @@ public final class Util {
   public static final Map<String, DbInfo> dbInfoMap = new HashMap<>();
   public static final int RECOMENDED_LIST_SIZE = 10;
   public static final int DEFAULT_ELASTIC_DATA_LIMIT = 10000;
-  public static final String KEY_SPACE_NAME = "sunbird";
-  public static final String COURSE_KEY_SPACE_NAME = "sunbird_courses";
-  public static final String DIALCODE_KEY_SPACE_NAME = "dialcodes";
   private static Properties prop = new Properties();
   private static LoggerUtil logger = new LoggerUtil(Util.class);
 
@@ -46,30 +45,30 @@ public final class Util {
   /** This method will initialize the cassandra data base property */
   private static void initializeDBProperty() {
     dbInfoMap.put(
-        JsonKey.LEARNER_COURSE_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "user_enrolments"));
+        JsonKey.LEARNER_COURSE_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_COURSE_KEYSPACE), TableNameUtil.USER_ENROLLMENTS_TABLENAME));
     dbInfoMap.put(
-        JsonKey.LEARNER_CONTENT_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "user_content_consumption"));
+        JsonKey.LEARNER_CONTENT_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_COURSE_KEYSPACE), TableNameUtil.USER_CONTENT_CONSUMPTION_TABLENAME));
     dbInfoMap.put(
-        JsonKey.COURSE_MANAGEMENT_DB, getDbInfoObject(KEY_SPACE_NAME, "course_management"));
-    dbInfoMap.put(JsonKey.PAGE_MGMT_DB, getDbInfoObject(KEY_SPACE_NAME, "page_management"));
-    dbInfoMap.put(JsonKey.PAGE_SECTION_DB, getDbInfoObject(KEY_SPACE_NAME, "page_section"));
-    dbInfoMap.put(JsonKey.SECTION_MGMT_DB, getDbInfoObject(KEY_SPACE_NAME, "page_section"));
-    dbInfoMap.put(JsonKey.ASSESSMENT_EVAL_DB, getDbInfoObject(KEY_SPACE_NAME, "assessment_eval"));
-    dbInfoMap.put(JsonKey.ASSESSMENT_ITEM_DB, getDbInfoObject(KEY_SPACE_NAME, "assessment_item"));
+        JsonKey.COURSE_MANAGEMENT_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_KEYSPACE), TableNameUtil.COURSE_MANAGEMENT_TABLENAME));
+    dbInfoMap.put(JsonKey.PAGE_MGMT_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_KEYSPACE), TableNameUtil.PAGE_MANAGEMENT_TABLENAME));
+    dbInfoMap.put(JsonKey.PAGE_SECTION_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_KEYSPACE), TableNameUtil.PAGE_SECTION_TABLENAME));
+    dbInfoMap.put(JsonKey.SECTION_MGMT_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_KEYSPACE), TableNameUtil.PAGE_SECTION_TABLENAME));
+    dbInfoMap.put(JsonKey.ASSESSMENT_EVAL_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_KEYSPACE), TableNameUtil.ASSESSMENT_EVAL_TABLENAME));
+    dbInfoMap.put(JsonKey.ASSESSMENT_ITEM_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_KEYSPACE), TableNameUtil.ASSESSMENT_ITEM_TABLENAME));
 
     dbInfoMap.put(
-        JsonKey.BULK_OP_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "bulk_upload_process"));
-    dbInfoMap.put(JsonKey.COURSE_BATCH_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "course_batch"));
-    dbInfoMap.put(JsonKey.CLIENT_INFO_DB, getDbInfoObject(KEY_SPACE_NAME, "client_info"));
-    dbInfoMap.put(JsonKey.USER_AUTH_DB, getDbInfoObject(KEY_SPACE_NAME, "user_auth"));
+        JsonKey.BULK_OP_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_COURSE_KEYSPACE), TableNameUtil.BULK_UPLOAD_PROCESS_TABLENAME));
+    dbInfoMap.put(JsonKey.COURSE_BATCH_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_COURSE_KEYSPACE), TableNameUtil.COURSE_BATCH_TABLENAME));
+    dbInfoMap.put(JsonKey.CLIENT_INFO_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_KEYSPACE), TableNameUtil.CLIENT_INFO_TABLENAME));
+    dbInfoMap.put(JsonKey.USER_AUTH_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_KEYSPACE), TableNameUtil.USER_AUTH_TABLENAME));
     dbInfoMap.put(
         JsonKey.SUNBIRD_COURSE_DIALCODES_DB,
-        getDbInfoObject(DIALCODE_KEY_SPACE_NAME, "dialcode_images"));
+        getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.DIALCODE_KEYSPACE), TableNameUtil.DIALCODE_IMAGES_TABLENAME));
     dbInfoMap.put(
-            JsonKey.GROUP_ACTIVITY_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "user_activity_agg"));
+            JsonKey.GROUP_ACTIVITY_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_COURSE_KEYSPACE), TableNameUtil.USER_ACTIVITY_AGG_TABLENAME));
     dbInfoMap.put(
-            JsonKey.ASSESSMENT_AGGREGATOR_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "assessment_aggregator"));
-    dbInfoMap.put(JsonKey.USER_ENROLMENTS_DB, getDbInfoObject(COURSE_KEY_SPACE_NAME, "user_enrolments"));
+            JsonKey.ASSESSMENT_AGGREGATOR_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_COURSE_KEYSPACE), TableNameUtil.ASSESSMENT_AGGREGATOR_TABLENAME));
+    dbInfoMap.put(JsonKey.USER_ENROLMENTS_DB, getDbInfoObject(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_COURSE_KEYSPACE), TableNameUtil.USER_ENROLMENTS_TABLENAME));
   }
 
   /**

@@ -4,6 +4,8 @@ package org.sunbird.learner.util;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.ProjectUtil;
+import org.sunbird.common.models.util.TableNameUtil;
 import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.helper.ServiceFactory;
 
@@ -25,21 +27,20 @@ public class DataCacheHandler implements Runnable {
 
   private static Map<String, Map<String, Object>> sectionMap = new ConcurrentHashMap<>();
   private CassandraOperation cassandraOperation = ServiceFactory.getInstance();
-  private static final String KEY_SPACE_NAME = "sunbird";
   private LoggerUtil logger = new LoggerUtil(DataCacheHandler.class);
   
   @Override
   public void run() {
     logger.info(null, "DataCacheHandler:run: Cache refresh started.");
-    cache(pageMap, "page_management");
-    cache(sectionMap, "page_section");
+    cache(pageMap, TableNameUtil.PAGE_MANAGEMENT_TABLENAME);
+    cache(sectionMap, TableNameUtil.PAGE_SECTION_TABLENAME);
     logger.info(null, "DataCacheHandler:run: Cache refresh completed.");
   }
 
   @SuppressWarnings("unchecked")
   private void cache(Map<String, Map<String, Object>> map, String tableName) {
     try {
-      Response response = cassandraOperation.getAllRecords(null, KEY_SPACE_NAME, tableName);
+      Response response = cassandraOperation.getAllRecords(null, ProjectUtil.getConfigValue(JsonKey.SUNBIRD_KEYSPACE), tableName);
       List<Map<String, Object>> responseList =
           (List<Map<String, Object>>) response.get(JsonKey.RESPONSE);
       if (null != responseList && !responseList.isEmpty()) {

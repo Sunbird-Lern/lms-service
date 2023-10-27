@@ -12,10 +12,10 @@ import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectUtil;
 
 public class RedisConnectionManager {
-  private static String host = ProjectUtil.getConfigValue("sunbird_redis_host");
-  private static String port = ProjectUtil.getConfigValue("sunbird_redis_port");
+  private static String host = ProjectUtil.getConfigValue(JsonKey.REDIS_HOST_VALUE);
+  private static String port = ProjectUtil.getConfigValue(JsonKey.REDIS_PORT_VALUE);
   private static Boolean isRedisCluster = host.contains(",") ? true : false;
-  private static String scanInterval = ProjectUtil.getConfigValue("sunbird_redis_scan_interval");
+  private static String scanInterval = ProjectUtil.getConfigValue(JsonKey.SUNBIRD_REDIS_SCAN_INTERVAL);
   private static int poolsize =
       Integer.valueOf(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_REDIS_CONN_POOL_SIZE));
   private static RedissonClient client = null;

@@ -247,14 +247,11 @@ public class ProjectUtilTest extends BaseHttpTest {
 
   @Test
   public void testEsTypeSuccess() {
-    assertEquals("content", ProjectUtil.EsType.content.getTypeName());
     assertEquals("cbatch", ProjectUtil.EsType.course.getTypeName());
     assertEquals("course-batch", ProjectUtil.EsType.courseBatch.getTypeName());
     assertEquals("user", ProjectUtil.EsType.user.getTypeName());
     assertEquals("org", ProjectUtil.EsType.organisation.getTypeName());
     assertEquals("user-courses", ProjectUtil.EsType.usercourses.getTypeName());
-    assertEquals("usernotes", ProjectUtil.EsType.usernotes.getTypeName());
-    assertEquals("userprofilevisibility", ProjectUtil.EsType.userprofilevisibility.getTypeName());
   }
 
   @Test
@@ -335,8 +332,6 @@ public class ProjectUtilTest extends BaseHttpTest {
     assertEquals(0, ProjectUtil.Status.INACTIVE.getValue());
     assertEquals(false, ProjectUtil.ActiveStatus.INACTIVE.getValue());
     assertEquals(true, ProjectUtil.ActiveStatus.ACTIVE.getValue());
-    assertEquals("orgimg", ProjectUtil.AzureContainer.orgImage.getName());
-    assertEquals("userprofileimg", ProjectUtil.AzureContainer.userProfileImg.getName());
   }
 
   @Test

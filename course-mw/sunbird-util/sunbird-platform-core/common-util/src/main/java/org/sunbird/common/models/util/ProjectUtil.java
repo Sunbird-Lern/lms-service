@@ -22,6 +22,7 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.sunbird.common.exception.ProjectCommonException;
+import org.sunbird.common.models.util.url.EsConfigUtil;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 
@@ -370,22 +371,11 @@ public class ProjectUtil {
    * @author Manzarul
    */
   public enum EsType {
-    course("cbatch"),
-    courseBatch("course-batch"),
-    content("content"),
-    user("user"),
-    organisation("org"),
-    usercourses("user-courses"),
-    usernotes("usernotes"),
-    userprofilevisibility("userprofilevisibility"),
-    telemetry("telemetry"),
-    location("location"),
-    announcementType("announcementtype"),
-    announcement("announcement"),
-    metrics("metrics"),
-    cbatchstats("cbatchstats"),
-    cbatchassessment("cbatch-assessment"),
-    userfeed("userfeed");
+    course(EsConfigUtil.getConfigValue(JsonKey.ES_COURSE_INDEX)),
+    courseBatch(EsConfigUtil.getConfigValue(JsonKey.ES_COURSE_BATCH_INDEX)),
+    user(EsConfigUtil.getConfigValue(JsonKey.ES_USER_INDEX)),
+    organisation(EsConfigUtil.getConfigValue(JsonKey.ES_ORGANISATION_INDEX)),
+    usercourses(EsConfigUtil.getConfigValue(JsonKey.ES_USER_COURSES_INDEX));
 
     private String typeName;
 
@@ -522,21 +512,6 @@ public class ProjectUtil {
 
     public String getVal() {
       return val;
-    }
-  }
-
-  /** @author Manzarul */
-  public enum AzureContainer {
-    userProfileImg("userprofileimg"),
-    orgImage("orgimg");
-    private String name;
-
-    private AzureContainer(String name) {
-      this.name = name;
-    }
-
-    public String getName() {
-      return name;
     }
   }
 

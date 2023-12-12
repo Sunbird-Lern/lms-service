@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.exception.ProjectCommonException;
@@ -336,6 +337,21 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
     }
     validateParam(
             (String) ((Map<String, Object>)request.getRequest().get(JsonKey.BATCH)).get(JsonKey.BATCH_ID),
+            ResponseCode.mandatoryParamsMissing,
+            JsonKey.BATCH_ID);
+  }
+
+  public void validateGetAllParticipantsRequest(Request request) throws JsonProcessingException {
+    if(MapUtils.isEmpty((Map) request.getRequest().get(JsonKey.BATCH))){
+      throw new ProjectCommonException(
+              ResponseCode.invalidRequestData.getErrorCode(),
+              MessageFormat.format(ResponseCode.invalidRequestData.getErrorMessage(), JsonKey.BATCH),
+              ResponseCode.CLIENT_ERROR.getResponseCode());
+    }
+    List<?> batchIdList = (List<?>) ((Map<String, Object>)request.getRequest().get(JsonKey.BATCH)).get(JsonKey.BATCH_ID);
+
+    validateParamWithBatchIdArray(
+            batchIdList,
             ResponseCode.mandatoryParamsMissing,
             JsonKey.BATCH_ID);
   }

@@ -24,7 +24,7 @@ import org.sunbird.learner.util.Util
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 
-case class InternalContentConsumption(courseId: String, batchId: String, contentId: String) {
+case class InternalContentConsumption(courseId: String, batchId: String, contentId: String,status: String) {
   def validConsumption() = StringUtils.isNotBlank(courseId) && StringUtils.isNotBlank(batchId) && StringUtils.isNotBlank(contentId)
 }
 
@@ -70,7 +70,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             val finalContentList = if(CollectionUtils.isNotEmpty(assessmentEvents)) {
               logger.info(requestContext, "Assessment Consumption events exist: " + assessmentEvents.size())
               val assessmentConsumptions = assessmentEvents.map(e => {
-                InternalContentConsumption(e.get("courseId").asInstanceOf[String], e.get("batchId").asInstanceOf[String], e.get("contentId").asInstanceOf[String])
+                InternalContentConsumption(e.get("courseId").asInstanceOf[String], e.get("batchId").asInstanceOf[String], e.get("contentId").asInstanceOf[String],e.get("status").asInstanceOf[String])
               }).filter(cc => cc.validConsumption()).map(cc => {
                 var consumption: util.Map[String, AnyRef] = new util.HashMap[String, AnyRef]()
                 consumption.put("courseId", cc.courseId)

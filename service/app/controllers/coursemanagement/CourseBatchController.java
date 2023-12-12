@@ -2,6 +2,7 @@
 package controllers.coursemanagement;
 
 import akka.actor.ActorRef;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.BaseController;
 import controllers.coursemanagement.validator.CourseBatchRequestValidator;
@@ -124,4 +125,22 @@ public class CourseBatchController extends BaseController {
         getAllRequestHeaders(httpRequest),
         httpRequest);
   }
+
+    public CompletionStage<Result> getAllParticipants(Http.Request httpRequest) {
+        System.out.println("Inside getAllParticipants method of controller");
+        return handleRequest(
+                courseBatchActorRef,
+                ActorOperations.GET_ALL_PARTICIPANTS.getValue(),
+                httpRequest.body().asJson(),
+                (request) -> {
+                    try {
+                        new CourseBatchRequestValidator().validateGetAllParticipantsRequest((Request) request);
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return null;
+                },
+                getAllRequestHeaders(httpRequest),
+                httpRequest);
+    }
 }

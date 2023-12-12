@@ -52,6 +52,15 @@ public class BaseRequestValidator {
     }
   }
 
+  public void validateParamWithBatchIdArray(List<?> value, ResponseCode error, String errorMsgArgument) {
+    if (value.isEmpty() || value == null ) {
+      throw new ProjectCommonException(
+              error.getErrorCode(),
+              MessageFormat.format(error.getErrorMessage(), errorMsgArgument),
+              ResponseCode.CLIENT_ERROR.getResponseCode());
+    }
+  }
+
   /**
    * Helper method which throws an exception if the given parameter list size exceeds the expected
    * size

@@ -76,7 +76,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                 consumption.put("courseId", cc.courseId)
                 consumption.put("batchId", cc.batchId)
                 consumption.put("contentId", cc.contentId)
-                consumption.put("status", 2.asInstanceOf[AnyRef])
+                consumption.put("status", cc.asInstanceOf[AnyRef])
                 consumption
               })
               if (CollectionUtils.isNotEmpty(contentList)) (contentList ++ assessmentConsumptions).asJava else assessmentConsumptions.asJava

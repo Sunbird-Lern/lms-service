@@ -65,7 +65,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                 case "true" => populateAssessmentScore(request.get(JsonKey.ASSESS_REQ_BDY).asInstanceOf[String])
                 case _ => request.getRequest.getOrDefault(JsonKey.ASSESSMENT_EVENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
             }
-            logger.info(requestContext, "assessmentEvents events : " + assessmentEvents)
+            logger.info(null, "assessmentEvents events : " + assessmentEvents)
             val contentList = request.getRequest.getOrDefault(JsonKey.CONTENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
             val finalContentList = if(CollectionUtils.isNotEmpty(assessmentEvents)) {
               logger.info(requestContext, "Assessment Consumption events exist: " + assessmentEvents.size())
@@ -160,17 +160,17 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         if(CollectionUtils.isNotEmpty(contentList)) {
             val batchContentList: Map[String, List[java.util.Map[String, AnyRef]]] = contentList.filter(event => StringUtils.isNotBlank(event.getOrDefault(JsonKey.BATCH_ID, "").asInstanceOf[String])).toList.groupBy(event => event.get(JsonKey.BATCH_ID).asInstanceOf[String])
             val batchIds = batchContentList.keySet.toList.asJava
-            logger.info(RequestContext,"ProcessContents def batchIds : " + batchIds)
+            logger.info(null,"ProcessContents def batchIds : " + batchIds)
             val batches:Map[String, List[java.util.Map[String, AnyRef]]] = getBatches(requestContext ,new java.util.ArrayList[String](batchIds), null).toList.groupBy(batch => batch.get(JsonKey.BATCH_ID).asInstanceOf[String])
-            logger.info(RequestContext,"ProcessContents def batches : " + batches)
+            logger.info(null,"ProcessContents def batches : " + batches)
             val invalidBatchIds = batchContentList.keySet.diff(batches.keySet).toList.asJava
             val validBatches:Map[String, List[java.util.Map[String, AnyRef]]]  = batches.filterKeys(key => batchIds.contains(key))
-            logger.info(RequestContext,"ProcessContents def valid batches : " + validBatches)
+            logger.info(null,"ProcessContents def valid batches : " + validBatches)
             val completedBatchIds = validBatches.filter(batch => 1 != batch._2.head.get(JsonKey.STATUS).asInstanceOf[Integer]).keys.toList.asJava
             val responseMessage = new java.util.HashMap[String, AnyRef]()
             val invalidContents = new java.util.ArrayList[java.util.Map[String, AnyRef]]()
             val validUserIds = List(requestedBy, requestedFor).filter(p => StringUtils.isNotBlank(p))
-            logger.info(RequestContext," response messages"+ responseMessage)
+            logger.info(null," response messages"+ responseMessage)
             batchContentList.foreach(input => {
                 val batchId = input._1
                 if(!invalidBatchIds.contains(batchId) && !completedBatchIds.contains(batchId)) {
@@ -260,8 +260,8 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
 
     def processContentConsumption(inputContent: java.util.Map[String, AnyRef], existingContent: java.util.Map[String, AnyRef], userId: String) = {
         val inputStatus = inputContent.getOrDefault(JsonKey.STATUS, 0.asInstanceOf[AnyRef]).asInstanceOf[Number].intValue()
-        logger.info(RequestContext,"processContentConsumption > inputStatus"+ inputStatus)
-        logger.info(RequestContext,"processContentConsumption > inputContent"+ inputContent)
+        logger.info(null,"processContentConsumption > inputStatus"+ inputStatus)
+        logger.info(null,"processContentConsumption > inputContent"+ inputContent)
         val updatedContent = new java.util.HashMap[String, AnyRef]()
         updatedContent.putAll(inputContent)
         val parsedMap = new java.util.HashMap[String, AnyRef]()
@@ -271,7 +271,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             }
         )
         updatedContent.putAll(parsedMap)
-        logger.info(RequestContext,"processContentConsumption > updateContent"+ updatedContent)
+        logger.info(null,"processContentConsumption > updateContent"+ updatedContent)
         val inputCompletedTime = parseDate(inputContent.getOrDefault(JsonKey.LAST_COMPLETED_TIME, "").asInstanceOf[String])
         val inputAccessTime = parseDate(inputContent.getOrDefault(JsonKey.LAST_ACCESS_TIME, "").asInstanceOf[String])
         if(MapUtils.isNotEmpty(existingContent)) {
@@ -282,10 +282,10 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             updatedContent.put(JsonKey.PROGRESS, List(inputProgress, existingProgress).max.asInstanceOf[AnyRef])
             val existingStatus = Option(existingContent.getOrDefault(JsonKey.STATUS, 0.asInstanceOf[AnyRef]).asInstanceOf[Number]).getOrElse(0.asInstanceOf[Number]).intValue()
             val existingCompletedTime = if (parseDate(existingContent.get(JsonKey.LAST_COMPLETED_TIME).asInstanceOf[Date]) == null) parseDate(existingContent.getOrDefault(JsonKey.OLD_LAST_COMPLETED_TIME, "").asInstanceOf[String]) else parseDate(existingContent.get(JsonKey.LAST_COMPLETED_TIME).asInstanceOf[Date])
-            logger.info(RequestContext,"processContentConsumption > inputStatus & existingStatus"+ inputStatus +" >= "+existingStatus)
+            logger.info(null,"processContentConsumption > inputStatus & existingStatus"+ inputStatus +" >= "+existingStatus)
             if(inputStatus >= existingStatus) {
                 if(inputStatus >= 2) {
-                    logger.info(RequestContext, "inside the if inputStatus >= 2" )
+                    logger.info(null, "inside the if inputStatus >= 2" )
                     updatedContent.put(JsonKey.STATUS, 2.asInstanceOf[AnyRef])
                     updatedContent.put(JsonKey.PROGRESS, 100.asInstanceOf[AnyRef])
                     updatedContent.put(JsonKey.LAST_COMPLETED_TIME, compareTime(existingCompletedTime, inputCompletedTime))

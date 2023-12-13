@@ -1,6 +1,8 @@
 package org.sunbird.learner.actors.coursebatch;
 
 import akka.actor.ActorRef;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.typesafe.config.ConfigFactory;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -84,6 +86,9 @@ public class CourseBatchManagementActor extends BaseActor {
         break;
       case "getParticipants":
         getParticipants(request);
+        break;
+      case "getAllParticipants":
+        getAllParticipants(request);
         break;
       default:
         onReceiveUnsupportedOperation(request.getOperation());
@@ -645,6 +650,54 @@ public class CourseBatchManagementActor extends BaseActor {
     result.put(JsonKey.PARTICIPANTS, participants);
     response.put(JsonKey.BATCH, result);
     sender().tell(response, self());
+  }
+
+  private void getAllParticipants(Request actorMessage) throws JsonProcessingException {
+    System.out.println("Inside getAllParticipants");
+    Map<String, Object> request =
+            (Map<String, Object>) actorMessage.getRequest().get(JsonKey.BATCH);
+    boolean active = true;
+    if (null != request.get(JsonKey.ACTIVE)) {
+      active = (boolean) request.get(JsonKey.ACTIVE);
+    }
+
+    List<?> batchIdList = (List<?>) ((Map<String, Object>) actorMessage.getRequest().get(JsonKey.BATCH)).get(JsonKey.BATCH_ID);
+
+    if (batchIdList != null && !batchIdList.isEmpty()) {
+
+      String[] batchIdArray = batchIdList.stream()
+              .map(Object::toString)
+              .toArray(String[]::new);
+
+      List<String> participants = null;
+
+      Response response = new Response();
+
+      ObjectMapper objectMapper = new ObjectMapper();
+      List<Map<String, Object>> batchList = new ArrayList<>();
+
+
+      for (String id : batchIdArray) {
+        Map<String, Object> result = new HashMap<String, Object>();
+        System.out.println("batchid id:"+id);
+
+        participants = userCoursesService.getParticipantsList(id, active, actorMessage.getRequestContext());
+
+        if (CollectionUtils.isEmpty(participants)) {
+          participants = new ArrayList<>();
+        }
+
+        result.put(JsonKey.COUNT, participants.size());
+        result.put(JsonKey.PARTICIPANTS, participants);
+        result.put(JsonKey.BATCH_ID, id);
+        batchList.add(result);
+        response.put(JsonKey.BATCH,batchList);
+
+      }
+
+      System.out.println("response:"+response.getResult());
+      sender().tell(response,self());
+    }
   }
 
   private CourseBatch mapESFieldsToObject(CourseBatch courseBatch) {

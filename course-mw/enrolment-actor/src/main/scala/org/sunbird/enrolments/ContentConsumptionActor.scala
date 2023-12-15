@@ -67,6 +67,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             }
             logger.info(null, "assessmentEvents events : " + assessmentEvents)
             val contentList = request.getRequest.getOrDefault(JsonKey.CONTENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
+            val currentStatus = contentList.headOption.map(_.get(JsonKey.STATUS)).getOrElse(2)
             val finalContentList = if(CollectionUtils.isNotEmpty(assessmentEvents)) {
               logger.info(requestContext, "Assessment Consumption events exist: " + assessmentEvents.size())
               val assessmentConsumptions = assessmentEvents.map(e => {
@@ -76,7 +77,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                 consumption.put("courseId", cc.courseId)
                 consumption.put("batchId", cc.batchId)
                 consumption.put("contentId", cc.contentId)
-                consumption.put("status", 2.asInstanceOf[AnyRef])
+                consumption.put("status", currentStatus.asInstanceOf[AnyRef])
                 consumption
               })
               if (CollectionUtils.isNotEmpty(contentList)) (contentList ++ assessmentConsumptions).asJava else assessmentConsumptions.asJava
@@ -160,6 +161,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         if(CollectionUtils.isNotEmpty(contentList)) {
             val batchContentList: Map[String, List[java.util.Map[String, AnyRef]]] = contentList.filter(event => StringUtils.isNotBlank(event.getOrDefault(JsonKey.BATCH_ID, "").asInstanceOf[String])).toList.groupBy(event => event.get(JsonKey.BATCH_ID).asInstanceOf[String])
             val batchIds = batchContentList.keySet.toList.asJava
+            logger.info(null,"ProcessContents def batchContentList : " + batchContentList)
             logger.info(null,"ProcessContents def batchIds : " + batchIds)
             val batches:Map[String, List[java.util.Map[String, AnyRef]]] = getBatches(requestContext ,new java.util.ArrayList[String](batchIds), null).toList.groupBy(batch => batch.get(JsonKey.BATCH_ID).asInstanceOf[String])
             logger.info(null,"ProcessContents def batches : " + batches)

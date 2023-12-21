@@ -190,6 +190,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                             })
                             // First push the event to kafka and then update cassandra user_content_consumption table
                             pushInstructionEvent(requestContext, userId, batchId, courseId, contents.asJava)
+                            logger.info(requestContext,"updating sunbird_course_keyspace and table user_content_consumption with this records : "+contents)
                             cassandraOperation.batchInsertLogged(requestContext, consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, contents)
                             val updateData = getLatestReadDetails(userId, batchId, contents)
                             cassandraOperation.updateRecordV2(requestContext, enrolmentDBInfo.getKeySpace, enrolmentDBInfo.getTableName, updateData._1, updateData._2, true)

@@ -69,6 +69,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             case "enrol" => enroll(request)
             case "unenrol" => unEnroll(request)
             case "listEnrol" => list(request)
+            case "listOfUserIds" => listOfUserIds(request)
             case _ => ProjectCommonException.throwClientErrorException(ResponseCode.invalidRequestData,
                 ResponseCode.invalidRequestData.getErrorMessage)
         }
@@ -352,6 +353,99 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             contents.get(0).asInstanceOf[java.util.Map[String, AnyRef]].getOrDefault(JsonKey.LEAF_NODE_COUNT, 0.asInstanceOf[AnyRef]).asInstanceOf[Int]
         } else 0}
         enrolmentData.setStatus(getCompletionStatus(enrolmentData.getProgress, leafNodesCount))
+    }
+
+    def listOfUserIds(request: Request): Unit = {
+
+        val userId = request.get(JsonKey.USER_ID).asInstanceOf[String]
+        val courseIdList = request.get(JsonKey.COURSE_IDS).asInstanceOf[java.util.List[String]]
+        logger.info(request.getRequestContext,"CourseEnrolmentActor :: list :: UserId = " + userId)
+
+        val userIds = request.get(JsonKey.USER_IDs).asInstanceOf[String]
+        val userIdList  = List(userIds);
+
+
+        try{
+            val response = if (isCacheEnabled && request.getContext.get("cache").asInstanceOf[Boolean])
+                getCachedEnrolmentList(userId, () => getEnrolmentListForUSerIds(request, userId, courseIdList,userIdList)) else getEnrolmentList(request, userId, courseIdList)
+
+            /*val response = getEnrolmentListForUSerIds(request, userId, courseIdList,userIdList)*/
+
+            sender().tell(response, self)
+        }catch {
+            case e: Exception =>
+                logger.error(request.getRequestContext, "Exception in enrolment list : user ::" + userId + "| Exception is:"+e.getMessage, e)
+                throw e
+        }
+
+    }
+
+
+    def getEnrolmentListForUSerIds(request: Request, userId: String, courseIdList: java.util.List[String],userIdList:java.util.List[String]): Response = {
+        logger.info(request.getRequestContext,"CourseEnrolmentActor :: getCachedEnrolmentList :: fetching data from cassandra with userId " + userId)
+
+        val activeEnrolments: java.util.List[java.util.Map[String, AnyRef]] = getActiveEnrollmentsForUserIds( userId, courseIdList,userIdList,request.getRequestContext)
+        System.out.println("==============activeEnrolments=============="+activeEnrolments.toList);
+
+        logger.info(request.getRequestContext,"CourseEnrolmentActor :: list size :: "+activeEnrolments.size()+" :: UserId = " + userId)
+
+        val enrolments: java.util.List[java.util.Map[String, AnyRef]] = {
+            if (CollectionUtils.isNotEmpty(activeEnrolments)) {
+                val courseIds: java.util.List[String] = activeEnrolments.map(e => e.getOrDefault(JsonKey.COURSE_ID, "").asInstanceOf[String]).distinct.filter(id => StringUtils.isNotBlank(id)).toList.asJava
+                System.out.println("=================courseIds============="+courseIds);
+
+                val enrolmentList: java.util.List[java.util.Map[String, AnyRef]] = addCourseDetails(activeEnrolments, courseIds, request)
+
+                val userIds: java.util.List[String] = activeEnrolments.map(e => e.getOrDefault(JsonKey.USER_ID, "").asInstanceOf[String]).distinct.filter(id => StringUtils.isNotBlank(id)).toList.asJava
+                System.out.println("=================userIds============="+userIds);
+
+                val updatedEnrolmentList = updateProgressDataForUserIds(enrolmentList, userIds, courseIds)
+
+                addBatchDetails(updatedEnrolmentList, request)
+            } else new java.util.ArrayList[java.util.Map[String, AnyRef]]()
+        }
+
+        System.out.println("=================activeEnrolmentsAfterUpdated============="+enrolments.toString);
+
+        val resp: Response = new Response()
+        val sortedEnrolment = enrolments.filter(ae => ae.get("lastContentAccessTime")!=null).toList.sortBy(_.get("lastContentAccessTime").asInstanceOf[Date])(Ordering[Date].reverse).toList
+        val finalEnrolments = sortedEnrolment ++ enrolments.asScala.filter(e => e.get("lastContentAccessTime")==null).toList
+        val finalData = enrolments.toList.asJava;
+
+        System.out.println("============finalEnrolments===============:"+finalData)
+        /*resp.put(JsonKey.COURSES, finalEnrolments.asJava)
+        resp.put(JsonKey.COURSES, userIdList)*/null
+        resp.put(JsonKey.COURSES, activeEnrolments.toList.asJava)
+        resp
+    }
+
+
+    def updateProgressDataForUserIds(enrolments: java.util.List[java.util.Map[String, AnyRef]], userId: java.util.List[String], courseIds: java.util.List[String]): util.List[java.util.Map[String, AnyRef]] = {
+        System.out.println("Inside updateProgressDataForUserIds");
+
+        enrolments.map(enrolment => {
+            val leafNodesCount: Int = enrolment.getOrDefault("leafNodesCount", 0.asInstanceOf[AnyRef]).asInstanceOf[Int]
+            val progress: Int = enrolment.getOrDefault("progress", 0.asInstanceOf[AnyRef]).asInstanceOf[Int]
+            enrolment.put("status", getCompletionStatus(progress, leafNodesCount).asInstanceOf[AnyRef])
+            enrolment.put("completionPercentage", getCompletionPerc(progress, leafNodesCount).asInstanceOf[AnyRef])
+        })
+
+        enrolments
+    }
+
+    def getActiveEnrollmentsForUserIds(userId: String, courseIdList: java.util.List[String],userIdList:java.util.List[String], requestContext: RequestContext): java.util.List[java.util.Map[String, AnyRef]] = {
+        val enrolments: java.util.List[java.util.Map[String, AnyRef]] = userCoursesDao.listEnrolmentsForUserIds(requestContext, userId, courseIdList,userIdList)
+
+        if (CollectionUtils.isNotEmpty(enrolments)) {
+            val activeEnrolments = enrolments.filter(e => e.getOrDefault(JsonKey.ACTIVE, false.asInstanceOf[AnyRef]).asInstanceOf[Boolean])
+            val sortedEnrolment = activeEnrolments.filter(ae => ae.get(JsonKey.COURSE_ENROLL_DATE)!=null).toList.sortBy(_.get(JsonKey.COURSE_ENROLL_DATE).asInstanceOf[Date])(Ordering[Date].reverse).toList
+            val finalEnrolments = sortedEnrolment ++ activeEnrolments.filter(e => e.get(JsonKey.COURSE_ENROLL_DATE)==null).toList
+
+            finalEnrolments.take(Integer.parseInt(ProjectUtil.getConfigValue("enrollment_list_size"))).toList.asJava
+
+        } else {
+            new util.ArrayList[java.util.Map[String, AnyRef]]()
+        }
     }
 }
 

@@ -254,7 +254,9 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         response.getResult.getOrDefault(JsonKey.RESPONSE, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
     }
 
-  def getContentsConsumptionForCouseCompletionPercentage(userId: String, courseId : String, contentIds: java.util.List[String], batchId: String, requestContext: RequestContext):java.util.List[java.util.Map[String, AnyRef]] = {
+
+
+  /*def getContentsConsumptionForCouseCompletionPercentage(userId: String, courseId : String, contentIds: java.util.List[String], batchId: String, requestContext: RequestContext):java.util.List[java.util.Map[String, AnyRef]] = {
     val filters = new java.util.HashMap[String, AnyRef]() {{
       put("userid", userId)
       put("courseid", courseId)
@@ -284,7 +286,9 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
 
     val responseWithCompletion: Map[String, AnyRef] = Map("response" -> updatedResult.asJava)
     responseWithCompletion("response").asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
-  }
+  }*/
+
+
 
     def processContentConsumption(inputContent: java.util.Map[String, AnyRef], existingContent: java.util.Map[String, AnyRef], userId: String) = {
         val inputStatus = inputContent.getOrDefault(JsonKey.STATUS, 0.asInstanceOf[AnyRef]).asInstanceOf[Number].intValue()
@@ -405,7 +409,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         val courseId = request.get(JsonKey.COURSE_ID).asInstanceOf[String]
         val contentIds = request.getRequest.getOrDefault(JsonKey.CONTENT_IDS, new java.util.ArrayList[String]()).asInstanceOf[java.util.List[String]]
         val fields = request.getRequest.getOrDefault(JsonKey.FIELDS, new java.util.ArrayList[String](){{ add(JsonKey.PROGRESS) }}).asInstanceOf[java.util.List[String]]
-        val contentsConsumed = getContentsConsumptionForCouseCompletionPercentage(userId, courseId, contentIds, batchId, request.getRequestContext)
+        val contentsConsumed = getContentsConsumption(userId, courseId, contentIds, batchId, request.getRequestContext)
         val response = new Response
         if(CollectionUtils.isNotEmpty(contentsConsumed)) {
             val filteredContents = contentsConsumed.map(m => {

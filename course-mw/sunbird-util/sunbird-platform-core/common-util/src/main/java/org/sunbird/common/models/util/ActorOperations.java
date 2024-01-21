@@ -158,6 +158,7 @@ public enum ActorOperations {
   GET_PARTICIPANTS("getParticipants"),
   GET_ALL_PARTICIPANTS("getAllParticipants"),
   GET_USER_COURSE("getUserCourse"),
+  COURSE_PROGRESS("getCourseProgress"),
   FREEUP_USER_IDENTITY("freeUpUserIdentity"),
   RESET_PASSWORD("resetPassword"),
   MERGE_USER("mergeUser"),

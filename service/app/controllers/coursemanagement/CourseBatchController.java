@@ -143,4 +143,22 @@ public class CourseBatchController extends BaseController {
                 getAllRequestHeaders(httpRequest),
                 httpRequest);
     }
+
+    public CompletionStage<Result> getCourseProgress(Http.Request httpRequest) {
+        System.out.println("Inside getCourseProgress method of controller");
+
+        return handleRequest(
+                courseBatchActorRef,
+                ActorOperations.COURSE_PROGRESS.getValue(),
+                httpRequest.body().asJson(),
+                (request) -> {
+                    try {
+                        new CourseBatchRequestValidator().validateGetCourseProgress((Request) request);
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return null;
+                },
+                httpRequest);
+    }
 }

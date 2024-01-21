@@ -56,6 +56,7 @@ GET		 /v1/course/batch/read/:batchId			@controllers.coursemanagement.CourseBatch
 POST     /v1/course/batch/search                @controllers.coursemanagement.CourseBatchController.search(request: play.mvc.Http.Request)
 POST		 /v1/batch/participants/list			@controllers.coursemanagement.CourseBatchController.getParticipants(request: play.mvc.Http.Request)
 POST     /v1/batch/allparticipants/list         @controllers.coursemanagement.CourseBatchController.getAllParticipants(request: play.mvc.Http.Request)
+POST     /v1/course/batch/progress                    @controllers.coursemanagement.CourseBatchController.getCourseProgress(request: play.mvc.Http.Request)
 
 # Certificate APIs
 POST /v1/course/batch/cert/issue           @controllers.certificate.CertificateController.issueCertificate(request: play.mvc.Http.Request)

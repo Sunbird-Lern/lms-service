@@ -845,7 +845,7 @@ public class CourseBatchManagementActor extends BaseActor {
       enrolledcount = (int) batchInfo.get("count");
     }
 
-    String urlString = "http://localhost:9000/v1/users/courses/list";
+    String urlString = "https://compass-dev.tarento.com/api/course/v2/users/list";
 
     Request requestForAllUserIds = new Request();
     Map<String, Object> requestMap1 = new HashMap<>();

@@ -3,10 +3,16 @@ package org.sunbird.learner.actors.coursebatch;
 import akka.actor.ActorRef;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import com.typesafe.config.ConfigFactory;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.sunbird.actor.base.BaseActor;
 import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.exception.ProjectCommonException;
@@ -40,19 +46,10 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.sunbird.common.models.util.JsonKey.ID;
-import static org.sunbird.common.models.util.JsonKey.PARTICIPANTS;
+import static org.sunbird.common.models.util.JsonKey.*;
 
 public class CourseBatchManagementActor extends BaseActor {
 
@@ -89,6 +86,9 @@ public class CourseBatchManagementActor extends BaseActor {
         break;
       case "getAllParticipants":
         getAllParticipants(request);
+        break;
+      case "getCourseProgress":
+        getCourseProgress(request);
         break;
       default:
         onReceiveUnsupportedOperation(request.getOperation());
@@ -741,6 +741,49 @@ public class CourseBatchManagementActor extends BaseActor {
     return template;
   }
 
+  private Response getAllParticipantsForCourseCompletionPercentage(Request actorMessage) throws JsonProcessingException {
+    System.out.println("Inside getAllParticipantsForCourseCompletionPercentage");
+
+    Response response = new Response();
+    Map<String, Object> request =
+            (Map<String, Object>) actorMessage.getRequest().get(JsonKey.BATCH);
+    boolean active = true;
+    if (null != request.get(JsonKey.ACTIVE)) {
+      active = (boolean) request.get(JsonKey.ACTIVE);
+    }
+
+    List<?> batchIdList = (List<?>) ((Map<String, Object>) actorMessage.getRequest().get(JsonKey.BATCH)).get(JsonKey.BATCH_ID);
+
+    if (batchIdList != null && !batchIdList.isEmpty()) {
+
+      String[] batchIdArray = batchIdList.stream()
+              .map(Object::toString)
+              .toArray(String[]::new);
+
+      List<Map<String, Object>> batchList = new ArrayList<>();
+
+      for (String id : batchIdArray) {
+        Map<String, Object> result = new HashMap<String, Object>();
+        System.out.println("batchid id:" + id);
+
+        List<String> participants = userCoursesService.getParticipantsList(id, active, actorMessage.getRequestContext());
+
+        if (CollectionUtils.isEmpty(participants)) {
+          participants = new ArrayList<>();
+        }
+
+        result.put(JsonKey.COUNT, participants.size());
+        result.put(JsonKey.PARTICIPANTS, participants);
+        result.put(JsonKey.BATCH_ID, id);
+        batchList.add(result);
+        response.put(JsonKey.BATCH, batchList);
+
+      }
+      /*sender().tell(response, self());*/
+    }
+    return response;
+  }
+
   private void updateCollection(RequestContext requestContext, Map<String, Object> courseBatch, Map<String, Object> contentDetails) {
     List<Map<String, Object>> batches = (List<Map<String, Object>>) contentDetails.getOrDefault("batches", new ArrayList<>());
     Map<String, Object> data =  new HashMap<>();
@@ -770,6 +813,115 @@ public class CourseBatchManagementActor extends BaseActor {
         return null;
       }
     }).orElse(null));
+  }
+
+  private void getCourseProgress(Request actorMessage) throws JsonProcessingException, UnirestException {
+    System.out.println("Inside getCourseProgress method in CourseBatchManagementActor");
+
+    String batchId = actorMessage.getRequest().get(BATCH_ID).toString();
+    String courseId = actorMessage.getRequest().get(COURSE_ID).toString();
+    String userId = actorMessage.getRequest().get(USER_ID).toString();
+
+    Request requestForgetAllParticipants = new Request();
+    Response response = new Response();
+
+    Map<String, Object> batchMap = new HashMap<>();
+    batchMap.put(BATCH_ID, new ArrayList<>(Arrays.asList(batchId)));
+
+    Map<String, Object> linkedHashMap = new LinkedHashMap<>(batchMap);
+    requestForgetAllParticipants.put(BATCH, linkedHashMap);
+    requestForgetAllParticipants.put("requestedBy", userId);
+    requestForgetAllParticipants.put("id", null);
+    requestForgetAllParticipants.put(USER_ID, null);
+
+    response = getAllParticipantsForCourseCompletionPercentage(requestForgetAllParticipants);
+    List<String> participants = null;
+    int enrolledcount = 0;
+
+    List<Map<String, Object>> batchList = (List<Map<String, Object>>) response.getResult().get("batch");
+    if (batchList != null && !batchList.isEmpty()) {
+      Map<String, Object> batchInfo = batchList.get(0); // Assuming there's only one batch in the response
+      participants = (List<String>) batchInfo.get("participants");
+      enrolledcount = (int) batchInfo.get("count");
+    }
+
+    String urlString = "https://compass-dev.tarento.com/api/course/v2/users/list";
+
+    Request requestForAllUserIds = new Request();
+    Map<String, Object> requestMap1 = new HashMap<>();
+    requestMap1.put("userIds", participants);
+    requestForAllUserIds.put(REQUEST,requestMap1);
+
+    System.out.println("requestForAllUserIds:"+requestForAllUserIds.getRequest());
+
+    /***** TO call enrolledUsers *****/
+    Map<String, String> headers = Map.of(
+            "Content-Type", "application/json",
+            AUTHORIZATION, "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI0WEFsdFpGMFFhc1JDYlFnVXB4b2RvU2tLRUZyWmdpdCJ9.mXD7cSvv3Le6o_32lJplDck2D0IIMHnv0uJKq98YVwk",
+            X_AUTHENTICATED_USER_TOKEN,actorMessage.getContext().get(X_AUTH_TOKEN).toString()
+    );
+
+
+    Gson gson = new Gson();
+    String requestBody = gson.toJson(requestForAllUserIds.getRequest());
+
+    HttpResponse<String> enrolledUserResponse = Unirest.post(urlString)
+            .headers(headers)
+            .body(requestBody)
+            .asString();
+
+    int completedCount = 0;
+    int progressCount = 0;
+    double courseCompletionPercentage;
+
+    try {
+      if (null != enrolledUserResponse && enrolledUserResponse.getStatus() == 200) {
+        Map<String, Object> responseData = new ObjectMapper().readValue(enrolledUserResponse.getBody(), Map.class);
+
+        JSONObject jsonObject = new JSONObject(responseData);
+        JSONObject resultObject = jsonObject.getJSONObject("result");
+        JSONArray coursesArray = resultObject.getJSONArray("courses");
+
+        for (int i = 0; i < coursesArray.length(); i++) {
+          JSONObject courseObject = coursesArray.getJSONObject(i);
+          // Extract courseId and status from the courseObject
+          String courseId1 = courseObject.getString("courseId");
+          /* System.out.println("Course ID: " + courseId1);*/
+          if (courseId.equalsIgnoreCase(courseId1)) {
+            int status = courseObject.getInt("status");
+            if (status == 2) {
+              completedCount++;
+            }
+            if (status == 1) {
+              progressCount++;
+            }
+          }
+        }
+
+
+        System.out.println("completedCount:"+completedCount);
+        System.out.println("progressCount:"+progressCount);
+
+      }else {
+        logger.info(actorMessage.getRequestContext(), "Composite search returned failed response :: " + enrolledUserResponse.getStatus());
+      }
+    } catch (Exception e) {
+      logger.error(actorMessage.getRequestContext(), "Exception occurred while calling composite search service :: ", e);
+    }
+
+
+    if (enrolledcount == 0) {
+      courseCompletionPercentage = 0;
+    }else{
+      courseCompletionPercentage =  (completedCount * 100.0) / enrolledcount;
+    }
+
+    Response finalResponse = new Response();
+
+    finalResponse.put(USER_ID,userId);
+    finalResponse.put("courseCompletionPercentage",courseCompletionPercentage);
+
+    sender().tell(finalResponse, self());
   }
 
 }

@@ -24,13 +24,13 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
   public void validateCreateCourseBatchRequest(Request request) {
 
     validateParam(
-        (String) request.getRequest().get(JsonKey.COURSE_ID),
-        ResponseCode.mandatoryParamsMissing,
-            JsonKey.COURSE_ID+"/"+JsonKey.COLLECTION_ID);
+            (String) request.getRequest().get(JsonKey.COURSE_ID),
+            ResponseCode.mandatoryParamsMissing,
+            JsonKey.COURSE_ID + "/" + JsonKey.COLLECTION_ID);
     validateParam(
-        (String) request.getRequest().get(JsonKey.NAME),
-        ResponseCode.mandatoryParamsMissing,
-        JsonKey.NAME);
+            (String) request.getRequest().get(JsonKey.NAME),
+            ResponseCode.mandatoryParamsMissing,
+            JsonKey.NAME);
     validateEnrolmentType(request);
     String startDate = (String) request.getRequest().get(JsonKey.START_DATE);
     String endDate = (String) request.getRequest().get(JsonKey.END_DATE);
@@ -43,34 +43,34 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
 
   public void validateUpdateCourseBatchRequest(Request request) {
     validateParam(
-        (String) request.getRequest().get(JsonKey.COURSE_ID),
-        ResponseCode.mandatoryParamsMissing,
-        JsonKey.COURSE_ID+"/"+JsonKey.COLLECTION_ID);
+            (String) request.getRequest().get(JsonKey.COURSE_ID),
+            ResponseCode.mandatoryParamsMissing,
+            JsonKey.COURSE_ID + "/" + JsonKey.COLLECTION_ID);
     if (null != request.getRequest().get(JsonKey.STATUS)) {
       boolean status = validateBatchStatus(request);
       if (!status) {
         throw new ProjectCommonException(
-            ResponseCode.progressStatusError.getErrorCode(),
-            ResponseCode.progressStatusError.getErrorMessage(),
-            ERROR_CODE);
+                ResponseCode.progressStatusError.getErrorCode(),
+                ResponseCode.progressStatusError.getErrorMessage(),
+                ERROR_CODE);
       }
     }
     if (request.getRequest().containsKey(JsonKey.NAME)
-        && StringUtils.isBlank((String) request.getRequest().get(JsonKey.NAME))) {
+            && StringUtils.isBlank((String) request.getRequest().get(JsonKey.NAME))) {
       throw new ProjectCommonException(
-          ResponseCode.invalidParameterValue.getErrorCode(),
-          ResponseCode.invalidParameterValue.getErrorMessage(),
-          ERROR_CODE,
-          (String) request.getRequest().get(JsonKey.NAME),
-          JsonKey.NAME);
+              ResponseCode.invalidParameterValue.getErrorCode(),
+              ResponseCode.invalidParameterValue.getErrorMessage(),
+              ERROR_CODE,
+              (String) request.getRequest().get(JsonKey.NAME),
+              JsonKey.NAME);
     }
     if (request.getRequest().containsKey(JsonKey.ENROLLMENT_TYPE)) {
       validateEnrolmentType(request);
     }
     validateParam(
-        (String) request.getRequest().get(JsonKey.ID),
-        ResponseCode.mandatoryParamsMissing,
-        JsonKey.ID);
+            (String) request.getRequest().get(JsonKey.ID),
+            ResponseCode.mandatoryParamsMissing,
+            JsonKey.ID);
     String startDate = (String) request.getRequest().get(JsonKey.START_DATE);
     String endDate = (String) request.getRequest().get(JsonKey.END_DATE);
 
@@ -80,9 +80,9 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
     boolean bool = validateDateWithTodayDate(endDate);
     if (!bool) {
       throw new ProjectCommonException(
-          ResponseCode.invalidBatchEndDateError.getErrorCode(),
-          ResponseCode.invalidBatchEndDateError.getErrorMessage(),
-          ERROR_CODE);
+              ResponseCode.invalidBatchEndDateError.getErrorCode(),
+              ResponseCode.invalidBatchEndDateError.getErrorMessage(),
+              ERROR_CODE);
     }
 
     validateUpdateBatchEndDate(request);
@@ -97,35 +97,35 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
   private void validateBatchId(Request courseRequest) {
     if (courseRequest.getRequest().get(JsonKey.BATCH_ID) == null) {
       throw new ProjectCommonException(
-          ResponseCode.courseBatchIdRequired.getErrorCode(),
-          ResponseCode.courseBatchIdRequired.getErrorMessage(),
-          ERROR_CODE);
+              ResponseCode.courseBatchIdRequired.getErrorCode(),
+              ResponseCode.courseBatchIdRequired.getErrorMessage(),
+              ERROR_CODE);
     }
   }
 
   public void validateUserId(Request courseRequest) {
     if (courseRequest.getRequest().get(JsonKey.USER_IDs) == null) {
       throw new ProjectCommonException(
-          ResponseCode.userIdRequired.getErrorCode(),
-          ResponseCode.userIdRequired.getErrorMessage(),
-          ERROR_CODE);
+              ResponseCode.userIdRequired.getErrorCode(),
+              ResponseCode.userIdRequired.getErrorMessage(),
+              ERROR_CODE);
     }
   }
 
   private void validateEnrolmentType(Request request) {
     validateParam(
-        (String) request.getRequest().get(JsonKey.ENROLLMENT_TYPE),
-        ResponseCode.mandatoryParamsMissing,
-        JsonKey.ENROLLMENT_TYPE);
+            (String) request.getRequest().get(JsonKey.ENROLLMENT_TYPE),
+            ResponseCode.mandatoryParamsMissing,
+            JsonKey.ENROLLMENT_TYPE);
     String enrolmentType = (String) request.getRequest().get(JsonKey.ENROLLMENT_TYPE);
     if (!(ProjectUtil.EnrolmentType.open.getVal().equalsIgnoreCase(enrolmentType)
-          || ProjectUtil.EnrolmentType.inviteOnly.getVal().equalsIgnoreCase(enrolmentType))) {
+            || ProjectUtil.EnrolmentType.inviteOnly.getVal().equalsIgnoreCase(enrolmentType))) {
       throw new ProjectCommonException(
-          ResponseCode.invalidParameterValue.getErrorCode(),
-          ResponseCode.invalidParameterValue.getErrorMessage(),
-          ResponseCode.CLIENT_ERROR.getResponseCode(),
-          enrolmentType,
-          JsonKey.ENROLLMENT_TYPE);
+              ResponseCode.invalidParameterValue.getErrorCode(),
+              ResponseCode.invalidParameterValue.getErrorMessage(),
+              ResponseCode.CLIENT_ERROR.getResponseCode(),
+              enrolmentType,
+              JsonKey.ENROLLMENT_TYPE);
     }
   }
 
@@ -142,17 +142,17 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
       cal2.setTime(todayDate);
       if (batchStartDate.before(todayDate)) {
         throw new ProjectCommonException(
-            ResponseCode.courseBatchStartDateError.getErrorCode(),
-            ResponseCode.courseBatchStartDateError.getErrorMessage(),
-            ResponseCode.CLIENT_ERROR.getResponseCode());
+                ResponseCode.courseBatchStartDateError.getErrorCode(),
+                ResponseCode.courseBatchStartDateError.getErrorMessage(),
+                ResponseCode.CLIENT_ERROR.getResponseCode());
       }
     } catch (ProjectCommonException e) {
       throw e;
     } catch (Exception e) {
       throw new ProjectCommonException(
-          ResponseCode.dateFormatError.getErrorCode(),
-          ResponseCode.dateFormatError.getErrorMessage(),
-          ResponseCode.CLIENT_ERROR.getResponseCode());
+              ResponseCode.dateFormatError.getErrorCode(),
+              ResponseCode.dateFormatError.getErrorMessage(),
+              ResponseCode.CLIENT_ERROR.getResponseCode());
     }
   }
 
@@ -168,20 +168,20 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
       }
     } catch (Exception e) {
       throw new ProjectCommonException(
-          ResponseCode.dateFormatError.getErrorCode(),
-          ResponseCode.dateFormatError.getErrorMessage(),
-          ResponseCode.CLIENT_ERROR.getResponseCode());
+              ResponseCode.dateFormatError.getErrorCode(),
+              ResponseCode.dateFormatError.getErrorMessage(),
+              ResponseCode.CLIENT_ERROR.getResponseCode());
     }
     if (StringUtils.isNotEmpty(endDate) && batchStartDate.getTime() >= batchEndDate.getTime()) {
       throw new ProjectCommonException(
-          ResponseCode.endDateError.getErrorCode(),
-          ResponseCode.endDateError.getErrorMessage(),
-          ResponseCode.CLIENT_ERROR.getResponseCode());
+              ResponseCode.endDateError.getErrorCode(),
+              ResponseCode.endDateError.getErrorMessage(),
+              ResponseCode.CLIENT_ERROR.getResponseCode());
     }
   }
 
   private static void validateEnrollmentEndDate(
-      String enrollmentEndDate, String startDate, String endDate) {
+          String enrollmentEndDate, String startDate, String endDate) {
     SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
     format.setLenient(false);
     Date batchEndDate = null;
@@ -198,46 +198,46 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
 
     } catch (Exception e) {
       throw new ProjectCommonException(
-          ResponseCode.dateFormatError.getErrorCode(),
-          ResponseCode.dateFormatError.getErrorMessage(),
-          ResponseCode.CLIENT_ERROR.getResponseCode());
+              ResponseCode.dateFormatError.getErrorCode(),
+              ResponseCode.dateFormatError.getErrorMessage(),
+              ResponseCode.CLIENT_ERROR.getResponseCode());
     }
     if (StringUtils.isNotEmpty(enrollmentEndDate)
-        && batchStartDate.getTime() > batchenrollmentEndDate.getTime()) {
+            && batchStartDate.getTime() > batchenrollmentEndDate.getTime()) {
       throw new ProjectCommonException(
-          ResponseCode.enrollmentEndDateStartError.getErrorCode(),
-          ResponseCode.enrollmentEndDateStartError.getErrorMessage(),
-          ResponseCode.CLIENT_ERROR.getResponseCode());
+              ResponseCode.enrollmentEndDateStartError.getErrorCode(),
+              ResponseCode.enrollmentEndDateStartError.getErrorMessage(),
+              ResponseCode.CLIENT_ERROR.getResponseCode());
     }
     if (StringUtils.isNotEmpty(enrollmentEndDate)
-        && StringUtils.isNotEmpty(endDate)
-        && batchEndDate.getTime() < batchenrollmentEndDate.getTime()) {
+            && StringUtils.isNotEmpty(endDate)
+            && batchEndDate.getTime() < batchenrollmentEndDate.getTime()) {
       throw new ProjectCommonException(
-          ResponseCode.enrollmentEndDateEndError.getErrorCode(),
-          ResponseCode.enrollmentEndDateEndError.getErrorMessage(),
-          ResponseCode.CLIENT_ERROR.getResponseCode());
+              ResponseCode.enrollmentEndDateEndError.getErrorCode(),
+              ResponseCode.enrollmentEndDateEndError.getErrorMessage(),
+              ResponseCode.CLIENT_ERROR.getResponseCode());
     }
   }
 
   private void validateCreatedForAndMentors(Request request) {
     if (request.getRequest().containsKey(JsonKey.COURSE_CREATED_FOR)
-        && !(request.getRequest().get(JsonKey.COURSE_CREATED_FOR) instanceof List)) {
+            && !(request.getRequest().get(JsonKey.COURSE_CREATED_FOR) instanceof List)) {
       throw new ProjectCommonException(
-          ResponseCode.dataTypeError.getErrorCode(),
-          ResponseCode.dataTypeError.getErrorMessage(),
-          ERROR_CODE,
-          JsonKey.COURSE_CREATED_FOR,
-          "Arrays");
+              ResponseCode.dataTypeError.getErrorCode(),
+              ResponseCode.dataTypeError.getErrorMessage(),
+              ERROR_CODE,
+              JsonKey.COURSE_CREATED_FOR,
+              "Arrays");
     }
 
     if (request.getRequest().containsKey(JsonKey.MENTORS)
-        && !(request.getRequest().get(JsonKey.MENTORS) instanceof List)) {
+            && !(request.getRequest().get(JsonKey.MENTORS) instanceof List)) {
       throw new ProjectCommonException(
-          ResponseCode.dataTypeError.getErrorCode(),
-          ResponseCode.dataTypeError.getErrorMessage(),
-          ERROR_CODE,
-          JsonKey.MENTORS,
-          "Arrays");
+              ResponseCode.dataTypeError.getErrorCode(),
+              ResponseCode.dataTypeError.getErrorMessage(),
+              ERROR_CODE,
+              JsonKey.MENTORS,
+              "Arrays");
     }
   }
 
@@ -247,9 +247,9 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
       format.parse(startDate);
     } catch (Exception e) {
       throw new ProjectCommonException(
-          ResponseCode.dateFormatError.getErrorCode(),
-          ResponseCode.dateFormatError.getErrorMessage(),
-          ERROR_CODE);
+              ResponseCode.dateFormatError.getErrorCode(),
+              ResponseCode.dateFormatError.getErrorMessage(),
+              ERROR_CODE);
     }
   }
 
@@ -270,9 +270,9 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
       }
     } catch (Exception e) {
       throw new ProjectCommonException(
-          ResponseCode.dateFormatError.getErrorCode(),
-          ResponseCode.dateFormatError.getErrorMessage(),
-          ERROR_CODE);
+              ResponseCode.dateFormatError.getErrorCode(),
+              ResponseCode.dateFormatError.getErrorMessage(),
+              ERROR_CODE);
     }
     return true;
   }
@@ -295,15 +295,15 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
         cal2.setTime(batchEndDate);
       } catch (Exception e) {
         throw new ProjectCommonException(
-            ResponseCode.dateFormatError.getErrorCode(),
-            ResponseCode.dateFormatError.getErrorMessage(),
-            ERROR_CODE);
+                ResponseCode.dateFormatError.getErrorCode(),
+                ResponseCode.dateFormatError.getErrorMessage(),
+                ERROR_CODE);
       }
       if (batchEndDate.before(batchStartDate)) {
         throw new ProjectCommonException(
-            ResponseCode.invalidBatchEndDateError.getErrorCode(),
-            ResponseCode.invalidBatchEndDateError.getErrorMessage(),
-            ERROR_CODE);
+                ResponseCode.invalidBatchEndDateError.getErrorCode(),
+                ResponseCode.invalidBatchEndDateError.getErrorMessage(),
+                ERROR_CODE);
       }
     }
   }
@@ -314,7 +314,7 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
       status = checkProgressStatus(Integer.parseInt("" + request.getRequest().get(JsonKey.STATUS)));
 
     } catch (Exception e) {
-     logger.error(null, e.getMessage(), e);
+      logger.error(null, e.getMessage(), e);
     }
     return status;
   }
@@ -329,30 +329,73 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
   }
 
   public void validateGetParticipantsRequest(Request request) {
-    if(MapUtils.isEmpty((Map) request.getRequest().get(JsonKey.BATCH))){
-        throw new ProjectCommonException(
-                ResponseCode.invalidRequestData.getErrorCode(),
-                MessageFormat.format(ResponseCode.invalidRequestData.getErrorMessage(), JsonKey.BATCH),
-                ResponseCode.CLIENT_ERROR.getResponseCode());
-    }
-    validateParam(
-            (String) ((Map<String, Object>)request.getRequest().get(JsonKey.BATCH)).get(JsonKey.BATCH_ID),
-            ResponseCode.mandatoryParamsMissing,
-            JsonKey.BATCH_ID);
-  }
-
-  public void validateGetAllParticipantsRequest(Request request) throws JsonProcessingException {
-    if(MapUtils.isEmpty((Map) request.getRequest().get(JsonKey.BATCH))){
+    if (MapUtils.isEmpty((Map) request.getRequest().get(JsonKey.BATCH))) {
       throw new ProjectCommonException(
               ResponseCode.invalidRequestData.getErrorCode(),
               MessageFormat.format(ResponseCode.invalidRequestData.getErrorMessage(), JsonKey.BATCH),
               ResponseCode.CLIENT_ERROR.getResponseCode());
     }
-    List<?> batchIdList = (List<?>) ((Map<String, Object>)request.getRequest().get(JsonKey.BATCH)).get(JsonKey.BATCH_ID);
+    validateParam(
+            (String) ((Map<String, Object>) request.getRequest().get(JsonKey.BATCH)).get(JsonKey.BATCH_ID),
+            ResponseCode.mandatoryParamsMissing,
+            JsonKey.BATCH_ID);
+  }
+
+  public void validateGetAllParticipantsRequest(Request request) throws JsonProcessingException {
+    if (MapUtils.isEmpty((Map) request.getRequest().get(JsonKey.BATCH))) {
+      throw new ProjectCommonException(
+              ResponseCode.invalidRequestData.getErrorCode(),
+              MessageFormat.format(ResponseCode.invalidRequestData.getErrorMessage(), JsonKey.BATCH),
+              ResponseCode.CLIENT_ERROR.getResponseCode());
+    }
+    List<?> batchIdList = (List<?>) ((Map<String, Object>) request.getRequest().get(JsonKey.BATCH)).get(JsonKey.BATCH_ID);
 
     validateParamWithBatchIdArray(
             batchIdList,
             ResponseCode.mandatoryParamsMissing,
             JsonKey.BATCH_ID);
+  }
+
+  public void validateGetCourseProgress(Request request) throws JsonProcessingException {
+    System.out.println("Inside validateGetCourseProgress");
+
+    if (!request.getRequest().containsKey(JsonKey.BATCH_ID)) {
+      throw new ProjectCommonException(
+              ResponseCode.invalidRequestData.getErrorCode(),
+              MessageFormat.format(ResponseCode.mandatoryParamsMissing.getErrorMessage(), JsonKey.BATCH_ID),
+              ResponseCode.CLIENT_ERROR.getResponseCode());
+    }
+
+    if (!request.getRequest().containsKey(JsonKey.COURSE_ID)) {
+      throw new ProjectCommonException(
+              ResponseCode.invalidRequestData.getErrorCode(),
+              MessageFormat.format(ResponseCode.mandatoryParamsMissing.getErrorMessage(), JsonKey.COURSE_ID),
+              ResponseCode.CLIENT_ERROR.getResponseCode());
+    }
+
+    if (isNullOrEmpty(request.get(JsonKey.BATCH_ID))) {
+      throw new ProjectCommonException(
+              ResponseCode.invalidRequestData.getErrorCode(),
+              MessageFormat.format("BatchId cannot be null or emtpy", JsonKey.BATCH_ID),
+              ResponseCode.CLIENT_ERROR.getResponseCode());
+    }
+
+    if (isNullOrEmpty(request.get(JsonKey.COURSE_ID))) {
+      throw new ProjectCommonException(
+              ResponseCode.invalidRequestData.getErrorCode(),
+              MessageFormat.format("CourseId cannot be null or emtpy", JsonKey.COURSE_ID),
+              ResponseCode.CLIENT_ERROR.getResponseCode());
+    }
+  }
+
+  private boolean isNullOrEmpty(Object obj) {
+    if (obj == null) {
+      return true;
+    } else if (obj instanceof String) {
+      return ((String) obj).isEmpty();
+    } else {
+      return false; // Non-string types are considered not null or empty
+    }
+
   }
 }

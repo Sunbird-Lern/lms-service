@@ -8,11 +8,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.base.BaseActor;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.LoggerUtil;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.keys.*;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
@@ -26,7 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static org.sunbird.common.models.util.JsonKey.EKSTEP_BASE_URL;
+import static org.sunbird.common.models.util.JsonKey.CONTENT_SERVICE_BASE_URL;
 import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
 
 public class CourseManagementActor extends BaseActor {
@@ -57,9 +52,9 @@ public class CourseManagementActor extends BaseActor {
             if(!((Map<String, Object>) request.get(SunbirdKey.COURSE)).containsKey(SunbirdKey.COPY_SCHEME)) {
                 contentMap.put(SunbirdKey.COPY_SCHEME, SunbirdKey.TEXT_BOOK_TO_COURSE);
             }
-            requestUrl = getConfigValue(EKSTEP_BASE_URL) + "/content/v3/copy/" + request.get(SunbirdKey.SOURCE) + "?type=deep";
+            requestUrl = getConfigValue(CONTENT_SERVICE_BASE_URL) + "/content/v3/copy/" + request.get(SunbirdKey.SOURCE) + "?type=deep";
         } else {
-            requestUrl = getConfigValue(EKSTEP_BASE_URL) + "/content/v3/create";
+            requestUrl = getConfigValue(CONTENT_SERVICE_BASE_URL) + "/content/v3/create";
         }
         Map<String, String> headers = new HashMap<String, String>() {{
             put(SunbirdKey.CONTENT_TYPE_HEADER, SunbirdKey.APPLICATION_JSON);
@@ -133,7 +128,7 @@ public class CourseManagementActor extends BaseActor {
 
     private void handleHierarchyData(Request request, String identifier, Map<String, String> headers) throws Exception {
         if (request.getRequest().containsKey(SunbirdKey.HIERARCHY)) {
-            String url = getConfigValue(EKSTEP_BASE_URL) + "/content/v3/hierarchy/update";
+            String url = getConfigValue(CONTENT_SERVICE_BASE_URL) + "/content/v3/hierarchy/update";
             HttpResponse<String> updateResponse =
                     Unirest.patch(url)
                             .headers(headers)

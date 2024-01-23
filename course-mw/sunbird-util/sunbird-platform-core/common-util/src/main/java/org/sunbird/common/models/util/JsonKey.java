@@ -116,7 +116,7 @@ public final class JsonKey {
   public static final String SEARCH_SERVICE_API_BASE_URL = "sunbird_search_service_api_base_url";
   public static final String ANALYTICS_API_BASE_URL = "sunbird_analytics_api_base_url";
   public static final String EKSTEP_AUTHORIZATION = "ekstep_authorization";
-  public static final String EKSTEP_BASE_URL = "ekstep_api_base_url";
+  public static final String CONTENT_SERVICE_BASE_URL = "content_service_base_url";
   public static final String EKSTEP_CONTENT_SEARCH_URL = "ekstep_content_search_url";
   public static final String EKSTEP_CONTENT_UPDATE_URL = "ekstep.content.update.url";
   public static final String EKSTEP_SERVICE = "Content service";
@@ -521,7 +521,6 @@ public final class JsonKey {
   public static final String SUNBIRD_PASS_REGEX = "sunbird_pass_regex";
   public static final String NESTED_EXISTS = "nested_exists";
   public static final String NESTED_NOT_EXISTS = "nested_not_exists";
-  public static final String LEARNING_SERVICE_BASE_URL = "learning_service_base_url";
   public static final String CREATOR_DETAILS_FIELDS = "sunbird_user_search_cretordetails_fields";
   public static final String SUNBIRD_QRCODE_COURSES_LIMIT ="sunbird_user_qrcode_courses_limit";
   public static final String ACCESS_TOKEN_PUBLICKEY_BASEPATH = "accesstoken.publickey.basepath";

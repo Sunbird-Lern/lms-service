@@ -5,7 +5,6 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.sunbird.common.models.util.BaseHttpTest;
 import org.sunbird.common.models.util.HttpUtil;
@@ -32,9 +31,9 @@ public class AppTest extends BaseHttpTest {
 
   @Test
   public void testSendPostRequestSuccess() throws Exception {
-    String ekStepBaseUrl = System.getenv(JsonKey.EKSTEP_BASE_URL);
+    String ekStepBaseUrl = System.getenv(JsonKey.CONTENT_SERVICE_BASE_URL);
     if (StringUtils.isBlank(ekStepBaseUrl)) {
-      ekStepBaseUrl = PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_BASE_URL);
+      ekStepBaseUrl = PropertiesCache.getInstance().getProperty(JsonKey.CONTENT_SERVICE_BASE_URL);
     }
     String response = HttpUtil.sendPostRequest(ekStepBaseUrl + "/content/v3/list", data, headers);
     Assert.assertNotNull(response);
@@ -42,9 +41,9 @@ public class AppTest extends BaseHttpTest {
 
   @Test()
   public void testSendPostRequestFailureWithWrongUrl() {
-    String ekStepBaseUrl = System.getenv(JsonKey.EKSTEP_BASE_URL);
+    String ekStepBaseUrl = System.getenv(JsonKey.CONTENT_SERVICE_BASE_URL);
     if (StringUtils.isBlank(ekStepBaseUrl)) {
-      ekStepBaseUrl = PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_BASE_URL);
+      ekStepBaseUrl = PropertiesCache.getInstance().getProperty(JsonKey.CONTENT_SERVICE_BASE_URL);
     }
     String response = null;
     try {
@@ -61,9 +60,9 @@ public class AppTest extends BaseHttpTest {
   public void testSendPatchRequestSuccess() {
     String response = null;
     try {
-      String ekStepBaseUrl = System.getenv(JsonKey.EKSTEP_BASE_URL);
+      String ekStepBaseUrl = System.getenv(JsonKey.CONTENT_SERVICE_BASE_URL);
       if (StringUtils.isBlank(ekStepBaseUrl)) {
-        ekStepBaseUrl = PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_BASE_URL);
+        ekStepBaseUrl = PropertiesCache.getInstance().getProperty(JsonKey.CONTENT_SERVICE_BASE_URL);
       }
       response =
           HttpUtil.sendPatchRequest(

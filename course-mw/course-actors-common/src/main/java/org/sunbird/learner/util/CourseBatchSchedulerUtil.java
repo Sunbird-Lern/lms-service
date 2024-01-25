@@ -16,7 +16,6 @@ import org.sunbird.common.request.RequestContext;
 import org.sunbird.helper.ServiceFactory;
 import scala.concurrent.Future;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -166,7 +165,7 @@ public final class CourseBatchSchedulerUtil {
   public static boolean updateCourseContent(RequestContext requestContext, String courseId, String contentName, int val) {
     String response = "";
     try {
-      String contentUpdateBaseUrl = ProjectUtil.getConfigValue(JsonKey.LEARNING_SERVICE_BASE_URL);
+      String contentUpdateBaseUrl = ProjectUtil.getConfigValue(JsonKey.CONTENT_SERVICE_BASE_URL);
       response =
           HttpUtil.sendPatchRequest(
               contentUpdateBaseUrl

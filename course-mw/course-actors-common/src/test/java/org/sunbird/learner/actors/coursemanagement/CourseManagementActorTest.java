@@ -52,8 +52,8 @@ public class CourseManagementActorTest {
         PowerMockito.mockStatic(ProjectUtil.class);
         PowerMockito.mockStatic(Unirest.class);
         system = ActorSystem.create("system");
-        when(ProjectUtil.getConfigValue(JsonKey.EKSTEP_BASE_URL))
-                .thenReturn("ekstep_api_base_url");
+        when(ProjectUtil.getConfigValue(JsonKey.CONTENT_SERVICE_BASE_URL))
+                .thenReturn("content_service_base_url");
         when(ProjectUtil.getConfigValue(JsonKey.CONTENT_PROPS_TO_ADD))
                 .thenReturn("learning.content.props.to.add");
     }

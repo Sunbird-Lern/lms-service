@@ -145,7 +145,7 @@ public class CourseBatchUtil {
   private static String readTemplate(RequestContext requestContext, String templateId) throws Exception {
     String templateRelativeUrl = ProjectUtil.getConfigValue("sunbird_cert_template_url");
     String certTemplateReadUrl = ProjectUtil.getConfigValue("sunbird_cert_template_read_url");
-    String contentServiceBaseUrl = ProjectUtil.getConfigValue("ekstep_api_base_url");
+    String contentServiceBaseUrl = ProjectUtil.getConfigValue(JsonKey.CONTENT_SERVICE_BASE_URL);
     String certServiceBaseUrl = ProjectUtil.getConfigValue("sunbird_cert_service_base_url");
     HttpResponse<String> httpResponse = null;
     httpResponse = templateReadResponse(requestContext, contentServiceBaseUrl, templateRelativeUrl, templateId);

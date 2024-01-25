@@ -408,9 +408,9 @@ public class ProjectUtilTest extends BaseHttpTest {
 
   @Test
   public void testSendGetRequestSuccessWithEkStepBaseUrl() throws Exception {
-    String ekStepBaseUrl = System.getenv(JsonKey.EKSTEP_BASE_URL);
+    String ekStepBaseUrl = System.getenv(JsonKey.CONTENT_SERVICE_BASE_URL);
     if (StringUtils.isBlank(ekStepBaseUrl)) {
-      ekStepBaseUrl = PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_BASE_URL);
+      ekStepBaseUrl = PropertiesCache.getInstance().getProperty(JsonKey.CONTENT_SERVICE_BASE_URL);
     }
     String response = HttpUtil.sendGetRequest(ekStepBaseUrl + "/search/health", headers);
     assertNotNull(response);

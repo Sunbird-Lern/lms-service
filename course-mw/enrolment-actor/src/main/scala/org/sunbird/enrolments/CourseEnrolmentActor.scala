@@ -118,8 +118,9 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             val response: Response = if (isCacheEnabled && request.getContext.get("cache").asInstanceOf[Boolean])
                 getCachedEnrolmentList(userId, () => getEnrolmentList(request, userId, courseIdList)) else getEnrolmentList(request, userId, courseIdList)
             logger.info(request.getRequestContext,"response result = " + response.getResult)
-            val identifiers: List[String] = response.getResult.get("courses").asInstanceOf[List[Map[String, Any]]].map(_("contentId").toString)
-            logger.info(request.getRequestContext,"response result after fetching contentId= " + identifiers)
+
+           // val identifiers: List[String] = response.getResult.get("courses").asInstanceOf[List[Map[String, Any]]].map(_("contentId").toString)
+            // logger.info(request.getRequestContext,"response result after fetching contentId= " + identifiers)
             sender().tell(response, self)
         }catch {
             case e: Exception =>

@@ -26,11 +26,12 @@ import org.sunbird.models.course.batch.CourseBatch
 import org.sunbird.models.user.courses.UserCourses
 import org.sunbird.cache.util.RedisCacheUtil
 import org.sunbird.common.CassandraUtil
-import org.sunbird.common.models.util.ProjectUtil;
+import org.sunbird.common.models.util.ProjectUtil
 import org.sunbird.telemetry.util.TelemetryUtil
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
+import scala.concurrent.Future
 
 class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") courseBatchNotificationActorRef: ActorRef
                                     )(implicit val  cacheUtil: RedisCacheUtil ) extends BaseEnrolmentActor {
@@ -117,7 +118,8 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             val response: Response = if (isCacheEnabled && request.getContext.get("cache").asInstanceOf[Boolean])
                 getCachedEnrolmentList(userId, () => getEnrolmentList(request, userId, courseIdList)) else getEnrolmentList(request, userId, courseIdList)
             logger.info(request.getRequestContext,"response result = " + response.getResult)
-
+            val identifiers: List[String] = response.getResult.get("courses").asInstanceOf[List[Map[String, Any]]].map(_("contentId").toString)
+            logger.info(request.getRequestContext,"response result after fetching contentId= " + identifiers)
             sender().tell(response, self)
         }catch {
             case e: Exception =>
@@ -126,6 +128,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         }
 
     }
+
 
     def getActiveEnrollments(userId: String, courseIdList: java.util.List[String], requestContext: RequestContext): java.util.List[java.util.Map[String, AnyRef]] = {
         val enrolments: java.util.List[java.util.Map[String, AnyRef]] = userCoursesDao.listEnrolments(requestContext, userId, courseIdList)

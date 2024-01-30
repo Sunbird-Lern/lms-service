@@ -120,8 +120,6 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             val response: Response = if (isCacheEnabled && request.getContext.get("cache").asInstanceOf[Boolean])
                 getCachedEnrolmentList(userId, () => getEnrolmentList(request, userId, courseIdList)) else getEnrolmentList(request, userId, courseIdList)
             logger.info(request.getRequestContext,"response result = " + response.getResult)
-
-          // val identifiers: List[String] = response.getResult.get("courses").asInstanceOf[List[Map[String, Any]]].map(_("contentId").toString)
           val coursesResult = response.getResult.get("courses")
             logger.info(request.getRequestContext, "coursesResult type: " + coursesResult.getClass.getSimpleName)
             logger.info(request.getRequestContext,"coursesResult from response" + coursesResult)
@@ -158,14 +156,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             }
 
             val updatedCoursesResultJava: java.util.List[java.util.Map[String, Any]] = updatedCoursesResult.asJava
-
             response.getResult.put("courses", updatedCoursesResultJava)
-            //updatedResponse.getResult.put("courses", updatedCoursesResult)
-            //response.getResult.put("courses", updatedCoursesResult)
-           // updatedResponse.put("courses",updatedCoursesResult)
-            logger.info(request.getRequestContext,"response result after adding avgRAting "+updatedCoursesResult)
-           //logger.info(request.getRequestContext,"updatedResponse after adding avgRAting "+responseMap)
-
             sender().tell(response, self)
         }catch {
             case e: Exception =>

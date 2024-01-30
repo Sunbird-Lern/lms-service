@@ -128,7 +128,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
                 case list: java.util.List[_] =>
                     list.asScala.map {
                         case courseMap: java.util.Map[String, Any] =>
-                            courseMap.get("contentId").toString
+                            courseMap.get("identifier").toString
                         case _ =>
                             throw new RuntimeException("Unexpected type for course element")
                     }.toList

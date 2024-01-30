@@ -122,43 +122,43 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             logger.info(request.getRequestContext,"response result = " + response.getResult)
 
           // val identifiers: List[String] = response.getResult.get("courses").asInstanceOf[List[Map[String, Any]]].map(_("contentId").toString)
-          val coursesResult = response.getResult.get("courses")
-            logger.info(request.getRequestContext, "coursesResult type: " + coursesResult.getClass.getSimpleName)
-            logger.info(request.getRequestContext,"coursesResult from response" + coursesResult)
-
-            val identifiers: List[String] = coursesResult match {
-                case list: java.util.List[_] =>
-                    list.asScala.map {
-                        case courseMap: java.util.Map[String, Any] =>
-                            courseMap.get("contentId").toString
-                        case _ =>
-                            throw new RuntimeException("Unexpected type for course element")
-                    }.toList
-                case _ =>
-                    throw new RuntimeException("Unexpected type for courses result")
-            }
-
-            logger.info(request.getRequestContext,"response result after fetching contentId= " + identifiers)
-
-            val avgRatings: Map[String, Double] = fetchAvgRating(identifiers)
-
-            val updatedCoursesResult = coursesResult match {
-                case list: java.util.List[_] =>
-                    list.asScala.map {
-                        case courseMap: java.util.Map[String, Any] =>
-                            val contentId = courseMap.get("contentId").toString
-                            val avgRating = avgRatings.getOrElse(contentId, 0.0)
-                            courseMap.put("avgRating", avgRating)
-                            courseMap
-                        case _ =>
-                            throw new RuntimeException("Unexpected type for course element")
-                    }.toList
-                case _ =>
-                    throw new RuntimeException("Unexpected type for courses result")
-            }
-
-            response.getResult.put("courses", updatedCoursesResult)
-            logger.info(request.getRequestContext,"response result after adding avgRAting "+updatedCoursesResult)
+//          val coursesResult = response.getResult.get("courses")
+//            logger.info(request.getRequestContext, "coursesResult type: " + coursesResult.getClass.getSimpleName)
+//            logger.info(request.getRequestContext,"coursesResult from response" + coursesResult)
+//
+//            val identifiers: List[String] = coursesResult match {
+//                case list: java.util.List[_] =>
+//                    list.asScala.map {
+//                        case courseMap: java.util.Map[String, Any] =>
+//                            courseMap.get("contentId").toString
+//                        case _ =>
+//                            throw new RuntimeException("Unexpected type for course element")
+//                    }.toList
+//                case _ =>
+//                    throw new RuntimeException("Unexpected type for courses result")
+//            }
+//
+//            logger.info(request.getRequestContext,"response result after fetching contentId= " + identifiers)
+//
+//            val avgRatings: Map[String, Double] = fetchAvgRating(identifiers)
+//
+//            val updatedCoursesResult = coursesResult match {
+//                case list: java.util.List[_] =>
+//                    list.asScala.map {
+//                        case courseMap: java.util.Map[String, Any] =>
+//                            val contentId = courseMap.get("contentId").toString
+//                            val avgRating = avgRatings.getOrElse(contentId, 0.0)
+//                            courseMap.put("avgRating", avgRating)
+//                            courseMap
+//                        case _ =>
+//                            throw new RuntimeException("Unexpected type for course element")
+//                    }.toList
+//                case _ =>
+//                    throw new RuntimeException("Unexpected type for courses result")
+//            }
+//
+//            response.getResult.put("courses", updatedCoursesResult)
+//            logger.info(request.getRequestContext,"response result after adding avgRAting "+updatedCoursesResult)
 
             sender().tell(response, self)
         }catch {

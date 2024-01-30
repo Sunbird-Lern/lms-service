@@ -5,7 +5,7 @@ import java.text.{MessageFormat, SimpleDateFormat}
 import java.time.format.DateTimeFormatter
 import java.time.{LocalDate, LocalDateTime, LocalTime, ZoneId}
 import java.util
-import java.util.{Comparator, Date, HashMap, Map}
+import java.util.{Comparator, Date}
 import akka.actor.ActorRef
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.mashape.unirest.http.{HttpResponse, Unirest}

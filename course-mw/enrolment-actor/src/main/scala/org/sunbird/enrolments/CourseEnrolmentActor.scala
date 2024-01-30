@@ -32,6 +32,7 @@ import org.sunbird.telemetry.util.TelemetryUtil
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 import scala.concurrent.Future
+import scala.collection.convert.Wrappers.SeqWrapper
 
 class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") courseBatchNotificationActorRef: ActorRef
                                     )(implicit val  cacheUtil: RedisCacheUtil ) extends BaseEnrolmentActor {
@@ -119,8 +120,20 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
                 getCachedEnrolmentList(userId, () => getEnrolmentList(request, userId, courseIdList)) else getEnrolmentList(request, userId, courseIdList)
             logger.info(request.getRequestContext,"response result = " + response.getResult)
 
-           // val identifiers: List[String] = response.getResult.get("courses").asInstanceOf[List[Map[String, Any]]].map(_("contentId").toString)
-            // logger.info(request.getRequestContext,"response result after fetching contentId= " + identifiers)
+          // val identifiers: List[String] = response.getResult.get("courses").asInstanceOf[List[Map[String, Any]]].map(_("contentId").toString)
+          val coursesResult = response.getResult.get("courses")
+            logger.info(request.getRequestContext,"coursesResult from response" + coursesResult)
+            val identifiers: List[String] = coursesResult match {
+                case list: List[_] =>
+                    list.asInstanceOf[List[Map[String, Any]]].map(_("contentId").toString)
+                case seqWrapper: SeqWrapper[_] =>
+                    seqWrapper.toList.asInstanceOf[List[Map[String, Any]]].map(_("contentId").toString)
+                case _ =>
+                    throw new RuntimeException("Unexpected type for courses result")
+            }
+
+
+            logger.info(request.getRequestContext,"response result after fetching contentId= " + identifiers)
             sender().tell(response, self)
         }catch {
             case e: Exception =>

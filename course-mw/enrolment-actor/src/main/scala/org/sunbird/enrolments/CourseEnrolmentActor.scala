@@ -149,12 +149,15 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
                     list.asScala.map {
                         case courseMap: java.util.Map[String, Any] =>
                             val contentIdOption = Option(courseMap.get("content"))
-                              .map(_.asInstanceOf[java.util.Map[String, Any]])
-                              .flatMap(contentMap => Option(contentMap.get("identifier")))
-                              .map(_.toString)
+                              .collect {
+                                  case contentMap: java.util.Map[String, Any] =>
+                                      contentMap.get("identifier").toString
+                              }
+                              .getOrElse("")
 
-                            val avgRating = avgRatings.getOrElse(contentIdOption.getOrElse(""), 0.0)
+                            val avgRating = avgRatings.getOrElse(contentIdOption, 0.0)
                             courseMap.put("avgRating", avgRating)
+
                             courseMap
                         case _ =>
                             throw new RuntimeException("Unexpected type for course element")
@@ -162,6 +165,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
                 case _ =>
                     throw new RuntimeException("Unexpected type for courses result")
             }
+
 
             val updatedCoursesResultJava: java.util.List[java.util.Map[String, Any]] = updatedCoursesResult.asJava
             response.getResult.put("courses", updatedCoursesResultJava)

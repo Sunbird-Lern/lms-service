@@ -192,7 +192,18 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         logger.info(null,"status code for search api"+response.getStatusCode)
         logger.info(null ,"HttpUtilResponse for avgRating -> " + response)
         val responseMap = JsonUtil.deserialize(response.getBody, classOf[java.util.Map[String, Any]])
-        val contentList = responseMap.get("result").asInstanceOf[Map[String, Any]].getOrElse("content", List.empty[Any]).asInstanceOf[List[Map[String, Any]]]
+//        val contentList = responseMap.get("result").asInstanceOf[util.Map[String, Any]].getOrElse("content", util.List[Any]).asInstanceOf[util.List[util.Map[String, Any]]]
+        val contentList: util.List[util.Map[String, Any]] = responseMap.get("result") match {
+            case resultMap: util.Map[String, Any] =>
+                resultMap.get("content") match {
+                    case list: util.List[util.Map[String, Any]] =>
+                        list
+                    case _ =>
+                        new util.ArrayList[util.Map[String, Any]]()
+                }
+            case _ =>
+                new util.ArrayList[util.Map[String, Any]]()
+        }
         val identifierToAvgRating: Map[String, Double] = contentList.map { content =>
             val identifier = content.getOrElse("identifier", "").toString
             val avgRating = content.getOrElse("avgRating", "0").toString.toDouble

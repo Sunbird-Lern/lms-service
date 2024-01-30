@@ -157,16 +157,16 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
                     throw new RuntimeException("Unexpected type for courses result")
             }
 
-            val updatedResponse = new Response()
-            updatedResponse.setResponseCode(response.getResponseCode)
-            updatedResponse.setParams(response.getParams)
+            val updatedCoursesResultJava: java.util.List[java.util.Map[String, Any]] = updatedCoursesResult.asJava
+
+            response.getResult.put("courses", updatedCoursesResultJava)
             //updatedResponse.getResult.put("courses", updatedCoursesResult)
             //response.getResult.put("courses", updatedCoursesResult)
-            updatedResponse.put("courses",updatedCoursesResult)
+           // updatedResponse.put("courses",updatedCoursesResult)
             logger.info(request.getRequestContext,"response result after adding avgRAting "+updatedCoursesResult)
-            logger.info(request.getRequestContext,"updatedResponse after adding avgRAting "+updatedResponse)
+           //logger.info(request.getRequestContext,"updatedResponse after adding avgRAting "+responseMap)
 
-            sender().tell(updatedResponse, self)
+            sender().tell(response, self)
         }catch {
             case e: Exception =>
                 logger.error(request.getRequestContext, "Exception in enrolment list : user ::" + userId + "| Exception is:"+e.getMessage, e)

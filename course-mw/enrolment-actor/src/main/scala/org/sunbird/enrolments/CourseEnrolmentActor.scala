@@ -176,6 +176,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
                         put("filters", new java.util.HashMap[String, AnyRef]() {
                             {
                                 put("identifier", identifiers.asJava)
+                                put("primaryCategory", List("course","assessment").asJava)
                             }
                         })
                         put("fields", List("avgRating").asJava)

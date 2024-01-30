@@ -122,13 +122,17 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
 
           // val identifiers: List[String] = response.getResult.get("courses").asInstanceOf[List[Map[String, Any]]].map(_("contentId").toString)
           val coursesResult = response.getResult.get("courses")
+            logger.info(request.getRequestContext, "coursesResult type: " + coursesResult.getClass.getSimpleName)
             logger.info(request.getRequestContext,"coursesResult from response" + coursesResult)
 
             val identifiers: List[String] = coursesResult match {
-                case list: List[_] =>
-                    list.asInstanceOf[List[Map[String, Any]]].map(_("contentId").toString)
-                case seqWrapper: SeqWrapper[_] =>
-                    seqWrapper.seq.asInstanceOf[java.util.List[Map[String, Any]]].asScala.map(_("contentId").toString).toList
+                case list: java.util.List[_] =>
+                    list.asScala.map {
+                        case courseMap: java.util.Map[String, Any] =>
+                            courseMap.get("contentId").toString
+                        case _ =>
+                            throw new RuntimeException("Unexpected type for course element")
+                    }.toList
                 case _ =>
                     throw new RuntimeException("Unexpected type for courses result")
             }

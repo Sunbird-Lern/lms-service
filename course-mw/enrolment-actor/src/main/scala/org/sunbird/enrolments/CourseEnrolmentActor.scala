@@ -160,8 +160,9 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             val updatedResponse = new Response()
             updatedResponse.setResponseCode(response.getResponseCode)
             updatedResponse.setParams(response.getParams)
-            updatedResponse.getResult.put("courses", updatedCoursesResult)
+            //updatedResponse.getResult.put("courses", updatedCoursesResult)
             //response.getResult.put("courses", updatedCoursesResult)
+            updatedResponse.put("courses",updatedCoursesResult)
             logger.info(request.getRequestContext,"response result after adding avgRAting "+updatedCoursesResult)
             logger.info(request.getRequestContext,"updatedResponse after adding avgRAting "+updatedResponse)
 

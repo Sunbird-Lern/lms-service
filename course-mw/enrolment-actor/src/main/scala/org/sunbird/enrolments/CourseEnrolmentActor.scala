@@ -8,12 +8,13 @@ import java.util
 import java.util.{Comparator, Date}
 import akka.actor.ActorRef
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.mashape.unirest.http.{HttpResponse, Unirest}
 
 import javax.inject.{Inject, Named}
 import org.apache.commons.collections4.{CollectionUtils, MapUtils}
 import org.apache.commons.lang3.StringUtils
 import org.sunbird.common.exception.ProjectCommonException
-import org.sunbird.common.models.response.Response
+import org.sunbird.common.models.response.{HttpUtilResponse, Response}
 import org.sunbird.common.models.util.ProjectUtil.EnrolmentType
 import org.sunbird.common.models.util._
 import org.sunbird.common.request.{Request, RequestContext}
@@ -138,6 +139,27 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             }
 
             logger.info(request.getRequestContext,"response result after fetching contentId= " + identifiers)
+
+            val avgRatings: Map[String, Double] = fetchAvgRating(identifiers)
+
+            val updatedCoursesResult = coursesResult match {
+                case list: java.util.List[_] =>
+                    list.asScala.map {
+                        case courseMap: java.util.Map[String, Any] =>
+                            val contentId = courseMap.get("contentId").toString
+                            val avgRating = avgRatings.getOrElse(contentId, 0.0)
+                            courseMap.put("avgRating", avgRating)
+                            courseMap
+                        case _ =>
+                            throw new RuntimeException("Unexpected type for course element")
+                    }.toList
+                case _ =>
+                    throw new RuntimeException("Unexpected type for courses result")
+            }
+
+            response.getResult.put("courses", updatedCoursesResult)
+            logger.info(request.getRequestContext,"response result after adding avgRAting ")
+
             sender().tell(response, self)
         }catch {
             case e: Exception =>
@@ -147,6 +169,37 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
 
     }
 
+
+    def fetchAvgRating(identifiers: List[String]): Map[String, Double]  = {
+        val request = new java.util.HashMap[String, AnyRef]() {
+            {
+                put("request", new java.util.HashMap[String, AnyRef]() {
+                    {
+                        put("filters", new java.util.HashMap[String, AnyRef]() {
+                            {
+                                put("identifier", identifiers)
+                                put("fields", List("avgRating"))
+                            }
+                        })
+                    }
+                })
+            }
+        }
+        val httpRequest = JsonUtil.serialize(request)
+        logger.info(null ,"created request for add cert template -> " + httpRequest)
+        val response: HttpUtilResponse = HttpUtil.doPostRequest("https://compass-dev.tarento.com/api/content/v1/search", httpRequest, null)
+        logger.info(null,"status code for search api"+response.getStatusCode)
+        logger.info(null ,"HttpUtilResponse for avgRating -> " + response)
+        val responseMap = JsonUtil.deserialize(response.getBody, classOf[Map[String, Any]])
+        val contentList = responseMap.get("result").asInstanceOf[Map[String, Any]].getOrElse("content", List.empty[Any]).asInstanceOf[List[Map[String, Any]]]
+        val identifierToAvgRating: Map[String, Double] = contentList.map { content =>
+            val identifier = content.getOrElse("identifier", "").toString
+            val avgRating = content.getOrElse("avgRating", "0").toString.toDouble
+            (identifier, avgRating)
+        }.toMap
+        logger.info(null ,"HttpUtilResponse for identifierToAvgRating -> " + identifierToAvgRating)
+        identifierToAvgRating
+    }
 
     def getActiveEnrollments(userId: String, courseIdList: java.util.List[String], requestContext: RequestContext): java.util.List[java.util.Map[String, AnyRef]] = {
         val enrolments: java.util.List[java.util.Map[String, AnyRef]] = userCoursesDao.listEnrolments(requestContext, userId, courseIdList)

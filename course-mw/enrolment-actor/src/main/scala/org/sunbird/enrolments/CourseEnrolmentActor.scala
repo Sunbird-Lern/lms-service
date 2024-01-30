@@ -144,8 +144,8 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
                 case list: java.util.List[_] =>
                     list.asScala.map {
                         case courseMap: java.util.Map[String, Any] =>
-                            val contentId = courseMap.get("contentId").toString
-                            val avgRating = avgRatings.getOrElse(contentId, 0.0)
+                            val contentIdOption = Option(courseMap.get("courseId")).map(_.toString)
+                            val avgRating = avgRatings.getOrElse(contentIdOption.getOrElse(""), 0.0)
                             courseMap.put("avgRating", avgRating)
                             courseMap
                         case _ =>
@@ -180,6 +180,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
                             }
                         })
                         put("fields", List("avgRating").asJava)
+                        put("facets", List("taxonomyCategory4Ids").asJava)
                     }
                 })
             }

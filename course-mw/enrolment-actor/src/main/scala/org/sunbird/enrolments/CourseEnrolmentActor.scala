@@ -140,24 +140,24 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
 
             logger.info(request.getRequestContext,"response result after fetching contentId= " + identifiers)
 
-            val avgRatings: Map[String, Double] = fetchAvgRating(identifiers)
-
-            val updatedCoursesResult = coursesResult match {
-                case list: java.util.List[_] =>
-                    list.asScala.map {
-                        case courseMap: java.util.Map[String, Any] =>
-                            val contentId = courseMap.get("contentId").toString
-                            val avgRating = avgRatings.getOrElse(contentId, 0.0)
-                            courseMap.put("avgRating", avgRating)
-                            courseMap
-                        case _ =>
-                            throw new RuntimeException("Unexpected type for course element")
-                    }.toList
-                case _ =>
-                    throw new RuntimeException("Unexpected type for courses result")
-            }
-
-            response.getResult.put("courses", updatedCoursesResult)
+//            val avgRatings: Map[String, Double] = fetchAvgRating(identifiers)
+//
+//            val updatedCoursesResult = coursesResult match {
+//                case list: java.util.List[_] =>
+//                    list.asScala.map {
+//                        case courseMap: java.util.Map[String, Any] =>
+//                            val contentId = courseMap.get("contentId").toString
+//                            val avgRating = avgRatings.getOrElse(contentId, 0.0)
+//                            courseMap.put("avgRating", avgRating)
+//                            courseMap
+//                        case _ =>
+//                            throw new RuntimeException("Unexpected type for course element")
+//                    }.toList
+//                case _ =>
+//                    throw new RuntimeException("Unexpected type for courses result")
+//            }
+//
+//            response.getResult.put("courses", updatedCoursesResult)
             logger.info(request.getRequestContext,"response result after adding avgRAting ")
 
             sender().tell(response, self)

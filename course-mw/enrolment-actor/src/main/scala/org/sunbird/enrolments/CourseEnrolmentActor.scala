@@ -171,22 +171,23 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
 
 
     def fetchAvgRating(identifiers: List[String]): Map[String, Double]  = {
+        logger.info(null,"printing ientifiers"+identifiers)
         val request = new java.util.HashMap[String, AnyRef]() {
             {
                 put("request", new java.util.HashMap[String, AnyRef]() {
                     {
                         put("filters", new java.util.HashMap[String, AnyRef]() {
                             {
-                                put("identifier", identifiers)
-                                put("fields", List("avgRating"))
+                                put("identifier", identifiers.asJava)
                             }
                         })
+                        put("fields", List("avgRating").asJava)
                     }
                 })
             }
         }
         val httpRequest = JsonUtil.serialize(request)
-        logger.info(null ,"created request for add cert template -> " + httpRequest)
+        logger.info(null ,"created request for add content search -> " + httpRequest)
         val response: HttpUtilResponse = HttpUtil.doPostRequest("https://compass-dev.tarento.com/api/content/v1/search", httpRequest, null)
         logger.info(null,"status code for search api"+response.getStatusCode)
         logger.info(null ,"HttpUtilResponse for avgRating -> " + response)

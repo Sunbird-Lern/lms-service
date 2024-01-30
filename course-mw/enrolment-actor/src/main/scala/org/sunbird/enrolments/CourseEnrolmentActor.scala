@@ -203,8 +203,9 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val httpRequest: String = JsonUtil.serialize(request)
         logger.info(null ,"created request for add content search -> " + httpRequest)
 //        val response: HttpUtilResponse = HttpUtil.doPostRequest("http://search-service:9000/v3/search", httpRequest, null)
-        val response: HttpUtilResponse = HttpUtil.doPostRequest("https://compass-dev.tarento.com/api/content/v1/search", httpRequest, headers.asJava)
-        logger.info(null,"status code for search api  :: "+response.getStatusCode)
+        //val response: HttpUtilResponse = HttpUtil.doPostRequest("https://compass-dev.tarento.com/api/content/v1/search", httpRequest, headers.asJava)
+        val response: HttpResponse[String] = Unirest.post("https://compass-dev.tarento.com/api/content/v1/search").headers(headers).body(httpRequest).asString
+        logger.info(null,"status code for search api  :: "+response.getStatusText)
         logger.info(null ,"HttpUtilResponse for avgRating response.getBody -> " + response.getBody)
         val responseMap = JsonUtil.deserialize(response.getBody, classOf[java.util.Map[String, Any]])
 //        val contentList = responseMap.get("result").asInstanceOf[util.Map[String, Any]].getOrElse("content", util.List[Any]).asInstanceOf[util.List[util.Map[String, Any]]]

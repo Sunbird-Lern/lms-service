@@ -157,7 +157,9 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
                     throw new RuntimeException("Unexpected type for courses result")
             }
 
-            val updatedResponse = new Response(response.getResponseCode, response.getResult, response.getParams)
+            val updatedResponse = new Response()
+            updatedResponse.setResponseCode(response.getResponseCode)
+            updatedResponse.setParams(response.getParams)
             updatedResponse.getResult.put("courses", updatedCoursesResult)
             //response.getResult.put("courses", updatedCoursesResult)
             logger.info(request.getRequestContext,"response result after adding avgRAting "+updatedCoursesResult)

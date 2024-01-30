@@ -5,7 +5,7 @@ import java.text.{MessageFormat, SimpleDateFormat}
 import java.time.format.DateTimeFormatter
 import java.time.{LocalDate, LocalDateTime, LocalTime, ZoneId}
 import java.util
-import java.util.{Comparator, Date}
+import java.util.{Comparator, Date, HashMap, Map}
 import akka.actor.ActorRef
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.mashape.unirest.http.{HttpResponse, Unirest}
@@ -197,10 +197,13 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
                 })
             }
         }
+        val headers = Map(
+            "Authorization" -> (JsonKey.BEARER + System.getenv(JsonKey.EKSTEP_AUTHORIZATION))
+        )
         val httpRequest: String = JsonUtil.serialize(request)
         logger.info(null ,"created request for add content search -> " + httpRequest)
 //        val response: HttpUtilResponse = HttpUtil.doPostRequest("http://search-service:9000/v3/search", httpRequest, null)
-        val response: HttpUtilResponse = HttpUtil.doPostRequest("https://compass-dev.tarento.com/api/content/v1/search", httpRequest, null)
+        val response: HttpUtilResponse = HttpUtil.doPostRequest("https://compass-dev.tarento.com/api/content/v1/search", httpRequest, headers)
         logger.info(null,"status code for search api  :: "+response.getStatusCode)
         logger.info(null ,"HttpUtilResponse for avgRating response.getBody -> " + response.getBody)
         val responseMap = JsonUtil.deserialize(response.getBody, classOf[java.util.Map[String, Any]])

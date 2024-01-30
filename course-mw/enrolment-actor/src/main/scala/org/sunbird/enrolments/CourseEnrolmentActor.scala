@@ -198,7 +198,8 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
             }
         }
         val headers = Map(
-            "Authorization" -> (JsonKey.BEARER + System.getenv(JsonKey.EKSTEP_AUTHORIZATION))
+            "Authorization" -> (JsonKey.BEARER + System.getenv(JsonKey.EKSTEP_AUTHORIZATION)),
+            "Content-Type" -> "application/json"
         )
         val httpRequest: String = JsonUtil.serialize(request)
         logger.info(null ,"created request for add content search -> " + httpRequest)

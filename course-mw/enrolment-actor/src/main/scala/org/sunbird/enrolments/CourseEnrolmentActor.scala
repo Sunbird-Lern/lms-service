@@ -119,55 +119,19 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         try{
             val response: Response = if (isCacheEnabled && request.getContext.get("cache").asInstanceOf[Boolean])
                 getCachedEnrolmentList(userId, () => getEnrolmentList(request, userId, courseIdList)) else getEnrolmentList(request, userId, courseIdList)
-            logger.info(request.getRequestContext,"response result = " + response.getResult)
           val coursesResult = response.getResult.get("courses")
             logger.info(request.getRequestContext, "coursesResult type: " + coursesResult.getClass.getSimpleName)
-            logger.info(request.getRequestContext,"coursesResult from response" + coursesResult)
 
-            val identifiers: List[String] = coursesResult match {
-                case list: java.util.List[_] =>
-                    list.asScala.map {
-                        case courseMap: java.util.Map[String, Any] =>
-                            Option(courseMap.get("content"))
-                              .map(_.asInstanceOf[java.util.Map[String, Any]])
-                              .flatMap(contentMap => Option(contentMap.get("identifier")))
-                              .map(_.toString)
-                              .getOrElse("")
-                        case _ =>
-                            throw new RuntimeException("Unexpected type for course element")
-                    }.toList
-                case _ =>
-                    throw new RuntimeException("Unexpected type for courses result")
-            }
+            val identifiers: List[String] = extractIdentifiers(coursesResult)
 
             logger.info(request.getRequestContext,"response result after fetching contentId= " + identifiers)
 
             val avgRatings: Map[String, Double] = fetchAvgRating(identifiers)
 
-            val updatedCoursesResult = coursesResult match {
-                case list: java.util.List[_] =>
-                    list.asScala.map {
-                        case courseMap: java.util.Map[String, Any] =>
-                            val contentIdOption = Option(courseMap.get("content"))
-                              .collect {
-                                  case contentMap: java.util.Map[String, Any] =>
-                                      contentMap.get("identifier").toString
-                              }
-                              .getOrElse("")
-
-                            val avgRating = avgRatings.getOrElse(contentIdOption, 0.0)
-                            courseMap.put("avgRating", avgRating)
-
-                            courseMap
-                        case _ =>
-                            throw new RuntimeException("Unexpected type for course element")
-                    }.toList
-                case _ =>
-                    throw new RuntimeException("Unexpected type for courses result")
-            }
-
+            val updatedCoursesResult = updateCourseResults(coursesResult, avgRatings)
 
             val updatedCoursesResultJava: java.util.List[java.util.Map[String, Any]] = updatedCoursesResult.asJava
+
             response.getResult.put("courses", updatedCoursesResultJava)
             sender().tell(response, self)
         }catch {
@@ -176,6 +140,48 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
                 throw e
         }
 
+    }
+
+    def extractIdentifiers(coursesResult: Any): List[String] = {
+        coursesResult match {
+            case list: java.util.List[_] =>
+                list.asScala.map {
+                    case courseMap: java.util.Map[String, Any] =>
+                        Option(courseMap.get("content"))
+                          .map(_.asInstanceOf[java.util.Map[String, Any]])
+                          .flatMap(contentMap => Option(contentMap.get("identifier")))
+                          .map(_.toString)
+                          .getOrElse("")
+                    case _ =>
+                        throw new RuntimeException("Unexpected type for course element")
+                }.toList
+            case _ =>
+                throw new RuntimeException("Unexpected type for courses result")
+        }
+    }
+
+    def updateCourseResults(coursesResult: Any, avgRatings: Map[String, Double]): List[java.util.Map[String, Any]] = {
+        coursesResult match {
+            case list: java.util.List[_] =>
+                list.asScala.map {
+                    case courseMap: java.util.Map[String, Any] =>
+                        val contentIdOption = Option(courseMap.get("content"))
+                          .collect {
+                              case contentMap: java.util.Map[String, Any] =>
+                                  contentMap.get("identifier").toString
+                          }
+                          .getOrElse("")
+
+                        val avgRating = avgRatings.getOrElse(contentIdOption, 0.0)
+                        courseMap.put("avgRating", avgRating)
+
+                        courseMap
+                    case _ =>
+                        throw new RuntimeException("Unexpected type for course element")
+                }.toList
+            case _ =>
+                throw new RuntimeException("Unexpected type for courses result")
+        }
     }
 
 
@@ -203,13 +209,14 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         )
         val httpRequest: String = JsonUtil.serialize(request)
         logger.info(null ,"created request for add content search -> " + httpRequest)
-//        val response: HttpUtilResponse = HttpUtil.doPostRequest("http://search-service:9000/v3/search", httpRequest, null)
-        //val response: HttpUtilResponse = HttpUtil.doPostRequest("https://compass-dev.tarento.com/api/content/v1/search", httpRequest, headers.asJava)
         val response: HttpResponse[String] = Unirest.post("https://compass-dev.tarento.com/api/content/v1/search").headers(headers).body(httpRequest).asString
-        logger.info(null,"status code for search api  :: "+response.getStatusText)
-        logger.info(null ,"HttpUtilResponse for avgRating response.getBody -> " + response.getBody)
+        val statusCode = response.getStatus
+        if (statusCode == 200) {
+            logger.info(null, "API call successful. Status code: " + statusCode)
+        } else {
+            logger.info(null, s"API call failed. Status code: $statusCode")
+        }
         val responseMap = JsonUtil.deserialize(response.getBody, classOf[java.util.Map[String, Any]])
-//        val contentList = responseMap.get("result").asInstanceOf[util.Map[String, Any]].getOrElse("content", util.List[Any]).asInstanceOf[util.List[util.Map[String, Any]]]
         val contentList: util.List[util.Map[String, Any]] = responseMap.get("result") match {
             case resultMap: util.Map[String, Any] =>
                 resultMap.get("content") match {

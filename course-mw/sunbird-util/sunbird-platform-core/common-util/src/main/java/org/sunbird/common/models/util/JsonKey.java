@@ -43,6 +43,7 @@ public final class JsonKey {
   public static final String ASSESSMENT_EVAL_DB = "assessment_eval_db";
   public static final String ASSESSMENT_ITEM_DB = "assessment_item_db";
   public static final String ASSESSMENT_SCORE = "score";
+  public static final String ATTEMPTS = "attempts";
   public static final String ATTEMPT_ID = "attemptId";
   public static final String ASSESSMENT_EVENTS_KEY = "events";
   public static final String ASSESSMENT_ACTOR = "actor";

@@ -139,7 +139,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                         }
                     })
                 }
-                
+
             })
             if(CollectionUtils.isNotEmpty(completedBatchIds)) responseMessage.put("NOT_A_ON_GOING_BATCH", completedBatchIds)
             if(CollectionUtils.isNotEmpty(invalidBatchIds)) responseMessage.put("BATCH_NOT_EXISTS", invalidBatchIds)
@@ -201,7 +201,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                             invalidContents.addAll(entry._2.asJava)
                         }
                     })
-                   
+
                 }
             })
             if(CollectionUtils.isNotEmpty(completedBatchIds)) responseMessage.put("NOT_A_ON_GOING_BATCH", completedBatchIds)
@@ -432,17 +432,27 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                         m.put(field, mapper.readTree(m.get(field).asInstanceOf[String]))
                 )
                 val formattedMap = JsonUtil.convertWithDateFormat(m, classOf[util.Map[String, Object]], dateFormatter)
-                if (fields.contains(JsonKey.ASSESSMENT_SCORE))
+              if (fields.contains(JsonKey.ASSESSMENT_SCORE))
                     formattedMap.putAll(mapAsJavaMap(Map(JsonKey.ASSESSMENT_SCORE -> getScore(userId, courseId, m.get("contentId").asInstanceOf[String], batchId, request.getRequestContext))))
                 formattedMap
+
             }).asJava
-            response.put(JsonKey.RESPONSE, filteredContents)
+          val attemptCount = filteredContents.get(0).get(JsonKey.ASSESSMENT_SCORE) match {
+            case scoreList: java.util.List[_] => scoreList.size()
+            case _ => 0 // Handle the case when "score" is not a list
+          }
+        filteredContents.map { map =>
+            map.put(JsonKey.ATTEMPTS, attemptCount.toString)
+            map
+          }
+          response.put(JsonKey.RESPONSE, filteredContents)
+
         } else {
             response.put(JsonKey.RESPONSE, new java.util.ArrayList[AnyRef]())
         }
         sender().tell(response, self)
     }
-    
+
     //TODO: to be removed once all in scala
     def setCassandraOperation(cassandraOps: CassandraOperation, kafkaEnabled: Boolean): ContentConsumptionActor = {
         pushTokafkaEnabled = kafkaEnabled

@@ -815,7 +815,7 @@ public class CourseBatchManagementActor extends BaseActor {
     }).orElse(null));
   }
 
-  private void getCourseProgress(Request actorMessage) throws JsonProcessingException, UnirestException {
+  public void getCourseProgress(Request actorMessage) throws JsonProcessingException, UnirestException {
     System.out.println("Inside getCourseProgress method in CourseBatchManagementActor");
 
     String batchId = actorMessage.getRequest().get(BATCH_ID).toString();

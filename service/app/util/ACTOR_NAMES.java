@@ -19,6 +19,7 @@ import org.sunbird.learner.actors.qrcodedownload.QRCodeDownloadManagementActor;
 import org.sunbird.learner.actors.search.SearchHandlerActor;
 import org.sunbird.learner.actors.syncjobmanager.EsSyncActor;
 import org.sunbird.actor.exhaustjob.ExhaustJobActor;
+import org.sunbird.recommend.CourseRecommendationActor;
 
 public enum ACTOR_NAMES {
   COURSE_BATCH_MANAGEMENT_ACTOR(CourseBatchManagementActor.class, "course-batch-management-actor"),
@@ -39,6 +40,7 @@ public enum ACTOR_NAMES {
   COURSE_BATCH_NOTIFICATION_ACTOR(CourseBatchNotificationActor.class, "course-batch-notification-actor"),
     BACKGROUND_JOB_MANAGER_ACTOR(BackgroundJobManager.class, "background-job-manager-actor"),
   COURSE_MANAGEMENT_ACTOR(CourseManagementActor.class, "course-management-actor"),
+  COURSE_RECOMMENDATION_ACTOR(CourseRecommendationActor.class, "course-recommendation-actor"),
   //Scala Actors
   COURSE_ENROLMENT_ACTOR(CourseEnrolmentActor.class, "course-enrolment-actor"),
   CONTENT_CONSUMPTION_ACTOR(ContentConsumptionActor.class, "content-consumption-actor"),

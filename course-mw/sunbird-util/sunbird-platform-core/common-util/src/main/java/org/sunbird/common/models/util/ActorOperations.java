@@ -17,6 +17,7 @@ public enum ActorOperations {
   PUBLISH_COURSE("publishCourse"),
   SEARCH_COURSE("searchCourse"),
   DELETE_COURSE("deleteCourse"),
+  RECOMMEND_COURSE("listRecommended"),
   CREATE_USER("createUser"),
   UPDATE_USER("updateUser"),
   USER_AUTH("userAuth"),

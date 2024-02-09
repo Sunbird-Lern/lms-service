@@ -1,5 +1,7 @@
 package org.sunbird.common.models.util;
 
+import org.apache.commons.beanutils.PropertyUtilsBean;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -48,6 +50,7 @@ public final class JsonKey {
   public static final String ASSESSMENT_ACTOR = "actor";
   public static final String AUTH_WITH_MASTER_KEY = "authWithMasterKey";
   public static final String AUTHORIZATION = "Authorization";
+  public static final String AREA_OF_INTEREST = "areaOfInterest";
   public static final String BACKGROUND_ACTOR_PROVIDER = "background_actor_provider";
   public static final String BATCH = "batch";
   public static final String BATCH_ID = "batchId";
@@ -96,6 +99,9 @@ public final class JsonKey {
   public static final String CRITERIA = "criteria";
   public static final String CURRENT_LOGIN_TIME = "currentLoginTime";
   public static final String CURRENT_STATE = "CURRENT_STATE";
+
+  public static final String COMPETENCY = "competency";
+
   public static final String DASHBOARD = "dashboard";
   public static final String DATA = "data";
   public static final String DATE_HISTOGRAM = "DATE_HISTOGRAM";
@@ -109,6 +115,7 @@ public final class JsonKey {
   public static final String DEFAULT_ROOT_ORG_ID = "ORG_001";
   public static final String DEGREE = "degree";
   public static final String DESCRIPTION = "description";
+  public static final String DESIGNATION = "designation";
   public static final String DOB = "dob";
   public static final String EDUCATION = "education";
   public static final String EKS = "eks";
@@ -185,6 +192,7 @@ public final class JsonKey {
   public static final String JOB_NAME = "jobName";
   public static final String JOB_PROFILE = "jobProfile";
   public static final String JOINING_DATE = "joiningDate";
+  public static final String KEYWORDS = "keywords";
   public static final String LANGUAGE = "language";
   public static final String LAST_ACCESS_TIME = "lastAccessTime";
   public static final String LAST_COMPLETED_TIME = "lastCompletedTime";
@@ -202,6 +210,7 @@ public final class JsonKey {
   public static final String LEVEL = "level";
   public static final String LIMIT = "limit";
   public static final String LIST = "List";
+  public static final String LIVE = "Live";
   public static final String LOCATION = "location";
   public static final String LOCATION_IDS = "locationIds";
   public static final String LOG_LEVEL = "logLevel";
@@ -249,7 +258,7 @@ public final class JsonKey {
   public static final String PARTICIPANTS = "participants";
   public static final String PASSWORD = "password";
   public static final String PDATA = "pdata";
-
+  public static final String  PRIMARYCATEGORY = "primaryCategory";
   public static final String PERCENTAGE = "percentage";
   public static final String PHONE = "phone";
   public static final String PHONE_VERIFIED = "phoneVerified";
@@ -263,7 +272,10 @@ public final class JsonKey {
   public static final String PROCESS_START_TIME = "processStartTime";
   public static final String PDATA_ID = "telemetry_pdata_id";
   public static final String PROFILE_SUMMARY = "profileSummary";
+  public static final String  PROFILE_DETAILS = "profileDetails";
   public static final String PROFILE_VISIBILITY = "profileVisibility";
+  public static final String PROFESSIONAL_DETAILS = "professionalDetails";
+
   public static final String PROGRESS = "progress";
   public static final String PROPS = "props";
   public static final String PROVIDER = "provider";
@@ -302,6 +314,7 @@ public final class JsonKey {
   public static final String SORT = "sort";
   public static final String SORT_BY = "sort_by";
   public static final String SOURCE = "source";
+  public static final String SKILLS = "skills";
   public static final String SSO_CLIENT_ID = "sso.client.id";
   public static final String SSO_CLIENT_SECRET = "sso.client.secret";
   public static final String SSO_PASSWORD = "sso.password";
@@ -351,6 +364,7 @@ public final class JsonKey {
   public static final String TO = "to";
   public static final String TOPN = "topn";
   public static final String TYPE = "type";
+  public static final String TOTAL_NO_OF_RATINGS="totalNoOfRating";
   public static final String UNDEFINED_IDENTIFIER = "Undefined column name ";
   public static final String UNKNOWN_IDENTIFIER = "Unknown identifier ";
   public static final String UPDATE = "update";

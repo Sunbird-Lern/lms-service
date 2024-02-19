@@ -46,37 +46,32 @@ public class CourseRecommendationActor extends BaseActor {
     private void getRecommendedCourse(Request request) throws Throwable {
 
         Response finalResponse;
-        Map<String, Object> dataMap = (Map<String, Object>) request.getContext().get(HEADER);
-        String limitStr = (String) dataMap.get(LIMIT);
-        int limit = Integer.parseInt(limitStr);
+        Map<String,Object> data = request.getRequest();
 
-        if (dataMap.containsKey(COMPETENCY)) {
-            String competency = dataMap.get(COMPETENCY).toString();
+        int limit = (int) data.get(LIMIT);
+
+        if (data.containsKey(COMPETENCY)) {
+            String competency = data.get(COMPETENCY).toString();
             String userId = (String) request.getContext().getOrDefault(REQUESTED_FOR, request.getContext().get(REQUESTED_BY));
-            Response response = getUserEnrolledCourses(request);
+            Response response = getUserEnrolledCourses(request,competency);
             finalResponse = getCourses(response,limit,competency,userId,request);
         } else {
             finalResponse = contentSearchApiCall(null, false, limit);
         }
-
         sender().tell(finalResponse, self());
     }
 
 
-    private Response getUserEnrolledCourses(Request request) throws Throwable {
+    private Response getUserEnrolledCourses(Request request,String competency) throws Throwable {
 
         ObjectMapper objectMapper = new ObjectMapper();
         Response response = new Response();
 
         String userId = (String) request.getContext().getOrDefault(REQUESTED_FOR, request.getContext().get(REQUESTED_BY));
-        System.out.println("userId:" + userId);
-
-        Map<String, Object> dataMap = (Map<String, Object>) request.getContext().get(HEADER);
-        String competency = dataMap.get(COMPETENCY).toString();
-
 
         /***** To get the listOfUserEnrolledCourses *****/
         String urlString = "https://compass-dev.tarento.com/api/course/v1/user/enrollment/list/" + userId;
+
         Map<String, String> headers = Map.of(
                 "Content-Type", "application/json",
                 AUTHORIZATION, "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI0WEFsdFpGMFFhc1JDYlFnVXB4b2RvU2tLRUZyWmdpdCJ9.mXD7cSvv3Le6o_32lJplDck2D0IIMHnv0uJKq98YVwk",
@@ -334,7 +329,6 @@ public class CourseRecommendationActor extends BaseActor {
             }
         }
         response.put(KEYWORDS,keywordsList);
-        System.out.println("response from userSearch:"+response.getResult());
         return keywordsList;
 
     }

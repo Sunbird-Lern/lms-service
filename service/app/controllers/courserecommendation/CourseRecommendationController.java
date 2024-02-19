@@ -34,7 +34,7 @@ public class CourseRecommendationController extends BaseController {
 
     private CourseEnrollmentRequestValidator validator = new CourseEnrollmentRequestValidator();
 
-    public CompletionStage<Result> getRecommendedCourses(String uid, Http.Request httpRequest) {
+    public CompletionStage<Result> getRecommendedCourses(Http.Request httpRequest) {
         System.out.println("Inside getRecommendedCourses2");
 
         return handleRequest(courseRecommendationActor, ActorOperations.RECOMMEND_COURSE.getValue(),
@@ -48,7 +48,7 @@ public class CourseRecommendationController extends BaseController {
                 null,
                 null,
                 getAllRequestHeaders((httpRequest)),
-                false,
+                true,
                 httpRequest);
     }
 

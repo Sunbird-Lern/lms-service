@@ -11,12 +11,6 @@
 	</parent>
 	<artifactId>course-actors</artifactId>
 	<name>Course</name>
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<scala.major.version>2.12</scala.major.version>
-		<typesafe.akka.version>2.5.22</typesafe.akka.version>
-		<jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
-	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
@@ -37,12 +31,6 @@
 			<groupId>com.typesafe.akka</groupId>
 			<artifactId>akka-testkit_${scala.major.version}</artifactId>
 			<version>${typesafe.akka.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<version>${mockito.core.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

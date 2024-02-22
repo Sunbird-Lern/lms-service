@@ -11,12 +11,6 @@
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Cache Utils</name>
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <scala.major.version>2.12</scala.major.version>
-        <scala.version>2.12.11</scala.version>
-        <scoverage.plugin.version>1.4.1</scoverage.plugin.version>
-    </properties>
     <dependencies>
         <dependency>
             <groupId>org.scala-lang</groupId>

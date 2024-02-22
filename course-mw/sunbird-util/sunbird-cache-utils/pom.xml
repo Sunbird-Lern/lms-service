@@ -11,10 +11,6 @@
    <version>0.0.1-SNAPSHOT</version>
    <packaging>jar</packaging>
    <name>Sunbird Cache Utils</name>
-   <properties>
-      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-      <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
-   </properties>
    <dependencies>
       <dependency>
          <groupId>org.redisson</groupId>

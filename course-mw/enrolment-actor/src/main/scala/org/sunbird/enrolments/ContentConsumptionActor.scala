@@ -1,10 +1,6 @@
 package org.sunbird.enrolments
 
-import java.util
-import java.util.{Date, TimeZone, UUID}
-
 import com.fasterxml.jackson.databind.ObjectMapper
-import javax.inject.Inject
 import org.apache.commons.collections4.{CollectionUtils, MapUtils}
 import org.apache.commons.lang3.StringUtils
 import org.sunbird.cassandra.CassandraOperation
@@ -20,8 +16,11 @@ import org.sunbird.kafka.client.{InstructionEventGenerator, KafkaClient}
 import org.sunbird.learner.constants.{CourseJsonKey, InstructionEvent}
 import org.sunbird.learner.util.Util
 
-import scala.collection.JavaConversions._
+import java.util
+import java.util.{Date, TimeZone, UUID}
+import javax.inject.Inject
 import scala.collection.JavaConverters._
+import scala.collection.convert.ImplicitConversions._
 
 case class InternalContentConsumption(courseId: String, batchId: String, contentId: String) {
   def validConsumption() = StringUtils.isNotBlank(courseId) && StringUtils.isNotBlank(batchId) && StringUtils.isNotBlank(contentId)

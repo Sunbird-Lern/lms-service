@@ -1,8 +1,5 @@
 package org.sunbird.group
 
-import java.text.MessageFormat
-
-import javax.inject.Inject
 import org.apache.commons.collections.CollectionUtils
 import org.apache.commons.lang3.StringUtils
 import org.sunbird.actor.base.BaseActor
@@ -16,8 +13,10 @@ import org.sunbird.keys.SunbirdKey
 import org.sunbird.learner.actors.group.dao.impl.GroupDaoImpl
 import org.sunbird.learner.util.JsonUtil
 
-import scala.collection.JavaConversions._
+import java.text.MessageFormat
+import javax.inject.Inject
 import scala.collection.JavaConverters._
+import scala.collection.convert.ImplicitConversions._
 
 class GroupAggregatesActor @Inject()(implicit val cacheUtil: RedisCacheUtil) extends BaseActor {
 

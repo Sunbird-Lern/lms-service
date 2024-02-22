@@ -13,6 +13,7 @@
    <name>Sunbird Cache Utils</name>
    <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
    </properties>
    <dependencies>
       <dependency>
@@ -95,7 +96,7 @@
          <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.7.5.201505241946</version>
+            <version>${jacoco-maven-plugin.version}</version>
             <configuration>
                <destFile>${basedir}/target/coverage-reports/jacoco-unit.exec</destFile>
                <dataFile>${basedir}/target/coverage-reports/jacoco-unit.exec</dataFile>

@@ -7,11 +7,12 @@
 	<version>1.0-SNAPSHOT</version>
 	<name>actor-core</name>
 	<properties>
+		<scala.major.version>2.12</scala.major.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<slf4j.version>1.6.1</slf4j.version>
-		<logback.version>1.0.7</logback.version>
-		<learner.akka.version>2.5.19</learner.akka.version>
+		<typesafe.akka.version>2.5.22</typesafe.akka.version>
+		<jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -31,13 +32,13 @@
 		</dependency>
 		<dependency>
 			<groupId>com.typesafe.akka</groupId>
-			<artifactId>akka-actor_2.11</artifactId>
-			<version>${learner.akka.version}</version>
+			<artifactId>akka-actor_${scala.major.version}</artifactId>
+			<version>${typesafe.akka.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.typesafe.akka</groupId>
-			<artifactId>akka-slf4j_2.11</artifactId>
-			<version>${learner.akka.version}</version>
+			<artifactId>akka-slf4j_${scala.major.version}</artifactId>
+			<version>${typesafe.akka.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.reflections</groupId>
@@ -70,7 +71,7 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.7.5.201505241946</version>
+				<version>${jacoco-maven-plugin.version}</version>
 				<configuration>
 					<destFile>${basedir}/target/coverage-reports/jacoco-unit.exec</destFile>
 					<dataFile>${basedir}/target/coverage-reports/jacoco-unit.exec</dataFile>

@@ -30,12 +30,10 @@
 	<properties>
 		<play2.version>2.7.2</play2.version>
 		<play2.plugin.version>1.0.0-rc5</play2.plugin.version>
-		<sbt-compiler.plugin.version>1.0.0</sbt-compiler.plugin.version>
 		<scala.major.version>2.11</scala.major.version>
 		<scala.version>2.11.12</scala.version>
 		<mockito.core.version>2.22.0</mockito.core.version>
-		<powermock.api.mockito2.version>2.0.7</powermock.api.mockito2.version>
-		<powermock.module.junit4.version>2.0.0-beta.5</powermock.module.junit4.version>
+		<powermock.version>2.0.9</powermock.version>
 	</properties>
 
 	<dependencies>
@@ -195,13 +193,13 @@
 		<dependency>
 			<groupId>org.powermock</groupId>
 			<artifactId>powermock-api-mockito2</artifactId>
-			<version>${powermock.api.mockito2.version}</version>
+			<version>${powermock.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.powermock</groupId>
 			<artifactId>powermock-module-junit4</artifactId>
-			<version>${powermock.module.junit4.version}</version>
+			<version>${powermock.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -255,17 +253,9 @@
 				<extensions>true</extensions>
 			</plugin>
 			<plugin>
-				<groupId>com.google.code.sbt-compiler-maven-plugin</groupId>
-				<artifactId>sbt-compiler-maven-plugin</artifactId>
-				<version>${sbt-compiler.plugin.version}</version>
-				<configuration>
-					<scalacOptions>-feature -deprecation -Xfatal-warnings</scalacOptions>
-				</configuration>
-			</plugin>
-			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.0.0-M5</version>
+				<version>3.0.0</version>
 				<configuration>
 					<useSystemClassLoader>false</useSystemClassLoader>
 					<argLine>

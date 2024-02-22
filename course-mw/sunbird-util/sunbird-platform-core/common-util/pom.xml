@@ -14,8 +14,7 @@
         <!-- <versions.jacoco>0.7.6.201602180812</versions.jacoco> -->
         <learner.akka.version>2.5.19</learner.akka.version>
         <mockito.core.version>2.22.0</mockito.core.version>
-        <powermock.api.mockito2.version>2.0.7</powermock.api.mockito2.version>
-        <powermock.module.junit4.version>2.0.0-beta.5</powermock.module.junit4.version>
+        <powermock.version>2.0.9</powermock.version>
         <CLOUD_STORAGE_GROUP_ID>org.sunbird</CLOUD_STORAGE_GROUP_ID>
         <CLOUD_STORE_ARTIFACT_ID>cloud-store-sdk</CLOUD_STORE_ARTIFACT_ID>
         <CLOUD_STORE_VERSION>1.4.6</CLOUD_STORE_VERSION>
@@ -181,13 +180,13 @@
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-api-mockito2</artifactId>
-            <version>${powermock.api.mockito2.version}</version>
+            <version>${powermock.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-module-junit4</artifactId>
-            <version>${powermock.module.junit4.version}</version>
+            <version>${powermock.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -289,7 +288,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.0.0-M4</version>
+                    <version>3.0.0</version>
                     <configuration>
                         <argLine>
                             --illegal-access=warn

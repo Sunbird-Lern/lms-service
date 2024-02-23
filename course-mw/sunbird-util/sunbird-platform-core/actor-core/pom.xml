@@ -12,7 +12,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<slf4j.version>1.6.1</slf4j.version>
 		<typesafe.akka.version>2.5.22</typesafe.akka.version>
-		<jackson.version>2.10.5</jackson.version>
+		<jackson.version>2.13.5</jackson.version>
 		<jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
 	</properties>
 	<dependencies>

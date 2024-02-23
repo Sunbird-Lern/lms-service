@@ -15,7 +15,7 @@
 		<scala.version>2.12.11</scala.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<typesafe.akka.version>2.5.22</typesafe.akka.version>
-		<jackson.version>2.10.5</jackson.version>
+		<jackson.version>2.13.5</jackson.version>
 	</properties>
 
 	<dependencies>

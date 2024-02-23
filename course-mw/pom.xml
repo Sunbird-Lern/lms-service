@@ -13,7 +13,7 @@
 		<scala.version>2.12.11</scala.version>
 		<typesafe.akka.version>2.5.22</typesafe.akka.version>
 		<play2.plugin.version>1.0.0-beta5</play2.plugin.version>
-		<jackson.version>2.10.5</jackson.version>
+		<jackson.version>2.13.5</jackson.version>
 		<powermock.version>2.0.9</powermock.version>
 		<jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
 		<scoverage.plugin.version>1.4.1</scoverage.plugin.version>

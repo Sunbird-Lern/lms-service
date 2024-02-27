@@ -2,8 +2,9 @@ version: 2.1
 executorType: machine
 jobs:
   build:
-    docker:
+    machine:
       - image: ubuntu-2004:202201-02
+    docker:
       - image: circleci/redis:latest
     steps:
       - checkout

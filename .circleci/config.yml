@@ -3,7 +3,7 @@ executorType: machine
 jobs:
   build:
     docker:
-      - image: circleci/openjdk:14-jdk-buster-node-browsers-legacy
+      - image: ubuntu-2004:202201-02
       - image: circleci/redis:latest
     steps:
       - checkout

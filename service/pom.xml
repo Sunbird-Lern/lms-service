@@ -172,13 +172,6 @@
 			<version>${scala.version}</version>
 		</dependency>
 
-		<!-- required for IntegrationSpec -->
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.5.13</version>
-		</dependency>
-
 		<dependency>
 			<groupId>com.typesafe.akka</groupId>
 			<artifactId>akka-testkit_${scala.major.version}</artifactId>

@@ -1,18 +1,18 @@
 package modules;
 
-import java.util.concurrent.CompletableFuture;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import org.sunbird.auth.verifier.KeyManager;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.models.util.LoggerUtil;
+import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.learner.util.ContentSearchMock;
 import org.sunbird.learner.util.SchedulerManager;
 import org.sunbird.learner.util.Util;
 import play.api.Environment;
 import play.api.inject.ApplicationLifecycle;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * This class will be called after on application startup. only one instance of this class will be

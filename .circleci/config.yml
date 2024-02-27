@@ -1,9 +1,8 @@
 version: 2.1
-executorType: machine
 jobs:
   build:
     machine:
-      - image: ubuntu-2004:202201-02
+      image: ubuntu-2004:202201-02
     steps:
       - checkout
       - restore_cache:

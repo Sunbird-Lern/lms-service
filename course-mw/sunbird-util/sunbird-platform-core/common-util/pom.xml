@@ -168,7 +168,7 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.5.13</version>
+            <version>4.5.14</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpmime -->
@@ -228,6 +228,14 @@
                 <exclusion>
                     <artifactId>slf4j-log4j12</artifactId>
                     <groupId>org.slf4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-reload4j</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

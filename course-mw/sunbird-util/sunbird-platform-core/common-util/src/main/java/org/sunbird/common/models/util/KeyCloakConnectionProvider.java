@@ -2,9 +2,9 @@
 package org.sunbird.common.models.util;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
+import org.jboss.resteasy.client.jaxrs.internal.ResteasyClientBuilderImpl;
 
 /**
  * @author Manzarul This class will connect to key cloak server and provide the connection to do
@@ -48,7 +48,7 @@ public class KeyCloakConnectionProvider {
             .password(cache.getProperty(JsonKey.SSO_PASSWORD))
             .clientId(cache.getProperty(JsonKey.SSO_CLIENT_ID))
             .resteasyClient(
-                new ResteasyClientBuilder()
+                new ResteasyClientBuilderImpl()
                     .connectionPoolSize(Integer.parseInt(cache.getProperty(JsonKey.SSO_POOL_SIZE)))
                     .build());
     if (cache.getProperty(JsonKey.SSO_CLIENT_SECRET) != null
@@ -98,7 +98,7 @@ public class KeyCloakConnectionProvider {
             .password(password)
             .clientId(cleintId)
             .resteasyClient(
-                new ResteasyClientBuilder()
+                new ResteasyClientBuilderImpl()
                     .connectionPoolSize(Integer.parseInt(cache.getProperty(JsonKey.SSO_POOL_SIZE)))
                     .build());
 

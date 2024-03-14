@@ -1,22 +1,18 @@
 package org.sunbird.recommend;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
-import org.jclouds.json.Json;
 import org.sunbird.actor.base.BaseActor;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.ProjectUtil;
+import org.sunbird.common.models.util.PropertiesCache;
 import org.sunbird.common.models.util.TelemetryEnvKey;
 import org.sunbird.common.request.Request;
-import org.sunbird.learner.actors.coursebatch.CourseBatchManagementActor;
 import org.sunbird.learner.util.Util;
 
 import java.util.*;
@@ -37,6 +33,9 @@ public class CourseRecommendationActor extends BaseActor {
             case "listRecommended":
                 getRecommendedCourse(request);
                 break;
+            case "consumedCourseRecommended":
+                getRecommendedCourseBasedOnConsumedCourses(request);
+                break;
             default:
                 onReceiveUnsupportedOperation(requestedOperation);
                 break;
@@ -46,23 +45,49 @@ public class CourseRecommendationActor extends BaseActor {
     private void getRecommendedCourse(Request request) throws Throwable {
 
         Response finalResponse;
-        Map<String,Object> data = request.getRequest();
+        Map<String, Object> data = request.getRequest();
 
         int limit = (int) data.get(LIMIT);
 
-        if (data.containsKey(COMPETENCY)) {
-            String competency = data.get(COMPETENCY).toString();
+        if (data.containsKey(TARGET_TAXONOMY_CATEGORY_4IDS)) {
             String userId = (String) request.getContext().getOrDefault(REQUESTED_FOR, request.getContext().get(REQUESTED_BY));
-            Response response = getUserEnrolledCourses(request,competency);
-            finalResponse = getCourses(response,limit,competency,userId,request);
+            Response response = getUserEnrolledCourses(request);
+            List<String> competencyValue = (List<String>) data.get(TARGET_TAXONOMY_CATEGORY_4IDS);
+            List<String> taxonomyCategory4IdsList = new ArrayList<>(competencyValue);
+            List<String> keywordsList = searchUser(userId, limit, request);
+            finalResponse = getCourses(response, limit, request, keywordsList, taxonomyCategory4IdsList, null);
         } else {
             finalResponse = contentSearchApiCall(null, false, limit);
         }
         sender().tell(finalResponse, self());
     }
 
+    private void getRecommendedCourseBasedOnConsumedCourses(Request request) throws Throwable {
 
-    private Response getUserEnrolledCourses(Request request,String competency) throws Throwable {
+        Response finalResponse;
+        Map<String, Object> data = request.getRequest();
+
+        int limit = (int) data.get(LIMIT);
+
+        String userId = (String) request.getContext().getOrDefault(REQUESTED_FOR, request.getContext().get(REQUESTED_BY));
+        Response response = getUserEnrolledCourses(request);
+
+        List<String> competencyValue = (List<String>) response.get(COMPETENCY);
+        List<String> taxonomyCategory4IdsList = new ArrayList<>(competencyValue);
+
+        List<String> keywordsValue = (List<String>) response.get(KEYWORDS);
+        List<String> keywordsList = new ArrayList<>(keywordsValue);
+
+        List<String> topicsValue = (List<String>) response.get(TARGET_TAXONOMY_CATEGORY_3IDS);
+        List<String> taxonomyCategory3IdsList = new ArrayList<>(topicsValue);
+
+        finalResponse = getCourses(response, limit, request,keywordsList,taxonomyCategory4IdsList,taxonomyCategory3IdsList);
+
+        sender().tell(finalResponse, self());
+    }
+
+
+    private Response getUserEnrolledCourses(Request request) throws Throwable {
 
         ObjectMapper objectMapper = new ObjectMapper();
         Response response = new Response();
@@ -86,44 +111,73 @@ public class CourseRecommendationActor extends BaseActor {
         JsonNode courseNode = jsonNode.get(RESULT).get(COURSES);
 
         List<String> courseIds = new ArrayList<>();
-        List<String> taxonomyCategoryIdsList = new ArrayList<>();
+        List<String> taxonomyCategory4IdsList = new ArrayList<>();
+        List<String> taxonomyCategory3IdsList = new ArrayList<>();
+        List<String> keywordsList = new ArrayList<>();
 
         int count = 0;
         if (courseNode.isArray()) {
             for (JsonNode course : courseNode) {
                 String courseId = course.get(COURSE_ID).asText();
                 courseIds.add(courseId);
-                JsonNode taxonomyCategoryIdsNode = course.path(CONTENT).path(competency);
+                JsonNode taxonomyCategoryIdsNode = course.path(CONTENT).path(TARGET_TAXONOMY_CATEGORY_4IDS);
                 if (taxonomyCategoryIdsNode.isArray() && taxonomyCategoryIdsNode.size() > 0) {
                     for (JsonNode idNode : taxonomyCategoryIdsNode) {
                         String idValue = idNode.asText();
-                        if (!taxonomyCategoryIdsList.contains(idValue))
-                            taxonomyCategoryIdsList.add(idValue);
+                        if (!taxonomyCategory4IdsList.contains(idValue))
+                            taxonomyCategory4IdsList.add(idValue);
+                    }
+                }
+
+                JsonNode taxonomyCategory3IdsNode = course.path(CONTENT).path(TARGET_TAXONOMY_CATEGORY_3IDS);
+                if (!taxonomyCategory3IdsNode.isMissingNode()) {
+                    if (taxonomyCategory3IdsNode.isArray() && taxonomyCategory3IdsNode.size() > 0) {
+                        for (JsonNode idNode : taxonomyCategory3IdsNode) {
+                            String idValue = idNode.asText();
+                            if (!taxonomyCategory3IdsList.contains(idValue))
+                                taxonomyCategory3IdsList.add(idValue);
+                        }
+                    }
+                }
+
+                JsonNode keywords = course.path(CONTENT).path(KEYWORDS);
+                if (!keywords.isMissingNode()) {
+                    if (keywords.isArray() && keywords.size() > 0) {
+                        for (JsonNode idNode : keywords) {
+                            String idValue = idNode.asText();
+                            if (!keywordsList.contains(idValue))
+                                keywordsList.add(idValue);
+                        }
                     }
                 }
                 count++;
             }
         }
 
-        response.put(COURSE_IDS, courseIds);
-        response.put(COMPETENCY, taxonomyCategoryIdsList);
-        return response;
+        System.out.println("taxonomyCategory3IdsList :" + taxonomyCategory3IdsList);
+        System.out.println("keywordsList:" + keywordsList);
+        System.out.println("competency:" + taxonomyCategory4IdsList);
 
+        response.put(COURSE_IDS, courseIds);
+        response.put(COMPETENCY, taxonomyCategory4IdsList);
+        response.put(TARGET_TAXONOMY_CATEGORY_3IDS, taxonomyCategory3IdsList);
+        response.put(KEYWORDS, keywordsList);
+
+        return response;
     }
 
-    private Response getCourses(Response response, int limit,String competency,String userId,Request requestForm) throws Throwable {
+    private Response getCourses(Response response, int limit, Request requestForm, List<String> keywordsList, List<String> taxonomyCategory4IdsList, List<String> taxonomyCategory3IdsList) throws Throwable {
 
-        Request request ;
+        Request request;
         String requestBody;
         ObjectMapper objectMapper = new ObjectMapper();
-        List<String> courseIds ;
+        List<String> courseIds;
         Gson gson = new Gson();
         ArrayNode combinedContent = objectMapper.createArrayNode();
-        Response newResponse ;
-        List<String> keywordsList = null;
+        Response newResponse;
 
-        /*** To get based on competency ***/
-        request = formatRequest(response, true, limit,competency,keywordsList);
+        /*** To get courseIds based on competency ***/
+        request = formatRequest(false, true, limit, requestForm, keywordsList, taxonomyCategory4IdsList,taxonomyCategory3IdsList);
         requestBody = gson.toJson(request.getRequest());
         Response response1 = compositeSearchApiCall(requestBody);
         Object contentObject1 = response1.getResult().get(CONTENT);
@@ -134,10 +188,9 @@ public class CourseRecommendationActor extends BaseActor {
         }
 
 
-        /*** To get based on AreaOfInterest ***/
-        keywordsList = searchUser(userId, limit, requestForm);
-        if(!keywordsList.isEmpty()) {
-            request = formatRequest(response, false, limit, competency, keywordsList);
+        /*** To get courseIds based on AreaOfInterest/Keywords ***/
+        if (!keywordsList.isEmpty()) {
+            request = formatRequest(true, false, limit, requestForm, keywordsList, taxonomyCategory4IdsList,taxonomyCategory3IdsList);
             requestBody = gson.toJson(request.getRequest());
             Response response2 = compositeSearchApiCall(requestBody);
             Object contentObject2 = response2.getResult().get(CONTENT);
@@ -148,7 +201,21 @@ public class CourseRecommendationActor extends BaseActor {
             }
         }
 
-        /*** To get based on user skills ***/
+        /*** To get courseIds based on Topics ***/
+        if (!(taxonomyCategory3IdsList == null)) {
+            request = formatRequest(false, false, limit, requestForm, keywordsList, taxonomyCategory4IdsList,taxonomyCategory3IdsList);
+            requestBody = gson.toJson(request.getRequest());
+            Response response3 = compositeSearchApiCall(requestBody);
+            Object contentObject3 = response3.getResult().get(CONTENT);
+            if (contentObject3 != null) {
+                ArrayList<Object> contentArrayList3 = (ArrayList<Object>) contentObject3;
+                ArrayNode contentNode3 = objectMapper.valueToTree(contentArrayList3);
+                combinedContent.addAll(contentNode3);
+            }
+        }
+
+
+        /*** combined courseIds ***/
         response.getResult().put(CONTENT, combinedContent);
 
         /*** To get list of recommended courses ***/
@@ -162,7 +229,7 @@ public class CourseRecommendationActor extends BaseActor {
         Gson gson = new Gson();
         ObjectMapper objectMapper = new ObjectMapper();
 
-        String urlString = "https://compass-dev.tarento.com/api/content/v1/search";
+        String baseContentreadUrl = ProjectUtil.getConfigValue(JsonKey.COMPASS_API_BASE_URL) + PropertiesCache.getInstance().getProperty(JsonKey.CONTENT_SEARCH_URL);
 
         Map<String, String> headers = Map.of(
                 "Content-Type", "application/json",
@@ -198,7 +265,7 @@ public class CourseRecommendationActor extends BaseActor {
 
         String requestBody = gson.toJson(request.getRequest());
 
-        HttpResponse<String> coursesBasedOnCompetency = Unirest.post(urlString)
+        HttpResponse<String> coursesBasedOnCompetency = Unirest.post(baseContentreadUrl)
                 .headers(headers)
                 .body(requestBody)
                 .asString();
@@ -211,14 +278,17 @@ public class CourseRecommendationActor extends BaseActor {
     private Response compositeSearchApiCall(String requestBody) throws Throwable {
 
         ObjectMapper objectMapper = new ObjectMapper();
-        String urlString = "https://compass-dev.tarento.com/api/composite/v1/search";
+
+        String baseCompositeUrl = ProjectUtil.getConfigValue(JsonKey.COMPASS_API_BASE_URL) + PropertiesCache.getInstance().getProperty(JsonKey.SUNBIRD_CS_SEARCH_PATH);
+        System.out.println("baseCompositeUrl:" + baseCompositeUrl);
+
 
         Map<String, String> headers = Map.of(
                 "Content-Type", "application/json",
                 AUTHORIZATION, "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI0WEFsdFpGMFFhc1JDYlFnVXB4b2RvU2tLRUZyWmdpdCJ9.mXD7cSvv3Le6o_32lJplDck2D0IIMHnv0uJKq98YVwk"
         );
 
-        HttpResponse<String> coursesBasedOnCompetency = Unirest.post(urlString)
+        HttpResponse<String> coursesBasedOnCompetency = Unirest.post(baseCompositeUrl)
                 .headers(headers)
                 .body(requestBody)
                 .asString();
@@ -229,7 +299,7 @@ public class CourseRecommendationActor extends BaseActor {
 
     }
 
-    private Request formatRequest(Response response, boolean competency, int limit,String competencyKey,List<String> keywordsList) {
+    private Request formatRequest(boolean keywords, boolean competency, int limit, Request requestForm, List<String> keywordsList, List<String> taxonomyCategory4IdsList,List<String> taxonomyCategory3IdsList) {
         List<String> status = new ArrayList<>();
         status.add(LIVE);
 
@@ -238,23 +308,31 @@ public class CourseRecommendationActor extends BaseActor {
         Request request = new Request();
 
         if (competency) {
-            List<String> competencyValue = (List<String>) response.getResult().get(COMPETENCY);
-            List<String> taxonomyCategoryIdsList = new ArrayList<>(competencyValue);
-            filters.put(competencyKey, taxonomyCategoryIdsList);
+            filters.put(TARGET_TAXONOMY_CATEGORY_4IDS, taxonomyCategory4IdsList);
             filters.put(STATUS, status);
             requestMap.put(FILTERS, filters);
             requestMap.put(OFFSET, 0);
             requestMap.put(LIMIT, limit);
             request.put(REQUEST, requestMap);
             return request;
-        } else {
+        }
+        if (keywords) {
             filters.put(KEYWORDS, keywordsList);
             filters.put(STATUS, status);
             requestMap.put(FILTERS, filters);
             requestMap.put(OFFSET, 0);
             requestMap.put(LIMIT, limit);
             request.put(REQUEST, requestMap);
+        } else {
+            filters.put(TARGET_TAXONOMY_CATEGORY_3IDS, taxonomyCategory3IdsList);
+            filters.put(STATUS, status);
+            requestMap.put(FILTERS, filters);
+            requestMap.put(OFFSET, 0);
+            requestMap.put(LIMIT, limit);
+            request.put(REQUEST, requestMap);
+            return request;
         }
+
         return request;
     }
 
@@ -268,13 +346,13 @@ public class CourseRecommendationActor extends BaseActor {
             String courseId = node.get(IDENTIFIER).asText();
             if (!courseIDsofUserEnrolledCourses.contains(courseId)) {
                 courseIdsForContentSearch.add(courseId);
-                count ++;
+                count++;
             }
         }
         return courseIdsForContentSearch;
     }
 
-    private List<String> searchUser (String userId,int limit,Request requestForm) throws  Throwable{
+    private List<String> searchUser(String userId, int limit, Request requestForm) throws Throwable {
 
         Gson gson = new Gson();
         Response response = new Response();
@@ -293,7 +371,9 @@ public class CourseRecommendationActor extends BaseActor {
         String requestBody = gson.toJson(request.getRequest());
 
         ObjectMapper objectMapper = new ObjectMapper();
-        String urlString = "https://compass-dev.tarento.com/api/user/v1/search";
+
+        String baseUserSearchUrl = ProjectUtil.getConfigValue(JsonKey.COMPASS_API_BASE_URL) + PropertiesCache.getInstance().getProperty(JsonKey.SUNBIRD_USER_SEARCH_URL);
+        System.out.println("baseUserSearchUrl:" + baseUserSearchUrl);
 
         Map<String, String> headers = Map.of(
                 "Content-Type", "application/json",
@@ -301,7 +381,7 @@ public class CourseRecommendationActor extends BaseActor {
                 X_AUTHENTICATED_USER_TOKEN, requestForm.getContext().get(X_AUTH_TOKEN).toString()
         );
 
-        HttpResponse<String> userResponse = Unirest.post(urlString)
+        HttpResponse<String> userResponse = Unirest.post(baseUserSearchUrl)
                 .headers(headers)
                 .body(requestBody)
                 .asString();
@@ -320,7 +400,7 @@ public class CourseRecommendationActor extends BaseActor {
             keywordsList.add(designation);
         }
 
-        if(!areaOfInterestArray.isEmpty()){
+        if (!areaOfInterestArray.isEmpty()) {
             JsonNode skillsArray = areaOfInterestArray.get(0).path(SKILLS);
             if (!skillsArray.isEmpty()) {
                 for (JsonNode skill : skillsArray) {
@@ -328,8 +408,9 @@ public class CourseRecommendationActor extends BaseActor {
                 }
             }
         }
-        response.put(KEYWORDS,keywordsList);
+        response.put(KEYWORDS, keywordsList);
         return keywordsList;
-
     }
+
+
 }

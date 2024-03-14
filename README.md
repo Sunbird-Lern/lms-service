@@ -262,3 +262,33 @@ If all connections are established successfully, the health status will be shown
 
 Currently, the lms service is dependent on content read API for batch creation and User org service for getting user and organisation information. 
 We are planning to implement a mock service soon for these dependencies.
+
+
+
+### Course-recommendation-service Setup
+
+The course-recommendation-service basically includes recommending the courses based on the competency,area of interest and designation of a user, user consumed courses or taken courses.
+
+To set up the course recommendation service, follow th steps below:
+
+1. Change the below attribute value to respective dev url in external resource.properties file and /scripts/lms-config.sh file
+```
+compass_api_base_url
+```
+2. Run the below curl to get the recommended courses based on the competency,area of interest and designation of a user
+```shell
+curl --location 'https://staging.open-sunbird.org/api/course/v1/user/recommended/list' \
+--header 'x-authenticated-user-token: <string>' \
+--header 'Content-Type: application/json' \
+--header 'Accept: application/json' \
+--header 'Authorization: {{apiKey}}' \
+--data '{
+  "request": {
+    "competency": "<string>",
+    "limit": "<integer>"
+  }
+}'
+```
+
+
+

@@ -75,3 +75,6 @@ export telemetry_pdata_pid=lms-service
 export telemetry_queue_threshold_value=100
 export user_enrolments_response_cache_enable=True
 export user_enrolments_response_cache_ttl=10
+export compass_api_base_url="https://compass-dev.tarento.com"
+export sunbird_user_search_url="/api/user/v1/search"
+export content_search_url="api/content/v1/search"

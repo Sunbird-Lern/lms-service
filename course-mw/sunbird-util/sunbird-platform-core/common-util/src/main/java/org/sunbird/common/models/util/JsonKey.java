@@ -101,6 +101,9 @@ public final class JsonKey {
   public static final String CURRENT_LOGIN_TIME = "currentLoginTime";
   public static final String CURRENT_STATE = "CURRENT_STATE";
 
+  public static final String COMPASS_API_BASE_URL="compass_api_base_url";
+
+  public static final String CONTENT_SEARCH_URL="content_search_url";
   public static final String COMPETENCY = "competency";
 
   public static final String DASHBOARD = "dashboard";
@@ -361,6 +364,8 @@ public final class JsonKey {
   public static final String TELEMETRY_CONTEXT = "TELEMETRY_CONTEXT";
   public static final String TELEMETRY_EVENT_TYPE = "telemetryEventType";
   public static final String TEMPORARY_PASSWORD = "tempPassword";
+  public static final String TARGET_TAXONOMY_CATEGORY_4IDS= "targetTaxonomyCategory4Ids";
+  public static final String TARGET_TAXONOMY_CATEGORY_3IDS= "targetTaxonomyCategory3Ids";
   public static final String TITLE = "title";
   public static final String TO = "to";
   public static final String TOPN = "topn";
@@ -400,6 +405,8 @@ public final class JsonKey {
   public static final String SUNBIRD_API_MGR_BASE_URL = "sunbird_api_mgr_base_url";
   public static final String SUNBIRD_AUTHORIZATION = "sunbird_authorization";
   public static final String SUNBIRD_CS_SEARCH_PATH = "sunbird_cs_search_path";
+
+  public static final String SUNBIRD_USER_SEARCH_URL = "sunbird_user_search_url";
   public static final String DURATION = "duration";
   public static final String LOCATION_CODE = "locationCode";
   public static final String UPLOAD_FILE_MAX_SIZE = "file_upload_max_size";

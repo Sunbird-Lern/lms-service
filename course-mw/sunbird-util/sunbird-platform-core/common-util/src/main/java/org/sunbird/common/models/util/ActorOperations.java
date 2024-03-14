@@ -18,6 +18,7 @@ public enum ActorOperations {
   SEARCH_COURSE("searchCourse"),
   DELETE_COURSE("deleteCourse"),
   RECOMMEND_COURSE("listRecommended"),
+  RECOMMEND_BASED_ON_CONSUMED_COURSE("consumedCourseRecommended"),
   CREATE_USER("createUser"),
   UPDATE_USER("updateUser"),
   USER_AUTH("userAuth"),

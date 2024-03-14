@@ -1,0 +1,146 @@
+openapi: 3.0.1
+info:
+  title: Course Recommendation APIs
+  description: The Course Recommendation APIs is used to get the recommended courses based on below scenario's.
+     1.Based on user interest,designation and competency of the course.
+     2.Based on user consumed courses
+
+  termsOfService: https://github.com/project-sunbird/sunbird-commons/blob/master/LICENSE
+  contact:
+    email: info@sunbird.org
+  version: '1.0'
+servers:
+  - url: 'https://staging.open-sunbird.org/api'
+
+paths:
+  /course/v1/user/recommended/list:
+    post:
+      tags:
+        - Course Recommend APIs
+      summary: Course Recommend
+      description: >+
+        The API is used the recommend the courses based on user interest,designation and competency of the course.
+        
+        The endpoint for Course recommend is /v1/user/courses/recommendation/list
+  
+        The fields marked with an asterisk (*) are mandatory. They cannot be null or empty.
+
+      operationId: CourseRecommend
+      parameters:
+        - name: Authorization
+          in: header
+          description: To make use of the API, you require authorization. Raise a request to the administrator for the use of the API. You will receive the authorization key. Specify the key received, here.
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: '{{api-key}}'
+        - name: x-authenticated-user-token
+          in: header
+          description: The alphanumeric string for accessing the API
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: '{{authToken}}'
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/courserecommendationapiCourseRecommendRequest'
+            example:
+              request:
+                competency: '{{competency-id}}'
+                limit: '{{limit}}'
+        required: true
+      responses:
+        200:
+          description: 'SUCCESS. The "Course Recommendation Request" operation was successful!'
+          headers: { }
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/courseenrolmentapiCourseEnrol-success'
+              example:
+                id: api.course.enroll
+                ver: v1
+                ts: 2020-12-03 04:24:19:186+0000
+                params:
+                  resmsgid:
+                  msgid: d8e54177-acb2-4351-8dcc-a7e6fc5c8a2f
+                  err:
+                  status: success
+                  errmsg:
+                responseCode: OK
+                result:
+                  response: SUCCESS
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/courseenrolmentapiCourseBatchUserRemove-Enrollmenttypevalidation'
+              example:
+                id: api.course.enroll
+                ver: v1
+                ts: 2020-12-03 04:44:14:386+0000
+                params:
+                  resmsgid:
+                  msgid: 75199913-1346-49cc-b486-0810ce706a4e
+                  err: INVALID_COURSE_BATCH_ID
+                  status: INVALID_COURSE_BATCH_ID
+                  errmsg: 'Invalid course batch id '
+                responseCode: CLIENT_ERROR
+                result: { }
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/courseenrolmentapiUserEnrolmentList-500InternalServerError'
+              example:
+                id: api.course.enroll
+                ver: v1
+                ts: 2020-11-23 15:15:18:331+0000
+                params:
+                  resmsgid:
+                  msgid:
+                  err: INTERNAL_ERROR
+                  status: SERVER_ERROR
+                  errmsg: Process failed,please try again later.
+                responseCode: SERVER_ERROR
+                result: { }
+      deprecated: false
+      security:
+        - bearer: [ ]
+components:
+  schemas:
+    courserecommendationapiCourseRecommendRequest:
+      title: CourseRecommendRequest
+      required:
+        - request
+      type: object
+      properties:
+        request:
+          $ref: '#/components/schemas/courserecommendapiRequest'
+      example:
+        request:
+          competency: '{{competency-id}}'
+          limit: '{{limit}}'
+    courserecommendapiRequest:
+      title: Request
+      required:
+        - competency
+        - limit
+      type: object
+      properties:
+        competency:
+          type: string
+        limit:
+          type: integer
+  securitySchemes:
+    bearer:
+      type: apiKey
+      name: Authorization
+      in: header

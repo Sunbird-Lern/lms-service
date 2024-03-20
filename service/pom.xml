@@ -159,10 +159,6 @@
 					<groupId>com.google.guava</groupId>
 					<artifactId>guava</artifactId>
 				</exclusion>
-				<exclusion>
-					<groupId>net.bytebuddy</groupId>
-					<artifactId>byte-buddy</artifactId>
-				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>

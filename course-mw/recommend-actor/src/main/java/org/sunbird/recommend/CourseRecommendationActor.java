@@ -16,6 +16,7 @@ import org.sunbird.common.request.Request;
 import org.sunbird.learner.util.Util;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.sunbird.common.models.util.JsonKey.*;
 import static org.sunbird.common.models.util.JsonKey.X_AUTH_TOKEN;
@@ -46,27 +47,42 @@ public class CourseRecommendationActor extends BaseActor {
 
         Response finalResponse;
         Map<String, Object> data = request.getRequest();
-
         int limit = (int) data.get(LIMIT);
-
         if (data.containsKey(TARGET_TAXONOMY_CATEGORY_4IDS)) {
-            String userId = (String) request.getContext().getOrDefault(REQUESTED_FOR, request.getContext().get(REQUESTED_BY));
-            Response response = getUserEnrolledCourses(request);
-            List<String> competencyValue = (List<String>) data.get(TARGET_TAXONOMY_CATEGORY_4IDS);
-            List<String> taxonomyCategory4IdsList = new ArrayList<>(competencyValue);
-            List<String> keywordsList = searchUser(userId, limit, request);
-            finalResponse = getCourses(response, limit, request, keywordsList, taxonomyCategory4IdsList, null);
+            List<String> courseIds = new ArrayList<>();
+
+            List<String> courseIdsOfCompetency = getRecommendedCourseBasedOnCompetency(request);
+            courseIds.addAll(courseIdsOfCompetency);
+
+            List<String> courseIdsOfConsumedCourses = getRecommendedCourseBasedOnConsumedCourses(request);
+            courseIds.addAll(courseIdsOfConsumedCourses);
+
+            Set<String> uniqueCourseIds = courseIds.stream().collect(Collectors.toSet());
+            courseIds = new ArrayList<>(uniqueCourseIds);
+
+            finalResponse = contentSearchApiCall(courseIds, true, limit);
         } else {
             finalResponse = contentSearchApiCall(null, false, limit);
         }
         sender().tell(finalResponse, self());
     }
 
-    private void getRecommendedCourseBasedOnConsumedCourses(Request request) throws Throwable {
-
-        Response finalResponse;
+    private List<String> getRecommendedCourseBasedOnCompetency(Request request) throws Throwable {
         Map<String, Object> data = request.getRequest();
 
+        int limit = (int) data.get(LIMIT);
+        String userId = (String) request.getContext().getOrDefault(REQUESTED_FOR, request.getContext().get(REQUESTED_BY));
+        Response response = getUserEnrolledCourses(request);
+        List<String> competencyValue = (List<String>) data.get(TARGET_TAXONOMY_CATEGORY_4IDS);
+        List<String> taxonomyCategory4IdsList = new ArrayList<>(competencyValue);
+        List<String> keywordsList = searchUser(userId, limit, request);
+        List<String> courseIds = getCourses(response, limit, request, keywordsList, taxonomyCategory4IdsList, null);
+        return courseIds;
+    }
+
+    private List<String> getRecommendedCourseBasedOnConsumedCourses(Request request) throws Throwable {
+
+        Map<String, Object> data = request.getRequest();
         int limit = (int) data.get(LIMIT);
 
         String userId = (String) request.getContext().getOrDefault(REQUESTED_FOR, request.getContext().get(REQUESTED_BY));
@@ -81,9 +97,9 @@ public class CourseRecommendationActor extends BaseActor {
         List<String> topicsValue = (List<String>) response.get(TARGET_TAXONOMY_CATEGORY_3IDS);
         List<String> taxonomyCategory3IdsList = new ArrayList<>(topicsValue);
 
-        finalResponse = getCourses(response, limit, request,keywordsList,taxonomyCategory4IdsList,taxonomyCategory3IdsList);
+        List<String> courseIds = getCourses(response, limit, request, keywordsList, taxonomyCategory4IdsList, taxonomyCategory3IdsList);
 
-        sender().tell(finalResponse, self());
+        return courseIds;
     }
 
 
@@ -115,7 +131,6 @@ public class CourseRecommendationActor extends BaseActor {
         List<String> taxonomyCategory3IdsList = new ArrayList<>();
         List<String> keywordsList = new ArrayList<>();
 
-        int count = 0;
         if (courseNode.isArray()) {
             for (JsonNode course : courseNode) {
                 String courseId = course.get(COURSE_ID).asText();
@@ -150,14 +165,8 @@ public class CourseRecommendationActor extends BaseActor {
                         }
                     }
                 }
-                count++;
             }
         }
-
-        System.out.println("taxonomyCategory3IdsList :" + taxonomyCategory3IdsList);
-        System.out.println("keywordsList:" + keywordsList);
-        System.out.println("competency:" + taxonomyCategory4IdsList);
-
         response.put(COURSE_IDS, courseIds);
         response.put(COMPETENCY, taxonomyCategory4IdsList);
         response.put(TARGET_TAXONOMY_CATEGORY_3IDS, taxonomyCategory3IdsList);
@@ -166,7 +175,7 @@ public class CourseRecommendationActor extends BaseActor {
         return response;
     }
 
-    private Response getCourses(Response response, int limit, Request requestForm, List<String> keywordsList, List<String> taxonomyCategory4IdsList, List<String> taxonomyCategory3IdsList) throws Throwable {
+    private List<String> getCourses(Response response, int limit, Request requestForm, List<String> keywordsList, List<String> taxonomyCategory4IdsList, List<String> taxonomyCategory3IdsList) throws Throwable {
 
         Request request;
         String requestBody;
@@ -177,7 +186,7 @@ public class CourseRecommendationActor extends BaseActor {
         Response newResponse;
 
         /*** To get courseIds based on competency ***/
-        request = formatRequest(false, true, limit, requestForm, keywordsList, taxonomyCategory4IdsList,taxonomyCategory3IdsList);
+        request = formatRequest(false, true, limit, requestForm, keywordsList, taxonomyCategory4IdsList, taxonomyCategory3IdsList);
         requestBody = gson.toJson(request.getRequest());
         Response response1 = compositeSearchApiCall(requestBody);
         Object contentObject1 = response1.getResult().get(CONTENT);
@@ -190,7 +199,7 @@ public class CourseRecommendationActor extends BaseActor {
 
         /*** To get courseIds based on AreaOfInterest/Keywords ***/
         if (!keywordsList.isEmpty()) {
-            request = formatRequest(true, false, limit, requestForm, keywordsList, taxonomyCategory4IdsList,taxonomyCategory3IdsList);
+            request = formatRequest(true, false, limit, requestForm, keywordsList, taxonomyCategory4IdsList, taxonomyCategory3IdsList);
             requestBody = gson.toJson(request.getRequest());
             Response response2 = compositeSearchApiCall(requestBody);
             Object contentObject2 = response2.getResult().get(CONTENT);
@@ -203,7 +212,7 @@ public class CourseRecommendationActor extends BaseActor {
 
         /*** To get courseIds based on Topics ***/
         if (!(taxonomyCategory3IdsList == null)) {
-            request = formatRequest(false, false, limit, requestForm, keywordsList, taxonomyCategory4IdsList,taxonomyCategory3IdsList);
+            request = formatRequest(false, false, limit, requestForm, keywordsList, taxonomyCategory4IdsList, taxonomyCategory3IdsList);
             requestBody = gson.toJson(request.getRequest());
             Response response3 = compositeSearchApiCall(requestBody);
             Object contentObject3 = response3.getResult().get(CONTENT);
@@ -220,8 +229,8 @@ public class CourseRecommendationActor extends BaseActor {
 
         /*** To get list of recommended courses ***/
         courseIds = courseIdFilters(response);
-        newResponse = contentSearchApiCall(courseIds, true, limit);
-        return newResponse;
+
+        return courseIds;
     }
 
     private Response contentSearchApiCall(List<String> courseIds, boolean header, int limit) throws Throwable {
@@ -229,7 +238,8 @@ public class CourseRecommendationActor extends BaseActor {
         Gson gson = new Gson();
         ObjectMapper objectMapper = new ObjectMapper();
 
-        String baseContentreadUrl = ProjectUtil.getConfigValue(JsonKey.COMPASS_API_BASE_URL) + PropertiesCache.getInstance().getProperty(JsonKey.CONTENT_SEARCH_URL);
+        String baseContentreadUrl = ProjectUtil.getConfigValue(COMPASS_API_BASE_URL) + PropertiesCache.getInstance().getProperty(CONTENT_SEARCH_URL);
+        logger.debug(null,"baseContentreadUrl:"+baseContentreadUrl);
 
         Map<String, String> headers = Map.of(
                 "Content-Type", "application/json",
@@ -272,16 +282,15 @@ public class CourseRecommendationActor extends BaseActor {
 
         String jsonString = coursesBasedOnCompetency.getBody();
         response = objectMapper.readValue(jsonString, Response.class);
+        logger.debug(null,"responseOfContentSearchapi:"+response);
         return response;
     }
 
     private Response compositeSearchApiCall(String requestBody) throws Throwable {
-
         ObjectMapper objectMapper = new ObjectMapper();
 
-        String baseCompositeUrl = ProjectUtil.getConfigValue(JsonKey.COMPASS_API_BASE_URL) + PropertiesCache.getInstance().getProperty(JsonKey.SUNBIRD_CS_SEARCH_PATH);
-        System.out.println("baseCompositeUrl:" + baseCompositeUrl);
-
+        String baseCompositeUrl = ProjectUtil.getConfigValue(COMPASS_API_BASE_URL) + PropertiesCache.getInstance().getProperty(SUNBIRD_CS_SEARCH_PATH);
+        logger.debug(null,"baseCompositeUrl:"+baseCompositeUrl);
 
         Map<String, String> headers = Map.of(
                 "Content-Type", "application/json",
@@ -299,7 +308,7 @@ public class CourseRecommendationActor extends BaseActor {
 
     }
 
-    private Request formatRequest(boolean keywords, boolean competency, int limit, Request requestForm, List<String> keywordsList, List<String> taxonomyCategory4IdsList,List<String> taxonomyCategory3IdsList) {
+    private Request formatRequest(boolean keywords, boolean competency, int limit, Request requestForm, List<String> keywordsList, List<String> taxonomyCategory4IdsList, List<String> taxonomyCategory3IdsList) {
         List<String> status = new ArrayList<>();
         status.add(LIVE);
 
@@ -372,8 +381,8 @@ public class CourseRecommendationActor extends BaseActor {
 
         ObjectMapper objectMapper = new ObjectMapper();
 
-        String baseUserSearchUrl = ProjectUtil.getConfigValue(JsonKey.COMPASS_API_BASE_URL) + PropertiesCache.getInstance().getProperty(JsonKey.SUNBIRD_USER_SEARCH_URL);
-        System.out.println("baseUserSearchUrl:" + baseUserSearchUrl);
+        String baseUserSearchUrl = ProjectUtil.getConfigValue(COMPASS_API_BASE_URL) + PropertiesCache.getInstance().getProperty(SUNBIRD_USER_SEARCH_URL);
+        logger.debug(null,"baseUserSearchUrl:"+baseUserSearchUrl);
 
         Map<String, String> headers = Map.of(
                 "Content-Type", "application/json",

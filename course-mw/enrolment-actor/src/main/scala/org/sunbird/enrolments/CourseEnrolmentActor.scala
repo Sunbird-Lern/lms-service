@@ -1,17 +1,11 @@
 package org.sunbird.enrolments
 
-import java.sql.Timestamp
-import java.text.{MessageFormat, SimpleDateFormat}
-import java.time.format.DateTimeFormatter
-import java.time.{LocalDate, LocalDateTime, LocalTime, ZoneId}
-import java.util
-import java.util.{Comparator, Date}
 import akka.actor.ActorRef
 import com.fasterxml.jackson.databind.ObjectMapper
-
-import javax.inject.{Inject, Named}
-import org.apache.commons.collections4.{CollectionUtils, MapUtils}
+import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang3.StringUtils
+import org.sunbird.cache.util.RedisCacheUtil
+import org.sunbird.common.CassandraUtil
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
 import org.sunbird.common.models.util.ProjectUtil.EnrolmentType
@@ -21,16 +15,20 @@ import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.learner.actors.coursebatch.dao.impl.{CourseBatchDaoImpl, UserCoursesDaoImpl}
 import org.sunbird.learner.actors.coursebatch.dao.{CourseBatchDao, UserCoursesDao}
 import org.sunbird.learner.actors.group.dao.impl.GroupDaoImpl
-import org.sunbird.learner.util.{ContentSearchUtil, ContentUtil, CourseBatchSchedulerUtil, JsonUtil, Util}
+import org.sunbird.learner.util._
 import org.sunbird.models.course.batch.CourseBatch
 import org.sunbird.models.user.courses.UserCourses
-import org.sunbird.cache.util.RedisCacheUtil
-import org.sunbird.common.CassandraUtil
-import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.telemetry.util.TelemetryUtil
 
-import scala.collection.JavaConversions._
+import java.sql.Timestamp
+import java.text.SimpleDateFormat
+import java.time.format.DateTimeFormatter
+import java.time.{LocalDate, LocalDateTime, LocalTime}
+import java.util
+import java.util.Date
+import javax.inject.{Inject, Named}
 import scala.collection.JavaConverters._
+import scala.collection.convert.ImplicitConversions._
 
 class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") courseBatchNotificationActorRef: ActorRef
                                     )(implicit val  cacheUtil: RedisCacheUtil ) extends BaseEnrolmentActor {

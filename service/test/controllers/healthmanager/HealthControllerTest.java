@@ -2,7 +2,6 @@ package controllers.healthmanager;
 
 import actors.DummyActor;
 import controllers.BaseApplicationTest;
-import actors.DummyHealthActor;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;

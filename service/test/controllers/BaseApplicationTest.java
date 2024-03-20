@@ -1,9 +1,5 @@
 package controllers;
 
-import play.inject.Bindings;
-
-import java.io.File;
-import java.util.List;
 import modules.StartModule;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -13,10 +9,14 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import play.Application;
 import play.Mode;
+import play.inject.Bindings;
 import play.inject.guice.GuiceApplicationBuilder;
 import play.test.Helpers;
 import util.ACTOR_NAMES;
 import util.RequestInterceptor;
+
+import java.io.File;
+import java.util.List;
 
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*", "jdk.internal.reflect.*",

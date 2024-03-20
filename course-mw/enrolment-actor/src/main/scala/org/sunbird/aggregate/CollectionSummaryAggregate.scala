@@ -74,7 +74,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
 
   def transform(druidResponse: String, groupByKeys: List[String]): util.HashMap[String, AnyRef] = {
     val transformedResult = new util.HashMap[String, AnyRef]()
-    import scala.collection.JavaConversions._
+    import scala.collection.convert.ImplicitConversions._
     val parsedResult: AnyRef = JsonUtil.deserialize(druidResponse, classOf[AnyRef])
     if (isArray(druidResponse) && parsedResult.asInstanceOf[util.ArrayList[util.Map[String, AnyRef]]].nonEmpty) {
       val groupingObj = parsedResult.asInstanceOf[util.ArrayList[util.Map[String, AnyRef]]].map(x => {

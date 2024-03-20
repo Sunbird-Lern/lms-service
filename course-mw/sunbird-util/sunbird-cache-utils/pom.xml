@@ -11,14 +11,17 @@
    <version>0.0.1-SNAPSHOT</version>
    <packaging>jar</packaging>
    <name>Sunbird Cache Utils</name>
-   <properties>
-      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-   </properties>
    <dependencies>
       <dependency>
          <groupId>org.redisson</groupId>
          <artifactId>redisson</artifactId>
          <version>3.2.0</version>
+         <exclusions>
+            <exclusion>
+               <groupId>net.bytebuddy</groupId>
+               <artifactId>byte-buddy</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>ch.qos.logback</groupId>
@@ -26,9 +29,14 @@
          <version>1.2.3</version>
       </dependency>
       <dependency>
+         <groupId>ch.qos.logback</groupId>
+         <artifactId>logback-core</artifactId>
+         <version>1.2.3</version>
+      </dependency>
+      <dependency>
          <groupId>net.logstash.logback</groupId>
          <artifactId>logstash-logback-encoder</artifactId>
-         <version>6.3</version>
+         <version>6.6</version>
       </dependency>
       <dependency>
          <groupId>org.sunbird</groupId>
@@ -38,7 +46,7 @@
       <dependency>
          <groupId>org.powermock</groupId>
          <artifactId>powermock-module-junit4</artifactId>
-         <version>1.6.5</version>
+         <version>${powermock.version}</version>
          <scope>test</scope>
          <exclusions>
             <exclusion>
@@ -49,8 +57,8 @@
       </dependency>
       <dependency>
          <groupId>org.powermock</groupId>
-         <artifactId>powermock-api-mockito</artifactId>
-         <version>1.6.5</version>
+         <artifactId>powermock-api-mockito2</artifactId>
+         <version>${powermock.version}</version>
          <scope>test</scope>
       </dependency>
       <dependency>
@@ -81,7 +89,7 @@
             <plugin>
                <groupId>org.apache.maven.plugins</groupId>
                <artifactId>maven-surefire-plugin</artifactId>
-               <version>3.0.0-M4</version>
+               <version>3.0.0</version>
                <configuration>
                   <includes>
                      <include>**/*Spec.java</include>
@@ -95,7 +103,7 @@
          <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.7.5.201505241946</version>
+            <version>${jacoco-maven-plugin.version}</version>
             <configuration>
                <destFile>${basedir}/target/coverage-reports/jacoco-unit.exec</destFile>
                <dataFile>${basedir}/target/coverage-reports/jacoco-unit.exec</dataFile>

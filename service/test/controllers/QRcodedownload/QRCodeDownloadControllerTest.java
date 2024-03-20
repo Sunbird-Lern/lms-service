@@ -1,8 +1,8 @@
 package controllers.QRcodedownload;
 
+import actors.DummyActor;
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.BaseApplicationTest;
-import actors.DummyActor;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

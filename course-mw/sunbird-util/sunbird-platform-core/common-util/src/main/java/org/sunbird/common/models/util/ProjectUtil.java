@@ -4,6 +4,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.validator.UrlValidator;
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
+import org.sunbird.common.exception.ProjectCommonException;
+import org.sunbird.common.models.util.url.EsConfigUtil;
+import org.sunbird.common.request.Request;
+import org.sunbird.common.responsecode.ResponseCode;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
@@ -15,16 +25,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.validator.UrlValidator;
-import org.apache.hadoop.util.Time;
-import org.apache.velocity.Template;
-import org.apache.velocity.VelocityContext;
-import org.apache.velocity.app.VelocityEngine;
-import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.util.url.EsConfigUtil;
-import org.sunbird.common.request.Request;
-import org.sunbird.common.responsecode.ResponseCode;
 
 /**
  * This class will contains all the common utility methods.

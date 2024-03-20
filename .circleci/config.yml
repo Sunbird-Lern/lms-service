@@ -1,10 +1,8 @@
 version: 2.1
-executorType: machine
 jobs:
   build:
-    docker:
-      - image: circleci/openjdk:14-jdk-buster-node-browsers-legacy
-      - image: circleci/redis:latest
+    machine:
+      image: ubuntu-2004:202201-02
     steps:
       - checkout
       - restore_cache:

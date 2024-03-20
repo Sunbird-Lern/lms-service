@@ -5,12 +5,12 @@ import org.apache.http.HttpHeaders;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.HeaderParam;
+import play.filters.gzip.GzipFilter;
+import play.filters.gzip.GzipFilterConfig;
 import play.mvc.EssentialAction;
 import play.mvc.EssentialFilter;
 import play.mvc.Http;
 import play.mvc.Result;
-import play.filters.gzip.GzipFilter;
-import play.filters.gzip.GzipFilterConfig;
 
 import javax.inject.Inject;
 import java.util.function.BiFunction;

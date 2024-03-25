@@ -60,6 +60,8 @@ public class CourseRecommendationActor extends BaseActor {
             Set<String> uniqueCourseIds = courseIds.stream().collect(Collectors.toSet());
             courseIds = new ArrayList<>(uniqueCourseIds);
 
+            System.out.println("final courseIds:"+courseIds);
+
             finalResponse = contentSearchApiCall(courseIds, true, limit);
         } else {
             finalResponse = contentSearchApiCall(null, false, limit);
@@ -74,8 +76,11 @@ public class CourseRecommendationActor extends BaseActor {
         String userId = (String) request.getContext().getOrDefault(REQUESTED_FOR, request.getContext().get(REQUESTED_BY));
         Response response = getUserEnrolledCourses(request);
         List<String> competencyValue = (List<String>) data.get(TARGET_TAXONOMY_CATEGORY_4IDS);
+        System.out.println("competencyValue:"+competencyValue);
         List<String> taxonomyCategory4IdsList = new ArrayList<>(competencyValue);
+        System.out.println("taxonomyCategory4IdsList:"+taxonomyCategory4IdsList);
         List<String> keywordsList = searchUser(userId, limit, request);
+        System.out.println("keywordsList:"+keywordsList);
         List<String> courseIds = getCourses(response, limit, request, keywordsList, taxonomyCategory4IdsList, null);
         return courseIds;
     }
@@ -239,7 +244,7 @@ public class CourseRecommendationActor extends BaseActor {
         ObjectMapper objectMapper = new ObjectMapper();
 
         String baseContentreadUrl = ProjectUtil.getConfigValue(COMPASS_API_BASE_URL) + PropertiesCache.getInstance().getProperty(CONTENT_SEARCH_URL);
-        logger.debug(null,"baseContentreadUrl:"+baseContentreadUrl);
+        System.out.println("baseContentreadUrl:"+baseContentreadUrl);
 
         Map<String, String> headers = Map.of(
                 "Content-Type", "application/json",
@@ -282,7 +287,7 @@ public class CourseRecommendationActor extends BaseActor {
 
         String jsonString = coursesBasedOnCompetency.getBody();
         response = objectMapper.readValue(jsonString, Response.class);
-        logger.debug(null,"responseOfContentSearchapi:"+response);
+        System.out.println("responseOfContentSearchapi:"+response);
         return response;
     }
 
@@ -290,7 +295,7 @@ public class CourseRecommendationActor extends BaseActor {
         ObjectMapper objectMapper = new ObjectMapper();
 
         String baseCompositeUrl = ProjectUtil.getConfigValue(COMPASS_API_BASE_URL) + PropertiesCache.getInstance().getProperty(SUNBIRD_CS_SEARCH_PATH);
-        logger.debug(null,"baseCompositeUrl:"+baseCompositeUrl);
+        System.out.println("baseCompositeUrl:"+baseCompositeUrl);
 
         Map<String, String> headers = Map.of(
                 "Content-Type", "application/json",
@@ -382,7 +387,7 @@ public class CourseRecommendationActor extends BaseActor {
         ObjectMapper objectMapper = new ObjectMapper();
 
         String baseUserSearchUrl = ProjectUtil.getConfigValue(COMPASS_API_BASE_URL) + PropertiesCache.getInstance().getProperty(SUNBIRD_USER_SEARCH_URL);
-        logger.debug(null,"baseUserSearchUrl:"+baseUserSearchUrl);
+        System.out.println("baseUserSearchUrl:"+baseUserSearchUrl);
 
         Map<String, String> headers = Map.of(
                 "Content-Type", "application/json",

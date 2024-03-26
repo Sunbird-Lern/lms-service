@@ -31,7 +31,7 @@ public class CourseRecommendationController extends BaseController {
     private CourseEnrollmentRequestValidator validator = new CourseEnrollmentRequestValidator();
 
     public CompletionStage<Result> getRecommendedCourses(Http.Request httpRequest) {
-        System.out.println("Inside getRecommendedCourses2");
+        System.out.println("Inside getRecommendedCourses");
 
         return handleRequest(courseRecommendationActor, ActorOperations.RECOMMEND_COURSE.getValue(),
                 httpRequest.body().asJson(),

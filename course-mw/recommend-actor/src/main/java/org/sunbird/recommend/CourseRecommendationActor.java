@@ -294,8 +294,14 @@ public class CourseRecommendationActor extends BaseActor {
     private Response compositeSearchApiCall(String requestBody) throws Throwable {
         ObjectMapper objectMapper = new ObjectMapper();
 
-        String baseCompositeUrl = ProjectUtil.getConfigValue(COMPASS_API_BASE_URL) + PropertiesCache.getInstance().getProperty(SUNBIRD_CS_SEARCH_PATH);
+        String baseCompositeUrl = ProjectUtil.getConfigValue(COMPASS_API_BASE_URL) +"/composite/v1/search";
         System.out.println("baseCompositeUrl:"+baseCompositeUrl);
+
+        String testingUrl = ProjectUtil.getConfigValue(COMPASS_API_BASE_URL) + PropertiesCache.getInstance().getProperty(COMPOSITE_SEARCH_URL);
+        System.out.println("testingUrl:"+testingUrl);
+
+        String testingUrl2 = ProjectUtil.getConfigValue(COMPASS_API_BASE_URL) + PropertiesCache.getInstance().getProperty(COMPOSITE_SEARCH_URL);
+        System.out.println("testingUrl2:"+testingUrl2);
 
         Map<String, String> headers = Map.of(
                 "Content-Type", "application/json",

@@ -78,3 +78,4 @@ export user_enrolments_response_cache_ttl=10
 export compass_api_base_url="https://compass-dev.tarento.com"
 export sunbird_user_search_url="/api/user/v1/search"
 export content_search_url="api/content/v1/search"
+export composite_search_url="api/composite/v1/search"

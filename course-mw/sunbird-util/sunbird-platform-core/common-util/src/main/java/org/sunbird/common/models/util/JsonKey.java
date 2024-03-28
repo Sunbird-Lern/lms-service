@@ -104,6 +104,7 @@ public final class JsonKey {
   public static final String COMPASS_API_BASE_URL="compass_api_base_url";
 
   public static final String CONTENT_SEARCH_URL="content_search_url";
+  public static final String COMPOSITE_SEARCH_URL = "composite_search_url";
   public static final String COMPETENCY = "competency";
 
   public static final String DASHBOARD = "dashboard";
@@ -404,6 +405,7 @@ public final class JsonKey {
   public static final String SUNBIRD_USER_ORG_API_BASE_URL = "sunbird_user_org_api_base_url";
   public static final String SUNBIRD_API_MGR_BASE_URL = "sunbird_api_mgr_base_url";
   public static final String SUNBIRD_AUTHORIZATION = "sunbird_authorization";
+
   public static final String SUNBIRD_CS_SEARCH_PATH = "sunbird_cs_search_path";
 
   public static final String SUNBIRD_USER_SEARCH_URL = "sunbird_user_search_url";

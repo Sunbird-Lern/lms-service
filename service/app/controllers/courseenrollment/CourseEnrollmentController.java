@@ -1,6 +1,9 @@
 package controllers.courseenrollment;
 
 import akka.actor.ActorRef;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import controllers.BaseController;
 import controllers.courseenrollment.validator.CourseEnrollmentRequestValidator;
 import org.sunbird.common.models.util.ActorOperations;
@@ -242,6 +245,59 @@ public class CourseEnrollmentController extends BaseController {
                     return null;
                 },
                 getAllRequestHeaders(httpRequest),
+                httpRequest);
+    }
+
+    public CompletionStage<Result> getEnrolledCoursesOfUsers(Http.Request httpRequest) {
+        System.out.println("RequestBody:"+httpRequest.body().asJson());
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        return handleRequest(courseEnrolmentActor, "listOfUserIds",
+                httpRequest.body().asJson(),
+                (req) -> {
+                    Request request = (Request) req;
+                    String jsonObject = httpRequest.body().asJson().toString();
+                    System.out.println("jsonObject :"+jsonObject);
+                    String userIds;
+                    try {
+                        JsonNode jsonNode = objectMapper.readTree(jsonObject);
+                        userIds = jsonNode.get(JsonKey.REQUEST).get(JsonKey.USER_IDs).toString();
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+
+
+                    Map<String, String[]> queryParams = new HashMap<>(httpRequest.queryString());
+
+                    if(queryParams.containsKey("fields")) {
+                        Set<String> fields = new HashSet<>(Arrays.asList(queryParams.get("fields")[0].split(",")));
+                        fields.addAll(Arrays.asList(JsonKey.NAME, JsonKey.DESCRIPTION, JsonKey.LEAF_NODE_COUNT, JsonKey.APP_ICON));
+                        queryParams.put("fields", fields.toArray(new String[0]));
+                    }
+                    String userId = (String) request.getContext().getOrDefault(JsonKey.REQUESTED_FOR, request.getContext().get(JsonKey.REQUESTED_BY));
+
+                    validator.validateRequestedBy(userId);
+                    request.getContext().put(JsonKey.USER_ID, userId);
+                    request.getRequest().put(JsonKey.USER_ID, userId);
+                    request.getContext().put(JsonKey.USER_IDs,userIds);
+                    request.getRequest().put(JsonKey.USER_IDs, userIds);
+
+                    request
+                            .getContext()
+                            .put(JsonKey.URL_QUERY_STRING, getQueryString(queryParams));
+                    request
+                            .getContext()
+                            .put(JsonKey.BATCH_DETAILS, httpRequest.queryString().get(JsonKey.BATCH_DETAILS));
+                    if (queryParams.containsKey("cache")) {
+                        request.getContext().put("cache", Boolean.parseBoolean(queryParams.get("cache")[0]));
+                    } else
+                        request.getContext().put("cache", true);
+                    return null;
+                },
+                null,
+                null,
+                getAllRequestHeaders((httpRequest)),
+                false,
                 httpRequest);
     }
 }

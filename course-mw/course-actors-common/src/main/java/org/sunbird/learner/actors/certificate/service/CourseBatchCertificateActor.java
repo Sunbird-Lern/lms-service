@@ -61,6 +61,8 @@ public class CourseBatchCertificateActor extends BaseActor {
     String templateId = (String) template.get(JsonKey.IDENTIFIER);
     validateTemplateDetails(request.getRequestContext(), templateId, template);
     logger.info(request.getRequestContext(), "Validated certificate template to batchID: " +  batchId);
+    logger.info(request.getRequestContext(), "templateId: " +  templateId);
+    logger.info(request.getRequestContext(), "template: " +  template);
     courseBatchDao.addCertificateTemplateToCourseBatch(request.getRequestContext(), courseId, batchId, templateId, template);
     logger.info(request.getRequestContext(), "Added certificate template to batchID: " +  batchId);
     Map<String, Object> courseBatch =
@@ -102,7 +104,9 @@ public class CourseBatchCertificateActor extends BaseActor {
       String certName = (String) templateData.getOrDefault(JsonKey.TITLE , (String)templateDetails.getOrDefault(JsonKey.NAME, ""));
       
       template.put(JsonKey.NAME, certName);
+      logger.info(null, "printing templateDetails: " +  templateDetails);
       String templateUrl = getPlaceholderUrl(templateDetails,"artifactUrl");
+      logger.info(null, "printing templateUrl: " +  templateUrl);
       template.put(JsonKey.URL, templateUrl);
       template.put(JsonKey.CRITERIA, mapper.writeValueAsString(template.get(JsonKey.CRITERIA)));
       if (null != template.get(CourseJsonKey.ISSUER)) {
@@ -145,6 +149,9 @@ public class CourseBatchCertificateActor extends BaseActor {
   private String getPlaceholderUrl(Map<String, Object> templateDetails, String key) {
     String templateUrl = "";
     if (MapUtils.isNotEmpty(templateDetails) && templateDetails.containsKey(key)) {
+      logger.info(null, "templateDetails contains key: " +  templateDetails.get(key));
+      logger.info(null,"Printing templateDetails:");
+      templateDetails.forEach((k, v) -> logger.info(null,k + ": " + v));
       // replace the actual cloud url with the template value
       templateUrl = (String) templateDetails.get(key);
       if (templateUrl.contains(CloudStorageUtil.getBaseUrl() +"/"+getConfigValue(CONTENT_CLOUD_STORAGE_CONTAINER)))

@@ -126,6 +126,7 @@ public class HttpUtil {
             + requestURL
             + " ,Total time elapsed = "
             + elapsedTime);
+    logger.info(null,"printing response for requestURL"+requestURL + response);
     return response;
   }
 

@@ -16,6 +16,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<typesafe.akka.version>2.5.22</typesafe.akka.version>
 		<jackson.version>2.13.5</jackson.version>
+		<logstash-logback-encoder.version>7.3</logstash-logback-encoder.version>
 	</properties>
 
 	<dependencies>
@@ -80,7 +81,7 @@
 		<dependency>
 			<groupId>net.logstash.logback</groupId>
 			<artifactId>logstash-logback-encoder</artifactId>
-			<version>6.6</version>
+			<version>${logstash-logback-encoder.version}</version>
 		</dependency>
 	</dependencies>
 

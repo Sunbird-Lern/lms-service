@@ -6,7 +6,6 @@
       <groupId>org.sunbird</groupId>
       <version>1.0-SNAPSHOT</version>
    </parent>
-   <groupId>org.sunbird</groupId>
    <artifactId>sunbird-cache-utils</artifactId>
    <version>0.0.1-SNAPSHOT</version>
    <packaging>jar</packaging>
@@ -20,6 +19,14 @@
             <exclusion>
                <groupId>net.bytebuddy</groupId>
                <artifactId>byte-buddy</artifactId>
+            </exclusion>
+            <exclusion>
+               <groupId>com.fasterxml.jackson.core</groupId>
+               <artifactId>jackson-databind</artifactId>
+            </exclusion>
+            <exclusion>
+               <groupId>com.fasterxml.jackson.core</groupId>
+               <artifactId>jackson-core</artifactId>
             </exclusion>
          </exclusions>
       </dependency>
@@ -36,7 +43,7 @@
       <dependency>
          <groupId>net.logstash.logback</groupId>
          <artifactId>logstash-logback-encoder</artifactId>
-         <version>6.6</version>
+         <version>${logstash-logback-encoder.version}</version>
       </dependency>
       <dependency>
          <groupId>org.sunbird</groupId>

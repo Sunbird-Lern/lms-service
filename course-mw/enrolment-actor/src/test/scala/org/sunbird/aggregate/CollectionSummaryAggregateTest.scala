@@ -1,15 +1,10 @@
 package org.sunbird.aggregate
 
-import java.io.IOException
-import java.util
-import java.util.concurrent.TimeUnit
-
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.TestKit
 import com.datastax.driver.core.Cluster
 import com.google.gson.Gson
 import com.mashape.unirest.http.Unirest
-import javax.ws.rs.core.MediaType
 import okhttp3.mockwebserver.{MockResponse, MockWebServer}
 import org.apache.commons.lang3.StringUtils
 import org.apache.http.HttpHeaders
@@ -23,11 +18,13 @@ import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.models.response.Response
 import org.sunbird.common.request.Request
 import org.sunbird.common.responsecode.ResponseCode
-import org.sunbird.learner.util.JsonUtil
 import redis.clients.jedis.Jedis
-import redis.embedded.RedisServer
-import scala.collection.JavaConverters._
 
+import java.io.IOException
+import java.util
+import java.util.concurrent.TimeUnit
+import javax.ws.rs.core.MediaType
+import scala.collection.JavaConverters._
 import scala.concurrent.duration.FiniteDuration
 
 class CollectionSummaryAggregateTest extends FlatSpec with Matchers with BeforeAndAfterAll with MockFactory {

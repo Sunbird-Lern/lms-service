@@ -1,18 +1,14 @@
 package org.sunbird.builder.object;
 
 import akka.dispatch.Futures;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectUtil;
 import scala.concurrent.Future;
 import scala.concurrent.Promise;
+
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class CustomObjectBuilder {
 

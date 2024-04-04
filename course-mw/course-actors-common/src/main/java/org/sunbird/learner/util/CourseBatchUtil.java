@@ -22,23 +22,12 @@ import scala.concurrent.Future;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.Date;
-import java.util.Calendar;
-import java.util.TimeZone;
+import java.util.*;
 
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
-import static org.sunbird.common.exception.ProjectCommonException.throwClientErrorException;
-import static org.sunbird.common.exception.ProjectCommonException.throwServerErrorException;
-import static org.sunbird.common.models.util.JsonKey.BEARER;
-import static org.sunbird.common.models.util.JsonKey.SUNBIRD_AUTHORIZATION;
-import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
-import static org.sunbird.common.responsecode.ResponseCode.errorProcessingRequest;
 
 public class CourseBatchUtil {
-  private static ElasticSearchService esUtil = EsClientFactory.getInstance(JsonKey.REST);
+  private static ElasticSearchService esUtil = EsClientFactory.getInstance();
   private static ObjectMapper mapper = new ObjectMapper();
   private static LoggerUtil logger = new LoggerUtil(CourseBatchUtil.class);
   private static final List<String> changeInDateFormat = JsonKey.CHANGE_IN_DATE_FORMAT;
@@ -49,32 +38,24 @@ public class CourseBatchUtil {
   private CourseBatchUtil() {}
 
   public static void syncCourseBatchForeground(RequestContext requestContext, String uniqueId, Map<String, Object> req) {
-    logger.info(requestContext, "CourseBatchManagementActor: syncCourseBatchForeground called for course batch ID = "
-            + uniqueId);
+    logger.info(requestContext, "CourseBatchManagementActor: syncCourseBatchForeground called for course batch ID = " + uniqueId);
     req.put(JsonKey.ID, uniqueId);
     req.put(JsonKey.IDENTIFIER, uniqueId);
-    Future<String> esResponseF =
-        esUtil.save(requestContext, ProjectUtil.EsType.courseBatch.getTypeName(), uniqueId, req);
+    Future<String> esResponseF = esUtil.save(requestContext, ProjectUtil.EsType.courseBatch.getTypeName(), uniqueId, req);
     String esResponse = (String) ElasticSearchHelper.getResponseFromFuture(esResponseF);
     logger.info(requestContext, "CourseBatchManagementActor::syncCourseBatchForeground: Sync response for course batch ID = "
-            + uniqueId
-            + " received response = "
-            + esResponse);
+            + uniqueId + " received response = " + esResponse);
   }
 
   public static Map<String, Object> validateCourseBatch(RequestContext requestContext, String courseId, String batchId) {
-    Future<Map<String, Object>> resultF =
-        esUtil.getDataByIdentifier(requestContext, EsType.courseBatch.getTypeName(), batchId);
-    Map<String, Object> result =
-        (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
+    Future<Map<String, Object>> resultF = esUtil.getDataByIdentifier(requestContext, EsType.courseBatch.getTypeName(), batchId);
+    Map<String, Object> result = (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
     if (MapUtils.isEmpty(result)) {
-      ProjectCommonException.throwClientErrorException(
-          ResponseCode.CLIENT_ERROR, "No such batchId exists");
+      ProjectCommonException.throwClientErrorException(ResponseCode.CLIENT_ERROR, "No such batchId exists");
     }
     if (StringUtils.isNotBlank(courseId)
         && !StringUtils.equals(courseId, (String) result.get(JsonKey.COURSE_ID))) {
-      ProjectCommonException.throwClientErrorException(
-          ResponseCode.CLIENT_ERROR, "batchId is not linked with courseId");
+      ProjectCommonException.throwClientErrorException(ResponseCode.CLIENT_ERROR, "batchId is not linked with courseId");
     }
     return result;
   }
@@ -84,17 +65,14 @@ public class CourseBatchUtil {
     if (templateResponse == null
         || MapUtils.isEmpty(templateResponse.getResult())
         || !(templateResponse.getResult().containsKey(JsonKey.CONTENT) || templateResponse.getResult().containsKey("certificate"))) {
-      ProjectCommonException.throwClientErrorException(
-          ResponseCode.CLIENT_ERROR, "Invalid template Id: " + templateId);
+      ProjectCommonException.throwClientErrorException(ResponseCode.CLIENT_ERROR, "Invalid template Id: " + templateId);
     }
-    Map<String, Object> template =
-            templateResponse.getResult().containsKey(JsonKey.CONTENT) ?
+    Map<String, Object> template = templateResponse.getResult().containsKey(JsonKey.CONTENT) ?
                     (Map<String, Object>) templateResponse.getResult().getOrDefault(JsonKey.CONTENT, new HashMap<>()) :
                     (Map<String, Object>) ((Map<String, Object>) templateResponse.getResult().getOrDefault("certificate", new HashMap<>())).getOrDefault(JsonKey.TEMPLATE, new HashMap<>());
 
     if (MapUtils.isEmpty(template) || !templateId.equals(template.get(JsonKey.IDENTIFIER))) {
-      ProjectCommonException.throwClientErrorException(
-              ResponseCode.CLIENT_ERROR, "Invalid template Id: " + templateId);
+      ProjectCommonException.throwClientErrorException(ResponseCode.CLIENT_ERROR, "Invalid template Id: " + templateId);
     }
     return template;
   }
@@ -112,32 +90,25 @@ public class CourseBatchUtil {
             response.getResponseCode().getResponseCode());
       }
     } catch (ProjectCommonException e) {
-      logger.error(requestContext, 
-          "CourseBatchUtil:getResponse ProjectCommonException:"
-              + "Request , Status : "
-              + e.getCode()
-              + " "
-              + e.getMessage()
-              + ",Response Body :"
+      logger.error(requestContext, "CourseBatchUtil:getResponse ProjectCommonException:"
+              + "Request , Status : " + e.getCode()
+              + " " + e.getMessage() + ",Response Body :"
               + responseBody, e);
       throw e;
     } catch (Exception e) {
       e.printStackTrace();
-      logger.error(requestContext, 
-          "CourseBatchUtil:getResponse occurred with error message = "
+      logger.error(requestContext, "CourseBatchUtil:getResponse occurred with error message = "
               + e.getMessage()
-              + ", Response Body : "
-              + responseBody,
+              + ", Response Body : " + responseBody,
           e);
-      throwServerErrorException(
-          ResponseCode.SERVER_ERROR, "Exception while validating template with cert service");
+      ProjectCommonException.throwServerErrorException(ResponseCode.SERVER_ERROR, "Exception while validating template with cert service");
     }
     return response;
   }
 
   private static Map<String, String> getdefaultHeaders() {
     Map<String, String> headers = new HashMap<>();
-    headers.put(AUTHORIZATION, BEARER + getConfigValue(SUNBIRD_AUTHORIZATION));
+    headers.put(AUTHORIZATION, JsonKey.BEARER + ProjectUtil.getConfigValue(JsonKey.SUNBIRD_AUTHORIZATION));
     headers.put("Content-Type", "application/json");
     return headers;
   }
@@ -154,12 +125,10 @@ public class CourseBatchUtil {
       //asset read is not found then read from the cert/v1/read api
       httpResponse = templateReadResponse(requestContext, certServiceBaseUrl, certTemplateReadUrl, templateId);
       if (httpResponse.getStatus() == 404)
-        throwClientErrorException(
-                ResponseCode.RESOURCE_NOT_FOUND, "Given cert template not found: " + templateId);
+        ProjectCommonException.throwClientErrorException(ResponseCode.RESOURCE_NOT_FOUND, "Given cert template not found: " + templateId);
     }
     if (StringUtils.isBlank(httpResponse.getBody())) {
-      throwServerErrorException(
-              ResponseCode.SERVER_ERROR, errorProcessingRequest.getErrorMessage());
+      ProjectCommonException.throwServerErrorException(ResponseCode.SERVER_ERROR, ResponseCode.errorProcessingRequest.getErrorMessage());
     }
     return httpResponse.getBody();
   }
@@ -223,9 +192,7 @@ public class CourseBatchUtil {
   private static Date setEndOfDay(String key, Date value, SimpleDateFormat dateFormat) {
     try {
       if (setEndOfDay.contains(key)) {
-        Calendar cal =
-                Calendar.getInstance(
-                        TimeZone.getTimeZone(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TIMEZONE)));
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_TIMEZONE)));
         cal.setTime(dateFormat.parse(dateFormat.format(value)));
         cal.set(Calendar.HOUR_OF_DAY, 23);
         cal.set(Calendar.MINUTE, 59);

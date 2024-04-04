@@ -69,7 +69,7 @@ import static org.powermock.api.mockito.PowerMockito.mock;
 })
 public class ElasticSearchRestHighImplTest {
 
-  private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
+  private ElasticSearchService esService = EsClientFactory.getInstance();
   private static RestHighLevelClient client = null;
 
   @Before
@@ -305,7 +305,6 @@ public class ElasticSearchRestHighImplTest {
               new Answer() {
                 @Override
                 public Object answer(InvocationOnMock invocation) throws Throwable {
-
                   ((ActionListener<BulkResponse>) invocation.getArguments()[2])
                       .onFailure(new NullPointerException());
                   return null;
@@ -321,7 +320,6 @@ public class ElasticSearchRestHighImplTest {
     when(ir.getId()).thenReturn("001");
 
     if (!fail) {
-
       doAnswer(
               new Answer() {
                 @Override
@@ -333,7 +331,6 @@ public class ElasticSearchRestHighImplTest {
           .when(client)
           .indexAsync(Mockito.any(), Mockito.any(), Mockito.any());
     } else {
-
       doAnswer(
               new Answer() {
                 @Override
@@ -355,7 +352,6 @@ public class ElasticSearchRestHighImplTest {
     when(updateRes.getResult()).thenReturn(null);
 
     if (!fail) {
-
       doAnswer(
               new Answer() {
                 @Override
@@ -368,13 +364,11 @@ public class ElasticSearchRestHighImplTest {
           .when(client)
           .updateAsync(Mockito.any(), Mockito.any(), Mockito.any());
     } else {
-
       doAnswer(
               new Answer() {
                 @SuppressWarnings("unchecked")
                 @Override
                 public Object answer(InvocationOnMock invocation) throws Throwable {
-
                   ((ActionListener<UpdateResponse>) invocation.getArguments()[2])
                       .onFailure(new NullPointerException());
                   return null;
@@ -394,7 +388,6 @@ public class ElasticSearchRestHighImplTest {
     when(getResponse.isExists()).thenReturn(true);
 
     if (!fail) {
-
       doAnswer(
               new Answer() {
                 @SuppressWarnings("unchecked")
@@ -408,12 +401,10 @@ public class ElasticSearchRestHighImplTest {
           .when(client)
           .getAsync(Mockito.any(), Mockito.any(), Mockito.any());
     } else {
-
       doAnswer(
               new Answer() {
                 @Override
                 public Object answer(InvocationOnMock invocation) throws Throwable {
-
                   ((ActionListener<GetResponse>) invocation.getArguments()[2])
                       .onFailure(new NullPointerException());
                   return null;
@@ -449,7 +440,6 @@ public class ElasticSearchRestHighImplTest {
               new Answer() {
                 @Override
                 public Object answer(InvocationOnMock invocation) throws Throwable {
-
                   ((ActionListener<DeleteResponse>) invocation.getArguments()[2])
                       .onFailure(new NullPointerException());
                   return null;

@@ -15,7 +15,6 @@ import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.request.RequestContext;
@@ -26,18 +25,13 @@ import org.sunbird.learner.util.Util;
 import org.sunbird.learner.util.Util.DbInfo;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /** Sync data between Cassandra and Elastic Search. */
 public class EsSyncActor extends BaseActor {
 
   private CassandraOperation cassandraOperation = ServiceFactory.getInstance();
-  private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
+  private ElasticSearchService esService = EsClientFactory.getInstance();
   private static final int BATCH_SIZE = 100;
 
   @Override
@@ -83,10 +77,7 @@ public class EsSyncActor extends BaseActor {
             ? JsonKey.BATCH_ID
             : (objectType.equals(JsonKey.BATCH) ? JsonKey.COURSE_ID : null);
 
-    String requestLogMsg =
-        MessageFormat.format(
-            "type = {0} and IDs = {1}", objectType, Arrays.toString(objectIds.toArray()));
-
+    String requestLogMsg = MessageFormat.format("type = {0} and IDs = {1}", objectType, Arrays.toString(objectIds.toArray()));
     logger.info(req.getRequestContext(), "EsSyncBackgroundActor:sync: Syncing data for " + requestLogMsg + " started");
 
     List<String> partitionKeys = new ArrayList<>();
@@ -107,8 +98,7 @@ public class EsSyncActor extends BaseActor {
     }
 
     if (CollectionUtils.isNotEmpty(idFilters)) {
-      idFilters.forEach(
-          idMap ->
+      idFilters.forEach(idMap ->
               cassandraOperation.applyOperationOnRecordsAsync(
                       req.getRequestContext(), dbInfo.getKeySpace(),
                   dbInfo.getTableName(),
@@ -130,7 +120,6 @@ public class EsSyncActor extends BaseActor {
   }
 
   private DbInfo getDbInfoObj(String objectType) {
-
     if (objectType.equals(JsonKey.BATCH)) {
       return Util.dbInfoMap.get(JsonKey.COURSE_BATCH_DB);
     } else if (objectType.equals(JsonKey.USER_COURSE)) {
@@ -148,7 +137,6 @@ public class EsSyncActor extends BaseActor {
         Map<String, String> columnMap = CassandraUtil.fetchColumnsMapping(result);
         long count = 0;
         try {
-
           Iterator<Row> resultIterator = result.iterator();
           while (resultIterator.hasNext()) {
             Row row = resultIterator.next();
@@ -176,13 +164,11 @@ public class EsSyncActor extends BaseActor {
     };
   }
 
-  private Map<String, Object> syncDataForEachRow(
-          RequestContext requestContext, Row row, Map<String, String> columnMap, String objectType) {
+  private Map<String, Object> syncDataForEachRow(RequestContext requestContext, Row row, Map<String, String> columnMap, String objectType) {
     Map<String, Object> rowMap = new HashMap<>();
     columnMap
         .entrySet()
-        .forEach(
-            entry -> {
+        .forEach(entry -> {
               Object value = row.getObject(entry.getValue());
               if (entry.getKey().equals("contentStatus") && value != null) {
                 try {
@@ -196,9 +182,7 @@ public class EsSyncActor extends BaseActor {
             });
     String id = (String) rowMap.get(JsonKey.ID);
     if (objectType.equals(JsonKey.USER_COURSE)) {
-      id =
-          UserCoursesService.generateUserCourseESId(
-              (String) rowMap.get(JsonKey.BATCH_ID), (String) rowMap.get(JsonKey.USER_ID));
+      id = UserCoursesService.generateUserCourseESId((String) rowMap.get(JsonKey.BATCH_ID), (String) rowMap.get(JsonKey.USER_ID));
     } else if (objectType.equals(JsonKey.BATCH)) {
       id = (String) rowMap.get(JsonKey.BATCH_ID);
     }

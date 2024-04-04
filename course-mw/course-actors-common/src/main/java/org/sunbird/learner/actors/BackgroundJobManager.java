@@ -42,7 +42,7 @@ public class BackgroundJobManager extends BaseActor {
     headerMap.put("accept", "application/json");
   }
 
-  private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
+  private ElasticSearchService esService = EsClientFactory.getInstance();
 
   @Override
   public void onReceive(Request request) throws Throwable {
@@ -56,8 +56,7 @@ public class BackgroundJobManager extends BaseActor {
       insertCourseBatchInfoToEs(request);
     } else if (operation.equalsIgnoreCase(ActorOperations.UPDATE_COURSE_BATCH_ES.getValue())) {
       updateCourseBatchInfoToEs(request);
-    } else if (operation.equalsIgnoreCase(
-        ActorOperations.UPDATE_USR_COURSES_INFO_ELASTIC.getValue())) {
+    } else if (operation.equalsIgnoreCase(ActorOperations.UPDATE_USR_COURSES_INFO_ELASTIC.getValue())) {
       updateUserCourseInfoToEs(request);
     } else {
       ProjectCommonException exception =
@@ -84,9 +83,7 @@ public class BackgroundJobManager extends BaseActor {
 
   @SuppressWarnings("unchecked")
   private void updateUserCourseInfoToEs(Request actorMessage) {
-
-    Map<String, Object> batch =
-        (Map<String, Object>) actorMessage.getRequest().get(JsonKey.USER_COURSES);
+    Map<String, Object> batch = (Map<String, Object>) actorMessage.getRequest().get(JsonKey.USER_COURSES);
     updateDataToElastic(actorMessage.getRequestContext(), 
         ProjectUtil.EsIndex.sunbird.getIndexName(),
         ProjectUtil.EsType.usercourses.getTypeName(),
@@ -96,9 +93,7 @@ public class BackgroundJobManager extends BaseActor {
 
   @SuppressWarnings("unchecked")
   private void insertUserCourseInfoToEs(Request actorMessage) {
-
-    Map<String, Object> batch =
-        (Map<String, Object>) actorMessage.getRequest().get(JsonKey.USER_COURSES);
+    Map<String, Object> batch = (Map<String, Object>) actorMessage.getRequest().get(JsonKey.USER_COURSES);
     String userId = (String) batch.get(JsonKey.USER_ID);
     String batchId = (String) batch.get(JsonKey.BATCH_ID);
     String identifier = UserCoursesService.generateUserCourseESId(batchId, userId);
@@ -112,8 +107,7 @@ public class BackgroundJobManager extends BaseActor {
   @SuppressWarnings("unchecked")
   private void updateCourseBatchInfoToEs(Request actorMessage) {
     Map<String, Object> batch = (Map<String, Object>) actorMessage.getRequest().get(JsonKey.BATCH);
-    updateDataToElastic(
-            actorMessage.getRequestContext(), ProjectUtil.EsIndex.sunbird.getIndexName(),
+    updateDataToElastic(actorMessage.getRequestContext(), ProjectUtil.EsIndex.sunbird.getIndexName(),
         ProjectUtil.EsType.courseBatch.getTypeName(),
         (String) batch.get(JsonKey.ID),
         batch);
@@ -125,17 +119,14 @@ public class BackgroundJobManager extends BaseActor {
     // making call to register tag
     registertag(actorMessage.getRequestContext(), 
         (String) batch.getOrDefault(JsonKey.HASH_TAG_ID, batch.get(JsonKey.ID)),
-        "{}",
-        CourseBatchSchedulerUtil.headerMap);
+        "{}", CourseBatchSchedulerUtil.headerMap);
     // register tag for course
-    registertag(
-            actorMessage.getRequestContext(), (String) batch.getOrDefault(JsonKey.COURSE_ID, batch.get(JsonKey.COURSE_ID)),
-        "{}",
-        CourseBatchSchedulerUtil.headerMap);
+    registertag(actorMessage.getRequestContext(),
+            (String) batch.getOrDefault(JsonKey.COURSE_ID, batch.get(JsonKey.COURSE_ID)),
+        "{}", CourseBatchSchedulerUtil.headerMap);
   }
 
-  private boolean updateDataToElastic(
-          RequestContext requestContext, String indexName, String typeName, String identifier, Map<String, Object> data) {
+  private boolean updateDataToElastic(RequestContext requestContext, String indexName, String typeName, String identifier, Map<String, Object> data) {
     Future<Boolean> responseF = esService.update(requestContext, typeName, identifier, data);
     boolean response = (boolean) ElasticSearchHelper.getResponseFromFuture(responseF);
     if (response) {
@@ -156,8 +147,7 @@ public class BackgroundJobManager extends BaseActor {
    * @param data Map<String,Object>
    * @return boolean
    */
-  private boolean insertDataToElastic(
-          RequestContext requestContext, String index, String type, String identifier, Map<String, Object> data) {
+  private boolean insertDataToElastic(RequestContext requestContext, String index, String type, String identifier, Map<String, Object> data) {
     logger.info(requestContext, "BackgroundJobManager:insertDataToElastic: type = " + type + " identifier = " + identifier);
     Future<String> responseF = esService.save(requestContext, type, identifier, data);
     String response = (String) ElasticSearchHelper.getResponseFromFuture(responseF);

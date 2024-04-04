@@ -10,13 +10,7 @@ import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.ActorOperations;
-import org.sunbird.common.models.util.HttpUtil;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerUtil;
-import org.sunbird.common.models.util.ProjectUtil;
-import org.sunbird.common.models.util.PropertiesCache;
-import org.sunbird.common.models.util.TelemetryEnvKey;
+import org.sunbird.common.models.util.*;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.helper.ServiceFactory;
@@ -34,7 +28,7 @@ public class HealthActor extends BaseActor {
 
   private CassandraOperation cassandraOperation = ServiceFactory.getInstance();
   private Util.DbInfo pagesDbInfo = Util.dbInfoMap.get(JsonKey.PAGE_MGMT_DB);
-  private ElasticSearchService esUtil = EsClientFactory.getInstance(JsonKey.REST);
+  private ElasticSearchService esUtil = EsClientFactory.getInstance();
   private static final String LMS_SERVICE = "lms-service";
   public LoggerUtil logger = new LoggerUtil(this.getClass());
 
@@ -52,9 +46,7 @@ public class HealthActor extends BaseActor {
           actorhealthCheck();
         } else if (actorMessage.getOperation().equalsIgnoreCase(ActorOperations.ES.getValue())) {
           esHealthCheck();
-        } else if (actorMessage
-            .getOperation()
-            .equalsIgnoreCase(ActorOperations.CASSANDRA.getValue())) {
+        } else if (actorMessage.getOperation().equalsIgnoreCase(ActorOperations.CASSANDRA.getValue())) {
           cassandraHealthCheck();
         } else {
           ProjectCommonException exception =
@@ -177,21 +169,17 @@ public class HealthActor extends BaseActor {
     try {
       String body = "{\"request\":{\"filters\":{\"identifier\":\"test\"}}}";
       Map<String, String> headers = new HashMap<>();
-      headers.put(
-              JsonKey.AUTHORIZATION, JsonKey.BEARER + System.getenv(JsonKey.EKSTEP_AUTHORIZATION));
+      headers.put(JsonKey.AUTHORIZATION, JsonKey.BEARER + System.getenv(JsonKey.EKSTEP_AUTHORIZATION));
       headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
       headers.remove(HttpHeaders.ACCEPT_ENCODING.toLowerCase());
       headers.put(HttpHeaders.ACCEPT_ENCODING.toLowerCase(), "UTF-8");
       if (StringUtils.isBlank(headers.get(JsonKey.AUTHORIZATION))) {
-        headers.put(
-                JsonKey.AUTHORIZATION,
-                PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_AUTHORIZATION));
+        headers.put(JsonKey.AUTHORIZATION, PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_AUTHORIZATION));
       }
       String searchBaseUrl = ProjectUtil.getConfigValue(JsonKey.SEARCH_SERVICE_API_BASE_URL);
       String response =
               HttpUtil.sendPostRequest(
-                      searchBaseUrl
-                              + PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_CONTENT_SEARCH_URL),
+                      searchBaseUrl + PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_CONTENT_SEARCH_URL),
                       body,
                       headers);
       if (response.contains("OK")) {

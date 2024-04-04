@@ -1,6 +1,5 @@
 package org.sunbird.learner.actors.search;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -36,7 +35,7 @@ import java.util.stream.Collectors;
 public class SearchHandlerActor extends BaseActor {
 
   private String topn = PropertiesCache.getInstance().getProperty(JsonKey.SEARCH_TOP_N);
-  private ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
+  private ElasticSearchService esService = EsClientFactory.getInstance();
   private static final String CREATED_BY = "createdBy";
   private static LoggerUtil logger = new LoggerUtil(SearchHandlerActor.class);
   private UserOrgService userOrgService = UserOrgServiceImpl.getInstance();
@@ -53,8 +52,7 @@ public class SearchHandlerActor extends BaseActor {
       Instant instant = Instant.now();
       Map<String, Object> searchQueryMap = request.getRequest();
       Boolean showCreator = (Boolean) searchQueryMap.remove("creatorDetails");
-      Object objectType =
-          ((Map<String, Object>) searchQueryMap.get(JsonKey.FILTERS)).get(JsonKey.OBJECT_TYPE);
+      Object objectType = ((Map<String, Object>) searchQueryMap.get(JsonKey.FILTERS)).get(JsonKey.OBJECT_TYPE);
       String[] types = null;
       if (objectType != null && objectType instanceof List) {
         List<String> list = (List) objectType;
@@ -79,17 +77,12 @@ public class SearchHandlerActor extends BaseActor {
       Future<Map<String, Object>> resultF = esService.search(request.getRequestContext(), searchDto, types[0]);
       result = (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
       logger.info(request.getRequestContext(), 
-          "SearchHandlerActor:onReceive search complete instant duration="
-              + (Instant.now().toEpochMilli() - instant.toEpochMilli()));
+          "SearchHandlerActor:onReceive search complete instant duration=" + (Instant.now().toEpochMilli() - instant.toEpochMilli()));
       if (EsType.courseBatch.getTypeName().equalsIgnoreCase(filterObjectType)) {
-        if (JsonKey.PARTICIPANTS.equalsIgnoreCase(
-            (String) request.getContext().get(JsonKey.PARTICIPANTS))) {
-          List<Map<String, Object>> courseBatchList =
-              (List<Map<String, Object>>) result.get(JsonKey.CONTENT);
+        if (JsonKey.PARTICIPANTS.equalsIgnoreCase((String) request.getContext().get(JsonKey.PARTICIPANTS))) {
+          List<Map<String, Object>> courseBatchList = (List<Map<String, Object>>) result.get(JsonKey.CONTENT);
           for (Map<String, Object> courseBatch : courseBatchList) {
-            courseBatch.put(
-                JsonKey.PARTICIPANTS,
-                getParticipantList(request.getRequestContext(), (String) courseBatch.get(JsonKey.BATCH_ID)));
+            courseBatch.put(JsonKey.PARTICIPANTS, getParticipantList(request.getRequestContext(), (String) courseBatch.get(JsonKey.BATCH_ID)));
           }
         }
         Response response = new Response();
@@ -137,9 +130,7 @@ public class SearchHandlerActor extends BaseActor {
     return userCourseService.getEnrolledUserFromBatch(requestContext, id);
   }
 
-  private void generateSearchTelemetryEvent(
-      SearchDTO searchDto, String[] types, Map<String, Object> result, Map<String, Object> context) {
-
+  private void generateSearchTelemetryEvent(SearchDTO searchDto, String[] types, Map<String, Object> result, Map<String, Object> context) {
     Map<String, Object> params = new HashMap<>();
     params.put(JsonKey.TYPE, String.join(",", types));
     params.put(JsonKey.QUERY, searchDto.getQuery());
@@ -154,7 +145,6 @@ public class SearchHandlerActor extends BaseActor {
   }
 
   private List<Map<String, Object>> generateTopnResult(Map<String, Object> result) {
-
     List<Map<String, Object>> userMapList = (List<Map<String, Object>>) result.get(JsonKey.CONTENT);
     Integer topN = Integer.parseInt(topn);
 
@@ -176,8 +166,7 @@ public class SearchHandlerActor extends BaseActor {
     return list;
   }
 
-  private static Map<String, Object> telemetryRequestForSearch(
-      Map<String, Object> telemetryContext, Map<String, Object> params) {
+  private static Map<String, Object> telemetryRequestForSearch(Map<String, Object> telemetryContext, Map<String, Object> params) {
     Map<String, Object> map = new HashMap<>();
     map.put(JsonKey.CONTEXT, telemetryContext);
     map.put(JsonKey.PARAMS, params);

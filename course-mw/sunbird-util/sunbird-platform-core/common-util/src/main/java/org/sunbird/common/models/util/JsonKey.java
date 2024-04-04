@@ -492,7 +492,6 @@ public final class JsonKey {
 
   public static final String SUNBIRD_REDIS_CONN_POOL_SIZE = "sunbird_redis_connection_pool_size";
   public static final String RECIPIENT_PHONES = "recipientPhones";
-  public static final String REST = "rest";
   public static final String ES_OR_OPERATION = "$or";
   public static final String FROM_ACCOUNT_ID = "fromAccountId";
   public static final String TO_ACCOUNT_ID = "toAccountId";

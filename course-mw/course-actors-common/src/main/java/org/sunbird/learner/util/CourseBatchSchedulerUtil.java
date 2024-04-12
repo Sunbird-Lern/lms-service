@@ -6,11 +6,7 @@ import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.inf.ElasticSearchService;
-import org.sunbird.common.models.util.HttpUtil;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerUtil;
-import org.sunbird.common.models.util.ProjectUtil;
-import org.sunbird.common.models.util.PropertiesCache;
+import org.sunbird.common.models.util.*;
 import org.sunbird.common.request.HeaderParam;
 import org.sunbird.common.request.RequestContext;
 import org.sunbird.helper.ServiceFactory;
@@ -29,7 +25,7 @@ import java.util.Map;
  */
 public final class CourseBatchSchedulerUtil {
   public static Map<String, String> headerMap = new HashMap<>();
-  private static ElasticSearchService esService = EsClientFactory.getInstance(JsonKey.REST);
+  private static ElasticSearchService esService = EsClientFactory.getInstance();
   private static LoggerUtil logger = new LoggerUtil(CourseBatchSchedulerUtil.class);
   private static String EKSTEP_COURSE_SEARCH_QUERY =
       "{\"request\": {\"filters\":{\"identifier\": \"COURSE_ID_PLACEHOLDER\", \"status\": \"Live\", \"mimeType\": \"application/vnd.ekstep.content-collection\", \"trackable.enabled\": \"Yes\"},\"limit\": 1}}";
@@ -53,11 +49,8 @@ public final class CourseBatchSchedulerUtil {
   public static void updateCourseBatchDbStatus(Map<String, Object> map, Boolean increment, RequestContext requestContext) {
     logger.info(requestContext, "updateCourseBatchDbStatus: updating course batch details start");
     try {
-      boolean response =
-          doOperationInContentCourse(requestContext,
-              (String) map.get(JsonKey.COURSE_ID),
-              increment,
-              (String) map.get(JsonKey.ENROLLMENT_TYPE));
+      boolean response = doOperationInContentCourse(requestContext, (String) map.get(JsonKey.COURSE_ID),
+              increment, (String) map.get(JsonKey.ENROLLMENT_TYPE));
       logger.debug(requestContext, "Response for update content == " + response);
       if (response) {
         boolean flag = updateDataIntoES(requestContext, map);
@@ -80,9 +73,7 @@ public final class CourseBatchSchedulerUtil {
   public static boolean updateDataIntoES(RequestContext requestContext, Map<String, Object> map) {
     boolean flag = true;
     try {
-      Future<Boolean> flagF =
-          esService.update(
-                  requestContext, ProjectUtil.EsType.course.getTypeName(), (String) map.get(JsonKey.ID), map);
+      Future<Boolean> flagF = esService.update(requestContext, ProjectUtil.EsType.course.getTypeName(), (String) map.get(JsonKey.ID), map);
       flag = (boolean) ElasticSearchHelper.getResponseFromFuture(flagF);
     } catch (Exception e) {
       logger.error(requestContext, "CourseBatchSchedulerUtil:updateDataIntoES: Exception occurred while saving course batch data to ES", e);
@@ -97,8 +88,7 @@ public final class CourseBatchSchedulerUtil {
   public static void updateDataIntoCassandra(RequestContext requestContext, Map<String, Object> map) {
     CassandraOperation cassandraOperation = ServiceFactory.getInstance();
     Util.DbInfo courseBatchDBInfo = Util.dbInfoMap.get(JsonKey.COURSE_BATCH_DB);
-    cassandraOperation.updateRecord(
-            requestContext, courseBatchDBInfo.getKeySpace(), courseBatchDBInfo.getTableName(), map);
+    cassandraOperation.updateRecord(requestContext, courseBatchDBInfo.getKeySpace(), courseBatchDBInfo.getTableName(), map);
     logger.info(requestContext, "CourseBatchSchedulerUtil:updateDataIntoCassandra: Update Successful for batchId "
             + map.get(JsonKey.ID));
   }
@@ -106,9 +96,9 @@ public final class CourseBatchSchedulerUtil {
   private static void addHeaderProps(Map<String, String> header, String key, String value) {
     header.put(key, value);
   }
+
   /**
    * Method to update the content state at ekstep : batch count
-   *
    *
    * @param requestContext
    * @param courseId
@@ -116,8 +106,7 @@ public final class CourseBatchSchedulerUtil {
    * @param enrollmentType
    * @return
    */
-  public static boolean doOperationInContentCourse(
-          RequestContext requestContext, String courseId, boolean increment, String enrollmentType) {
+  public static boolean doOperationInContentCourse(RequestContext requestContext, String courseId, boolean increment, String enrollmentType) {
     String contentName = getCountName(enrollmentType);
     boolean response = false;
     Map<String, Object> ekStepContent = getCourseObject(requestContext, courseId, getBasicHeader());
@@ -126,10 +115,7 @@ public final class CourseBatchSchedulerUtil {
       if (ekStepContent.get(JsonKey.CHANNEL) != null) {
         logger.info(requestContext, "Channel value coming from content is " + (String) ekStepContent.get(JsonKey.CHANNEL)
                 + " Id " + courseId);
-        addHeaderProps(
-            getBasicHeader(),
-            HeaderParam.CHANNEL_ID.getName(),
-            (String) ekStepContent.get(JsonKey.CHANNEL));
+        addHeaderProps(getBasicHeader(), HeaderParam.CHANNEL_ID.getName(), (String) ekStepContent.get(JsonKey.CHANNEL));
       } else {
         logger.info(requestContext, "No channel value available in content with Id " + courseId);
       }
@@ -155,8 +141,7 @@ public final class CourseBatchSchedulerUtil {
     return contentName.toLowerCase();
   }
 
-  public static int getUpdatedBatchCount(
-      Map<String, Object> ekStepContent, String contentName, boolean increment) {
+  public static int getUpdatedBatchCount(Map<String, Object> ekStepContent, String contentName, boolean increment) {
     int val = (int) ekStepContent.getOrDefault(contentName, 0);
     val = increment ? val + 1 : (val > 0) ? val - 1 : 0;
     return val;
@@ -166,11 +151,8 @@ public final class CourseBatchSchedulerUtil {
     String response = "";
     try {
       String contentUpdateBaseUrl = ProjectUtil.getConfigValue(JsonKey.CONTENT_SERVICE_BASE_URL);
-      response =
-          HttpUtil.sendPatchRequest(
-              contentUpdateBaseUrl
-                  + PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_CONTENT_UPDATE_URL)
-                  + courseId,
+      response = HttpUtil.sendPatchRequest(
+              contentUpdateBaseUrl + PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_CONTENT_UPDATE_URL) + courseId,
               "{\"request\": {\"content\": {\"" + contentName + "\": " + val + "}}}",
               getBasicHeader());
     } catch (Exception e) {

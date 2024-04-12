@@ -1,31 +1,17 @@
 package org.sunbird.learner.actors;
 
-import static akka.testkit.JavaTestKit.duration;
-import static org.junit.Assert.assertTrue;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
-
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.dispatch.Futures;
 import akka.testkit.TestActorRef;
 import akka.testkit.javadsl.TestKit;
-
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.GetRequest;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -57,6 +43,16 @@ import org.sunbird.learner.actors.coursebatch.dao.impl.UserCoursesDaoImpl;
 import org.sunbird.learner.actors.search.SearchHandlerActor;
 import scala.concurrent.Promise;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static akka.testkit.JavaTestKit.duration;
+import static org.junit.Assert.assertTrue;
+import static org.powermock.api.mockito.PowerMockito.*;
+
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
   ServiceFactory.class,
@@ -84,14 +80,13 @@ public class SearchHandlerActorTest {
     mockStatic(UserCoursesDaoImpl.class);
     userCoursesDao = PowerMockito.mock(UserCoursesDaoImpl.class);
     when(UserCoursesDaoImpl.getInstance()).thenReturn(userCoursesDao);
-
   }
 
   @Before
   public void beforeTest() throws Exception {
     PowerMockito.mockStatic(EsClientFactory.class);
     esService = mock(ElasticSearchRestHighImpl.class);
-    when(EsClientFactory.getInstance(Mockito.anyString())).thenReturn(esService);
+    when(EsClientFactory.getInstance()).thenReturn(esService);
     Promise<Map<String, Object>> promise = Futures.promise();
     promise.success(createResponseGet(true));
     when(esService.search(Mockito.any(), Mockito.any(SearchDTO.class), Mockito.anyVararg()))
@@ -99,8 +94,7 @@ public class SearchHandlerActorTest {
 
     PowerMockito.mockStatic(ServiceFactory.class);
     when(ServiceFactory.getInstance()).thenReturn(cassandraOperation);
-    when(cassandraOperation.getRecordsByProperties(
-            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList(), Mockito.any()))
+    when(cassandraOperation.getRecordsByProperties(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList(), Mockito.any()))
         .thenReturn(getRecordByPropertyResponse());
     mockStatic(ProjectUtil.class);
     when(ProjectUtil.getConfigValue("user_search_base_url")).thenReturn("http://test.com/api");
@@ -112,7 +106,6 @@ public class SearchHandlerActorTest {
   }
 
   private static Response getRecordByPropertyResponse() {
-
     Response response = new Response();
     List<Map<String, Object>> list = new ArrayList<>();
     Map<String, Object> courseMap = new HashMap<>();
@@ -201,6 +194,7 @@ public class SearchHandlerActorTest {
         assertTrue(MapUtils.isNotEmpty((Map<String, Object>) map.get("creatorDetails")));
     }
   }
+
   private void mockResponse() throws UnirestException {
     GetRequest http = Mockito.mock(GetRequest.class);
     GetRequest http2 = Mockito.mock(GetRequest.class);

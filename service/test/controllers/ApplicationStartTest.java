@@ -1,10 +1,10 @@
 package controllers;
 
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.request.RequestContext;
-import org.mockito.Mockito;
 
 import static modules.ApplicationStart.mockServiceSetup;
 

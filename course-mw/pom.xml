@@ -8,10 +8,17 @@
 	<packaging>pom</packaging>
 	<name>Sunbird LMS MW</name>
 	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<scala.major.version>2.12</scala.major.version>
+		<scala.version>2.12.11</scala.version>
+		<typesafe.akka.version>2.5.22</typesafe.akka.version>
 		<play2.plugin.version>1.0.0-beta5</play2.plugin.version>
-		<mockito.core.version>2.22.0</mockito.core.version>
-		<powermock.api.mockito2.version>2.0.7</powermock.api.mockito2.version>
-		<powermock.module.junit4.version>2.0.0-beta.5</powermock.module.junit4.version>
+		<jackson.version>2.13.5</jackson.version>
+		<powermock.version>2.0.9</powermock.version>
+		<jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
+		<scoverage.plugin.version>1.4.1</scoverage.plugin.version>
+		<slf4j.version>1.6.1</slf4j.version>
+		<logstash-logback-encoder.version>7.3</logstash-logback-encoder.version>
 	</properties>
 	<modules>
 		<module>sunbird-util</module>
@@ -49,7 +56,7 @@
 			<plugin>
 		        <groupId>org.jacoco</groupId>
 		        <artifactId>jacoco-maven-plugin</artifactId>
-		        <version>0.8.4</version>
+		        <version>${jacoco-maven-plugin.version}</version>
 		        <configuration>
 					<destFile>${basedir}/target/coverage-reports/jacoco-unit.exec</destFile>
 					<dataFile>${basedir}/target/coverage-reports/jacoco-unit.exec</dataFile>
@@ -93,7 +100,7 @@
 		      <plugin>
 		          <groupId>org.apache.maven.plugins</groupId>
 		          <artifactId>maven-surefire-plugin</artifactId>
-		          <version>3.0.0-M4</version>
+		          <version>3.0.0</version>
 		        </plugin>
             </plugins>
         </pluginManagement>

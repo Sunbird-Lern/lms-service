@@ -1,11 +1,5 @@
 package controllers.certificate;
 
-import java.text.MessageFormat;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.exception.ProjectCommonException;
@@ -14,6 +8,10 @@ import org.sunbird.common.request.BaseRequestValidator;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.learner.constants.CourseJsonKey;
+
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.Map;
 
 public class CertificateRequestValidator extends BaseRequestValidator {
 

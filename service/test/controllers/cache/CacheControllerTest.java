@@ -1,6 +1,7 @@
 package controllers.cache;
 
 import actors.DummyActor;
+import com.typesafe.config.ConfigFactory;
 import controllers.BaseApplicationTest;
 import modules.OnRequestHandler;
 import org.junit.Assert;
@@ -15,9 +16,6 @@ import org.powermock.core.classloader.annotations.SuppressStaticInitializationFo
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.request.HeaderParam;
-
-import com.typesafe.config.ConfigFactory;
-
 import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;

@@ -3,7 +3,6 @@ package modules;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.typesafe.config.ConfigFactory;
-
 import controllers.BaseController;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.auth.verifier.AccessTokenValidator;

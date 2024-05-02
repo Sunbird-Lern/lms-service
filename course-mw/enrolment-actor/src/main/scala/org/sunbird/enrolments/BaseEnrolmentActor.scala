@@ -1,7 +1,5 @@
 package org.sunbird.enrolments
 
-import java.util
-
 import org.apache.commons.collections4.CollectionUtils
 import org.sunbird.actor.base.BaseActor
 import org.sunbird.common.ElasticSearchHelper
@@ -11,9 +9,11 @@ import org.sunbird.common.models.util.{JsonKey, ProjectUtil}
 import org.sunbird.common.request.RequestContext
 import org.sunbird.dto.SearchDTO
 
+import java.util
+
 abstract class BaseEnrolmentActor extends BaseActor {
 
-    var esService = EsClientFactory.getInstance(JsonKey.REST)
+    var esService = EsClientFactory.getInstance()
     
     def getBatches(requestContext: RequestContext, batchIds: java.util.List[String], requestedFields: java.util.List[String]): java.util.List[java.util.Map[String, AnyRef]] = {
         val dto = new SearchDTO

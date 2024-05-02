@@ -1,8 +1,5 @@
 package util;
 
-import java.io.File;
-import java.security.cert.X509Certificate;
-import java.util.*;
 import modules.StartModule;
 import org.junit.Assert;
 import org.junit.Before;
@@ -19,8 +16,6 @@ import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.PropertiesCache;
 import org.sunbird.helper.ServiceFactory;
-import org.sunbird.services.sso.SSOManager;
-import org.sunbird.services.sso.SSOServiceFactory;
 import play.Application;
 import play.Mode;
 import play.api.http.MediaRange;
@@ -33,15 +28,19 @@ import play.mvc.Http;
 import play.mvc.Http.Flash;
 import play.test.Helpers;
 
+import java.io.File;
+import java.security.cert.X509Certificate;
+import java.util.*;
+
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({SSOServiceFactory.class, ServiceFactory.class, PropertiesCache.class})
+@PrepareForTest({ServiceFactory.class, PropertiesCache.class})
 @PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*", "jdk.internal.reflect.*",
         "sun.security.ssl.*", "javax.net.ssl.*", "javax.crypto.*",
         "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class RequestInterceptorTest {
 
   public Application application;
-  private SSOManager ssoManager;
+
   private CassandraOperationImpl cassandraOperation;
   private PropertiesCache properties;
 
@@ -54,9 +53,6 @@ public class RequestInterceptorTest {
             .disable(StartModule.class)
             .build();
     Helpers.start(application);
-    ssoManager = PowerMockito.mock(SSOManager.class);
-    PowerMockito.mockStatic(SSOServiceFactory.class);
-    PowerMockito.when(SSOServiceFactory.getInstance()).thenReturn(ssoManager);
     cassandraOperation = PowerMockito.mock(CassandraOperationImpl.class);
     PowerMockito.mockStatic(ServiceFactory.class);
     PowerMockito.when(ServiceFactory.getInstance()).thenReturn(cassandraOperation);
@@ -66,7 +62,7 @@ public class RequestInterceptorTest {
   }
 
   @Test
-  @PrepareForTest({SSOServiceFactory.class, ServiceFactory.class, PropertiesCache.class, AccessTokenValidator.class})
+  @PrepareForTest({ServiceFactory.class, PropertiesCache.class, AccessTokenValidator.class})
   public void testVerifyRequestDataWithUserAccessTokenWithPrivateRequestPath() {
     PowerMockito.when(properties.getProperty(JsonKey.SSO_PUBLIC_KEY)).thenReturn("somePublicKey");
     PowerMockito.when(properties.getProperty(JsonKey.IS_SSO_ENABLED)).thenReturn("false");
@@ -80,7 +76,7 @@ public class RequestInterceptorTest {
   }
 
   @Test
-  @PrepareForTest({SSOServiceFactory.class, ServiceFactory.class, PropertiesCache.class, AccessTokenValidator.class})
+  @PrepareForTest({ServiceFactory.class, PropertiesCache.class, AccessTokenValidator.class})
   public void testVerifyRequestDataWithUserAccessTokenWithPublicRequestPath() {
     PowerMockito.when(properties.getProperty(JsonKey.SSO_PUBLIC_KEY)).thenReturn("somePublicKey");
     PowerMockito.when(properties.getProperty(JsonKey.IS_SSO_ENABLED)).thenReturn("false");
@@ -94,7 +90,7 @@ public class RequestInterceptorTest {
   }
 
   @Test
-  @PrepareForTest({SSOServiceFactory.class, ServiceFactory.class, PropertiesCache.class})
+  @PrepareForTest({ServiceFactory.class, PropertiesCache.class})
   public void testVerifyRequestDataWithAuthClientTokenWithPublicRequestPath() {
     PowerMockito.when(properties.getProperty(JsonKey.SSO_PUBLIC_KEY)).thenReturn("somePublicKey");
     PowerMockito.when(properties.getProperty(JsonKey.IS_SSO_ENABLED)).thenReturn("false");
@@ -106,7 +102,7 @@ public class RequestInterceptorTest {
   }
 
   @Test
-  @PrepareForTest({SSOServiceFactory.class, ServiceFactory.class, PropertiesCache.class})
+  @PrepareForTest({ServiceFactory.class, PropertiesCache.class})
   public void testVerifyRequestDataWithoutUserAccessToken() {
     PowerMockito.when(properties.getProperty(JsonKey.SSO_PUBLIC_KEY)).thenReturn("somePublicKey");
     PowerMockito.when(properties.getProperty(JsonKey.IS_SSO_ENABLED)).thenReturn("false");

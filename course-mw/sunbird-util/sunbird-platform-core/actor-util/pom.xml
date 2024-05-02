@@ -11,37 +11,41 @@
 	<url>http://maven.apache.org</url>
 
 	<properties>
+		<scala.major.version>2.12</scala.major.version>
+		<scala.version>2.12.11</scala.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<learner.akka.version>2.5.19</learner.akka.version>
+		<typesafe.akka.version>2.5.22</typesafe.akka.version>
+		<jackson.version>2.13.5</jackson.version>
+		<logstash-logback-encoder.version>7.3</logstash-logback-encoder.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.typesafe.akka</groupId>
-			<artifactId>akka-actor_2.11</artifactId>
-			<version>${learner.akka.version}</version>
+			<artifactId>akka-actor_${scala.major.version}</artifactId>
+			<version>${typesafe.akka.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.typesafe.akka</groupId>
-			<artifactId>akka-slf4j_2.11</artifactId>
-			<version>${learner.akka.version}</version>
+			<artifactId>akka-slf4j_${scala.major.version}</artifactId>
+			<version>${typesafe.akka.version}</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.scala-lang/scala-library -->
 		<dependency>
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-library</artifactId>
-			<version>2.11.11</version>
+			<version>${scala.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
-			<version>2.10.1</version>
+			<version>${jackson.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>2.10.1</version>
+			<version>${jackson.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -70,9 +74,14 @@
 			<version>1.2.3</version>
 		</dependency>
 		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-core</artifactId>
+			<version>1.2.3</version>
+		</dependency>
+		<dependency>
 			<groupId>net.logstash.logback</groupId>
 			<artifactId>logstash-logback-encoder</artifactId>
-			<version>6.3</version>
+			<version>${logstash-logback-encoder.version}</version>
 		</dependency>
 	</dependencies>
 

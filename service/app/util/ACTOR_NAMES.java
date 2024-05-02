@@ -1,8 +1,9 @@
 package util;
 
+import org.sunbird.actor.exhaustjob.ExhaustJobActor;
 import org.sunbird.aggregate.CollectionSummaryAggregate;
-import org.sunbird.enrolments.CourseEnrolmentActor;
 import org.sunbird.enrolments.ContentConsumptionActor;
+import org.sunbird.enrolments.CourseEnrolmentActor;
 import org.sunbird.group.GroupAggregatesActor;
 import org.sunbird.learner.actors.BackgroundJobManager;
 import org.sunbird.learner.actors.PageManagementActor;
@@ -18,7 +19,6 @@ import org.sunbird.learner.actors.health.HealthActor;
 import org.sunbird.learner.actors.qrcodedownload.QRCodeDownloadManagementActor;
 import org.sunbird.learner.actors.search.SearchHandlerActor;
 import org.sunbird.learner.actors.syncjobmanager.EsSyncActor;
-import org.sunbird.actor.exhaustjob.ExhaustJobActor;
 
 public enum ACTOR_NAMES {
   COURSE_BATCH_MANAGEMENT_ACTOR(CourseBatchManagementActor.class, "course-batch-management-actor"),

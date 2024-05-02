@@ -71,7 +71,7 @@
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-admin-client</artifactId>
-            <version>6.0.1</version>
+            <version>21.1.2</version>
         </dependency>
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
@@ -81,7 +81,7 @@
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-client</artifactId>
-            <version>3.11.3.Final</version>
+            <version>4.7.9.Final</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.velocity/velocity-tools -->
         <dependency>

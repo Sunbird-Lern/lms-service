@@ -5801,7 +5801,7 @@
 										}
 									}
 								},
-								"url": "{{host}}/api/course/v1/enrol"
+								"url": "{{host}}/api/course/v1/enroll"
 							},
 							"response": []
 						},
@@ -5840,7 +5840,7 @@
 										}
 									}
 								},
-								"url": "{{host}}/api/course/v1/unenrol"
+								"url": "{{host}}/api/course/v1/unenroll"
 							},
 							"response": []
 						},

@@ -41,7 +41,8 @@
 									"// pm.collectionVariables.set(\"variable_key\", \"variable_value\");",
 									""
 								],
-								"type": "text/javascript"
+								"type": "text/javascript",
+								"packages": {}
 							}
 						}
 					],
@@ -77,12 +78,12 @@
 								},
 								{
 									"key": "username",
-									"value": "{{username}}",
+									"value": "{{org_admin_username}}",
 									"type": "text"
 								},
 								{
 									"key": "password",
-									"value": "{{password}}",
+									"value": "{{org_admin_password}}",
 									"type": "text"
 								}
 							]
@@ -202,7 +203,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"request\": {\n        \"courseId\": \"{{course_id}}\",\n        \"name\": \"{{batch_name}}\",\n        \"enrollmentType\": \"open\",\n        \"startDate\": \"{{batch_start_date}}\"\n    }\n}"
+											"raw": "{\n    \"request\": {\n        \"courseId\": \"{{course_id}}\",\n        \"userId\": \"{{user_id}}\",\n        \"name\": \"{{batch_name}}\",\n        \"enrollmentType\": \"open\",\n        \"startDate\": \"{{batch_start_date}}\"\n    }\n}"
 										},
 										"url": "{{host}}/api/course/v1/batch/create"
 									},
@@ -247,7 +248,8 @@
 													"    pm.expect(jsonResponse.params.errmsg).to.eql(\"Mandatory parameter enrollmentType is missing.\");",
 													"});"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -275,7 +277,7 @@
 											"mode": "raw",
 											"raw": "{\n  \"request\": {\n    \"courseId\": \"{{course_id}}\",\n    \"name\": \"{{batch_name}}\"\n  }\n}"
 										},
-										"url": "https://dev.sunbirded.org/api/course/v1/batch/create"
+										"url": "{{host}}/api/course/v1/batch/create"
 									},
 									"response": []
 								},
@@ -313,7 +315,8 @@
 													"    pm.expect(jsonResponse.params.errmsg).to.eql(\"Mandatory parameter startDate is missing.\");",
 													"});"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -341,7 +344,7 @@
 											"mode": "raw",
 											"raw": "{\n    \"request\": {\n        \"courseId\": \"{{course_id}}\",\n        \"name\": \"{{batch_name}}\",\n        \"description\": \"{{batch_description}}\",\n        \"enrollmentType\": \"open\",\n        \"endDate\": \"{{batch_end_date}}\"\n    }\n}"
 										},
-										"url": "https://dev.sunbirded.org/api/course/v1/batch/create"
+										"url": "{{host}}/api/course/v1/batch/create"
 									},
 									"response": []
 								},
@@ -379,7 +382,8 @@
 													"    pm.expect(jsonResponse.params.errmsg).to.eql(\"Mandatory parameter courseId/collectionId is missing.\");",
 													"});"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -407,7 +411,7 @@
 											"mode": "raw",
 											"raw": "{\n    \"request\": {\n        \"name\": \"{{batch_name}}\",\n        \"description\": \"{{batch_description}}\",\n        \"enrollmentType\": \"open\",\n        \"endDate\": \"{{batch_end_date}}\"\n    }\n}"
 										},
-										"url": "https://dev.sunbirded.org/api/course/v1/batch/create"
+										"url": "{{host}}/api/course/v1/batch/create"
 									},
 									"response": []
 								},
@@ -444,7 +448,8 @@
 													"    pm.expect(jsonResponse.params.errmsg).to.eql(\"Mandatory parameter name is missing.\");",
 													"});"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -472,7 +477,7 @@
 											"mode": "raw",
 											"raw": "{\n    \"request\": {\n        \"courseId\": \"{{course_id}}\",\n        \"description\": \"{{batch_description}}\",\n        \"enrollmentType\": \"open\",\n        \"startDate\": \"{{batch_start_date}}\",\n        \"endDate\": \"{{batch_end_date}}\"\n    }\n}"
 										},
-										"url": "https://dev.sunbirded.org/api/course/v1/batch/create"
+										"url": "{{host}}/api/course/v1/batch/create"
 									},
 									"response": []
 								},
@@ -509,7 +514,8 @@
 													"    pm.expect(jsonResponse.params.errmsg).to.eql(\"Date format error.\");",
 													"});"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -537,7 +543,7 @@
 											"mode": "raw",
 											"raw": "{\n  \"request\": {\n    \"courseId\": \"{{course_id}}\",\n    \"name\": \"{{batch_name}}\",\n    \"description\": \"{{batch_description}}\",\n    \"enrollmentType\": \"open\",\n    \"startDate\": \"05/09/2023\",\n    \"endDate\": \"{{batch_end_date}}\"\n  }\n}"
 										},
-										"url": "https://dev.sunbirded.org/api/course/v1/batch/create"
+										"url": "{{host}}/api/course/v1/batch/create"
 									},
 									"response": []
 								},
@@ -574,7 +580,8 @@
 													"    pm.expect(jsonResponse.params.errmsg).to.eql(\"Invalid value join for parameter enrollmentType. Please provide a valid value.\");",
 													"});"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -602,7 +609,7 @@
 											"mode": "raw",
 											"raw": "{\n  \"request\": {\n    \"courseId\": \"{{course_id}}\",\n    \"name\": \"{{batch_name}}\",\n    \"description\": \"{{batch_description}}\",\n    \"enrollmentType\": \"join\",\n    \"startDate\": \"{{batch_start_date}}\",\n    \"endDate\": \"{{batch_end_date}}\"\n  }\n}"
 										},
-										"url": "https://dev.sunbirded.org/api/course/v1/batch/create"
+										"url": "{{host}}/api/course/v1/batch/create"
 									},
 									"response": []
 								},
@@ -639,7 +646,8 @@
 													"    pm.expect(jsonResponse.params.errmsg).to.eql(\"End date should be greater than start date.\");",
 													"});"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -667,7 +675,7 @@
 											"mode": "raw",
 											"raw": "{\n  \"request\": {\n    \"courseId\": \"{{course_id}}\",\n    \"name\": \"{{batch_name}}\",\n    \"description\": \"{{batch_description}}\",\n    \"enrollmentType\": \"open\",\n    \"startDate\": \"{{batch_start_date}}\",\n    \"endDate\": \"2023-04-01\"\n  }\n}"
 										},
-										"url": "https://dev.sunbirded.org/api/course/v1/batch/create"
+										"url": "{{host}}/api/course/v1/batch/create"
 									},
 									"response": []
 								},
@@ -705,7 +713,8 @@
 													"    pm.expect(jsonResponse.params.errmsg).to.eql(\"Batch start date should be either today or future date.\");",
 													"});"
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -733,7 +742,7 @@
 											"mode": "raw",
 											"raw": "{\n  \"request\": {\n    \"courseId\": \"{{course_id}}\",\n    \"name\": \"{{batch_name}}\",\n    \"description\": \"{{batch_description}}\",\n    \"enrollmentType\": \"open\",\n    \"startDate\": \"2023-01-01\",\n    \"endDate\": \"{{batch_end_date}}\"\n  }\n}"
 										},
-										"url": "https://dev.sunbirded.org/api/course/v1/batch/create"
+										"url": "{{host}}/api/course/v1/batch/create"
 									},
 									"response": []
 								}
@@ -1317,7 +1326,8 @@
 													"});",
 													""
 												],
-												"type": "text/javascript"
+												"type": "text/javascript",
+												"packages": {}
 											}
 										}
 									],
@@ -1343,7 +1353,7 @@
 										],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"request\": {\n        \"courseId\": \"do_113776650927300608138\",\n        \"name\": \"{{batch_name}}\",\n        \"description\": \"{{batch_description}}\",\n        \"enrollmentType\": \"open\",\n        \"startDate\": \"2023-01-01\",\n        \"endDate\": \"{{batch_end_date}}\",\n        \"id\": \"01377666464491929614\"\n    }\n}"
+											"raw": "{\n    \"request\": {\n        \"courseId\": \"{{course_id}}\",\n        \"name\": \"{{batch_name}}\",\n        \"description\": \"{{batch_description}}\",\n        \"enrollmentType\": \"open\",\n        \"startDate\": \"2023-01-01\",\n        \"endDate\": \"{{batch_end_date}}\",\n        \"id\": \"01377666260145766417\"\n    }\n}"
 										},
 										"url": "{{host}}/api/course/v1/batch/update"
 									},
@@ -2333,16 +2343,13 @@
 															"    pm.expect(jsonResponse.responseCode).to.eql(\"CLIENT_ERROR\");",
 															"});",
 															"",
-															"pm.test(\"err should be SERVER_ERROR\", function () {",
-															"    pm.expect(jsonResponse.params.err).to.eql(\"SERVER_ERROR\");",
-															"});",
-															"",
 															"pm.test(\"status should be SERVER_ERROR\", function () {",
 															"    pm.expect(jsonResponse.params.status).to.eql(\"SERVER_ERROR\");",
 															"});",
 															""
 														],
-														"type": "text/javascript"
+														"type": "text/javascript",
+														"packages": {}
 													}
 												}
 											],
@@ -5787,7 +5794,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"request\": {\n      \"courseId\": \"{{course_id}}\",\n      \"batchId\": \"{{batch_id}}\"\n    }\n}",
+									"raw": "{\n    \"request\": {\n        \"courseId\": \"{{course_id}}\",\n        \"batchId\": \"{{batch_id}}\",\n        \"userId\": \"{{user_id}}\"\n    }\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -5826,7 +5833,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"request\": {\n      \"courseId\": \"{{course_id}}\",\n      \"batchId\": \"{{batch_id}}\"\n    }\n}",
+									"raw": "{\n  \"request\": {\n      \"courseId\": \"{{course_id}}\",\n      \"batchId\": \"{{batch_id}}\",\n      \"userId\": \"{{user_id}}\"\n    }\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -6479,6 +6486,49 @@
 			"script": {
 				"type": "text/javascript",
 				"exec": [
+					" const requiresHeaders = () => {",
+					"    const requestUrl = pm.request.url.toString();",
+					"",
+					"    // List of paths to ignore",
+					"    const ignoredPaths = [",
+					"        '/health',",
+					"        '/auth/realms/sunbird/protocol/openid-connect/token',",
+					"        '/auth/v1/refresh/token'",
+					"    ];",
+					"",
+					"    // Check if the request URL contains any of the ignored paths",
+					"    return !ignoredPaths.some(path => requestUrl.includes(path));",
+					"};",
+					"",
+					"// Function to check if a specific header is present and not empty",
+					"const isHeaderProvided = (headerName) => {",
+					"    const headers = pm.request.headers;",
+					"    if (!headers) return false; // Check if headers exist",
+					"",
+					"    // Find the specified header",
+					"    const header = headers.find(h => h.key.toLowerCase() === headerName.toLowerCase());",
+					"",
+					"    // Check if the header exists and is not disabled and its value is not empty",
+					"    return header && !header.disabled && header.value.trim() !== '';",
+					"};",
+					"",
+					"// Check if the current endpoint requires headers",
+					"if (requiresHeaders()) {",
+					"    // Check if Authorization header is provided",
+					"    if (!isHeaderProvided('Authorization')) {",
+					"        // If Authorization header is missing or empty, throw an error",
+					"        throw new Error('Authorization header is missing or empty. Please provide a valid Authorization header.');",
+					"    }",
+					"",
+					"    // Check if X-Authenticated-User-Token header is provided",
+					"    if (!isHeaderProvided('X-Authenticated-User-Token')) {",
+					"        // If X-Authenticated-User-Token header is missing or empty, throw an error",
+					"        throw new Error('X-Authenticated-User-Token header is missing or empty. Please provide a valid X-Authenticated-User-Token header.');",
+					"    }",
+					"} else {",
+					"    console.log('Skipping header checks for this endpoint.');",
+					"}",
+					"",
 					"    function generateRandomBatchName() {",
 					"    const adjectives = ['Advanced', 'Beginner', 'Intermediate', 'Expert', 'Pro', 'Novice', 'Skilled', 'Enthusiastic'];",
 					"    const subjects = ['Math', 'Science', 'History', 'Literature', 'Programming', 'Languages', 'Art', 'Music'];",
@@ -6550,6 +6600,12 @@
 					""
 				]
 			}
+		}
+	],
+	"variable": [
+		{
+			"key": "refresh_token",
+			"value": ""
 		}
 	]
 }

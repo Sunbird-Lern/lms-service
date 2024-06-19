@@ -47,20 +47,7 @@
 			<artifactId>jackson-databind</artifactId>
 			<version>${jackson.version}</version>
 		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/io.netty/netty-codec-http -->
 		<dependency>
-			<groupId>io.netty</groupId>
-			<artifactId>netty-codec-http</artifactId>
-			<version>4.1.44.Final</version>
-		</dependency>
-		
-
-
-
-
-
-        <dependency>
 			<groupId>com.typesafe.play</groupId>
 			<artifactId>play-guice_${scala.major.version}</artifactId>
 			<version>${play2.version}</version>
@@ -92,12 +79,6 @@
 			<artifactId>play-netty-server_${scala.major.version}</artifactId>
 			<version>${play2.version}</version>
 			<scope>runtime</scope>
-			<exclusions>
-				<exclusion>
-					<artifactId>netty-codec-http</artifactId>
-					<groupId>io.netty</groupId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 <!--		<dependency>-->
 <!--			<groupId>io.netty</groupId>-->

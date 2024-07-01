@@ -129,7 +129,7 @@ public final class ContentUtil {
     Map<String, String> headers = new HashMap<>();
     try {
       String fieldsStr = StringUtils.join(fields, ",");
-      String baseContentreadUrl = ProjectUtil.getConfigValue(JsonKey.EKSTEP_BASE_URL) + PropertiesCache.getInstance().getProperty(JsonKey.CONTENT_READ_URL) + courseId + "?fields=" + fieldsStr;
+      String baseContentreadUrl = ProjectUtil.getConfigValue(JsonKey.CONTENT_SERVICE_BASE_URL) + PropertiesCache.getInstance().getProperty(JsonKey.CONTENT_READ_URL) + courseId + "?fields=" + fieldsStr;
       headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
       headers.put(JsonKey.AUTHORIZATION, PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_AUTHORIZATION));
 
@@ -183,7 +183,7 @@ public final class ContentUtil {
   public static boolean updateCollection(RequestContext requestContext, String collectionId, Map<String, Object> data) {
     String response = "";
     try {
-      String contentUpdateBaseUrl = ProjectUtil.getConfigValue(JsonKey.LEARNING_SERVICE_BASE_URL);
+      String contentUpdateBaseUrl = ProjectUtil.getConfigValue(JsonKey.CONTENT_SERVICE_BASE_URL);
       Request request = new Request();
       request.put("content", data);
       response =

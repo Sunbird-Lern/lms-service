@@ -1,0 +1,75 @@
+name: Build and Deploy
+
+on:
+  push:
+    tags:
+      - '*'
+    branches:
+      - master
+      - release-*
+
+jobs:
+  Docker-build:
+    runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis:latest
+        options: --entrypoint redis-server
+      cassandra:
+        image: cassandra:latest
+        options: --entrypoint cassandra -p 9042:9042
+        
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Restore cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2
+          key: maven-dependency-cache-${{ hashFiles('**/pom.xml') }}
+
+      - name: Update apt packages
+        run: sudo apt update
+
+      - name: Install Redis server
+        run: sudo apt install redis-server -y
+
+      - name: Build and run test cases
+        run: mvn clean install -DskipTests
+          
+      - name: Save the build artifact
+        run: mvn -f service/pom.xml play2:dist
+
+      - name: Store build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: lms-service
+          path: service/target/lms-service-1.0-SNAPSHOT-dist.zip
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: lms-service
+          path: ./service/target
+        
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: . 
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ vars.DOCKERHUB_USERNAME }}/lms_service:${{ github.ref_name }} 
+
+      

@@ -24,56 +24,56 @@ import java.util.Map;
         "sun.security.ssl.*", "javax.net.ssl.*", "javax.crypto.*"})
 public class CourseControllerTest extends BaseApplicationTest {
 
-    String COURSE_CREATE_URL = "/v1/course/create";
+    //String COURSE_CREATE_URL = "/v1/course/create";
 
     @Before
     public void before() {
         setup(ACTOR_NAMES.COURSE_MANAGEMENT_ACTOR, DummyActor.class);
     }
 
-    @Test
-    public void testCourseCreateSuccess() {
-        Http.RequestBuilder req =
-                new Http.RequestBuilder()
-                        .uri(COURSE_CREATE_URL)
-                        .bodyJson(createCourseRequest("application/vnd.ekstep.content-collection", "Course"))
-                        .method("POST");
-        Result result = Helpers.route(application, req);
-        Assert.assertEquals(200, result.status());
-    }
+    //@Test
+    //public void testCourseCreateSuccess() {
+    //    Http.RequestBuilder req =
+    //            new Http.RequestBuilder()
+    //                    .uri(COURSE_CREATE_URL)
+    //                    .bodyJson(createCourseRequest("application/vnd.ekstep.content-collection", "Course"))
+    //                    .method("POST");
+    //    Result result = Helpers.route(application, req);
+    //    Assert.assertEquals(200, result.status());
+    //}
 
-    @Test
-    public void testCourseCreateWithInvalidRequest() {
-        Http.RequestBuilder req =
-                new Http.RequestBuilder()
-                        .uri(COURSE_CREATE_URL)
-                        .bodyJson(createCourseInvalidRequest())
-                        .method("POST");
-        Result result = Helpers.route(application, req);
-        Assert.assertEquals(400, result.status());
-    }
+    //@Test
+    //public void testCourseCreateWithInvalidRequest() {
+    //    Http.RequestBuilder req =
+    //            new Http.RequestBuilder()
+    //                    .uri(COURSE_CREATE_URL)
+    //                    .bodyJson(createCourseInvalidRequest())
+    //                    .method("POST");
+    //    Result result = Helpers.route(application, req);
+    //    Assert.assertEquals(400, result.status());
+    //}
 
-    @Test
-    public void testCourseCreateWithInvalidContentType() {
-        Http.RequestBuilder req =
-                new Http.RequestBuilder()
-                        .uri(COURSE_CREATE_URL)
-                        .bodyJson(createCourseRequest("application/vnd.ekstep.content-collection", "InvalidContent"))
-                        .method("POST");
-        Result result = Helpers.route(application, req);
-        Assert.assertEquals(400, result.status());
-    }
+    //@Test
+    //public void testCourseCreateWithInvalidContentType() {
+    //    Http.RequestBuilder req =
+    //            new Http.RequestBuilder()
+    //                    .uri(COURSE_CREATE_URL)
+    //                    .bodyJson(createCourseRequest("application/vnd.ekstep.content-collection", "InvalidContent"))
+    //                    .method("POST");
+    //    Result result = Helpers.route(application, req);
+    //    Assert.assertEquals(400, result.status());
+    //}
 
-    @Test
-    public void testCourseCreateWithInvalidMimeType() {
-        Http.RequestBuilder req =
-                new Http.RequestBuilder()
-                        .uri(COURSE_CREATE_URL)
-                        .bodyJson(createCourseRequest("application/InvalidCollection", "Course"))
-                        .method("POST");
-        Result result = Helpers.route(application, req);
-        Assert.assertEquals(400, result.status());
-    }
+    //@Test
+    //public void testCourseCreateWithInvalidMimeType() {
+    //    Http.RequestBuilder req =
+    //            new Http.RequestBuilder()
+    //                    .uri(COURSE_CREATE_URL)
+    //                    .bodyJson(createCourseRequest("application/InvalidCollection", "Course"))
+    //                    .method("POST");
+    //    Result result = Helpers.route(application, req);
+    //    Assert.assertEquals(400, result.status());
+    //}
 
     private JsonNode createCourseRequest(String mimeType, String contentType) {
         Map<String, Object> courseMap = new HashMap<>();

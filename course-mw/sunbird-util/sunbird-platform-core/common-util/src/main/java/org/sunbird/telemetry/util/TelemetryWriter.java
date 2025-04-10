@@ -2,6 +2,7 @@ package org.sunbird.telemetry.util;
 
 import java.util.List;
 import java.util.Map;
+import org.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,7 @@ import org.sunbird.telemetry.collector.TelemetryAssemblerFactory;
 import org.sunbird.telemetry.collector.TelemetryDataAssembler;
 import org.sunbird.telemetry.validator.TelemetryObjectValidator;
 import org.sunbird.telemetry.validator.TelemetryObjectValidatorV3;
+import org.sunbird.kafka.client.KafkaClient;
 
 public class TelemetryWriter {
 
@@ -20,6 +22,7 @@ public class TelemetryWriter {
   private static TelemetryObjectValidator telemetryObjectValidator =
       new TelemetryObjectValidatorV3();
   private static Logger telemetryEventLogger = LoggerFactory.getLogger("TelemetryEventLogger");
+  private static final String TELEMETRY_KAFKA_TOPIC = "fmps.druid.events.telemetry";
 
   public static void write(Request request) {
     try {
@@ -36,7 +39,7 @@ public class TelemetryWriter {
       }
     } catch (Exception ex) {
       ProjectLogger.log(
-          "TelemetryWriter:write: Exception occurred while writting telemetry: "
+          "TelemetryWriter:write: Exception occurred while writing telemetry: "
               + " exception = "
               + ex,
           LoggerEnum.ERROR.name());
@@ -49,9 +52,10 @@ public class TelemetryWriter {
     String telemetry = telemetryDataAssembler.log(context, params);
     if (StringUtils.isNotBlank(telemetry) && telemetryObjectValidator.validateLog(telemetry)) {
       telemetryEventLogger.info(telemetry);
+      sendToKafka(telemetry);
     } else {
       ProjectLogger.log(
-          "TelemetryWriter:processLogEvent: Audit Telemetry validation failed: ",
+          "TelemetryWriter:processLogEvent: Log Telemetry validation failed: ",
           telemetry,
           LoggerEnum.ERROR.name());
     }
@@ -63,6 +67,7 @@ public class TelemetryWriter {
     String telemetry = telemetryDataAssembler.error(context, params);
     if (StringUtils.isNotBlank(telemetry) && telemetryObjectValidator.validateError(telemetry)) {
       telemetryEventLogger.info(telemetry);
+      sendToKafka(telemetry);
     } else {
       ProjectLogger.log(
           "TelemetryWriter:processLogEvent: Error Telemetry validation failed: ",
@@ -77,6 +82,7 @@ public class TelemetryWriter {
     String telemetry = telemetryDataAssembler.search(context, params);
     if (StringUtils.isNotBlank(telemetry) && telemetryObjectValidator.validateSearch(telemetry)) {
       telemetryEventLogger.info(telemetry);
+      sendToKafka(telemetry);
     } else {
       ProjectLogger.log(
           "TelemetryWriter:processLogEvent: Search Telemetry validation failed: ",
@@ -96,6 +102,7 @@ public class TelemetryWriter {
     String telemetry = telemetryDataAssembler.audit(context, params);
     if (StringUtils.isNotBlank(telemetry) && telemetryObjectValidator.validateAudit(telemetry)) {
       telemetryEventLogger.info(telemetry);
+      sendToKafka(telemetry);
     } else {
       ProjectLogger.log(
           "TelemetryWriter:processLogEvent: Audit Telemetry validation failed: ",
@@ -103,4 +110,20 @@ public class TelemetryWriter {
           LoggerEnum.ERROR.name());
     }
   }
+
+ private static void sendToKafka(String telemetry) {
+    try {
+        JSONObject telemetryJson = new JSONObject(telemetry);
+        if (telemetryJson.has("ets")) {
+            long etsValue = telemetryJson.getLong("ets");
+            telemetryJson.put("syncts", etsValue);
+        }
+        ProjectLogger.log("TelemetryWriter:sendToKafka: Sending telemetry to Kafka: " + telemetryJson.toString());
+        KafkaClient.send(telemetryJson.toString(), TELEMETRY_KAFKA_TOPIC);
+    } catch (Exception e) {
+        ProjectLogger.log(
+            "TelemetryWriter:sendToKafka: Failed to send telemetry to Kafka: " + e.getMessage(),
+            LoggerEnum.ERROR.name());
+    }
+}
 }

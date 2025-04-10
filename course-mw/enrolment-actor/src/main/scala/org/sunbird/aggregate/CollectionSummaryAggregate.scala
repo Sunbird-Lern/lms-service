@@ -124,10 +124,6 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
          |  "dataSource": "$dataSource",
          |  "dimensions": [
          |    "edata_type"
-         |    ${if (groupByKeys.contains("dist") || groupByKeys.contains("state")) "," else null}
-         |    ${if (groupByKeys.contains("dist")) districtLookUpQuery else null}
-         |    ${if (groupByKeys.contains("dist") && groupByKeys.contains("state")) "," else null}
-         |    ${if (groupByKeys.contains("state")) stateLookUpQuery else null}
          |  ],
          |  "aggregations": [
          |    {
@@ -156,7 +152,7 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
          |          {
          |            "type": "selector",
          |            "dimension": "edata_type",
-         |            "value": "certificate-issued"
+         |            "value": "certificate-issued-svg"
          |          }
          |        ]
          |      },

@@ -10,15 +10,25 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-      redis:
-        image: redis:latest
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+        cassandra:
+            image: cassandra:latest
+            ports:
+                - 9142:9042
+            options: >-
+                --health-cmd "cqlsh -u cassandra -p cassandra -e 'describe keyspaces;'"
+                --health-interval 10s
+                --health-timeout 5s
+                --health-retries 5
+        
+        redis:
+            image: redis:latest
+            ports:
+                - 6379:6379
+            options: >-
+                --health-cmd "redis-cli ping"
+                --health-interval 10s
+                --health-timeout 5s
+                --health-retries 5
      
 
     permissions:

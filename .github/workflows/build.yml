@@ -60,7 +60,7 @@ jobs:
     #         ${{ runner.os }}-maven-
 
       - name: Build and run test cases
-        run: mvn clean install -pl '!enrolment-actor' -am
+        run: mvn clean install -pl '!course-mw' -am
 
       - name: Package build artifact (Play dist)
         run: mvn -f service/pom.xml play2:dist

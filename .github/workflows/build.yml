@@ -10,11 +10,6 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-      cassandra:
-        image: cassandra:latest
-        ports:
-          - 9042:9042
-          
       redis:
         image: redis:latest
         ports:

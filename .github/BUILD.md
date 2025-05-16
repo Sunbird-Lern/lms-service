@@ -1,7 +1,7 @@
 # GitHub Action: Build and Deploy
 
 ## Overview
-This GitHub Action automates the build and deployment process for the LMS service. It builds the project, packages it, and pushes a Docker image to GitHub Container Registry (GHCR).
+This GitHub Action automates the build and deployment process for the LMS service whenever a new tag is pushed. It builds the project, packages it, and pushes a Docker image to GitHub Container Registry (GHCR).
 
 ## Usage
 To use this action, ensure that your repository is configured to trigger on tag pushes. The action will automatically build and deploy your service whenever a new tag is pushed.

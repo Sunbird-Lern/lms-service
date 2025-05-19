@@ -1,0 +1,42 @@
+name: PR Code Coverage
+
+on:
+    push:
+      branches: '**'
+
+jobs:
+    pr-coverage:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Set up JDK11
+              uses: actions/setup-java@v3
+              with:
+                  java-version: '11'
+                  distribution: 'temurin'
+                  cache: 'maven'
+
+            - name: Build and Generate Coverage Report
+              run: |
+                  mvn clean install -DskipTests
+                  cd service
+                  mvn clean verify -DskipTests jacoco:report
+
+            - name: Set up JDK 17
+              uses: actions/setup-java@v2
+              with:
+                  java-version: '17'
+                  distribution: 'temurin'
+
+            - name: Rub SonarQube Analysis
+              run: |
+                  mvn sonar:sonar \
+                        -Dsonar.projectKey=sunbird-lern \
+                        -Dsonar.organization=sunbird-lern \
+                        -Dsonar.login=${{secrets.SONAR_TOKEN}} \
+                        -Dsonar.host.url=https://sonarcloud.io \
+                        -Dsonar.coverage.jacoco.xmlReportPaths=service/target/site/jacoco/jacoco.xml
+                  
+                  
+        

@@ -7,7 +7,7 @@ on:
 jobs:
     pr-coverage:
         runs-on: ubuntu-latest'
-    environment: test
+        environment: test
         steps:
             - uses: actions/checkout@v3
 
@@ -35,7 +35,7 @@ jobs:
                   mvn sonar:sonar \
                         -Dsonar.projectKey=sunbird-lern \
                         -Dsonar.organization=sunbird-lern \
-                        -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+                        -Dsonar.login=${{ secrets.SONAR_TOKEN_TEST }} \
                         -Dsonar.host.url=https://sonarcloud.io \
                         -Dsonar.coverage.jacoco.xmlReportPaths=service/target/site/jacoco/jacoco.xml
                   

@@ -6,8 +6,8 @@ on:
 
 jobs:
     pr-coverage:
-        runs-on: ubuntu-latest'
         environment: test
+        runs-on: ubuntu-latest'
         steps:
             - uses: actions/checkout@v3
 

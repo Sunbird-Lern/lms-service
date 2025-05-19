@@ -29,12 +29,12 @@ jobs:
                   java-version: '17'
                   distribution: 'temurin'
 
-            - name: Rub SonarQube Analysis
+            - name: Run SonarQube Analysis
               run: |
                   mvn sonar:sonar \
                         -Dsonar.projectKey=sunbird-lern \
                         -Dsonar.organization=sunbird-lern \
-                        -Dsonar.login=${{secrets.SONAR_TOKEN}} \
+                        -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
                         -Dsonar.host.url=https://sonarcloud.io \
                         -Dsonar.coverage.jacoco.xmlReportPaths=service/target/site/jacoco/jacoco.xml
                   

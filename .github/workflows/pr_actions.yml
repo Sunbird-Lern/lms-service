@@ -1,7 +1,7 @@
 name: PR Code Coverage
 
 on:
-    push:
+    pull_request:
       branches: '**'
 
 jobs:
@@ -21,7 +21,7 @@ jobs:
               run: |
                   mvn clean install -DskipTests
                   cd service
-                  mvn clean verify -DskipTests jacoco:report
+                  mvn clean verify jacoco:report
 
             - name: Set up JDK 17
               uses: actions/setup-java@v2
@@ -33,7 +33,6 @@ jobs:
               env:
                   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
               run: |
-                  echo "$SONAR_TOKEN"
                   mvn sonar:sonar \
                         -Dsonar.projectKey=sunbird-lern \
                         -Dsonar.organization=sunbird-lern \

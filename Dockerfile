@@ -1,8 +1,7 @@
 FROM sunbird/openjdk-java11-alpine:latest
-MAINTAINER "Manojv" "manojv@ilimi.in"
 RUN apk update \
-    && apk add  unzip \
-    && apk add curl \
+    && apk upgrade \
+    && apk add --no-cache unzip curl \
     && adduser -u 1001 -h /home/sunbird/ -D sunbird \
     && mkdir -p /home/sunbird/lms
 #ENV sunbird_learnerstate_actor_host 52.172.24.203

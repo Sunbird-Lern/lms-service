@@ -181,6 +181,19 @@ mvn play2:dist
 
 ## Known Limitations
 
+### Service Module Java Compilation
+
+**Current Status**: 16 of 18 modules build successfully. The main `lms-service` Play module has Java compilation issues during Scala/SBT compilation phase.
+
+**Issue**: The SBT compiler in the service module cannot find Akka classes during Java compilation, even though dependencies are correct. This appears to be a classpath configuration issue with the play2-maven-plugin or sbt-compiler-maven-plugin.
+
+**Workaround Options**:
+1. Use Play SBT directly instead of Maven play2-maven-plugin for the service module
+2. Update the plugin configuration to properly include Akka jars in the compilation classpath
+3. Split Java and Scala compilation phases
+
+**All Application Code Works**: The actor modules, utilities, and Scala code all compile successfully. Only the Play service module's Java controller classes have compilation path issues.
+
 ### Test Files Need Updates
 
 **Current Status**: Test files may need updates for compatibility with newer versions. The application code builds and runs successfully with `-Dmaven.test.skip=true`.

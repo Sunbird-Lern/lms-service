@@ -10,9 +10,9 @@
 	<modelVersion>4.0.0</modelVersion>
 	<repositories>
 		<repository>
-			<id>lightbend-maven-releases</id>
-			<name>Lightbend Maven releases</name>
-			<url>https://repo.lightbend.com/maven-releases/</url>
+			<id>central</id>
+			<name>Maven Central</name>
+			<url>https://repo1.maven.org/maven2/</url>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
@@ -28,12 +28,13 @@
 		</pluginRepository>
 	</pluginRepositories>
 	<properties>
-		<play2.version>2.9.5</play2.version>
+		<play2.version>3.0.5</play2.version>
 		<play2.plugin.version>1.0.0-rc5</play2.plugin.version>
 		<scala.major.version>2.13</scala.major.version>
 		<scala.version>2.13.12</scala.version>
 		<pekko.version>1.0.2</pekko.version>
-		<jackson.version>2.13.5</jackson.version>
+		<pekko-http.version>1.0.1</pekko-http.version>
+		<jackson.version>2.14.3</jackson.version>
 		<logstash-logback-encoder.version>7.3</logstash-logback-encoder.version>
 		<powermock.version>2.0.9</powermock.version>
 		<jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
@@ -48,7 +49,7 @@
 			<version>${jackson.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.typesafe.play</groupId>
+			<groupId>org.playframework</groupId>
 			<artifactId>play-guice_${scala.major.version}</artifactId>
 			<version>${play2.version}</version>
 			<exclusions>
@@ -65,17 +66,17 @@
 		<dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
-			<version>4.2.2</version>
+			<version>5.1.0</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/com.google.inject.extensions/guice-assistedinject -->
 		<dependency>
 		    <groupId>com.google.inject.extensions</groupId>
 		    <artifactId>guice-assistedinject</artifactId>
-		    <version>3.0</version>
+		    <version>5.1.0</version>
 		</dependency>
 		
 		<dependency>
-			<groupId>com.typesafe.play</groupId>
+			<groupId>org.playframework</groupId>
 			<artifactId>play-netty-server_${scala.major.version}</artifactId>
 			<version>${play2.version}</version>
 			<scope>runtime</scope>
@@ -129,7 +130,7 @@
 			<version>1.3.0</version>
 		</dependency>
 		<dependency>
-			<groupId>com.typesafe.play</groupId>
+			<groupId>org.playframework</groupId>
 			<artifactId>play_${scala.major.version}</artifactId>
 			<version>${play2.version}</version>
 			<exclusions>
@@ -148,17 +149,17 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>com.typesafe.play</groupId>
-			<artifactId>filters-helpers_${scala.major.version}</artifactId>
+			<groupId>org.playframework</groupId>
+			<artifactId>play-filters-helpers_${scala.major.version}</artifactId>
 			<version>${play2.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.typesafe.play</groupId>
-			<artifactId>play-akka-http-server_${scala.major.version}</artifactId>
+			<groupId>org.playframework</groupId>
+			<artifactId>play-pekko-http-server_${scala.major.version}</artifactId>
 			<version>${play2.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.typesafe.play</groupId>
+			<groupId>org.playframework</groupId>
 			<artifactId>play-specs2_${scala.major.version}</artifactId>
 			<version>${play2.version}</version>
 			<scope>test</scope>
@@ -178,7 +179,7 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>com.typesafe.play</groupId>
+			<groupId>org.playframework</groupId>
 			<artifactId>play-logback_${scala.major.version}</artifactId>
 			<version>${play2.version}</version>
 			<scope>runtime</scope>

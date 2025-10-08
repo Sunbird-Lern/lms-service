@@ -1,6 +1,6 @@
 package filters;
 
-import akka.util.ByteString;
+import org.apache.pekko.util.ByteString;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;

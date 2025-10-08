@@ -12,8 +12,9 @@
 		<scala.major.version>2.13</scala.major.version>
 		<scala.version>2.13.12</scala.version>
 		<pekko.version>1.0.2</pekko.version>
+		<pekko-http.version>1.0.1</pekko-http.version>
 		<play2.plugin.version>1.0.0-beta5</play2.plugin.version>
-		<jackson.version>2.13.5</jackson.version>
+		<jackson.version>2.14.3</jackson.version>
 		<powermock.version>2.0.9</powermock.version>
 		<jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
 		<scoverage.plugin.version>1.4.1</scoverage.plugin.version>

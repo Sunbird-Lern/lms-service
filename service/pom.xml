@@ -48,6 +48,12 @@
 			<artifactId>jackson-databind</artifactId>
 			<version>${jackson.version}</version>
 		</dependency>
+		<!-- Jackson Scala module for Scala 2.13 compatibility -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.module</groupId>
+			<artifactId>jackson-module-scala_${scala.major.version}</artifactId>
+			<version>${jackson.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.playframework</groupId>
 			<artifactId>play-guice_${scala.major.version}</artifactId>

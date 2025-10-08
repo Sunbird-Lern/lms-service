@@ -28,12 +28,12 @@ import org.sunbird.learner.actors.coursebatch.dao.impl.UserCoursesDaoImpl;
 import org.sunbird.learner.actors.search.SearchHandlerActor;
 import scala.concurrent.Promise;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.pekko.testkit.JavaTestKit.duration;
 import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
@@ -123,7 +123,7 @@ public class SearchHandlerActorTest {
     reqObj.setContext(contextMap);
 
     subject.tell(reqObj, probe.getRef());
-    Response res = probe.expectMsgClass(duration("200 second"), Response.class);
+    Response res = probe.expectMsgClass(Duration.ofSeconds(200), Response.class);
     Assert.assertNotNull(res.get(JsonKey.RESPONSE));
   }
 

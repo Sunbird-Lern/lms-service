@@ -1,6 +1,5 @@
 package org.sunbird.learner.actors.bulkupload;
 
-import static org.apache.pekko.testkit.JavaTestKit.duration;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 
@@ -14,6 +13,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -77,7 +77,7 @@ public class BulkUploadManagementActorTest {
     reqObj.setOperation(ActorOperations.GET_BULK_OP_STATUS.getValue());
     reqObj.getRequest().put(JsonKey.PROCESS_ID, PROCESS_ID);
     subject.tell(reqObj, probe.getRef());
-    Response res = probe.expectMsgClass(duration("10 second"), Response.class);
+    Response res = probe.expectMsgClass(Duration.ofSeconds(10), Response.class);
     List<Map<String, Object>> list = (List<Map<String, Object>>) res.get(JsonKey.RESPONSE);
     if (!list.isEmpty()) {
       Map<String, Object> map = list.get(0);
@@ -113,7 +113,7 @@ public class BulkUploadManagementActorTest {
     reqObj.getRequest().put(JsonKey.DATA, innerMap);
 
     subject.tell(reqObj, probe.getRef());
-    Response res = probe.expectMsgClass(duration("300 second"), Response.class);
+    Response res = probe.expectMsgClass(Duration.ofSeconds(300), Response.class);
     String processId = (String) res.get(JsonKey.PROCESS_ID);
     Assert.assertTrue(null != processId);
   }
@@ -146,7 +146,7 @@ public class BulkUploadManagementActorTest {
 
     subject.tell(reqObj, probe.getRef());
     ProjectCommonException res =
-        probe.expectMsgClass(duration("10 second"), ProjectCommonException.class);
+        probe.expectMsgClass(Duration.ofSeconds(10), ProjectCommonException.class);
     Assert.assertTrue(null != res);
   }
 

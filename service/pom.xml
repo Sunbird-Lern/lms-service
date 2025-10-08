@@ -9,6 +9,14 @@
 	<version>1.0-SNAPSHOT</version>
 	<modelVersion>4.0.0</modelVersion>
 	<repositories>
+		<repository>
+			<id>lightbend-maven-releases</id>
+			<name>Lightbend Maven releases</name>
+			<url>https://repo.lightbend.com/maven-releases/</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
 	</repositories>
 	<pluginRepositories>
 		<pluginRepository>
@@ -22,8 +30,8 @@
 	<properties>
 		<play2.version>2.9.5</play2.version>
 		<play2.plugin.version>1.0.0-rc5</play2.plugin.version>
-		<scala.major.version>2.12</scala.major.version>
-		<scala.version>2.12.11</scala.version>
+		<scala.major.version>2.13</scala.major.version>
+		<scala.version>2.13.12</scala.version>
 		<pekko.version>1.0.2</pekko.version>
 		<jackson.version>2.13.5</jackson.version>
 		<logstash-logback-encoder.version>7.3</logstash-logback-encoder.version>

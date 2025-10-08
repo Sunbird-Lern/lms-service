@@ -4,8 +4,8 @@
   <artifactId>enrolment-actor</artifactId>
   <version>1.0-SNAPSHOT</version>
   <properties>
-    <scala.major.version>2.12</scala.major.version>
-    <scala.version>2.12.11</scala.version>
+    <scala.major.version>2.13</scala.major.version>
+    <scala.version>2.13.12</scala.version>
     <pekko.version>1.0.2</pekko.version>
     <jackson.version>2.13.5</jackson.version>
     <scoverage.plugin.version>1.4.1</scoverage.plugin.version>

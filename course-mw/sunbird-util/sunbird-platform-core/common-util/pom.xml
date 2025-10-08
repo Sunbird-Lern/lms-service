@@ -11,8 +11,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <scala.major.version>2.12</scala.major.version>
-        <scala.version>2.12.11</scala.version>
+        <scala.major.version>2.13</scala.major.version>
+        <scala.version>2.13.12</scala.version>
         <pekko.version>1.0.2</pekko.version>
         <jackson.version>2.13.5</jackson.version>
         <logstash-logback-encoder.version>7.3</logstash-logback-encoder.version>

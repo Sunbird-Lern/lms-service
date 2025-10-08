@@ -1,6 +1,6 @@
 package org.sunbird.learner.actors.bulkupload;
 
-import static akka.testkit.JavaTestKit.duration;
+import static org.apache.pekko.testkit.JavaTestKit.duration;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 

@@ -85,10 +85,10 @@ public class BaseMWService {
 
   protected static Config getRemoteConfig(String host, String port) {
     List<String> details = new ArrayList<String>();
-    details.add("akka.actor.provider=akka.remote.RemoteActorRefProvider");
-    details.add("akka.remote.enabled-transports = [\"akka.remote.netty.tcp\"]");
-    if (StringUtils.isNotBlank(host)) details.add("akka.remote.netty.tcp.hostname=" + host);
-    if (StringUtils.isNotBlank(port)) details.add("akka.remote.netty.tcp.port=" + port);
+    details.add("pekko.actor.provider=akka.remote.RemoteActorRefProvider");
+    details.add("pekko.remote.enabled-transports = [\"akka.remote.netty.tcp\"]");
+    if (StringUtils.isNotBlank(host)) details.add("pekko.remote.netty.tcp.hostname=" + host);
+    if (StringUtils.isNotBlank(port)) details.add("pekko.remote.netty.tcp.port=" + port);
 
     return ConfigFactory.parseString(StringUtils.join(details, ","));
   }

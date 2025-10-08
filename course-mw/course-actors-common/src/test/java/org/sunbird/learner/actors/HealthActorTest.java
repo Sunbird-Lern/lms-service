@@ -1,6 +1,6 @@
 package org.sunbird.learner.actors;
 
-import static akka.testkit.JavaTestKit.duration;
+import static org.apache.pekko.testkit.JavaTestKit.duration;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;

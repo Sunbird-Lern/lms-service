@@ -48,12 +48,12 @@
 		<dependency>
 			<groupId>com.typesafe.akka</groupId>
 			<artifactId>akka-actor_${scala.major.version}</artifactId>
-			<version>${typesafe.akka.version}</version>
+			<version>${akka.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.typesafe.akka</groupId>
 			<artifactId>akka-slf4j_${scala.major.version}</artifactId>
-			<version>${typesafe.akka.version}</version>
+			<version>${akka.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.sunbird</groupId>
@@ -84,7 +84,7 @@
 		<dependency>
 			<groupId>com.typesafe.akka</groupId>
 			<artifactId>akka-testkit_${scala.major.version}</artifactId>
-			<version>${typesafe.akka.version}</version>
+			<version>${akka.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

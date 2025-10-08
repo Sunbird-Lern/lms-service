@@ -11,10 +11,10 @@
 	<url>http://maven.apache.org</url>
 
 	<properties>
-		<scala.major.version>2.12</scala.major.version>
-		<scala.version>2.12.11</scala.version>
+		<scala.major.version>2.13</scala.major.version>
+		<scala.version>2.13.12</scala.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<typesafe.akka.version>2.5.22</typesafe.akka.version>
+		<akka.version>2.6.21</akka.version>
 		<jackson.version>2.13.5</jackson.version>
 		<logstash-logback-encoder.version>7.3</logstash-logback-encoder.version>
 	</properties>
@@ -23,12 +23,12 @@
 		<dependency>
 			<groupId>com.typesafe.akka</groupId>
 			<artifactId>akka-actor_${scala.major.version}</artifactId>
-			<version>${typesafe.akka.version}</version>
+			<version>${akka.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.typesafe.akka</groupId>
 			<artifactId>akka-slf4j_${scala.major.version}</artifactId>
-			<version>${typesafe.akka.version}</version>
+			<version>${akka.version}</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.scala-lang/scala-library -->
 		<dependency>

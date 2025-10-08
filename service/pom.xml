@@ -28,11 +28,12 @@
 		</pluginRepository>
 	</pluginRepositories>
 	<properties>
-		<play2.version>2.7.2</play2.version>
+		<play2.version>2.8.22</play2.version>
 		<play2.plugin.version>1.0.0-rc5</play2.plugin.version>
-		<scala.major.version>2.12</scala.major.version>
-		<scala.version>2.12.11</scala.version>
-		<typesafe.akka.version>2.5.22</typesafe.akka.version>
+		<scala.major.version>2.13</scala.major.version>
+		<scala.version>2.13.12</scala.version>
+		<akka.version>2.6.21</akka.version>
+		<akka.version>2.6.21</akka.version>
 		<jackson.version>2.13.5</jackson.version>
 		<logstash-logback-encoder.version>7.3</logstash-logback-encoder.version>
 		<powermock.version>2.0.9</powermock.version>
@@ -192,7 +193,7 @@
 		<dependency>
 			<groupId>com.typesafe.akka</groupId>
 			<artifactId>akka-testkit_${scala.major.version}</artifactId>
-			<version>${typesafe.akka.version}</version>
+			<version>${akka.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

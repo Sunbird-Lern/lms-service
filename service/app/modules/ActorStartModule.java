@@ -1,12 +1,12 @@
 package modules;
 
-import akka.routing.FromConfig;
-import akka.routing.RouterConfig;
+import org.apache.pekko.routing.FromConfig;
+import org.apache.pekko.routing.RouterConfig;
 import com.google.inject.AbstractModule;
-import play.libs.akka.AkkaGuiceSupport;
+import play.libs.pekko.PekkoGuiceSupport;
 import util.ACTOR_NAMES;
 
-public class ActorStartModule extends AbstractModule implements AkkaGuiceSupport {
+public class ActorStartModule extends AbstractModule implements PekkoGuiceSupport {
 
   @Override
   protected void configure() {

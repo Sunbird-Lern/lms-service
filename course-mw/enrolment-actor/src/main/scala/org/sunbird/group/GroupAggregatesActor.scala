@@ -98,7 +98,7 @@ class GroupAggregatesActor @Inject()(implicit val cacheUtil: RedisCacheUtil) ext
   }
 
   def populateResponse(groupId: String, activityId: String, activityType: String, usersAggs: java.util.List[java.util.Map[String, AnyRef]], groupMembers: java.util.List[java.util.Map[String, AnyRef]]): Response= {
-    val finalMemberList: List[java.util.Map[String, AnyRef]] = if(CollectionUtils.isNotEmpty(usersAggs) && CollectionUtils.isNotEmpty(groupMembers)) {
+    val finalMemberList = if(CollectionUtils.isNotEmpty(usersAggs) && CollectionUtils.isNotEmpty(groupMembers)) {
       val membersMap = groupMembers.asScala.toList.filter(x => StringUtils.isNotBlank(x.getOrDefault("userId", "").asInstanceOf[String]))
         .map(obj => (obj.getOrDefault("userId", "").asInstanceOf[String], obj)).toMap.asJava
       usersAggs.map(dbAggRecord => {
@@ -112,7 +112,7 @@ class GroupAggregatesActor @Inject()(implicit val cacheUtil: RedisCacheUtil) ext
         val aggLastUpdated = dbAggRecord.get("agg_last_updated").asInstanceOf[java.util.Map[String, AnyRef]]
         val agg = dbAgg.map(aggregate => Map("metric"-> aggregate._1, "value" -> aggregate._2, "lastUpdatedOn" -> aggLastUpdated.get(aggregate._1)).asJava).toList.asJava
         val userId = dbAggRecord.get("user_id").asInstanceOf[String]
-        (membersMap.get(userId).view.filterKeys(key => GROUP_MEMBERS_METADATA.contains(key)).toMap ++ Map("agg" -> agg)).asJava
+        (membersMap.get(userId).filterKeys(key => GROUP_MEMBERS_METADATA.contains(key)) ++ Map("agg" -> agg)).asJava
       }).toList
     } else List()
 
@@ -120,7 +120,7 @@ class GroupAggregatesActor @Inject()(implicit val cacheUtil: RedisCacheUtil) ext
 
     val response: Response = new Response()
     response.put("groupId", groupId)
-    val enrolmentCount = finalMemberList.map(m => m.toMap.getOrElse("userId", "").asInstanceOf[String])
+    val enrolmentCount = finalMemberList.map(m => m.getOrDefault("userId", "").asInstanceOf[String])
       .filter(uId => StringUtils.isNotBlank(uId)).distinct.size
     val activityLastUpdatedOn = activityLastUpdated(finalMemberList)
     val activityAggs = List(Map("metric" -> "enrolmentCount", "lastUpdatedOn" -> activityLastUpdatedOn, "value" -> enrolmentCount).asJava).asJava

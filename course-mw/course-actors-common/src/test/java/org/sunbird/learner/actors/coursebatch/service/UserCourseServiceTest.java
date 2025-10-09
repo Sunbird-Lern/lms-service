@@ -1,6 +1,6 @@
 package org.sunbird.learner.actors.coursebatch.service;
 
-import akka.dispatch.Futures;
+import org.apache.pekko.dispatch.Futures;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;

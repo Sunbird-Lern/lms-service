@@ -15,8 +15,8 @@ import org.sunbird.learner.util.JsonUtil
 
 import java.text.MessageFormat
 import javax.inject.Inject
-import scala.collection.JavaConverters._
-import scala.collection.convert.ImplicitConversions._
+import scala.jdk.CollectionConverters._
+
 
 class GroupAggregatesActor @Inject()(implicit val cacheUtil: RedisCacheUtil) extends BaseActor {
 
@@ -101,7 +101,7 @@ class GroupAggregatesActor @Inject()(implicit val cacheUtil: RedisCacheUtil) ext
     val finalMemberList = if(CollectionUtils.isNotEmpty(usersAggs) && CollectionUtils.isNotEmpty(groupMembers)) {
       val membersMap = groupMembers.asScala.toList.filter(x => StringUtils.isNotBlank(x.getOrDefault("userId", "").asInstanceOf[String]))
         .map(obj => (obj.getOrDefault("userId", "").asInstanceOf[String], obj)).toMap.asJava
-      usersAggs.map(dbAggRecord => {
+      usersAggs.asScala.map(dbAggRecord => {
         val aggregates: Map[String, Double] = dbAggRecord.get("aggregates").asInstanceOf[java.util.Map[String, AnyRef]].asScala.map(e => e._1 -> e._2.asInstanceOf[java.lang.Double].toDouble).toMap
         val aggs: Map[String, Double] = if (null != dbAggRecord.get("agg")) {
           dbAggRecord.get("agg").asInstanceOf[java.util.Map[String, AnyRef]].asScala.map(e => e._1 -> e._2.asInstanceOf[java.lang.Integer].toDouble).toMap
@@ -112,7 +112,7 @@ class GroupAggregatesActor @Inject()(implicit val cacheUtil: RedisCacheUtil) ext
         val aggLastUpdated = dbAggRecord.get("agg_last_updated").asInstanceOf[java.util.Map[String, AnyRef]]
         val agg = dbAgg.map(aggregate => Map("metric"-> aggregate._1, "value" -> aggregate._2, "lastUpdatedOn" -> aggLastUpdated.get(aggregate._1)).asJava).toList.asJava
         val userId = dbAggRecord.get("user_id").asInstanceOf[String]
-        (membersMap.get(userId).filterKeys(key => GROUP_MEMBERS_METADATA.contains(key)) ++ Map("agg" -> agg)).asJava
+        (membersMap.get(userId).asScala.view.filterKeys(key => GROUP_MEMBERS_METADATA.contains(key)).toMap ++ Map("agg" -> agg)).asJava
       }).toList
     } else List()
 
@@ -134,8 +134,8 @@ class GroupAggregatesActor @Inject()(implicit val cacheUtil: RedisCacheUtil) ext
 
   def activityLastUpdated(membersAggList: List[java.util.Map[String, AnyRef]]) = {
     if (membersAggList.nonEmpty) {
-      val aggLatestUpdated = membersAggList.map(m => m.get("agg").asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]])
-        .flatten.filter(a => a.get("lastUpdatedOn") != null).map(agg => agg.get("lastUpdatedOn").asInstanceOf[java.util.Date]).max
+      val aggLatestUpdated = membersAggList.flatMap(m => m.get("agg").asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]].asScala)
+        .filter(a => a.get("lastUpdatedOn") != null).map(agg => agg.get("lastUpdatedOn").asInstanceOf[java.util.Date]).max
       aggLatestUpdated.getTime
     } else System.currentTimeMillis
   }

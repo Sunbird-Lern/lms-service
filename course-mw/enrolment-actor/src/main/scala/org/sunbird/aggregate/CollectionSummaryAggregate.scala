@@ -21,7 +21,7 @@ import java.util
 import java.util.Date
 import javax.inject.Inject
 import javax.ws.rs.core.MediaType
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUtil) extends BaseActor {
   val ttl: Int = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("collection_summary_agg_cache_ttl"))) ProjectUtil.getConfigValue("collection_summary_agg_cache_ttl").toInt else 60
@@ -73,10 +73,10 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
 
   def transform(druidResponse: String, groupByKeys: List[String]): util.HashMap[String, AnyRef] = {
     val transformedResult = new util.HashMap[String, AnyRef]()
-    import scala.collection.convert.ImplicitConversions._
+    
     val parsedResult: AnyRef = JsonUtil.deserialize(druidResponse, classOf[AnyRef])
-    if (isArray(druidResponse) && parsedResult.asInstanceOf[util.ArrayList[util.Map[String, AnyRef]]].nonEmpty) {
-      val groupingObj = parsedResult.asInstanceOf[util.ArrayList[util.Map[String, AnyRef]]].map(x => {
+    if (isArray(druidResponse) && parsedResult.asInstanceOf[util.ArrayList[util.Map[String, AnyRef]]].asScala.nonEmpty) {
+      val groupingObj = parsedResult.asInstanceOf[util.ArrayList[util.Map[String, AnyRef]]].asScala.map(x => {
         val eventObj = x.get("event").asInstanceOf[util.Map[String, AnyRef]]
         val eData_type = if (StringUtils.equalsIgnoreCase(eventObj.get("edata_type").asInstanceOf[String], "enrol") || StringUtils.equalsIgnoreCase(eventObj.get("edata_type").asInstanceOf[String], "enroled")) "enrolment" else eventObj.get("edata_type").asInstanceOf[String]
         (eventObj.get("state"), eventObj.get("district")) -> Map("type" -> eData_type, "count" -> eventObj.get("userCount"))
@@ -95,9 +95,9 @@ class CollectionSummaryAggregate @Inject()(implicit val cacheUtil: RedisCacheUti
         groupByMap.put("values", valuesList)
         groupByMap
       }).asJava
-      val metrics = groupingResult.flatMap(metrics => metrics.get("values").asInstanceOf[util.ArrayList[util.HashMap[String, AnyRef]]])
+      val metrics = groupingResult.asInstanceOf[java.util.ArrayList[java.util.HashMap[String, AnyRef]]].asScala.flatMap(metrics => metrics.get("values").asInstanceOf[util.ArrayList[util.HashMap[String, AnyRef]]].asScala)
         .groupBy(x => x.get("type").asInstanceOf[String])
-        .mapValues(_.map(_ ("count").asInstanceOf[Long]).sum.longValue()).map(value => {
+        .view.mapValues(_.map(_.get("count").asInstanceOf[Long]).sum.longValue()).toMap.map(value => {
         Map("type" -> value._1, "count" -> value._2).asJava
       }).asJava
       transformedResult.put("metrics", metrics)

@@ -1,7 +1,7 @@
 /** */
 package controllers.healthmanager;
 
-import akka.actor.ActorRef;
+import org.apache.pekko.actor.ActorRef;
 import controllers.BaseController;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.ActorOperations;

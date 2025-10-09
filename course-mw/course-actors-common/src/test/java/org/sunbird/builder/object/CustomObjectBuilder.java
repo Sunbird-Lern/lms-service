@@ -1,6 +1,6 @@
 package org.sunbird.builder.object;
 
-import akka.dispatch.Futures;
+import org.apache.pekko.dispatch.Futures;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectUtil;

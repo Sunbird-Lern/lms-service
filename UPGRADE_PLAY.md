@@ -1,4 +1,4 @@
-# Play Framework 3.0.5 + Apache Pekko 1.0.2 Upgrade Guide
+# Play Framework 3.0.5 + Apache Pekko 1.0.2 Upgrade
 
 ## Overview
 
@@ -79,6 +79,8 @@ Add this dependency to root pom.xml for native performance:
  <classifier>osx-aarch_64</classifier>
 </dependency>
 ```
+
+Update ```play.server.netty.transport = "jdk"``` from native (if required)
 
 Update io.netty version to 4.1.93.Final in your dependency management.
 

@@ -190,10 +190,19 @@
 			<version>${play2.version}</version>
 			<scope>runtime</scope>
 		</dependency>
+		<!-- Scala standard library - required at runtime -->
 		<dependency>
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-library</artifactId>
 			<version>${scala.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<!-- Scala reflect library - required for Scala runtime reflection -->
+		<dependency>
+			<groupId>org.scala-lang</groupId>
+			<artifactId>scala-reflect</artifactId>
+			<version>${scala.version}</version>
+			<scope>compile</scope>
 		</dependency>
 
 		<dependency>

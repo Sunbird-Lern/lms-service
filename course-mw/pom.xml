@@ -11,7 +11,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<scala.major.version>2.13</scala.major.version>
 		<scala.version>2.13.12</scala.version>
-		<pekko.version>1.0.2</pekko.version>
+		<pekko.version>1.0.3</pekko.version>
 		<pekko-http.version>1.0.1</pekko-http.version>
 		<play2.plugin.version>1.0.0-beta5</play2.plugin.version>
 		<jackson.version>2.14.3</jackson.version>

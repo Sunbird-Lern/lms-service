@@ -7,11 +7,11 @@
 	<version>1.0-SNAPSHOT</version>
 	<name>actor-core</name>
 	<properties>
-		<scala.major.version>2.12</scala.major.version>
+		<scala.major.version>2.13</scala.major.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<slf4j.version>1.6.1</slf4j.version>
-		<pekko.version>1.0.2</pekko.version>
+		<pekko.version>1.0.3</pekko.version>
 		<jackson.version>2.13.5</jackson.version>
 		<jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
 		<logstash-logback-encoder.version>7.3</logstash-logback-encoder.version>
@@ -67,7 +67,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>18.0</version>
+			<version>32.1.2-jre</version>
 		</dependency>
 	</dependencies>
 

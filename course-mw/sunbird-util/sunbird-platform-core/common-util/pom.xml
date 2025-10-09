@@ -13,7 +13,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <scala.major.version>2.13</scala.major.version>
         <scala.version>2.13.12</scala.version>
-        <pekko.version>1.0.2</pekko.version>
+        <pekko.version>1.0.3</pekko.version>
         <jackson.version>2.14.3</jackson.version>
         <logstash-logback-encoder.version>7.3</logstash-logback-encoder.version>
         <powermock.version>2.0.9</powermock.version>
@@ -241,7 +241,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>18.0</version>
+            <version>32.1.2-jre</version>
         </dependency>
         <dependency>
             <groupId>${CLOUD_STORAGE_GROUP_ID}</groupId>

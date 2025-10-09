@@ -14,8 +14,8 @@
       <netty.version>4.1.93.Final</netty.version>
   </properties>
 
+  <!-- Netty native resolver for Mac Apple Silicon
   <dependencies>
-      <!-- Netty native resolver for Mac Apple Silicon -->
       <dependency>
           <groupId>io.netty</groupId>
           <artifactId>netty-resolver-dns-native-macos</artifactId>
@@ -23,6 +23,7 @@
           <classifier>osx-aarch_64</classifier>
       </dependency>
   </dependencies>
+   -->
 
   <profiles>
   	<profile>

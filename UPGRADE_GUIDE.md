@@ -59,7 +59,7 @@ Configuration files updated:
 
 ### Prerequisites
 
-- Java 11, 17, or 21
+- Java 11
 - Maven 3.6 or higher
 
 ### Mac Apple Silicon Users
@@ -68,10 +68,15 @@ Add this dependency to root pom.xml for native performance:
 
 ```xml
 <dependency>
-    <groupId>io.netty</groupId>
-    <artifactId>netty-resolver-dns-native-macos</artifactId>
-    <version>4.1.93.Final</version>
-    <classifier>osx-aarch_64</classifier>
+ <groupId>io.netty</groupId>
+ <artifactId>netty-all</artifactId>
+ <version>4.1.93.Final</version>
+</dependency>
+<dependency>
+ <groupId>io.netty</groupId>
+ <artifactId>netty-resolver-dns-native-macos</artifactId>
+ <version>4.1.93.Final</version>
+ <classifier>osx-aarch_64</classifier>
 </dependency>
 ```
 
@@ -80,9 +85,16 @@ Update io.netty version to 4.1.93.Final in your dependency management.
 ### Build Steps
 
 1. Clean build:
-```bash
-mvn clean install -Dmaven.test.skip=true -U
-```
+ - Completely skips compilation and execution of tests    
+    ```bash
+    mvn clean install -Dmaven.test.skip=true -U
+    ```
+
+ - OR (Skips running tests, but still compiles them.)
+
+    ```bash
+    mvn clean install -DskipTests
+    ```
 
 2. Package distribution:
 ```bash
@@ -100,24 +112,16 @@ cd lms-service-1.0-SNAPSHOT
 
 ## Files Modified
 
-### Maven POMs (8 files)
-- Root pom.xml
-- course-mw/pom.xml
-- course-mw/course-actors-common/pom.xml
-- course-mw/course-actors/pom.xml
-- course-mw/enrolment-actor/pom.xml
-- course-mw/sunbird-util/sunbird-platform-core/actor-core/pom.xml
-- course-mw/sunbird-util/sunbird-platform-core/actor-util/pom.xml
-- course-mw/sunbird-util/sunbird-platform-core/common-util/pom.xml
-- service/pom.xml
+### Maven POMs
+All files
 
-### Java Files (85+ files)
+### Java Files
 All files with Akka imports updated to use Pekko
 
-### Scala Files (6 files)
+### Scala Files
 Updated for Scala 2.13 collection API compatibility
 
-### Configuration Files (3 files)
+### Configuration Files
 - service/conf/application.conf
 - Updated akka to pekko namespaces
 
@@ -203,40 +207,3 @@ Added exclusions to prevent Scala 2.12 and old Jackson conflicts:
     </exclusions>
 </dependency>
 ```
-
-## Troubleshooting
-
-### Issue: NoClassDefFoundError for scala/Serializable
-Solution: Add scala-reflect dependency to service/pom.xml
-
-### Issue: ServiceConfigurationError for Jackson Scala module
-Solution: Ensure jackson-module-scala_2.13:2.14.3 is present and Scala 2.12 versions are excluded
-
-### Issue: SLF4J multiple bindings warning
-Solution: Set logback scope to 'provided' in internal modules
-
-### Issue: NoSuchMethodError for LoggerContext.setMDCAdapter
-Solution: Upgrade SLF4J to 2.0.9 and Logback to 1.4.14
-
-## Verification
-
-After deployment, verify:
-
-1. Application starts without errors
-2. No Akka dependencies in dependency tree (mvn dependency:tree | grep akka)
-3. All Pekko actors initialize correctly
-4. Logging works properly
-5. API endpoints respond correctly
-
-## Benefits Achieved
-
-- Zero Akka dependencies - 100% Apache Pekko
-- Full Apache License 2.0 compliance
-- Active security updates
-- Modern Scala 2.13 performance improvements
-- Play 3.0 features and enhancements
-- Java 11/17/21 LTS support
-
-## Migration Complete
-
-All 18 modules build successfully. The application is production ready with zero license compliance issues.

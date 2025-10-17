@@ -1,0 +1,289 @@
+org.sunbird:actor-core:jar:1.0-SNAPSHOT
++- ch.qos.logback:logback-classic:jar:1.2.3:compile
+|  \- org.slf4j:slf4j-api:jar:1.7.25:compile
++- ch.qos.logback:logback-core:jar:1.2.3:compile
++- net.logstash.logback:logstash-logback-encoder:jar:7.3:compile
++- org.sunbird:common-util:jar:0.0.1-SNAPSHOT:compile
+|  +- org.apache.commons:commons-lang3:jar:3.0:compile
+|  +- org.keycloak:keycloak-admin-client:jar:21.1.2:compile
+|  |  +- org.keycloak:keycloak-core:jar:21.1.2:compile
+|  |  +- org.keycloak:keycloak-common:jar:21.1.2:compile
+|  |  +- org.jboss.resteasy:resteasy-multipart-provider:jar:4.7.9.Final:compile
+|  |  |  +- com.sun.mail:jakarta.mail:jar:1.6.5:compile
+|  |  |  |  \- com.sun.activation:jakarta.activation:jar:1.2.1:compile
+|  |  |  +- org.apache.james:apache-mime4j-dom:jar:0.8.9:compile
+|  |  |  |  \- org.apache.james:apache-mime4j-core:jar:0.8.9:compile
+|  |  |  \- org.apache.james:apache-mime4j-storage:jar:0.8.9:compile
+|  |  \- org.jboss.resteasy:resteasy-jaxb-provider:jar:4.7.9.Final:compile
+|  |     +- org.jboss.spec.javax.xml.bind:jboss-jaxb-api_2.3_spec:jar:2.0.0.Final:compile
+|  |     \- org.glassfish.jaxb:jaxb-runtime:jar:2.3.3-b02:compile
+|  |        +- org.glassfish.jaxb:txw2:jar:2.3.3-b02:compile
+|  |        \- com.sun.istack:istack-commons-runtime:jar:3.0.10:compile
+|  +- org.jboss.resteasy:jaxrs-api:jar:3.0.11.Final:compile
+|  +- org.jboss.resteasy:resteasy-client:jar:4.7.9.Final:compile
+|  |  +- org.jboss.resteasy:resteasy-client-api:jar:4.7.9.Final:compile
+|  |  +- org.jboss.resteasy:resteasy-core-spi:jar:4.7.9.Final:compile
+|  |  |  +- org.jboss.spec.javax.annotation:jboss-annotations-api_1.3_spec:jar:2.0.1.Final:compile
+|  |  |  \- jakarta.validation:jakarta.validation-api:jar:2.0.2:compile
+|  |  +- org.jboss.resteasy:resteasy-core:jar:4.7.9.Final:compile
+|  |  |  +- jakarta.activation:jakarta.activation-api:jar:1.2.1:compile
+|  |  |  +- com.ibm.async:asyncutil:jar:0.1.0:compile
+|  |  |  \- io.smallrye.config:smallrye-config:jar:2.3.0:compile
+|  |  |     \- io.smallrye.config:smallrye-config-core:jar:2.3.0:compile
+|  |  |        +- org.eclipse.microprofile.config:microprofile-config-api:jar:2.0:compile
+|  |  |        +- io.smallrye.common:smallrye-common-annotation:jar:1.6.0:compile
+|  |  |        +- io.smallrye.common:smallrye-common-expression:jar:1.6.0:compile
+|  |  |        |  \- io.smallrye.common:smallrye-common-function:jar:1.6.0:compile
+|  |  |        +- io.smallrye.common:smallrye-common-constraint:jar:1.6.0:compile
+|  |  |        +- io.smallrye.common:smallrye-common-classloader:jar:1.6.0:compile
+|  |  |        +- org.ow2.asm:asm:jar:9.1:compile
+|  |  |        \- io.smallrye.config:smallrye-config-common:jar:2.3.0:compile
+|  |  +- org.jboss.logging:jboss-logging:jar:3.4.2.Final:compile
+|  |  +- commons-codec:commons-codec:jar:1.15:compile
+|  |  +- commons-io:commons-io:jar:2.9.0:compile
+|  |  +- org.jboss.spec.javax.ws.rs:jboss-jaxrs-api_2.1_spec:jar:2.0.1.Final:compile
+|  |  \- org.reactivestreams:reactive-streams:jar:1.0.3:compile
+|  +- org.apache.velocity:velocity-tools:jar:2.0:compile
+|  |  +- commons-beanutils:commons-beanutils:jar:1.7.0:compile
+|  |  +- commons-digester:commons-digester:jar:1.8:compile
+|  |  +- commons-chain:commons-chain:jar:1.1:compile
+|  |  +- commons-logging:commons-logging:jar:1.1:compile
+|  |  |  \- javax.servlet:servlet-api:jar:2.3:compile
+|  |  +- commons-validator:commons-validator:jar:1.3.1:compile
+|  |  +- dom4j:dom4j:jar:1.1:compile
+|  |  +- oro:oro:jar:2.0.8:compile
+|  |  +- sslext:sslext:jar:1.2-0:compile
+|  |  +- org.apache.struts:struts-core:jar:1.3.8:compile
+|  |  |  \- antlr:antlr:jar:2.7.2:compile
+|  |  +- org.apache.struts:struts-taglib:jar:1.3.8:compile
+|  |  +- org.apache.struts:struts-tiles:jar:1.3.8:compile
+|  |  \- org.apache.velocity:velocity:jar:1.6.2:compile
+|  |     \- commons-lang:commons-lang:jar:2.4:compile
+|  +- commons-collections:commons-collections:jar:3.2.2:compile
+|  +- javax.mail:javax.mail-api:jar:1.5.1:compile
+|  |  \- javax.activation:activation:jar:1.1:compile
+|  +- com.sun.mail:javax.mail:jar:1.6.0:compile
+|  +- org.jboss.resteasy:resteasy-jackson2-provider:jar:3.1.3.Final:compile
+|  +- com.moparisthebest:junidecode:jar:0.1.1:compile
+|  +- org.apache.poi:poi-ooxml:jar:3.17:compile
+|  |  +- org.apache.poi:poi:jar:3.17:compile
+|  |  |  \- org.apache.commons:commons-collections4:jar:4.1:compile
+|  |  +- org.apache.poi:poi-ooxml-schemas:jar:3.17:compile
+|  |  \- com.github.virtuald:curvesapi:jar:1.04:compile
+|  +- org.apache.xmlbeans:xmlbeans:jar:3.0.0:compile
+|  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.14.3:compile
+|  +- org.apache.commons:commons-csv:jar:1.4:compile
+|  +- com.googlecode.libphonenumber:libphonenumber:jar:8.10.2:compile
+|  +- org.apache.httpcomponents:httpclient:jar:4.5.14:compile
+|  +- org.apache.httpcomponents:httpmime:jar:4.5.2:compile
+|  +- org.javassist:javassist:jar:3.30.2-GA:compile
+|  +- org.apache.httpcomponents:httpcore:jar:4.4.4:compile
+|  +- com.mashape.unirest:unirest-java:jar:1.4.9:compile
+|  |  +- org.apache.httpcomponents:httpasyncclient:jar:4.1.1:compile
+|  |  |  \- org.apache.httpcomponents:httpcore-nio:jar:4.4.4:compile
+|  |  \- org.json:json:jar:20160212:compile
+|  +- org.sunbird:cloud-store-sdk_2.12:jar:1.4.7:compile
+|  |  +- org.apache.jclouds:jclouds-all:jar:2.2.1:compile
+|  |  |  +- org.apache.jclouds.api:rackspace-cloudidentity:jar:2.2.1:compile
+|  |  |  |  \- org.apache.jclouds.api:openstack-keystone:jar:2.2.1:compile
+|  |  |  +- org.apache.jclouds.api:openstack-cinder:jar:2.2.1:compile
+|  |  |  |  \- org.apache.jclouds:jclouds-core:jar:2.2.1:compile
+|  |  |  |     +- com.google.inject.extensions:guice-assistedinject:jar:3.0:compile
+|  |  |  |     +- com.google.inject:guice:jar:3.0:compile
+|  |  |  |     |  \- aopalliance:aopalliance:jar:1.0:compile
+|  |  |  |     +- javax.inject:javax.inject:jar:1:compile
+|  |  |  |     +- javax.annotation:jsr250-api:jar:1.0:compile
+|  |  |  |     \- org.apache.jclouds:jclouds-gson:jar:2.2.1:compile
+|  |  |  +- org.apache.jclouds.api:rackspace-clouddns:jar:2.2.1:compile
+|  |  |  +- org.apache.jclouds.provider:aws-cloudwatch:jar:2.2.1:compile
+|  |  |  |  \- org.apache.jclouds.api:cloudwatch:jar:2.2.1:compile
+|  |  |  +- org.apache.jclouds.provider:rackspace-cloudblockstorage-us:jar:2.2.1:compile
+|  |  |  +- org.apache.jclouds.provider:rackspace-cloudblockstorage-uk:jar:2.2.1:compile
+|  |  |  +- org.apache.jclouds.provider:rackspace-clouddns-us:jar:2.2.1:compile
+|  |  |  +- org.apache.jclouds.provider:rackspace-clouddns-uk:jar:2.2.1:compile
+|  |  |  +- org.apache.jclouds.provider:rackspace-clouddatabases-us:jar:2.2.1:compile
+|  |  |  |  \- org.apache.jclouds.api:openstack-trove:jar:2.2.1:compile
+|  |  |  +- org.apache.jclouds.provider:rackspace-clouddatabases-uk:jar:2.2.1:compile
+|  |  |  +- org.apache.jclouds.provider:aws-sqs:jar:2.2.1:compile
+|  |  |  |  \- org.apache.jclouds.api:sqs:jar:2.2.1:compile
+|  |  |  +- org.apache.jclouds.provider:aws-sts:jar:2.2.1:compile
+|  |  |  |  \- org.apache.jclouds.api:sts:jar:2.2.1:compile
+|  |  |  +- org.apache.jclouds.provider:aws-route53:jar:2.2.1:compile
+|  |  |  |  \- org.apache.jclouds.api:route53:jar:2.2.1:compile
+|  |  |  +- org.apache.jclouds.provider:ultradns-ws:jar:2.2.1:compile
+|  |  |  +- org.apache.jclouds.provider:dynect:jar:2.2.1:compile
+|  |  |  +- org.apache.jclouds.api:chef:jar:2.2.1:compile
+|  |  |  |  +- org.apache.jclouds:jclouds-scriptbuilder:jar:2.2.1:compile
+|  |  |  |  \- com.google.inject.extensions:guice-multibindings:jar:3.0:compile
+|  |  |  +- org.apache.jclouds:jclouds-allloadbalancer:jar:2.2.1:compile
+|  |  |  |  +- org.apache.jclouds.provider:rackspace-cloudloadbalancers-uk:jar:2.2.1:compile
+|  |  |  |  |  +- org.apache.jclouds:jclouds-loadbalancer:jar:2.2.1:compile
+|  |  |  |  |  \- org.apache.jclouds.api:rackspace-cloudloadbalancers:jar:2.2.1:compile
+|  |  |  |  \- org.apache.jclouds.provider:rackspace-cloudloadbalancers-us:jar:2.2.1:compile
+|  |  |  +- org.apache.jclouds:jclouds-allcompute:jar:2.2.1:compile
+|  |  |  |  +- org.apache.jclouds.provider:aws-ec2:jar:2.2.1:compile
+|  |  |  |  +- org.apache.jclouds.api:openstack-nova:jar:2.2.1:compile
+|  |  |  |  |  +- org.apache.jclouds.api:openstack-neutron:jar:2.2.1:compile
+|  |  |  |  |  \- org.apache.jclouds:jclouds-compute:jar:2.2.1:compile
+|  |  |  |  +- org.apache.jclouds.api:openstack-nova-ec2:jar:2.2.1:compile
+|  |  |  |  +- org.apache.jclouds.api:byon:jar:2.2.1:compile
+|  |  |  |  +- org.apache.jclouds.api:ec2:jar:2.2.1:compile
+|  |  |  |  +- org.apache.jclouds.provider:gogrid:jar:2.2.1:compile
+|  |  |  |  +- org.apache.jclouds.api:elasticstack:jar:2.2.1:compile
+|  |  |  |  +- org.apache.jclouds.provider:elastichosts-lon-p:jar:2.2.1:compile
+|  |  |  |  +- org.apache.jclouds.provider:elastichosts-sat-p:jar:2.2.1:compile
+|  |  |  |  +- org.apache.jclouds.provider:elastichosts-lon-b:jar:2.2.1:compile
+|  |  |  |  +- org.apache.jclouds.provider:openhosting-east1:jar:2.2.1:compile
+|  |  |  |  +- org.apache.jclouds.provider:serverlove-z1-man:jar:2.2.1:compile
+|  |  |  |  +- org.apache.jclouds.provider:skalicloud-sdg-my:jar:2.2.1:compile
+|  |  |  |  +- org.apache.jclouds.provider:go2cloud-jhb1:jar:2.2.1:compile
+|  |  |  |  +- org.apache.jclouds.provider:softlayer:jar:2.2.1:compile
+|  |  |  |  +- org.apache.jclouds.api:cloudstack:jar:2.2.1:compile
+|  |  |  |  +- org.apache.jclouds.provider:rackspace-cloudservers-us:jar:2.2.1:compile
+|  |  |  |  +- org.apache.jclouds.provider:rackspace-cloudservers-uk:jar:2.2.1:compile
+|  |  |  |  +- org.apache.jclouds.provider:google-compute-engine:jar:2.2.1:compile
+|  |  |  |  |  +- org.apache.jclouds.driver:jclouds-bouncycastle:jar:2.2.1:compile
+|  |  |  |  |  |  \- org.bouncycastle:bcprov-ext-jdk15on:jar:1.51:compile
+|  |  |  |  |  \- org.apache.jclouds.common:googlecloud:jar:2.2.1:compile
+|  |  |  |  +- org.apache.jclouds.provider:digitalocean2:jar:2.2.1:compile
+|  |  |  |  |  \- org.apache.jclouds.api:oauth:jar:2.2.1:compile
+|  |  |  |  +- org.apache.jclouds.provider:profitbricks:jar:2.2.1:compile
+|  |  |  |  +- org.apache.jclouds.api:docker:jar:2.2.1:compile
+|  |  |  |  |  +- org.apache.jclouds.driver:jclouds-sshj:jar:2.2.1:compile
+|  |  |  |  |  |  +- org.apache.jclouds.driver:jclouds-slf4j:jar:2.2.1:compile
+|  |  |  |  |  |  +- com.hierynomus:sshj:jar:0.20.0:compile
+|  |  |  |  |  |  |  +- org.bouncycastle:bcpkix-jdk15on:jar:1.51:compile
+|  |  |  |  |  |  |  +- com.jcraft:jzlib:jar:1.1.3:compile
+|  |  |  |  |  |  |  \- net.i2p.crypto:eddsa:jar:0.1.0:compile
+|  |  |  |  |  |  +- com.jcraft:jsch.agentproxy.sshj:jar:0.0.9:compile
+|  |  |  |  |  |  |  \- com.jcraft:jsch.agentproxy.core:jar:0.0.9:compile
+|  |  |  |  |  |  \- com.jcraft:jsch.agentproxy.connector-factory:jar:0.0.9:compile
+|  |  |  |  |  |     +- com.jcraft:jsch.agentproxy.usocket-jna:jar:0.0.9:compile
+|  |  |  |  |  |     |  +- net.java.dev.jna:jna:jar:4.1.0:compile
+|  |  |  |  |  |     |  \- net.java.dev.jna:jna-platform:jar:4.1.0:compile
+|  |  |  |  |  |     +- com.jcraft:jsch.agentproxy.usocket-nc:jar:0.0.9:compile
+|  |  |  |  |  |     +- com.jcraft:jsch.agentproxy.sshagent:jar:0.0.9:compile
+|  |  |  |  |  |     \- com.jcraft:jsch.agentproxy.pageant:jar:0.0.9:compile
+|  |  |  |  |  \- org.apache.jclouds.driver:jclouds-okhttp:jar:2.2.1:compile
+|  |  |  |  |     \- com.squareup.okhttp:okhttp:jar:2.2.0:compile
+|  |  |  |  |        \- com.squareup.okio:okio:jar:1.2.0:compile
+|  |  |  |  +- org.apache.jclouds.provider:packet:jar:2.2.1:compile
+|  |  |  |  \- org.apache.jclouds.provider:azurecompute-arm:jar:2.2.1:compile
+|  |  |  \- org.apache.jclouds:jclouds-allblobstore:jar:2.2.1:compile
+|  |  |     +- org.apache.jclouds.api:s3:jar:2.2.1:compile
+|  |  |     |  \- org.apache.jclouds:jclouds-blobstore:jar:2.2.1:compile
+|  |  |     +- org.apache.jclouds.provider:aws-s3:jar:2.2.1:compile
+|  |  |     +- org.apache.jclouds.provider:azureblob:jar:2.2.1:compile
+|  |  |     +- org.apache.jclouds.api:atmos:jar:2.2.1:compile
+|  |  |     +- org.apache.jclouds.provider:b2:jar:2.2.1:compile
+|  |  |     +- org.apache.jclouds.provider:google-cloud-storage:jar:2.2.1:compile
+|  |  |     +- org.apache.jclouds.api:openstack-swift:jar:2.2.1:compile
+|  |  |     +- org.apache.jclouds.provider:rackspace-cloudfiles-us:jar:2.2.1:compile
+|  |  |     |  \- org.apache.jclouds.api:rackspace-cloudfiles:jar:2.2.1:compile
+|  |  |     +- org.apache.jclouds.provider:rackspace-cloudfiles-uk:jar:2.2.1:compile
+|  |  |     \- org.apache.jclouds.api:filesystem:jar:2.2.1:compile
+|  |  +- com.jamesmurty.utils:java-xmlbuilder:jar:1.2:compile
+|  |  |  \- net.iharder:base64:jar:2.3.8:compile
+|  |  +- com.microsoft.azure:azure-storage:jar:5.0.0:compile
+|  |  |  \- com.microsoft.azure:azure-keyvault-core:jar:0.8.0:compile
+|  |  +- org.apache.hadoop:hadoop-azure:jar:2.7.3:compile
+|  |  +- org.apache.hadoop:hadoop-common:jar:3.3.6:compile
+|  |  |  +- org.apache.hadoop.thirdparty:hadoop-shaded-protobuf_3_7:jar:1.1.1:compile
+|  |  |  +- org.apache.hadoop:hadoop-annotations:jar:3.3.6:compile
+|  |  |  +- org.apache.hadoop.thirdparty:hadoop-shaded-guava:jar:1.1.1:compile
+|  |  |  +- commons-cli:commons-cli:jar:1.2:compile
+|  |  |  +- org.apache.commons:commons-math3:jar:3.1.1:compile
+|  |  |  +- commons-net:commons-net:jar:3.9.0:compile
+|  |  |  +- javax.servlet:javax.servlet-api:jar:3.1.0:compile
+|  |  |  +- org.eclipse.jetty:jetty-server:jar:9.4.51.v20230217:compile
+|  |  |  |  +- org.eclipse.jetty:jetty-http:jar:9.4.51.v20230217:compile
+|  |  |  |  \- org.eclipse.jetty:jetty-io:jar:9.4.51.v20230217:compile
+|  |  |  +- org.eclipse.jetty:jetty-util:jar:9.4.51.v20230217:compile
+|  |  |  +- org.eclipse.jetty:jetty-servlet:jar:9.4.51.v20230217:compile
+|  |  |  |  +- org.eclipse.jetty:jetty-security:jar:9.4.51.v20230217:compile
+|  |  |  |  \- org.eclipse.jetty:jetty-util-ajax:jar:9.4.51.v20230217:compile
+|  |  |  +- org.eclipse.jetty:jetty-webapp:jar:9.4.51.v20230217:compile
+|  |  |  |  \- org.eclipse.jetty:jetty-xml:jar:9.4.51.v20230217:compile
+|  |  |  +- javax.servlet.jsp:jsp-api:jar:2.1:runtime
+|  |  |  +- com.sun.jersey:jersey-servlet:jar:1.19.4:compile
+|  |  |  +- com.github.pjfanning:jersey-json:jar:1.20:compile
+|  |  |  |  \- com.sun.xml.bind:jaxb-impl:jar:2.2.3-1:compile
+|  |  |  |     \- javax.xml.bind:jaxb-api:jar:2.2.2:compile
+|  |  |  |        \- javax.xml.stream:stax-api:jar:1.0-2:compile
+|  |  |  +- org.apache.commons:commons-configuration2:jar:2.8.0:compile
+|  |  |  +- org.apache.commons:commons-text:jar:1.10.0:compile
+|  |  |  +- com.google.re2j:re2j:jar:1.1:compile
+|  |  |  +- com.google.code.gson:gson:jar:2.9.0:compile
+|  |  |  +- org.apache.hadoop:hadoop-auth:jar:3.3.6:compile
+|  |  |  |  +- com.nimbusds:nimbus-jose-jwt:jar:9.8.1:compile
+|  |  |  |  |  \- com.github.stephenc.jcip:jcip-annotations:jar:1.0-1:compile
+|  |  |  |  +- org.apache.curator:curator-framework:jar:5.2.0:compile
+|  |  |  |  \- org.apache.kerby:kerb-simplekdc:jar:1.0.1:compile
+|  |  |  |     +- org.apache.kerby:kerb-client:jar:1.0.1:compile
+|  |  |  |     |  +- org.apache.kerby:kerby-config:jar:1.0.1:compile
+|  |  |  |     |  +- org.apache.kerby:kerb-common:jar:1.0.1:compile
+|  |  |  |     |  |  \- org.apache.kerby:kerb-crypto:jar:1.0.1:compile
+|  |  |  |     |  +- org.apache.kerby:kerb-util:jar:1.0.1:compile
+|  |  |  |     |  \- org.apache.kerby:token-provider:jar:1.0.1:compile
+|  |  |  |     \- org.apache.kerby:kerb-admin:jar:1.0.1:compile
+|  |  |  |        +- org.apache.kerby:kerb-server:jar:1.0.1:compile
+|  |  |  |        |  \- org.apache.kerby:kerb-identity:jar:1.0.1:compile
+|  |  |  |        \- org.apache.kerby:kerby-xdr:jar:1.0.1:compile
+|  |  |  +- com.jcraft:jsch:jar:0.1.55:compile
+|  |  |  +- org.apache.curator:curator-client:jar:5.2.0:compile
+|  |  |  +- org.apache.curator:curator-recipes:jar:5.2.0:compile
+|  |  |  +- io.dropwizard.metrics:metrics-core:jar:3.2.4:compile
+|  |  |  +- org.apache.kerby:kerb-core:jar:1.0.1:compile
+|  |  |  |  \- org.apache.kerby:kerby-pkix:jar:1.0.1:compile
+|  |  |  |     +- org.apache.kerby:kerby-asn1:jar:1.0.1:compile
+|  |  |  |     \- org.apache.kerby:kerby-util:jar:1.0.1:compile
+|  |  |  +- org.codehaus.woodstox:stax2-api:jar:4.2.1:compile
+|  |  |  +- com.fasterxml.woodstox:woodstox-core:jar:5.4.0:compile
+|  |  |  \- dnsjava:dnsjava:jar:2.1.7:compile
+|  |  +- org.xerial.snappy:snappy-java:jar:1.1.10.4:compile
+|  |  +- org.codehaus.jettison:jettison:jar:1.5.4:compile
+|  |  +- com.google.protobuf:protobuf-java:jar:3.21.7:compile
+|  |  +- joda-time:joda-time:jar:2.8.1:compile
+|  |  \- org.apache.tika:tika-core:jar:2.9.0:compile
+|  +- org.apache.zookeeper:zookeeper:jar:3.7.2:compile
+|  |  +- org.apache.zookeeper:zookeeper-jute:jar:3.7.2:compile
+|  |  +- org.apache.yetus:audience-annotations:jar:0.12.0:compile
+|  |  +- io.netty:netty-handler:jar:4.1.94.Final:compile
+|  |  |  +- io.netty:netty-common:jar:4.1.94.Final:compile
+|  |  |  +- io.netty:netty-resolver:jar:4.1.94.Final:compile
+|  |  |  +- io.netty:netty-buffer:jar:4.1.94.Final:compile
+|  |  |  +- io.netty:netty-transport:jar:4.1.94.Final:compile
+|  |  |  +- io.netty:netty-transport-native-unix-common:jar:4.1.94.Final:compile
+|  |  |  \- io.netty:netty-codec:jar:4.1.94.Final:compile
+|  |  \- io.netty:netty-transport-native-epoll:jar:4.1.94.Final:compile
+|  |     \- io.netty:netty-transport-classes-epoll:jar:4.1.94.Final:compile
+|  +- org.apache.avro:avro:jar:1.11.4:compile
+|  |  \- org.apache.commons:commons-compress:jar:1.26.2:compile
+|  +- com.fasterxml.jackson.module:jackson-module-scala_2.13:jar:2.14.3:compile
+|  |  \- com.thoughtworks.paranamer:paranamer:jar:2.8:compile
+|  +- org.scala-lang:scala-library:jar:2.13.12:compile
+|  +- org.glassfish.jersey.core:jersey-common:jar:2.27:compile
+|  |  +- javax.ws.rs:javax.ws.rs-api:jar:2.1:compile
+|  |  +- javax.annotation:javax.annotation-api:jar:1.2:compile
+|  |  +- org.glassfish.hk2.external:javax.inject:jar:2.5.0-b42:compile
+|  |  \- org.glassfish.hk2:osgi-resource-locator:jar:1.0.1:compile
+|  +- org.glassfish.jersey.core:jersey-client:jar:2.27:compile
+|  +- org.glassfish.jersey.core:jersey-server:jar:2.27:compile
+|  |  +- org.glassfish.jersey.media:jersey-media-jaxb:jar:2.27:compile
+|  |  \- javax.validation:validation-api:jar:1.1.0.Final:compile
+|  \- org.apache.kafka:kafka-clients:jar:0.10.2.2:compile
+|     \- net.jpountz.lz4:lz4:jar:1.3.0:compile
++- org.apache.pekko:pekko-actor_2.13:jar:1.0.3:compile
+|  \- com.typesafe:config:jar:1.4.3:compile
++- org.apache.pekko:pekko-slf4j_2.13:jar:1.0.3:compile
++- org.reflections:reflections:jar:0.9.10:compile
+|  \- com.google.code.findbugs:annotations:jar:2.0.1:compile
++- com.fasterxml.jackson.core:jackson-core:jar:2.13.5:compile
++- com.fasterxml.jackson.core:jackson-databind:jar:2.13.5:compile
+\- com.google.guava:guava:jar:32.1.2-jre:compile
+   +- com.google.guava:failureaccess:jar:1.0.1:compile
+   +- com.google.guava:listenablefuture:jar:9999.0-empty-to-avoid-conflict-with-guava:compile
+   +- com.google.code.findbugs:jsr305:jar:3.0.2:compile
+   +- org.checkerframework:checker-qual:jar:3.33.0:compile
+   +- com.google.errorprone:error_prone_annotations:jar:2.18.0:compile
+   \- com.google.j2objc:j2objc-annotations:jar:2.8:compile

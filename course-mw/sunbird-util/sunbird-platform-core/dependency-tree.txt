@@ -1,1 +1,0 @@
-org.sunbird:sunbird-platform-core:pom:1.0-SNAPSHOT

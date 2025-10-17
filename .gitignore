@@ -19,3 +19,5 @@ RUNNING_PID
 /bin/
 /logs
 **.vscode
+dependency-tree.txt
+dependency-reduced-pom.xml

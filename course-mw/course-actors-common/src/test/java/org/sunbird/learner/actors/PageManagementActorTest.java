@@ -1,14 +1,13 @@
 package org.sunbird.learner.actors;
 
-import static akka.testkit.JavaTestKit.duration;
 import static org.junit.Assert.assertTrue;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 
-import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
-import akka.actor.Props;
-import akka.testkit.javadsl.TestKit;
+import org.apache.pekko.actor.ActorRef;
+import org.apache.pekko.actor.ActorSystem;
+import org.apache.pekko.actor.Props;
+import org.apache.pekko.testkit.javadsl.TestKit;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigInteger;
 import java.time.Duration;
@@ -384,7 +383,7 @@ public class PageManagementActorTest {
     Request reqObj = new Request();
     reqObj.setOperation(ActorOperations.GET_ALL_SECTION.getValue());
     subject.tell(reqObj, probe.getRef());
-    Response response = probe.expectMsgClass(duration("10 second"), Response.class);
+    Response response = probe.expectMsgClass(Duration.ofSeconds(10), Response.class);
     Map<String, Object> result = response.getResult();
     List<Map<String, Object>> sectionList =
         (List<Map<String, Object>>) result.get(JsonKey.RESPONSE);
@@ -468,7 +467,7 @@ public class PageManagementActorTest {
 
     subject.tell(reqObj, probe.getRef());
     ProjectCommonException exc =
-        probe.expectMsgClass(duration("10 second"), ProjectCommonException.class);
+        probe.expectMsgClass(Duration.ofSeconds(10), ProjectCommonException.class);
     assertTrue(exc.getCode().equals(ResponseCode.pageAlreadyExist.getErrorCode()));
   }
 
@@ -518,7 +517,7 @@ public class PageManagementActorTest {
         .thenReturn(cassandraGetRecordByProperty(JsonKey.APP_MAP));
 
     subject.tell(reqObj, probe.getRef());
-    Response res = probe.expectMsgClass(duration("10 second"), Response.class);
+    Response res = probe.expectMsgClass(Duration.ofSeconds(10), Response.class);
     assertTrue(null != res.get(JsonKey.RESPONSE));
   }
 
@@ -611,7 +610,7 @@ public class PageManagementActorTest {
         .thenReturn(getObjectMapperResponse());
 
     subject.tell(reqObj, probe.getRef());
-    probe.expectMsgClass(duration("10 second"), Response.class);
+    probe.expectMsgClass(Duration.ofSeconds(10), Response.class);
   }
 
   private static Response getRecordByPropMap(boolean isValid) {

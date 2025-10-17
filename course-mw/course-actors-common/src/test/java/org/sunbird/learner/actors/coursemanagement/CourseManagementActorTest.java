@@ -1,9 +1,9 @@
 package org.sunbird.learner.actors.coursemanagement;
 
-import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
-import akka.actor.Props;
-import akka.testkit.javadsl.TestKit;
+import org.apache.pekko.actor.ActorRef;
+import org.apache.pekko.actor.ActorSystem;
+import org.apache.pekko.actor.Props;
+import org.apache.pekko.testkit.javadsl.TestKit;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.HttpResponse;
@@ -27,11 +27,11 @@ import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
 import org.sunbird.keys.*;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static akka.testkit.JavaTestKit.duration;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 @RunWith(PowerMockRunner.class)
@@ -98,10 +98,10 @@ public class CourseManagementActorTest {
         toc.tell(request, probe.getRef());
         if (error) {
             ProjectCommonException res =
-                    probe.expectMsgClass(duration("10 second"), ProjectCommonException.class);
+                    probe.expectMsgClass(Duration.ofSeconds(10), ProjectCommonException.class);
             return res;
         }
-        Response response = probe.expectMsgClass(duration("10 second"), Response.class);
+        Response response = probe.expectMsgClass(Duration.ofSeconds(10), Response.class);
         return response;
     }
 

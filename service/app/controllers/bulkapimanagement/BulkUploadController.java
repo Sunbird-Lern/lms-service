@@ -1,6 +1,6 @@
 package controllers.bulkapimanagement;
 
-import akka.actor.ActorRef;
+import org.apache.pekko.actor.ActorRef;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.request.BaseRequestValidator;

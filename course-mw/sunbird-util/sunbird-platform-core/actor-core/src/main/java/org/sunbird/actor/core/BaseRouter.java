@@ -1,8 +1,8 @@
 package org.sunbird.actor.core;
 
-import akka.actor.ActorRef;
-import akka.actor.Props;
-import akka.routing.FromConfig;
+import org.apache.pekko.actor.ActorRef;
+import org.apache.pekko.actor.Props;
+import org.apache.pekko.routing.FromConfig;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.reflections.Reflections;

@@ -1,7 +1,7 @@
 package org.sunbird.enrolments
 
-import akka.actor.{ActorSystem, Props}
-import akka.testkit.TestKit
+import org.apache.pekko.actor.{ActorSystem, Props}
+import org.apache.pekko.testkit.TestKit
 import org.codehaus.jackson.map.ObjectMapper
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FlatSpec, Matchers}

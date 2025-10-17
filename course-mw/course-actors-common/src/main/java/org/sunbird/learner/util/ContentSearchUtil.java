@@ -1,6 +1,6 @@
 package org.sunbird.learner.util;
 
-import akka.dispatch.Mapper;
+import org.apache.pekko.dispatch.Mapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;

@@ -1,6 +1,6 @@
 package org.sunbird.actor.base;
 
-import akka.actor.UntypedAbstractActor;
+import org.apache.pekko.actor.UntypedAbstractActor;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.response.ResponseParams;

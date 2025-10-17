@@ -1,6 +1,6 @@
 package controllers.courseenrollment;
 
-import akka.actor.ActorRef;
+import org.apache.pekko.actor.ActorRef;
 import controllers.BaseController;
 import controllers.courseenrollment.validator.CourseEnrollmentRequestValidator;
 import org.sunbird.common.models.util.JsonKey;

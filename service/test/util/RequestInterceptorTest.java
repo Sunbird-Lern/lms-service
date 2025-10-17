@@ -24,9 +24,13 @@ import play.i18n.Lang;
 import play.inject.guice.GuiceApplicationBuilder;
 import play.libs.typedmap.TypedKey;
 import play.libs.typedmap.TypedMap;
+import play.libs.typedmap.TypedEntry;
 import play.mvc.Http;
 import play.mvc.Http.Flash;
 import play.test.Helpers;
+
+import java.util.List;
+import java.util.Optional;
 
 import java.io.File;
 import java.security.cert.X509Certificate;
@@ -132,6 +136,26 @@ public class RequestInterceptorTest {
           }
 
           @Override
+          public Http.Request addAttrs(List<TypedEntry<?>> entries) {
+            return null;
+          }
+
+          @Override
+          public Http.Request addAttrs(TypedEntry<?> e1) {
+            return null;
+          }
+
+          @Override
+          public Http.Request addAttrs(TypedEntry<?> e1, TypedEntry<?> e2) {
+            return null;
+          }
+
+          @Override
+          public Http.Request addAttrs(TypedEntry<?> e1, TypedEntry<?> e2, TypedEntry<?> e3) {
+            return null;
+          }
+
+          @Override
           public <A> Http.Request addAttr(TypedKey<A> typedKey, A a) {
             return null;
           }
@@ -207,6 +231,11 @@ public class RequestInterceptorTest {
           }
 
           @Override
+          public Optional<String> queryString(String key) {
+            return Optional.empty();
+          }
+
+          @Override
           public String getQueryString(String s) {
             return null;
           }
@@ -217,8 +246,13 @@ public class RequestInterceptorTest {
           }
 
           @Override
-          public Http.Cookie cookie(String s) {
-            return null;
+          public Optional<Http.Cookie> cookie(String s) {
+            return Optional.empty();
+          }
+
+          @Override
+          public Optional<Http.Cookie> getCookie(String name) {
+            return cookie(name);
           }
 
           @Override
@@ -232,6 +266,11 @@ public class RequestInterceptorTest {
               headers.addHeader("x-authenticated-client-id", "authorized");
             }
             return headers;
+          }
+
+          @Override
+          public Http.Headers headers() {
+            return getHeaders();
           }
 
           @Override

@@ -1,7 +1,7 @@
 /** */
 package controllers;
 
-import akka.actor.ActorRef;
+import org.apache.pekko.actor.ActorRef;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.models.util.JsonKey;

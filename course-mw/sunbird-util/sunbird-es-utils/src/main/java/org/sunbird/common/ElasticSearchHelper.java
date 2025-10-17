@@ -1,6 +1,6 @@
 package org.sunbird.common;
 
-import akka.util.Timeout;
+import org.apache.pekko.util.Timeout;
 import com.typesafe.config.Config;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;

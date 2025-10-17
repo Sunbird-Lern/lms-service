@@ -1,6 +1,6 @@
 package controllers.coursemanagement;
 
-import akka.actor.ActorRef;
+import org.apache.pekko.actor.ActorRef;
 import controllers.BaseController;
 import controllers.coursemanagement.validator.CourseCreateRequestValidator;
 import org.sunbird.common.models.util.ActorOperations;

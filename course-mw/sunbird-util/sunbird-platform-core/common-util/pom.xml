@@ -11,10 +11,10 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <scala.major.version>2.12</scala.major.version>
-        <scala.version>2.12.11</scala.version>
-        <typesafe.akka.version>2.5.22</typesafe.akka.version>
-        <jackson.version>2.13.5</jackson.version>
+        <scala.major.version>2.13</scala.major.version>
+        <scala.version>2.13.12</scala.version>
+        <pekko.version>1.0.3</pekko.version>
+        <jackson.version>2.14.3</jackson.version>
         <logstash-logback-encoder.version>7.3</logstash-logback-encoder.version>
         <powermock.version>2.0.9</powermock.version>
         <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
@@ -31,9 +31,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-actor_${scala.major.version}</artifactId>
-            <version>${typesafe.akka.version}</version>
+            <groupId>org.apache.pekko</groupId>
+            <artifactId>pekko-actor_${scala.major.version}</artifactId>
+            <version>${pekko.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.scala-lang</groupId>
@@ -42,24 +42,27 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-slf4j_${scala.major.version}</artifactId>
-            <version>${typesafe.akka.version}</version>
+            <groupId>org.apache.pekko</groupId>
+            <artifactId>pekko-slf4j_${scala.major.version}</artifactId>
+            <version>${pekko.version}</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.2.3</version>
+            <version>1.4.14</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
-            <version>1.2.3</version>
+            <version>1.4.14</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
             <version>${logstash-logback-encoder.version}</version>
+            <scope>provided</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
         <dependency>
@@ -118,13 +121,18 @@
             <artifactId>resteasy-jackson2-provider</artifactId>
             <version>3.1.3.Final</version>
             <exclusions>
+                <!-- Exclude all old Jackson versions (2.8.6) from resteasy -->
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-annotations</artifactId>
+                    <artifactId>*</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-databind</artifactId>
+                    <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.module</groupId>
+                    <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -233,7 +241,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>18.0</version>
+            <version>32.1.2-jre</version>
         </dependency>
         <dependency>
             <groupId>${CLOUD_STORAGE_GROUP_ID}</groupId>
@@ -275,6 +283,16 @@
                 <exclusion>
                     <groupId>org.yaml</groupId>
                     <artifactId>snakeyaml</artifactId>
+                </exclusion>
+                <!-- Exclude Scala 2.12 Jackson module (incompatible with Scala 2.13) -->
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.module</groupId>
+                    <artifactId>jackson-module-scala_2.12</artifactId>
+                </exclusion>
+                <!-- Exclude Jackson databind to use our version (2.14.3) -->
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

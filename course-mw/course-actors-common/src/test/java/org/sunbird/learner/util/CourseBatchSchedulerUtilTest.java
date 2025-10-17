@@ -1,6 +1,6 @@
 package org.sunbird.learner.util;
 
-import akka.dispatch.Futures;
+import org.apache.pekko.dispatch.Futures;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;

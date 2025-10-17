@@ -1,6 +1,6 @@
 package org.sunbird.learner.actors.bulkupload;
 
-import akka.actor.ActorRef;
+import org.apache.pekko.actor.ActorRef;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.exception.ProjectCommonException;

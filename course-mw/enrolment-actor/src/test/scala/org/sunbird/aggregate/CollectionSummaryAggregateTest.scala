@@ -1,7 +1,7 @@
 package org.sunbird.aggregate
 
-import akka.actor.{ActorSystem, Props}
-import akka.testkit.TestKit
+import org.apache.pekko.actor.{ActorSystem, Props}
+import org.apache.pekko.testkit.TestKit
 import com.datastax.driver.core.Cluster
 import com.google.gson.Gson
 import com.mashape.unirest.http.Unirest

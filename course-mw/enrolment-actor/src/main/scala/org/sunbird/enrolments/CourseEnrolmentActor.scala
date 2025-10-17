@@ -1,6 +1,6 @@
 package org.sunbird.enrolments
 
-import akka.actor.ActorRef
+import org.apache.pekko.actor.ActorRef
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang3.StringUtils
@@ -27,8 +27,8 @@ import java.time.{LocalDate, LocalDateTime, LocalTime}
 import java.util
 import java.util.Date
 import javax.inject.{Inject, Named}
-import scala.collection.JavaConverters._
-import scala.collection.convert.ImplicitConversions._
+import scala.jdk.CollectionConverters._
+
 
 class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") courseBatchNotificationActorRef: ActorRef
                                     )(implicit val  cacheUtil: RedisCacheUtil ) extends BaseEnrolmentActor {
@@ -125,7 +125,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     def getActiveEnrollments(userId: String, courseIdList: java.util.List[String], requestContext: RequestContext): java.util.List[java.util.Map[String, AnyRef]] = {
         val enrolments: java.util.List[java.util.Map[String, AnyRef]] = userCoursesDao.listEnrolments(requestContext, userId, courseIdList)
         if (CollectionUtils.isNotEmpty(enrolments)) {
-            val activeEnrolments = enrolments.filter(e => e.getOrDefault(JsonKey.ACTIVE, false.asInstanceOf[AnyRef]).asInstanceOf[Boolean])
+            val activeEnrolments = enrolments.asScala.filter(e => e.getOrDefault(JsonKey.ACTIVE, false.asInstanceOf[AnyRef]).asInstanceOf[Boolean])
             val sortedEnrolment = activeEnrolments.filter(ae => ae.get(JsonKey.COURSE_ENROLL_DATE)!=null).toList.sortBy(_.get(JsonKey.COURSE_ENROLL_DATE).asInstanceOf[Date])(Ordering[Date].reverse).toList
             val finalEnrolments = sortedEnrolment ++ activeEnrolments.filter(e => e.get(JsonKey.COURSE_ENROLL_DATE)==null).toList
             finalEnrolments.take(Integer.parseInt(ProjectUtil.getConfigValue("enrollment_list_size"))).toList.asJava
@@ -139,13 +139,14 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
         val requestBody: String =  prepareSearchRequest(courseIds, request)
         val searchResult:java.util.Map[String, AnyRef] = ContentSearchUtil.searchContentSync(request.getRequestContext, request.getContext.getOrDefault(JsonKey.URL_QUERY_STRING,"").asInstanceOf[String], requestBody, request.get(JsonKey.HEADER).asInstanceOf[java.util.Map[String, String]])
         val coursesList: java.util.List[java.util.Map[String, AnyRef]] = searchResult.getOrDefault(JsonKey.CONTENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
-        val coursesMap = {
+        val coursesMap: Map[String, java.util.Map[String, AnyRef]] = {
             if(CollectionUtils.isNotEmpty(coursesList)) {
-                coursesList.map(ev => ev.get(JsonKey.IDENTIFIER).asInstanceOf[String] -> ev).toMap
-            } else Map()
+                coursesList.asScala.map(ev => ev.get(JsonKey.IDENTIFIER).asInstanceOf[String] -> ev).toMap
+            } else Map[String, java.util.Map[String, AnyRef]]()
         }
-        activeEnrolments.filter(enrolment => coursesMap.containsKey(enrolment.get(JsonKey.COURSE_ID))).map(enrolment => {
-            val courseContent = coursesMap.get(enrolment.get(JsonKey.COURSE_ID))
+        activeEnrolments.asScala.filter(enrolment => coursesMap.contains(enrolment.get(JsonKey.COURSE_ID).asInstanceOf[String])).map(enrolment => {
+            val courseId = enrolment.get(JsonKey.COURSE_ID).asInstanceOf[String]
+            val courseContent = coursesMap(courseId)
             enrolment.put(JsonKey.COURSE_NAME, courseContent.get(JsonKey.NAME))
             enrolment.put(JsonKey.DESCRIPTION, courseContent.get(JsonKey.DESCRIPTION))
             enrolment.put(JsonKey.LEAF_NODE_COUNT, courseContent.get(JsonKey.LEAF_NODE_COUNT))
@@ -175,11 +176,11 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     }
 
     def addBatchDetails(enrolmentList: util.List[util.Map[String, AnyRef]], request: Request): util.List[util.Map[String, AnyRef]] = {
-        val batchIds:java.util.List[String] = enrolmentList.map(e => e.getOrDefault(JsonKey.BATCH_ID, "").asInstanceOf[String]).distinct.filter(id => StringUtils.isNotBlank(id)).toList.asJava
+        val batchIds:java.util.List[String] = enrolmentList.asScala.map(e => e.getOrDefault(JsonKey.BATCH_ID, "").asInstanceOf[String]).distinct.filter(id => StringUtils.isNotBlank(id)).toList.asJava
         val batchDetails = searchBatchDetails(batchIds, request)
         if(CollectionUtils.isNotEmpty(batchDetails)){
-            val batchMap = batchDetails.map(b => b.get(JsonKey.BATCH_ID).asInstanceOf[String] -> b).toMap
-            enrolmentList.map(enrolment => {
+            val batchMap = batchDetails.asScala.map(b => b.get(JsonKey.BATCH_ID).asInstanceOf[String] -> b).toMap
+            enrolmentList.asScala.map(enrolment => {
                 enrolment.put(JsonKey.BATCH, batchMap.getOrElse(enrolment.get(JsonKey.BATCH_ID).asInstanceOf[String], new java.util.HashMap[String, AnyRef]()))
                 //To Do : A temporary change to support updation of completed course remove in next release
                 //                if (enrolment.get("progress").asInstanceOf[Integer] < enrolment.get("leafNodesCount").asInstanceOf[Integer]) {
@@ -275,7 +276,7 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
     }
 
     def updateProgressData(enrolments: java.util.List[java.util.Map[String, AnyRef]], userId: String, courseIds: java.util.List[String], requestContext: RequestContext): util.List[java.util.Map[String, AnyRef]] = {
-        enrolments.map(enrolment => {
+        enrolments.asScala.map(enrolment => {
             val leafNodesCount: Int = enrolment.getOrDefault("leafNodesCount", 0.asInstanceOf[AnyRef]).asInstanceOf[Int]
             val progress: Int = enrolment.getOrDefault("progress", 0.asInstanceOf[AnyRef]).asInstanceOf[Int]
             enrolment.put("status", getCompletionStatus(progress, leafNodesCount).asInstanceOf[AnyRef])
@@ -321,14 +322,14 @@ class CourseEnrolmentActor @Inject()(@Named("course-batch-notification-actor") c
 
         val enrolments: java.util.List[java.util.Map[String, AnyRef]] = {
             if (CollectionUtils.isNotEmpty(activeEnrolments)) {
-              val courseIds: java.util.List[String] = activeEnrolments.map(e => e.getOrDefault(JsonKey.COURSE_ID, "").asInstanceOf[String]).distinct.filter(id => StringUtils.isNotBlank(id)).toList.asJava
+              val courseIds: java.util.List[String] = activeEnrolments.asScala.map(e => e.getOrDefault(JsonKey.COURSE_ID, "").asInstanceOf[String]).distinct.filter(id => StringUtils.isNotBlank(id)).toList.asJava
                 val enrolmentList: java.util.List[java.util.Map[String, AnyRef]] = addCourseDetails(activeEnrolments, courseIds, request)
                 val updatedEnrolmentList = updateProgressData(enrolmentList, userId, courseIds, request.getRequestContext)
                 addBatchDetails(updatedEnrolmentList, request)
             } else new java.util.ArrayList[java.util.Map[String, AnyRef]]()
         }
         val resp: Response = new Response()
-        val sortedEnrolment = enrolments.filter(ae => ae.get("lastContentAccessTime")!=null).toList.sortBy(_.get("lastContentAccessTime").asInstanceOf[Date])(Ordering[Date].reverse).toList
+        val sortedEnrolment = enrolments.asScala.filter(ae => ae.get("lastContentAccessTime")!=null).toList.sortBy(_.get("lastContentAccessTime").asInstanceOf[Date])(Ordering[Date].reverse).toList
         val finalEnrolments = sortedEnrolment ++ enrolments.asScala.filter(e => e.get("lastContentAccessTime")==null).toList
         resp.put(JsonKey.COURSES, finalEnrolments.asJava)
         resp

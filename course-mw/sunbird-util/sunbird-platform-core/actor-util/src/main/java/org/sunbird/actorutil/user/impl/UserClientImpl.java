@@ -1,6 +1,6 @@
 package org.sunbird.actorutil.user.impl;
 
-import akka.actor.ActorRef;
+import org.apache.pekko.actor.ActorRef;
 import org.apache.commons.collections.CollectionUtils;
 import org.sunbird.actorutil.InterServiceCommunication;
 import org.sunbird.actorutil.InterServiceCommunicationFactory;

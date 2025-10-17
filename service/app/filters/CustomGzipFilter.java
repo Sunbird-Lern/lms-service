@@ -1,6 +1,6 @@
 package filters;
 
-import akka.stream.Materializer;
+import org.apache.pekko.stream.Materializer;
 import org.apache.http.HttpHeaders;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.models.util.ProjectUtil;

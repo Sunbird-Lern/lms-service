@@ -31,7 +31,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.pekko.testkit.JavaTestKit.duration;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 @RunWith(PowerMockRunner.class)
@@ -98,10 +97,10 @@ public class CourseManagementActorTest {
         toc.tell(request, probe.getRef());
         if (error) {
             ProjectCommonException res =
-                    probe.expectMsgClass(duration("10 second"), ProjectCommonException.class);
+                    probe.expectMsgClass(java.time.Duration.ofSeconds(10), ProjectCommonException.class);
             return res;
         }
-        Response response = probe.expectMsgClass(duration("10 second"), Response.class);
+        Response response = probe.expectMsgClass(java.time.Duration.ofSeconds(10), Response.class);
         return response;
     }
 

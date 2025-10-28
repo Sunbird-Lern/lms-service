@@ -160,7 +160,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.playframework</groupId>
-			<artifactId>filters-helpers_${scala.major.version}</artifactId>
+			<artifactId>play-filters-helpers_${scala.major.version}</artifactId>
 			<version>${play2.version}</version>
 		</dependency>
 		<dependency>

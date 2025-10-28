@@ -6,14 +6,14 @@ import org.apache.commons.lang.StringUtils
 import org.sunbird.common.models.util.JsonKey
 import org.sunbird.common.models.util.JsonKey.{CLOUD_STORAGE_CNAME_URL, CLOUD_STORE_BASE_PATH, CONTENT_CLOUD_STORAGE_CONTAINER}
 import org.sunbird.common.models.util.ProjectUtil.getConfigValue
-import play.api.Logger.logger
+import play.api.Logging
 import play.api.http.HttpEntity.Strict
 import play.api.mvc.{Filter, RequestHeader, Result}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class ResponseFilter  @Inject()(implicit val mat: Materializer, ec: ExecutionContext) extends Filter {
+class ResponseFilter  @Inject()(implicit val mat: Materializer, ec: ExecutionContext) extends Filter with Logging {
 
   override def apply(nextFilter: (RequestHeader) => Future[Result])(rh: RequestHeader) =
     nextFilter(rh) flatMap { result =>

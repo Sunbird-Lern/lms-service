@@ -49,7 +49,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.pekko.testkit.JavaTestKit.duration;
 import static org.junit.Assert.assertTrue;
 import static org.powermock.api.mockito.PowerMockito.*;
 
@@ -150,7 +149,7 @@ public class SearchHandlerActorTest {
     reqObj.setContext(contextMap);
 
     subject.tell(reqObj, probe.getRef());
-    Response res = probe.expectMsgClass(duration("200 second"), Response.class);
+    Response res = probe.expectMsgClass(java.time.Duration.ofSeconds(200), Response.class);
     assertTrue(null != res.get(JsonKey.RESPONSE));
   }
 

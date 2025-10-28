@@ -1,6 +1,6 @@
 <configuration>
 
-    <conversionRule conversionWord="coloredLevel" converterClass="play.api.libs.logback.ColoredLevel" />
+    <conversionRule conversionWord="coloredLevel" converterClass="org.playframework.PlayLogback$ColoredLevel" />
 
     <!-- transaction-event-trigger START -->
     <timestamp key="timestamp" datePattern="yyyy-MM-dd"/>

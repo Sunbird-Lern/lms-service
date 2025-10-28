@@ -1,7 +1,7 @@
 package modules;
 
-import akka.routing.FromConfig;
-import akka.routing.RouterConfig;
+import org.apache.pekko.routing.FromConfig;
+import org.apache.pekko.routing.RouterConfig;
 import com.google.inject.AbstractModule;
 import play.libs.akka.AkkaGuiceSupport;
 import util.ACTOR_NAMES;

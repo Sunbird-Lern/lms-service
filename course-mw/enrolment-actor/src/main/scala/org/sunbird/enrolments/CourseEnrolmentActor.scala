@@ -1,6 +1,6 @@
 package org.sunbird.enrolments
 
-import akka.actor.ActorRef
+import org.apache.pekko.actor.ActorRef
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang3.StringUtils

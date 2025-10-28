@@ -28,15 +28,16 @@
 		</pluginRepository>
 	</pluginRepositories>
 	<properties>
-		<play2.version>2.7.2</play2.version>
+		<play2.version>3.0.5</play2.version>
 		<play2.plugin.version>1.0.0-rc5</play2.plugin.version>
-		<scala.major.version>2.12</scala.major.version>
-		<scala.version>2.12.11</scala.version>
-		<typesafe.akka.version>2.5.22</typesafe.akka.version>
+		<scala.major.version>2.13</scala.major.version>
+		<scala.version>2.13.12</scala.version>
+		<pekko.version>1.0.3</pekko.version>
 		<jackson.version>2.13.5</jackson.version>
 		<logstash-logback-encoder.version>7.3</logstash-logback-encoder.version>
 		<powermock.version>2.0.9</powermock.version>
 		<jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
+		<netty.version>4.1.112.Final</netty.version>
 	</properties>
 
 	<dependencies>
@@ -48,7 +49,7 @@
 			<version>${jackson.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.typesafe.play</groupId>
+			<groupId>org.playframework</groupId>
 			<artifactId>play-guice_${scala.major.version}</artifactId>
 			<version>${play2.version}</version>
 			<exclusions>
@@ -75,7 +76,7 @@
 		</dependency>
 		
 		<dependency>
-			<groupId>com.typesafe.play</groupId>
+			<groupId>org.playframework</groupId>
 			<artifactId>play-netty-server_${scala.major.version}</artifactId>
 			<version>${play2.version}</version>
 			<scope>runtime</scope>
@@ -89,7 +90,17 @@
 		<dependency>
 			<groupId>io.netty</groupId>
 			<artifactId>netty-codec-http</artifactId>
-			<version>4.1.44.Final</version>
+			<version>${netty.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-handler</artifactId>
+			<version>${netty.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-transport-native-epoll</artifactId>
+			<version>${netty.version}</version>
 		</dependency>
 <!--		<dependency>-->
 <!--			<groupId>io.netty</groupId>-->
@@ -129,7 +140,7 @@
 			<version>1.3.0</version>
 		</dependency>
 		<dependency>
-			<groupId>com.typesafe.play</groupId>
+			<groupId>org.playframework</groupId>
 			<artifactId>play_${scala.major.version}</artifactId>
 			<version>${play2.version}</version>
 			<exclusions>
@@ -148,17 +159,17 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>com.typesafe.play</groupId>
+			<groupId>org.playframework</groupId>
 			<artifactId>filters-helpers_${scala.major.version}</artifactId>
 			<version>${play2.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.typesafe.play</groupId>
-			<artifactId>play-akka-http-server_${scala.major.version}</artifactId>
+			<groupId>org.playframework</groupId>
+			<artifactId>play-pekko-http-server_${scala.major.version}</artifactId>
 			<version>${play2.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.typesafe.play</groupId>
+			<groupId>org.playframework</groupId>
 			<artifactId>play-specs2_${scala.major.version}</artifactId>
 			<version>${play2.version}</version>
 			<scope>test</scope>
@@ -178,7 +189,7 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>com.typesafe.play</groupId>
+			<groupId>org.playframework</groupId>
 			<artifactId>play-logback_${scala.major.version}</artifactId>
 			<version>${play2.version}</version>
 			<scope>runtime</scope>
@@ -190,9 +201,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.typesafe.akka</groupId>
-			<artifactId>akka-testkit_${scala.major.version}</artifactId>
-			<version>${typesafe.akka.version}</version>
+			<groupId>org.apache.pekko</groupId>
+			<artifactId>pekko-testkit_${scala.major.version}</artifactId>
+			<version>${pekko.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -237,6 +248,16 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.25</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>1.7.25</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>2.17.1</version>
 		</dependency>
 	</dependencies>
 	<build>

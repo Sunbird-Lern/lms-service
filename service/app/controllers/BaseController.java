@@ -1,9 +1,9 @@
 package controllers;
 
-import akka.actor.ActorRef;
-import akka.actor.ActorSelection;
-import akka.pattern.PatternsCS;
-import akka.util.Timeout;
+import org.apache.pekko.actor.ActorRef;
+import org.apache.pekko.actor.ActorSelection;
+import org.apache.pekko.pattern.PatternsCS;
+import org.apache.pekko.util.Timeout;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

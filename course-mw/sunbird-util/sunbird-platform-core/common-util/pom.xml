@@ -19,8 +19,8 @@
         <powermock.version>2.0.9</powermock.version>
         <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
         <CLOUD_STORAGE_GROUP_ID>org.sunbird</CLOUD_STORAGE_GROUP_ID>
-        <CLOUD_STORE_ARTIFACT_ID>cloud-store-sdk_2.12</CLOUD_STORE_ARTIFACT_ID>
-        <CLOUD_STORE_VERSION>1.4.7</CLOUD_STORE_VERSION>
+        <CLOUD_STORE_ARTIFACT_ID>cloud-store-sdk_2.13</CLOUD_STORE_ARTIFACT_ID>
+        <CLOUD_STORE_VERSION>1.4.8</CLOUD_STORE_VERSION>
     </properties>
 
     <dependencies>

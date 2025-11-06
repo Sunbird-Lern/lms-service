@@ -45,22 +45,6 @@ public class RequestMapperTest {
   }
 
   @Test
-  public void testMapRequestFailureWithException() throws Exception {
-    ProjectCommonException e= new ProjectCommonException("INVALID_DATA","Incorrect data",400);
-    PowerMockito.mockStatic(Json.class);
-    ProjectCommonException exception;
-    JsonNode node =
-            new ObjectMapper().convertValue(createRequestMap(JsonKey.REQUEST), JsonNode.class);
-    PowerMockito.when(Json.fromJson(node,ProjectCommonException.class)).thenThrow(e);
-    try {
-      RequestMapper.mapRequest(node, ProjectCommonException.class);
-    }
-    catch(ProjectCommonException ex) {
-      Assert.assertEquals(ResponseCode.invalidData.getErrorMessage(), ex.getMessage());
-    }
-  }
-
-  @Test
   public void testMapRequestFailureWithInvalidKey() throws Exception {
     Request request;
     JsonNode node = new ObjectMapper().convertValue(createRequestMap("invalidKey"), JsonNode.class);

@@ -362,7 +362,15 @@
                     <version>3.0.0</version>
                     <configuration>
                         <argLine>
-                            --illegal-access=warn
+                            --add-opens java.base/java.util=ALL-UNNAMED
+                            --add-opens java.base/java.lang=ALL-UNNAMED
+                            --add-opens java.base/java.lang.reflect=ALL-UNNAMED
+                            --add-opens java.base/java.text=ALL-UNNAMED
+                            --add-opens java.base/java.util.concurrent=ALL-UNNAMED
+                            --add-opens java.base/sun.nio.ch=ALL-UNNAMED
+                            --add-opens java.base/java.nio.charset=ALL-UNNAMED
+                            --add-opens java.base/java.io=ALL-UNNAMED
+                            --add-opens java.base/sun.net.www.protocol.jar=ALL-UNNAMED
                         </argLine>
                     </configuration>
                 </plugin>

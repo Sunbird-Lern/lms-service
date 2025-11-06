@@ -137,6 +137,34 @@ public class RequestInterceptorTest {
           }
 
           @Override
+          public Http.Request addAttrs(List<play.libs.typedmap.TypedEntry<?>> entries) {
+            return null;
+          }
+
+          @Override
+          public Http.Request addAttrs(play.libs.typedmap.TypedEntry<?> e1) {
+            return null;
+          }
+
+          @Override
+          public Http.Request addAttrs(play.libs.typedmap.TypedEntry<?> e1, 
+                                       play.libs.typedmap.TypedEntry<?> e2) {
+            return null;
+          }
+
+          @Override
+          public Http.Request addAttrs(play.libs.typedmap.TypedEntry<?> e1, 
+                                       play.libs.typedmap.TypedEntry<?> e2, 
+                                       play.libs.typedmap.TypedEntry<?> e3) {
+            return null;
+          }
+
+          // Varargs version is a default method in the interface
+          public Http.Request addAttrs(play.libs.typedmap.TypedEntry<?>... entries) {
+            return null;
+          }
+
+          @Override
           public Http.Request removeAttr(TypedKey<?> typedKey) {
             return null;
           }
@@ -207,6 +235,12 @@ public class RequestInterceptorTest {
           }
 
           @Override
+          public Optional<String> queryString(String s) {
+            String value = getQueryString(s);
+            return value != null ? Optional.of(value) : Optional.empty();
+          }
+
+          @Override
           public String getQueryString(String s) {
             return null;
           }
@@ -217,8 +251,13 @@ public class RequestInterceptorTest {
           }
 
           @Override
-          public Http.Cookie cookie(String s) {
-            return null;
+          public Optional<Http.Cookie> cookie(String s) {
+            return Optional.empty();
+          }
+
+          @Override
+          public Optional<Http.Cookie> getCookie(String s) {
+            return cookie(s);
           }
 
           @Override
@@ -232,6 +271,11 @@ public class RequestInterceptorTest {
               headers.addHeader("x-authenticated-client-id", "authorized");
             }
             return headers;
+          }
+
+          @Override
+          public Http.Headers headers() {
+            return getHeaders();
           }
 
           @Override

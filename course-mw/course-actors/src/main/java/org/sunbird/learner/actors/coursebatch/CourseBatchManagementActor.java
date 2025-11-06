@@ -1,6 +1,6 @@
 package org.sunbird.learner.actors.coursebatch;
 
-import akka.actor.ActorRef;
+import org.apache.pekko.actor.ActorRef;
 import com.typesafe.config.ConfigFactory;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;

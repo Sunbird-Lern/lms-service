@@ -1,9 +1,9 @@
 package controllers;
 
-import akka.actor.ActorRef;
-import akka.actor.ActorSelection;
-import akka.pattern.PatternsCS;
-import akka.util.Timeout;
+import org.apache.pekko.actor.ActorRef;
+import org.apache.pekko.actor.ActorSelection;
+import org.apache.pekko.pattern.PatternsCS;
+import org.apache.pekko.util.Timeout;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -98,11 +98,16 @@ public class BaseController extends Controller {
    */
   protected org.sunbird.common.request.Request createAndInitRequest(
       String operation, JsonNode requestBodyJson, Http.Request httpRequest) {
-    org.sunbird.common.request.Request request =
-        (org.sunbird.common.request.Request)
-            mapper.RequestMapper.mapRequest(
-                requestBodyJson, org.sunbird.common.request.Request.class);
-    return initRequest(request, operation, httpRequest);
+    try {
+      org.sunbird.common.request.Request request =
+          (org.sunbird.common.request.Request)
+              mapper.RequestMapper.mapRequest(
+                  requestBodyJson, org.sunbird.common.request.Request.class);
+      return initRequest(request, operation, httpRequest);
+    } catch (Exception e) {
+      ProjectCommonException.throwServerErrorException(ResponseCode.SERVER_ERROR);
+      throw new RuntimeException(e); // This line should never be reached
+    }
   }
 
   /**

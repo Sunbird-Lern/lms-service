@@ -1,6 +1,6 @@
 package org.sunbird.common;
 
-import akka.dispatch.Futures;
+import org.apache.pekko.dispatch.Futures;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -283,7 +283,7 @@ public class ElasticSearchRestHighImpl implements ElasticSearchService {
     logger.debug(requestContext, "ElasticSearchRestHighImpl:search: method started at ==" + startTime);
     SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
     SearchRequest searchRequest = new SearchRequest(index);
-    searchRequest.types(_DOC);
+    // Note: types() is deprecated in Elasticsearch 7.x, document type is now always "_doc"
 
     // check mode and set constraints
     Map<String, Float> constraintsMap = ElasticSearchHelper.getConstraints(searchDTO);

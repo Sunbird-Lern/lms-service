@@ -149,7 +149,8 @@ public interface ElasticSearchService {
       ProjectLogger.log("ElasticSearchTcpImpl:searchMetricsData:" + " ES URL from Properties file");
       baseUrl = PropertiesCache.getInstance().getProperty(JsonKey.ES_URL);
     }
-    String requestURL = baseUrl + "/" + index + "/" + "_doc" + "/" + "_search";
+    // Fixed for Elasticsearch 7.x compatibility - removed deprecated _doc type
+    String requestURL = baseUrl + "/" + index + "/" + "_search";
     Map<String, String> headers = new HashMap<>();
     headers.put("Content-Type", "application/json");
     Map<String, Object> responseData = new HashMap<>();

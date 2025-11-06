@@ -14,6 +14,7 @@ public class LearnerStateRequestValidator extends BaseRequestValidator {
    * @param request Representing the request object.
    */
   public void validateGetContentState(Request request) {
+    
   	validateListParam(request.getRequest(), JsonKey.COURSE_IDS, JsonKey.CONTENT_IDS);
   	if (request.getRequest().containsKey(JsonKey.COURSE_IDS)) {
         List courseIds = (List) request.getRequest().get(JsonKey.COURSE_IDS);

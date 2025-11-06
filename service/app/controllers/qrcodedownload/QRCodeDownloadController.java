@@ -1,6 +1,6 @@
 package controllers.qrcodedownload;
 
-import akka.actor.ActorRef;
+import org.apache.pekko.actor.ActorRef;
 import controllers.BaseController;
 import controllers.qrcodedownload.validator.QRCodeDownloadRequestValidator;
 import org.sunbird.common.models.util.ActorOperations;

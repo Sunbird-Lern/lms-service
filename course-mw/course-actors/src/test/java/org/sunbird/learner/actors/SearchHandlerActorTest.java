@@ -1,10 +1,10 @@
 package org.sunbird.learner.actors;
 
-import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
-import akka.actor.Props;
-import akka.dispatch.Futures;
-import akka.testkit.javadsl.TestKit;
+import org.apache.pekko.actor.ActorRef;
+import org.apache.pekko.actor.ActorSystem;
+import org.apache.pekko.actor.Props;
+import org.apache.pekko.dispatch.Futures;
+import org.apache.pekko.testkit.javadsl.TestKit;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -33,7 +33,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static akka.testkit.JavaTestKit.duration;
 import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
@@ -123,7 +122,7 @@ public class SearchHandlerActorTest {
     reqObj.setContext(contextMap);
 
     subject.tell(reqObj, probe.getRef());
-    Response res = probe.expectMsgClass(duration("200 second"), Response.class);
+    Response res = probe.expectMsgClass(java.time.Duration.ofSeconds(200), Response.class);
     Assert.assertNotNull(res.get(JsonKey.RESPONSE));
   }
 

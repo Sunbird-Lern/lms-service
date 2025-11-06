@@ -1,6 +1,6 @@
 package controllers.certificate;
 
-import akka.actor.ActorRef;
+import org.apache.pekko.actor.ActorRef;
 import controllers.BaseController;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.request.Request;

@@ -11,16 +11,16 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <scala.major.version>2.12</scala.major.version>
-        <scala.version>2.12.11</scala.version>
-        <typesafe.akka.version>2.5.22</typesafe.akka.version>
+        <scala.major.version>2.13</scala.major.version>
+        <scala.version>2.13.12</scala.version>
+        <pekko.version>1.0.3</pekko.version>
         <jackson.version>2.13.5</jackson.version>
         <logstash-logback-encoder.version>7.3</logstash-logback-encoder.version>
         <powermock.version>2.0.9</powermock.version>
         <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
         <CLOUD_STORAGE_GROUP_ID>org.sunbird</CLOUD_STORAGE_GROUP_ID>
-        <CLOUD_STORE_ARTIFACT_ID>cloud-store-sdk_2.12</CLOUD_STORE_ARTIFACT_ID>
-        <CLOUD_STORE_VERSION>1.4.7</CLOUD_STORE_VERSION>
+        <CLOUD_STORE_ARTIFACT_ID>cloud-store-sdk_2.13</CLOUD_STORE_ARTIFACT_ID>
+        <CLOUD_STORE_VERSION>1.4.8</CLOUD_STORE_VERSION>
     </properties>
 
     <dependencies>
@@ -31,9 +31,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-actor_${scala.major.version}</artifactId>
-            <version>${typesafe.akka.version}</version>
+            <groupId>org.apache.pekko</groupId>
+            <artifactId>pekko-actor_${scala.major.version}</artifactId>
+            <version>${pekko.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.scala-lang</groupId>
@@ -42,9 +42,9 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-slf4j_${scala.major.version}</artifactId>
-            <version>${typesafe.akka.version}</version>
+            <groupId>org.apache.pekko</groupId>
+            <artifactId>pekko-slf4j_${scala.major.version}</artifactId>
+            <version>${pekko.version}</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>

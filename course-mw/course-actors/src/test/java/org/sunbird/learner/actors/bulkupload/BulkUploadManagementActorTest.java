@@ -1,13 +1,12 @@
 package org.sunbird.learner.actors.bulkupload;
 
-import static akka.testkit.JavaTestKit.duration;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 
-import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
-import akka.actor.Props;
-import akka.testkit.javadsl.TestKit;
+import org.apache.pekko.actor.ActorRef;
+import org.apache.pekko.actor.ActorSystem;
+import org.apache.pekko.actor.Props;
+import org.apache.pekko.testkit.javadsl.TestKit;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -77,7 +76,7 @@ public class BulkUploadManagementActorTest {
     reqObj.setOperation(ActorOperations.GET_BULK_OP_STATUS.getValue());
     reqObj.getRequest().put(JsonKey.PROCESS_ID, PROCESS_ID);
     subject.tell(reqObj, probe.getRef());
-    Response res = probe.expectMsgClass(duration("10 second"), Response.class);
+    Response res = probe.expectMsgClass(java.time.Duration.ofSeconds(10), Response.class);
     List<Map<String, Object>> list = (List<Map<String, Object>>) res.get(JsonKey.RESPONSE);
     if (!list.isEmpty()) {
       Map<String, Object> map = list.get(0);
@@ -113,7 +112,7 @@ public class BulkUploadManagementActorTest {
     reqObj.getRequest().put(JsonKey.DATA, innerMap);
 
     subject.tell(reqObj, probe.getRef());
-    Response res = probe.expectMsgClass(duration("300 second"), Response.class);
+    Response res = probe.expectMsgClass(java.time.Duration.ofSeconds(300), Response.class);
     String processId = (String) res.get(JsonKey.PROCESS_ID);
     Assert.assertTrue(null != processId);
   }
@@ -146,7 +145,7 @@ public class BulkUploadManagementActorTest {
 
     subject.tell(reqObj, probe.getRef());
     ProjectCommonException res =
-        probe.expectMsgClass(duration("10 second"), ProjectCommonException.class);
+        probe.expectMsgClass(java.time.Duration.ofSeconds(10), ProjectCommonException.class);
     Assert.assertTrue(null != res);
   }
 

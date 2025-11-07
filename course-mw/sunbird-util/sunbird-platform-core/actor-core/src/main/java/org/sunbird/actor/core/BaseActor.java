@@ -22,8 +22,8 @@ public abstract class BaseActor extends UntypedAbstractActor {
 
   public abstract void onReceive(Request request) throws Throwable;
 
-  public static final int AKKA_WAIT_TIME = 30;
-  protected static Timeout timeout = new Timeout(AKKA_WAIT_TIME, TimeUnit.SECONDS);
+  public static final int PEKKO_WAIT_TIME = 30;
+  protected static Timeout timeout = new Timeout(PEKKO_WAIT_TIME, TimeUnit.SECONDS);
   public LoggerUtil logger = new LoggerUtil(this.getClass());
 
   @Override

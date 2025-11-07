@@ -26,7 +26,7 @@ public abstract class BaseRouter extends BaseActor {
   public void onReceive(Request request) throws Throwable {
     String senderPath = sender().path().toString();
     if (RouterMode.LOCAL.name().equalsIgnoreCase(getRouterMode())
-        && !StringUtils.startsWith(senderPath, "akka://")) {
+        && !StringUtils.startsWith(senderPath, "pekko://")) {
       throw new RouterException(
           "Invalid invocation of the router. Processing not possible from: " + senderPath);
     }

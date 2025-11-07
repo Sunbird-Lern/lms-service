@@ -54,8 +54,8 @@ public class BaseController extends Controller {
   
   private static ObjectMapper objectMapper = new ObjectMapper();
   private static final String version = "v1";
-  public static final int AKKA_WAIT_TIME = 30;
-  protected Timeout timeout = new Timeout(AKKA_WAIT_TIME, TimeUnit.SECONDS);
+  public static final int PEKKO_WAIT_TIME = 30;
+  protected Timeout timeout = new Timeout(PEKKO_WAIT_TIME, TimeUnit.SECONDS);
   private static final String debugEnabled = "false";
   public static final LoggerUtil logger = new LoggerUtil(BaseController.class);
 
@@ -519,7 +519,7 @@ public class BaseController extends Controller {
   }
 
   /**
-   * This method will make a call to Akka actor and return promise.
+   * This method will make a call to Pekko actor and return promise.
    *
    * @param actorRef ActorSelection
    * @param request Request

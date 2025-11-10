@@ -12,10 +12,51 @@
       <maven.compiler.target>11</maven.compiler.target>
       <play2.plugin.version>1.0.0-rc5</play2.plugin.version>
       <netty.version>4.1.112.Final</netty.version>
+      <asm.version>7.1</asm.version>
+      <guice.version>4.2.2</guice.version>
+      <apache.httpcomponents.version>4.5.14</apache.httpcomponents.version>
+      <apache.httpcore.version>4.4.16</apache.httpcore.version>
   </properties>
 
   <dependencyManagement>
     <dependencies>
+      <!-- ASM version management to prevent conflicts -->
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm</artifactId>
+        <version>${asm.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm-commons</artifactId>
+        <version>${asm.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm-analysis</artifactId>
+        <version>${asm.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm-tree</artifactId>
+        <version>${asm.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm-util</artifactId>
+        <version>${asm.version}</version>
+      </dependency>
+      <!-- Guice version management -->
+      <dependency>
+        <groupId>com.google.inject</groupId>
+        <artifactId>guice</artifactId>
+        <version>${guice.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.inject.extensions</groupId>
+        <artifactId>guice-assistedinject</artifactId>
+        <version>${guice.version}</version>
+      </dependency>
       <!-- Netty dependency management - enforce version 4.1.112.Final across all modules -->
       <dependency>
         <groupId>io.netty</groupId>
@@ -76,6 +117,32 @@
         <groupId>io.netty</groupId>
         <artifactId>netty-codec-http</artifactId>
         <version>${netty.version}</version>
+      </dependency>
+      <!-- Apache HTTP Components version management to fix BootstrapMethodError -->
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpclient</artifactId>
+        <version>${apache.httpcomponents.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpasyncclient</artifactId>
+        <version>4.1.5</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpcore</artifactId>
+        <version>${apache.httpcore.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpcore-nio</artifactId>
+        <version>${apache.httpcore.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpmime</artifactId>
+        <version>${apache.httpcomponents.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

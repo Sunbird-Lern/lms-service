@@ -48,7 +48,7 @@ public class CloudStorageUtil {
           String container,
           String objectKey, String cloudType) {
     return storageService.getSignedURLV2(container, objectKey, Some.apply(getTimeoutInSeconds()),
-            Some.apply("r"), Some.apply("application/pdf"));
+            Some.apply("r"), Some.apply("application/pdf"), Option.empty());
   }
 
 

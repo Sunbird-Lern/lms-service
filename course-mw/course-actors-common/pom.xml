@@ -18,6 +18,20 @@
 			<groupId>net.logstash.logback</groupId>
 			<artifactId>logstash-logback-encoder</artifactId>
 			<version>${logstash-logback-encoder.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-databind</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-annotations</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
@@ -46,14 +60,14 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>com.typesafe.akka</groupId>
-			<artifactId>akka-actor_${scala.major.version}</artifactId>
-			<version>${typesafe.akka.version}</version>
+			<groupId>org.apache.pekko</groupId>
+			<artifactId>pekko-actor_${scala.major.version}</artifactId>
+			<version>${pekko.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.typesafe.akka</groupId>
-			<artifactId>akka-slf4j_${scala.major.version}</artifactId>
-			<version>${typesafe.akka.version}</version>
+			<groupId>org.apache.pekko</groupId>
+			<artifactId>pekko-slf4j_${scala.major.version}</artifactId>
+			<version>${pekko.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.sunbird</groupId>
@@ -82,9 +96,9 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>com.typesafe.akka</groupId>
-			<artifactId>akka-testkit_${scala.major.version}</artifactId>
-			<version>${typesafe.akka.version}</version>
+			<groupId>org.apache.pekko</groupId>
+			<artifactId>pekko-testkit_${scala.major.version}</artifactId>
+			<version>${pekko.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

@@ -110,7 +110,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             val batchIds = batchAssessmentList.keySet.toList.asJava
             val batches:Map[String, List[java.util.Map[String, AnyRef]]] = getBatches(requestContext ,new java.util.ArrayList[String](batchIds), null).toList.groupBy(batch => batch.get(JsonKey.BATCH_ID).asInstanceOf[String])
             val invalidBatchIds = batchAssessmentList.keySet.diff(batches.keySet).toList.asJava
-            val validBatches:Map[String, List[java.util.Map[String, AnyRef]]]  = batches.filterKeys(key => batchIds.contains(key))
+            val validBatches:Map[String, List[java.util.Map[String, AnyRef]]]  = batches.filter { case (key, _) => batchIds.contains(key) }
             val completedBatchIds = validBatches.filter(batch => 1 != batch._2.head.get(JsonKey.STATUS).asInstanceOf[Integer]).keys.toList.asJava
             val invalidAssessments = new java.util.ArrayList[java.util.Map[String, AnyRef]]()
             val validUserIds = List(requestedBy, requestedFor).filter(p => StringUtils.isNotBlank(p))
@@ -155,7 +155,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             val batchIds = batchContentList.keySet.toList.asJava
             val batches:Map[String, List[java.util.Map[String, AnyRef]]] = getBatches(requestContext ,new java.util.ArrayList[String](batchIds), null).toList.groupBy(batch => batch.get(JsonKey.BATCH_ID).asInstanceOf[String])
             val invalidBatchIds = batchContentList.keySet.diff(batches.keySet).toList.asJava
-            val validBatches:Map[String, List[java.util.Map[String, AnyRef]]]  = batches.filterKeys(key => batchIds.contains(key))
+            val validBatches:Map[String, List[java.util.Map[String, AnyRef]]]  = batches.filter { case (key, _) => batchIds.contains(key) }
             val completedBatchIds = validBatches.filter(batch => 1 != batch._2.head.get(JsonKey.STATUS).asInstanceOf[Integer]).keys.toList.asJava
             val responseMessage = new java.util.HashMap[String, AnyRef]()
             val invalidContents = new java.util.ArrayList[java.util.Map[String, AnyRef]]()

@@ -58,6 +58,7 @@ public class CloudStorageUtilTest {
               Mockito.anyString(),
               Mockito.any(Option.class),
               Mockito.any(Option.class),
+              Mockito.any(Option.class),
               Mockito.any(Option.class)))
               .thenReturn(PUT_SIGNED_URL);
       when(service.getSignedURLV2(
@@ -65,11 +66,13 @@ public class CloudStorageUtilTest {
               Mockito.anyString(),
               Mockito.any(Option.class),
               Mockito.any(Option.class),
+              Mockito.any(Option.class),
               Mockito.any(Option.class)))
               .thenReturn(SIGNED_URL);
       when(service.getSignedURLV2(
               Mockito.eq("gcpcontainer"),
               Mockito.anyString(),
+              Mockito.any(Option.class),
               Mockito.any(Option.class),
               Mockito.any(Option.class),
               Mockito.any(Option.class)))

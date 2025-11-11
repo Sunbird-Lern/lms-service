@@ -1,7 +1,7 @@
 /** */
 package controllers.coursemanagement;
 
-import akka.actor.ActorRef;
+import org.apache.pekko.actor.ActorRef;
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.BaseController;
 import controllers.coursemanagement.validator.CourseBatchRequestValidator;

@@ -44,6 +44,20 @@
          <groupId>net.logstash.logback</groupId>
          <artifactId>logstash-logback-encoder</artifactId>
          <version>${logstash-logback-encoder.version}</version>
+         <exclusions>
+            <exclusion>
+               <groupId>com.fasterxml.jackson.core</groupId>
+               <artifactId>jackson-core</artifactId>
+            </exclusion>
+            <exclusion>
+               <groupId>com.fasterxml.jackson.core</groupId>
+               <artifactId>jackson-databind</artifactId>
+            </exclusion>
+            <exclusion>
+               <groupId>com.fasterxml.jackson.core</groupId>
+               <artifactId>jackson-annotations</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>org.sunbird</groupId>
@@ -149,6 +163,10 @@
                               <exclude>META-INF/*.SF</exclude>
                               <exclude>META-INF/*.DSA</exclude>
                               <exclude>META-INF/*.RSA</exclude>
+                              <!-- Exclude SLF4J bindings to prevent conflicts -->
+                              <exclude>org/slf4j/impl/StaticLoggerBinder.class</exclude>
+                              <exclude>org/slf4j/impl/StaticMarkerBinder.class</exclude>
+                              <exclude>org/slf4j/impl/StaticMDCBinder.class</exclude>
                            </excludes>
                         </filter>
                      </filters>

@@ -1,6 +1,6 @@
 package controllers.collectionsummaryaggregate;
 
-import akka.actor.ActorRef;
+import org.apache.pekko.actor.ActorRef;
 import controllers.BaseController;
 import controllers.collectionsummaryaggregate.validator.Validator;
 import org.sunbird.common.models.util.ActorOperations;

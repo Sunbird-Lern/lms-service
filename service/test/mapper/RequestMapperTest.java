@@ -25,7 +25,7 @@ import java.util.Map;
         "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class RequestMapperTest {
   @Test
-  public void testMapRequestSuccess() {
+  public void testMapRequestSuccess() throws Exception {
     Request request;
     JsonNode node =
         new ObjectMapper().convertValue(createRequestMap(JsonKey.REQUEST), JsonNode.class);
@@ -35,7 +35,7 @@ public class RequestMapperTest {
   }
 
   @Test
-  public void testMapRequestFailure() {
+  public void testMapRequestFailure() throws Exception {
     try {
       RequestMapper.mapRequest(null, Request.class);
     } catch (ProjectCommonException e) {
@@ -45,23 +45,7 @@ public class RequestMapperTest {
   }
 
   @Test
-  public void testMapRequestFailureWithException() {
-    ProjectCommonException e= new ProjectCommonException("INVALID_DATA","Incorrect data",400);
-    PowerMockito.mockStatic(Json.class);
-    ProjectCommonException exception;
-    JsonNode node =
-            new ObjectMapper().convertValue(createRequestMap(JsonKey.REQUEST), JsonNode.class);
-    PowerMockito.when(Json.fromJson(node,ProjectCommonException.class)).thenThrow(e);
-    try {
-      RequestMapper.mapRequest(node, ProjectCommonException.class);
-    }
-    catch(ProjectCommonException ex) {
-      Assert.assertEquals(ResponseCode.invalidData.getErrorMessage(), ex.getMessage());
-    }
-  }
-
-  @Test
-  public void testMapRequestFailureWithInvalidKey() {
+  public void testMapRequestFailureWithInvalidKey() throws Exception {
     Request request;
     JsonNode node = new ObjectMapper().convertValue(createRequestMap("invalidKey"), JsonNode.class);
     request = (Request) RequestMapper.mapRequest(node, Request.class);

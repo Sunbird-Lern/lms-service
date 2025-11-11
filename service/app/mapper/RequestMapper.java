@@ -82,7 +82,7 @@ public class RequestMapper {
 
   /**
    * Helper method to convert Scala Map to Java Map recursively, including List conversions
-   * @param scalaMap The Scala Map to convert
+   * @param obj The Scala Map to convert
    * @return Java Map
    */
   private static Object convertToJavaMap(Object obj) {
@@ -106,6 +106,9 @@ public class RequestMapper {
         
         return javaMap;
       } catch (Exception e) {
+        logger.debug(null, "Failed to convert Scala Map to Java Map: " + e.getMessage() + 
+                     ". Object type: " + obj.getClass().getName() + 
+                     ". Returning original object. Exception: " + e.toString());
         return obj;
       }
     } else {
@@ -137,6 +140,9 @@ public class RequestMapper {
         
         return javaList;
       } catch (Exception e) {
+        logger.debug(null, "Failed to convert Scala Seq to Java List: " + e.getMessage() + 
+                     ". Object type: " + obj.getClass().getName() + 
+                     ". Returning original object. Exception: " + e.toString());
         return obj;
       }
     }
@@ -196,8 +202,8 @@ public class RequestMapper {
           if (value instanceof Iterable) {
             for (Object item : (Iterable<?>) value) {
               // Recursively convert nested structures
-              if (item instanceof Map && !(item instanceof java.util.Map)) {
-                item = convertToJavaMap((Map<String, Object>) item);
+              if (item instanceof scala.collection.Map && !(item instanceof java.util.Map)) {
+                item = convertToJavaMap(item);
               } else {
                 item = convertScalaCollectionToJava(item, fieldName + "[element]");
               }

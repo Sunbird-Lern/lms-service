@@ -283,7 +283,9 @@ public class SearchHandlerActor extends BaseActor {
           if (sourceMap.containsKey(key)) {
             Object value = sourceMap.get(key);
             if (value instanceof Map && !(value instanceof java.util.Map)) {
-              value = convertToJavaMap((Map<String, Object>) value);
+              @SuppressWarnings("unchecked")
+              Map<String, Object> nestedMap = (Map<String, Object>) value;
+              value = convertToJavaMap(nestedMap);
             }
             targetMap.put(key, value);
           }
@@ -300,7 +302,9 @@ public class SearchHandlerActor extends BaseActor {
             try {
               Object value = sourceMap.get(key);
               if (value instanceof Map && !(value instanceof java.util.Map)) {
-                value = convertToJavaMap((Map<String, Object>) value);
+                @SuppressWarnings("unchecked")
+                Map<String, Object> nestedMap = (Map<String, Object>) value;
+                value = convertToJavaMap(nestedMap);
               }
               targetMap.put(key, value);
             } catch (Exception e) {

@@ -106,8 +106,8 @@ public class BaseController extends Controller {
       return initRequest(request, operation, httpRequest);
     } catch (Exception e) {
       ProjectCommonException.throwServerErrorException(ResponseCode.SERVER_ERROR);
-      throw new RuntimeException(e); // This line should never be reached
     }
+    return null;
   }
 
   /**

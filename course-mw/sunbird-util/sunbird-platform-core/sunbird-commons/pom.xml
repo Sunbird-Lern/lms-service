@@ -24,6 +24,16 @@
             <groupId>org.sunbird</groupId>
             <artifactId>common-util</artifactId>
             <version>0.0.1-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpcore</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpclient</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
       <dependency>
           <groupId>org.sunbird</groupId>
@@ -62,6 +72,8 @@
                             <artifactSet>
                                 <excludes>
                                     <exclude>com.google.guava:guava</exclude>
+                                    <exclude>org.apache.httpcomponents:httpcore</exclude>
+                                    <exclude>org.apache.httpcomponents:httpclient</exclude>
                                 </excludes>
                             </artifactSet>
                             <transformers>

@@ -9,13 +9,7 @@ public class EsClientFactoryTest {
 
   @Test
   public void testGetRestClient() {
-    ElasticSearchService service = EsClientFactory.getInstance("rest");
+    ElasticSearchService service = EsClientFactory.getInstance();
     Assert.assertTrue(service instanceof ElasticSearchRestHighImpl);
-  }
-
-  @Test
-  public void testInstanceNull() {
-    ElasticSearchService service = EsClientFactory.getInstance("test");
-    Assert.assertNull(service);
   }
 }

@@ -1,9 +1,9 @@
 package org.sunbird.learner.actors.coursemanagement;
 
-import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
-import akka.actor.Props;
-import akka.testkit.javadsl.TestKit;
+import org.apache.pekko.actor.ActorRef;
+import org.apache.pekko.actor.ActorSystem;
+import org.apache.pekko.actor.Props;
+import org.apache.pekko.testkit.javadsl.TestKit;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,7 +38,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static akka.testkit.JavaTestKit.duration;
 import static org.powermock.api.mockito.PowerMockito.doCallRealMethod;
 import static org.powermock.api.mockito.PowerMockito.doNothing;
 import static org.powermock.api.mockito.PowerMockito.mock;
@@ -104,7 +103,7 @@ public class CourseBatchManagementActorTest {
     subject.tell(reqObj, probe.getRef());
 
     ProjectCommonException exception =
-        probe.expectMsgClass(duration("10 second"), ProjectCommonException.class);
+        probe.expectMsgClass(java.time.Duration.ofSeconds(10), ProjectCommonException.class);
     return exception;
   }
 
@@ -149,7 +148,7 @@ public class CourseBatchManagementActorTest {
     reqObj.getRequest().putAll(innerMap);
     subject.tell(reqObj, probe.getRef());
 
-    Response response = probe.expectMsgClass(duration("10 second"), Response.class);
+    Response response = probe.expectMsgClass(java.time.Duration.ofSeconds(10), Response.class);
     return response;
   }
 
@@ -554,7 +553,7 @@ public class CourseBatchManagementActorTest {
     reqObj.getRequest().putAll(innerMap);
     subject.tell(reqObj, probe.getRef());
     ProjectCommonException exception =
-        probe.expectMsgClass(duration("10 second"), ProjectCommonException.class);
+        probe.expectMsgClass(java.time.Duration.ofSeconds(10), ProjectCommonException.class);
 
     Assert.assertTrue(
         ((ProjectCommonException) exception)

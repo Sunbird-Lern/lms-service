@@ -1,17 +1,16 @@
 package controllers.qrcodedownload;
 
-import akka.actor.ActorRef;
+import org.apache.pekko.actor.ActorRef;
 import controllers.BaseController;
 import controllers.qrcodedownload.validator.QRCodeDownloadRequestValidator;
-import java.util.concurrent.CompletionStage;
-import javax.inject.Inject;
-import javax.inject.Named;
 import org.sunbird.common.models.util.ActorOperations;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.request.Request;
 import play.mvc.Http;
 import play.mvc.Result;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.util.concurrent.CompletionStage;
 
 public class QRCodeDownloadController extends BaseController {
 

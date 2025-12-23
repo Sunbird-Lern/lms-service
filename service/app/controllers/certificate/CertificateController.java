@@ -1,16 +1,16 @@
 package controllers.certificate;
 
-import akka.actor.ActorRef;
+import org.apache.pekko.actor.ActorRef;
 import controllers.BaseController;
-import java.util.concurrent.CompletionStage;
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.request.Request;
 import org.sunbird.learner.actor.operations.CourseActorOperations;
 import play.mvc.Http;
 import play.mvc.Result;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.util.concurrent.CompletionStage;
 
 public class CertificateController extends BaseController {
 

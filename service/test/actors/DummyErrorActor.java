@@ -1,9 +1,8 @@
 package actors;
 
-import akka.actor.ActorRef;
-import akka.actor.UntypedAbstractActor;
+import org.apache.pekko.actor.ActorRef;
+import org.apache.pekko.actor.UntypedAbstractActor;
 import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.response.Response;
 
 public class DummyErrorActor extends UntypedAbstractActor {
 

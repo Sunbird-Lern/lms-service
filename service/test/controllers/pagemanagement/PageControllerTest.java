@@ -1,9 +1,9 @@
 package controllers.pagemanagement;
 
+import actors.DummyActor;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import controllers.BaseApplicationTest;
-import actors.DummyActor;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,9 +24,16 @@ import java.util.Map;
 
 /** Created by arvind on 4/12/17. */
 @RunWith(PowerMockRunner.class)
-@PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*", "jdk.internal.reflect.*",
-        "sun.security.ssl.*", "javax.net.ssl.*", "javax.crypto.*",
-        "com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
+@PowerMockIgnore({
+        "javax.management.*",
+        "javax.net.ssl.*",
+        "javax.security.*",
+        "jdk.internal.reflect.*",
+        "javax.crypto.*",
+        "javax.script.*",
+        "javax.xml.*",
+        "com.sun.org.apache.xerces.*",
+        "org.xml.*"})
 public class PageControllerTest extends BaseApplicationTest {
 
   String PAGE_ID="pageID";

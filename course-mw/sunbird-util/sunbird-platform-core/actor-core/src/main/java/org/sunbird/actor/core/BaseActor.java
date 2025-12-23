@@ -1,9 +1,9 @@
 package org.sunbird.actor.core;
 
-import akka.actor.ActorRef;
-import akka.actor.ActorSelection;
-import akka.actor.UntypedAbstractActor;
-import akka.util.Timeout;
+import org.apache.pekko.actor.ActorRef;
+import org.apache.pekko.actor.ActorSelection;
+import org.apache.pekko.actor.UntypedAbstractActor;
+import org.apache.pekko.util.Timeout;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 import org.sunbird.actor.router.BackgroundRequestRouter;
@@ -22,8 +22,8 @@ public abstract class BaseActor extends UntypedAbstractActor {
 
   public abstract void onReceive(Request request) throws Throwable;
 
-  public static final int AKKA_WAIT_TIME = 30;
-  protected static Timeout timeout = new Timeout(AKKA_WAIT_TIME, TimeUnit.SECONDS);
+  public static final int PEKKO_WAIT_TIME = 30;
+  protected static Timeout timeout = new Timeout(PEKKO_WAIT_TIME, TimeUnit.SECONDS);
   public LoggerUtil logger = new LoggerUtil(this.getClass());
 
   @Override

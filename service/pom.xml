@@ -28,15 +28,62 @@
 		</pluginRepository>
 	</pluginRepositories>
 	<properties>
-		<play2.version>2.7.2</play2.version>
+		<play2.version>3.0.5</play2.version>
 		<play2.plugin.version>1.0.0-rc5</play2.plugin.version>
-		<sbt-compiler.plugin.version>1.0.0</sbt-compiler.plugin.version>
-		<scala.major.version>2.11</scala.major.version>
-		<scala.version>2.11.12</scala.version>
-		<mockito.core.version>2.22.0</mockito.core.version>
-		<powermock.api.mockito2.version>2.0.7</powermock.api.mockito2.version>
-		<powermock.module.junit4.version>2.0.0-beta.5</powermock.module.junit4.version>
+		<scala.major.version>2.13</scala.major.version>
+		<scala.version>2.13.12</scala.version>
+		<pekko.version>1.0.3</pekko.version>
+		<jackson.version>2.13.5</jackson.version>
+		<logstash-logback-encoder.version>7.3</logstash-logback-encoder.version>
+		<powermock.version>2.0.9</powermock.version>
+		<jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
+		<netty.version>4.1.112.Final</netty.version>
+		<asm.version>9.2</asm.version>
+		<guice.version>5.1.0</guice.version>
 	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<!-- Force all Guice versions to 5.1.0 -->
+			<dependency>
+				<groupId>com.google.inject</groupId>
+				<artifactId>guice</artifactId>
+				<version>${guice.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.inject.extensions</groupId>
+				<artifactId>guice-assistedinject</artifactId>
+				<version>${guice.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.inject.extensions</groupId>
+				<artifactId>guice-servlet</artifactId>
+				<version>${guice.version}</version>
+			</dependency>
+			
+			<!-- Force all ASM versions -->
+			<dependency>
+				<groupId>org.ow2.asm</groupId>
+				<artifactId>asm</artifactId>
+				<version>${asm.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ow2.asm</groupId>
+				<artifactId>asm-commons</artifactId>
+				<version>${asm.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ow2.asm</groupId>
+				<artifactId>asm-tree</artifactId>
+				<version>${asm.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ow2.asm</groupId>
+				<artifactId>asm-util</artifactId>
+				<version>${asm.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<dependencies>
 		<!-- Don't move this dependency below play dependency otherwise it will 
@@ -44,10 +91,37 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>2.10.1</version>
+			<version>${jackson.version}</version>
+		</dependency>
+		<!-- Ensure Jackson Scala module matches Jackson core version -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.module</groupId>
+			<artifactId>jackson-module-scala_${scala.major.version}</artifactId>
+			<version>${jackson.version}</version>
+		</dependency>
+		<!-- Additional Jackson modules to override Pekko versions -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jdk8</artifactId>
+			<version>${jackson.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.typesafe.play</groupId>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
+			<version>${jackson.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-cbor</artifactId>
+			<version>${jackson.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.module</groupId>
+			<artifactId>jackson-module-parameter-names</artifactId>
+			<version>${jackson.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.playframework</groupId>
 			<artifactId>play-guice_${scala.major.version}</artifactId>
 			<version>${play2.version}</version>
 			<exclusions>
@@ -64,21 +138,93 @@
 		<dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
-			<version>4.2.2</version>
+			<version>${guice.version}</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/com.google.inject.extensions/guice-assistedinject -->
 		<dependency>
 		    <groupId>com.google.inject.extensions</groupId>
 		    <artifactId>guice-assistedinject</artifactId>
-		    <version>3.0</version>
+		    <version>${guice.version}</version>
 		</dependency>
 		
 		<dependency>
-			<groupId>com.typesafe.play</groupId>
+			<groupId>org.playframework</groupId>
 			<artifactId>play-netty-server_${scala.major.version}</artifactId>
 			<version>${play2.version}</version>
 			<scope>runtime</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>io.netty</groupId>
+					<artifactId>netty-codec-http</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
+		<!-- Explicit Netty dependencies to enforce version 4.1.112.Final -->
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-common</artifactId>
+			<version>${netty.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-buffer</artifactId>
+			<version>${netty.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-transport</artifactId>
+			<version>${netty.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-codec</artifactId>
+			<version>${netty.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-handler</artifactId>
+			<version>${netty.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-resolver</artifactId>
+			<version>${netty.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-transport-native-unix-common</artifactId>
+			<version>${netty.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-transport-native-epoll</artifactId>
+			<version>${netty.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-transport-classes-epoll</artifactId>
+			<version>${netty.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-codec-dns</artifactId>
+			<version>${netty.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-resolver-dns</artifactId>
+			<version>${netty.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-codec-http</artifactId>
+			<version>${netty.version}</version>
+		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>io.netty</groupId>-->
+<!--			<artifactId>netty-common</artifactId>-->
+<!--			<version>4.1.77.Final</version>-->
+<!--		</dependency>-->
 		<!-- Add actor here itself to avoid netty jar conflict. -->
 		<dependency>
             <groupId>org.sunbird</groupId>
@@ -89,35 +235,123 @@
 					<artifactId>cassandra-unit</artifactId>
 					<groupId>org.cassandraunit</groupId>
 				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-simple</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.module</groupId>
+					<artifactId>jackson-module-scala_2.12</artifactId>
+				</exclusion>
+				<!-- Exclude log4j-api from Elasticsearch dependencies to prevent version conflicts -->
+				<exclusion>
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-api</artifactId>
+				</exclusion>
+				<!-- Exclude old ASM versions to prevent conflicts -->
+				<exclusion>
+					<groupId>org.ow2.asm</groupId>
+					<artifactId>asm</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.ow2.asm</groupId>
+					<artifactId>asm-commons</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.ow2.asm</groupId>
+					<artifactId>asm-analysis</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.ow2.asm</groupId>
+					<artifactId>asm-tree</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.ow2.asm</groupId>
+					<artifactId>asm-util</artifactId>
+				</exclusion>
+				<!-- Exclude old Guice versions to prevent conflicts -->
+				<exclusion>
+					<groupId>com.google.inject.extensions</groupId>
+					<artifactId>guice-multibindings</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
         <dependency>
             <groupId>org.sunbird</groupId>
             <artifactId>course-actors</artifactId>
             <version>1.0-SNAPSHOT</version>
+            <exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-simple</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.module</groupId>
+					<artifactId>jackson-module-scala_2.12</artifactId>
+				</exclusion>
+				<!-- Exclude log4j-api from Elasticsearch dependencies to prevent version conflicts -->
+				<exclusion>
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-api</artifactId>
+				</exclusion>
+				<!-- Exclude old Guice versions to prevent conflicts -->
+				<exclusion>
+					<groupId>com.google.inject.extensions</groupId>
+					<artifactId>guice-multibindings</artifactId>
+				</exclusion>
+			</exclusions>
         </dependency>
 		<dependency>
 			<groupId>org.sunbird</groupId>
 			<artifactId>enrolment-actor</artifactId>
 			<version>1.0-SNAPSHOT</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-simple</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.module</groupId>
+					<artifactId>jackson-module-scala_2.12</artifactId>
+				</exclusion>
+				<!-- Exclude log4j-api from Elasticsearch dependencies to prevent version conflicts -->
+				<exclusion>
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.google.inject.extensions</groupId>
+					<artifactId>guice-multibindings</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.sunbird</groupId>
 			<artifactId>sunbird-commons</artifactId>
 			<version>1.0-SNAPSHOT</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-simple</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.module</groupId>
+					<artifactId>jackson-module-scala_2.12</artifactId>
+				</exclusion>
+				<!-- Exclude log4j-api from Elasticsearch dependencies to prevent version conflicts -->
+				<exclusion>
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
-			<!--<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-core</artifactId>
-			<version>2.6.0</version>
-		</dependency>-->
 		<dependency>
 			<groupId>com.typesafe</groupId>
 			<artifactId>config</artifactId>
 			<version>1.3.0</version>
 		</dependency>
 		<dependency>
-			<groupId>com.typesafe.play</groupId>
+			<groupId>org.playframework</groupId>
 			<artifactId>play_${scala.major.version}</artifactId>
 			<version>${play2.version}</version>
 			<exclusions>
@@ -136,17 +370,17 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>com.typesafe.play</groupId>
-			<artifactId>filters-helpers_${scala.major.version}</artifactId>
+			<groupId>org.playframework</groupId>
+			<artifactId>play-filters-helpers_${scala.major.version}</artifactId>
 			<version>${play2.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.typesafe.play</groupId>
-			<artifactId>play-akka-http-server_${scala.major.version}</artifactId>
+			<groupId>org.playframework</groupId>
+			<artifactId>play-pekko-http-server_${scala.major.version}</artifactId>
 			<version>${play2.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.typesafe.play</groupId>
+			<groupId>org.playframework</groupId>
 			<artifactId>play-specs2_${scala.major.version}</artifactId>
 			<version>${play2.version}</version>
 			<scope>test</scope>
@@ -159,49 +393,43 @@
 					<groupId>com.google.guava</groupId>
 					<artifactId>guava</artifactId>
 				</exclusion>
+				<exclusion>
+					<artifactId>byte-buddy</artifactId>
+					<groupId>net.bytebuddy</groupId>
+				</exclusion>
 			</exclusions>
 		</dependency>
+		<!-- Commented out to avoid conflicts with Sunbird's Logback 1.2.3 -->
+		<!--
 		<dependency>
-			<groupId>com.typesafe.play</groupId>
+			<groupId>org.playframework</groupId>
 			<artifactId>play-logback_${scala.major.version}</artifactId>
 			<version>${play2.version}</version>
 			<scope>runtime</scope>
 		</dependency>
+		-->
 		<dependency>
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-library</artifactId>
 			<version>${scala.version}</version>
 		</dependency>
 
-		<!-- required for IntegrationSpec -->
 		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.5.13</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.typesafe.akka</groupId>
-			<artifactId>akka-testkit_${scala.major.version}</artifactId>
-			<version>2.5.22</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<version>${mockito.core.version}</version>
+			<groupId>org.apache.pekko</groupId>
+			<artifactId>pekko-testkit_${scala.major.version}</artifactId>
+			<version>${pekko.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.powermock</groupId>
 			<artifactId>powermock-api-mockito2</artifactId>
-			<version>${powermock.api.mockito2.version}</version>
+			<version>${powermock.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.powermock</groupId>
 			<artifactId>powermock-module-junit4</artifactId>
-			<version>${powermock.module.junit4.version}</version>
+			<version>${powermock.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -215,20 +443,85 @@
 			<artifactId>logback-kafka-appender</artifactId>
 			<version>0.2.0-RC2</version>
 		</dependency>
+		<!-- Remove explicit logback dependencies - let Play Framework manage them -->
+		<!-- 
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 			<version>1.2.3</version>
 		</dependency>
 		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-core</artifactId>
+			<version>1.2.3</version>
+		</dependency>
+		-->
+		<dependency>
 			<groupId>net.logstash.logback</groupId>
 			<artifactId>logstash-logback-encoder</artifactId>
-			<version>6.6</version>
+			<version>${logstash-logback-encoder.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-databind</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-annotations</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.25</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<version>2.17.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>2.17.1</version>
+		</dependency>
+		<!-- Add log4j to SLF4J bridge to redirect Elasticsearch log4j calls to logback -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-to-slf4j</artifactId>
+			<version>2.17.1</version>
+		</dependency>
+		
+		<!-- Explicit ASM dependencies to ensure correct version -->
+		<dependency>
+			<groupId>org.ow2.asm</groupId>
+			<artifactId>asm</artifactId>
+			<version>${asm.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.asm</groupId>
+			<artifactId>asm-commons</artifactId>
+			<version>${asm.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.asm</groupId>
+			<artifactId>asm-analysis</artifactId>
+			<version>${asm.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.asm</groupId>
+			<artifactId>asm-tree</artifactId>
+			<version>${asm.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.asm</groupId>
+			<artifactId>asm-util</artifactId>
+			<version>${asm.version}</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -255,23 +548,21 @@
 				<extensions>true</extensions>
 			</plugin>
 			<plugin>
-				<groupId>com.google.code.sbt-compiler-maven-plugin</groupId>
-				<artifactId>sbt-compiler-maven-plugin</artifactId>
-				<version>${sbt-compiler.plugin.version}</version>
-				<configuration>
-					<scalacOptions>-feature -deprecation -Xfatal-warnings</scalacOptions>
-				</configuration>
-			</plugin>
-			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.0.0-M5</version>
+				<version>3.0.0</version>
 				<configuration>
 					<useSystemClassLoader>false</useSystemClassLoader>
-					<argLine>
-						--illegal-access=warn
-					</argLine>
-					<argLine>@{argLine} -Xmx1024m -XX:MaxPermSize=256m</argLine>
+					<argLine>@{argLine} -Xmx1024m 
+						--add-opens java.base/java.util=ALL-UNNAMED
+						--add-opens java.base/java.lang=ALL-UNNAMED
+						--add-opens java.base/java.lang.reflect=ALL-UNNAMED
+						--add-opens java.base/java.text=ALL-UNNAMED
+						--add-opens java.base/java.util.concurrent=ALL-UNNAMED
+						--add-opens java.base/sun.nio.ch=ALL-UNNAMED
+						--add-opens java.base/java.nio.charset=ALL-UNNAMED
+						--add-opens java.base/java.io=ALL-UNNAMED
+						--add-opens java.base/sun.net.www.protocol.jar=ALL-UNNAMED</argLine>
 					<includes>
 						<include>**/*Spec.java</include>
 						<include>**/*Test.java</include>
@@ -281,7 +572,7 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.5</version>
+				<version>${jacoco-maven-plugin.version}</version>
 				<configuration>
 					<destFile>${basedir}/target/coverage-reports/jacoco-unit.exec</destFile>
 					<dataFile>${basedir}/target/coverage-reports/jacoco-unit.exec</dataFile>

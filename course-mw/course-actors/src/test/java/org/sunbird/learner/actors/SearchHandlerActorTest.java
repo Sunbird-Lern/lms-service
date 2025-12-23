@@ -1,24 +1,11 @@
 package org.sunbird.learner.actors;
 
-import static akka.testkit.JavaTestKit.duration;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
-
-import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
-import akka.actor.Props;
-import akka.dispatch.Futures;
-import akka.testkit.javadsl.TestKit;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.apache.pekko.actor.ActorRef;
+import org.apache.pekko.actor.ActorSystem;
+import org.apache.pekko.actor.Props;
+import org.apache.pekko.dispatch.Futures;
+import org.apache.pekko.testkit.javadsl.TestKit;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
@@ -40,6 +27,13 @@ import org.sunbird.learner.actors.coursebatch.dao.UserCoursesDao;
 import org.sunbird.learner.actors.coursebatch.dao.impl.UserCoursesDaoImpl;
 import org.sunbird.learner.actors.search.SearchHandlerActor;
 import scala.concurrent.Promise;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({
@@ -71,21 +65,19 @@ public class SearchHandlerActorTest {
   public void beforeTest() {
     PowerMockito.mockStatic(EsClientFactory.class);
     esService = mock(ElasticSearchRestHighImpl.class);
-    when(EsClientFactory.getInstance(Mockito.anyString())).thenReturn(esService);
+    when(EsClientFactory.getInstance()).thenReturn(esService);
     Promise<Map<String, Object>> promise = Futures.promise();
-    promise.success(createResponseGet(true));
+    promise.success(createResponseGet());
     when(esService.search(Mockito.any(), Mockito.any(SearchDTO.class), Mockito.anyVararg()))
         .thenReturn(promise.future());
 
     PowerMockito.mockStatic(ServiceFactory.class);
     when(ServiceFactory.getInstance()).thenReturn(cassandraOperation);
-    when(cassandraOperation.getRecordsByProperties(
-            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList(), Mockito.any()))
+    when(cassandraOperation.getRecordsByProperties(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyList(), Mockito.any()))
         .thenReturn(getRecordByPropertyResponse());
   }
 
   private static Response getRecordByPropertyResponse() {
-
     Response response = new Response();
     List<Map<String, Object>> list = new ArrayList<>();
     Map<String, Object> courseMap = new HashMap<>();
@@ -96,7 +88,7 @@ public class SearchHandlerActorTest {
     return response;
   }
 
-  private static Map<String, Object> createResponseGet(boolean isResponseRequired) {
+  private static Map<String, Object> createResponseGet() {
     HashMap<String, Object> response = new HashMap<>();
     List<Map<String, Object>> content = new ArrayList<>();
     HashMap<String, Object> innerMap = new HashMap<>();
@@ -130,8 +122,8 @@ public class SearchHandlerActorTest {
     reqObj.setContext(contextMap);
 
     subject.tell(reqObj, probe.getRef());
-    Response res = probe.expectMsgClass(duration("200 second"), Response.class);
-    Assert.assertTrue(null != res.get(JsonKey.RESPONSE));
+    Response res = probe.expectMsgClass(java.time.Duration.ofSeconds(200), Response.class);
+    Assert.assertNotNull(res.get(JsonKey.RESPONSE));
   }
 
   @Test
@@ -145,6 +137,6 @@ public class SearchHandlerActorTest {
 
     subject.tell(reqObj, probe.getRef());
     ProjectCommonException exc = probe.expectMsgClass(ProjectCommonException.class);
-    Assert.assertTrue(null != exc);
+      Assert.assertNotNull(exc);
   }
 }

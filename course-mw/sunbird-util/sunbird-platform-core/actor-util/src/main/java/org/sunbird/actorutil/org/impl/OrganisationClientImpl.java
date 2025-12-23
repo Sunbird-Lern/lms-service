@@ -1,12 +1,7 @@
 package org.sunbird.actorutil.org.impl;
 
-import akka.actor.ActorRef;
+import org.apache.pekko.actor.ActorRef;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.sunbird.actorutil.InterServiceCommunication;
@@ -17,12 +12,17 @@ import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.inf.ElasticSearchService;
 import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.*;
+import org.sunbird.common.models.util.ActorOperations;
+import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.LoggerUtil;
+import org.sunbird.common.models.util.ProjectUtil;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.models.organisation.Organisation;
 import scala.concurrent.Future;
+
+import java.util.*;
 
 public class OrganisationClientImpl implements OrganisationClient {
   private LoggerUtil logger = new LoggerUtil(this.getClass());
@@ -38,10 +38,9 @@ public class OrganisationClientImpl implements OrganisationClient {
     return organisationClient;
   }
 
-  private static InterServiceCommunication interServiceCommunication =
-      InterServiceCommunicationFactory.getInstance();
+  private static InterServiceCommunication interServiceCommunication = InterServiceCommunicationFactory.getInstance();
   ObjectMapper objectMapper = new ObjectMapper();
-  private ElasticSearchService esUtil = EsClientFactory.getInstance(JsonKey.REST);
+  private ElasticSearchService esUtil = EsClientFactory.getInstance();
 
   @Override
   public String createOrg(ActorRef actorRef, Map<String, Object> orgMap) {

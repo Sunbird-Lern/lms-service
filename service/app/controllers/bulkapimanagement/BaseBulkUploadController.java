@@ -2,6 +2,18 @@ package controllers.bulkapimanagement;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import controllers.BaseController;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.sunbird.common.exception.ProjectCommonException;
+import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.common.models.util.ProjectUtil;
+import org.sunbird.common.responsecode.ResponseCode;
+import play.libs.Files;
+import play.mvc.Http;
+import play.mvc.Http.MultipartFormData;
+import play.mvc.Http.MultipartFormData.FilePart;
+import util.Attrs;
+
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -11,18 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.models.util.ProjectUtil;
-import org.sunbird.common.responsecode.ResponseCode;
-import play.libs.Files;
-import play.mvc.Http;
-import play.mvc.Http.MultipartFormData;
-import play.mvc.Http.MultipartFormData.FilePart;
-import util.Attrs;
 
 /**
  * Class to provide common functionality to ulk upload controllers.
@@ -45,7 +45,7 @@ public class BaseBulkUploadController extends BaseController {
    */
   protected org.sunbird.common.request.Request createAndInitBulkRequest(
       String operation, String objectType, Boolean validateFileZize, Http.Request httpRequest)
-      throws IOException {
+      throws IOException, Exception {
     logger.info(null, "API call for operation : " + operation);
     org.sunbird.common.request.Request reqObj = new org.sunbird.common.request.Request();
     Map<String, Object> map = new HashMap<>();

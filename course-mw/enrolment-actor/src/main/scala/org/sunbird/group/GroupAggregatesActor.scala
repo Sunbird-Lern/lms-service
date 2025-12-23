@@ -1,8 +1,5 @@
 package org.sunbird.group
 
-import java.text.MessageFormat
-
-import javax.inject.Inject
 import org.apache.commons.collections.CollectionUtils
 import org.apache.commons.lang3.StringUtils
 import org.sunbird.actor.base.BaseActor
@@ -16,8 +13,10 @@ import org.sunbird.keys.SunbirdKey
 import org.sunbird.learner.actors.group.dao.impl.GroupDaoImpl
 import org.sunbird.learner.util.JsonUtil
 
-import scala.collection.JavaConversions._
+import java.text.MessageFormat
+import javax.inject.Inject
 import scala.collection.JavaConverters._
+import scala.collection.convert.ImplicitConversions._
 
 class GroupAggregatesActor @Inject()(implicit val cacheUtil: RedisCacheUtil) extends BaseActor {
 
@@ -113,7 +112,7 @@ class GroupAggregatesActor @Inject()(implicit val cacheUtil: RedisCacheUtil) ext
         val aggLastUpdated = dbAggRecord.get("agg_last_updated").asInstanceOf[java.util.Map[String, AnyRef]]
         val agg = dbAgg.map(aggregate => Map("metric"-> aggregate._1, "value" -> aggregate._2, "lastUpdatedOn" -> aggLastUpdated.get(aggregate._1)).asJava).toList.asJava
         val userId = dbAggRecord.get("user_id").asInstanceOf[String]
-        (membersMap.get(userId).filterKeys(key => GROUP_MEMBERS_METADATA.contains(key)) ++ Map("agg" -> agg)).asJava
+        (membersMap.get(userId).filter { case (key, _) => GROUP_MEMBERS_METADATA.contains(key) } ++ Map("agg" -> agg)).asJava
       }).toList
     } else List()
 

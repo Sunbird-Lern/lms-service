@@ -53,7 +53,7 @@ public class RedisConnectionManager {
 
     Config config = new Config();
     SingleServerConfig singleServerConfig = config.useSingleServer();
-    singleServerConfig.setAddress(host + ":" + port);
+    singleServerConfig.setAddress("redis://" + host + ":" + port);
     singleServerConfig.setConnectionPoolSize(poolsize);
     config.setCodec(new StringCodec());
     client = Redisson.create(config);

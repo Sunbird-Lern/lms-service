@@ -1,27 +1,18 @@
 /** */
 package controllers.exhaustjob;
 
-import akka.actor.ActorRef;
-import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.pekko.actor.ActorRef;
 import controllers.BaseController;
 import controllers.exhaustjob.validator.ExhaustJobRequestValidator;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import javax.inject.Inject;
-import javax.inject.Named;
 import org.sunbird.common.models.util.ActorOperations;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.models.util.ProjectUtil.EsType;
 import org.sunbird.common.request.Request;
 import play.mvc.Http;
 import play.mvc.Result;
-import util.Attrs;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.util.concurrent.CompletionStage;
 
 public class ExhaustJobController extends BaseController {
 

@@ -1,10 +1,9 @@
 package controllers.courseenrollment;
 
+import actors.DummyActor;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.typesafe.config.ConfigFactory;
-
 import controllers.BaseApplicationTest;
-import actors.DummyActor;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

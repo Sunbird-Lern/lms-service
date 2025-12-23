@@ -1,14 +1,12 @@
 package controllers.search;
 
+import actors.DummyActor;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import controllers.BaseApplicationTest;
-import actors.DummyActor;
-
-import java.io.IOException;
-import java.util.*;
-
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
@@ -20,6 +18,10 @@ import play.mvc.Http;
 import play.mvc.Result;
 import play.test.Helpers;
 import util.ACTOR_NAMES;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /** Created by arvind on 6/12/17. */
 @RunWith(PowerMockRunner.class)

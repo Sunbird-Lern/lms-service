@@ -2,15 +2,9 @@ package modules;
 
 import com.typesafe.config.Config;
 import controllers.BaseController;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import javax.inject.Inject;
-import javax.inject.Provider;
-import javax.inject.Singleton;
 import org.sunbird.common.exception.ProjectCommonException;
 import org.sunbird.common.models.response.Response;
 import org.sunbird.common.models.util.LoggerUtil;
-import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.responsecode.ResponseCode;
 import play.Environment;
 import play.api.OptionalSourceMapper;
@@ -20,6 +14,12 @@ import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Results;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.inject.Singleton;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 @Singleton
 public class ErrorHandler extends DefaultHttpErrorHandler {
@@ -41,7 +41,7 @@ public class ErrorHandler extends DefaultHttpErrorHandler {
     ProjectCommonException commonException = null;
     if (t instanceof ProjectCommonException) {
       commonException = (ProjectCommonException) t;
-    } else if (t instanceof akka.pattern.AskTimeoutException) {
+    } else if (t instanceof org.apache.pekko.pattern.AskTimeoutException) {
       commonException =
           new ProjectCommonException(
               ResponseCode.actorConnectionError.getErrorCode(),

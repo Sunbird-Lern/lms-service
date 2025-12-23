@@ -1,10 +1,8 @@
 package modules;
 
-import java.io.File;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -15,6 +13,8 @@ import play.Application;
 import play.Mode;
 import play.inject.guice.GuiceApplicationBuilder;
 import play.test.Helpers;
+
+import java.io.File;
 
 @RunWith(PowerMockRunner.class)
 // @SuppressStaticInitializationFor("org.sunbird.learner.util.Util")

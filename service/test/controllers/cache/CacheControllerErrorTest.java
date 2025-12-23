@@ -1,7 +1,7 @@
 package controllers.cache;
 
-import controllers.BaseApplicationTest;
 import actors.DummyErrorActor;
+import controllers.BaseApplicationTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;

@@ -21,6 +21,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.LinkedHashMap;
+
+import scala.jdk.CollectionConverters;
 
 /**
  * Utility class for actors
@@ -28,6 +31,62 @@ import java.util.Set;
  * @author arvind .
  */
 public final class Util {
+
+  /**
+   * Convert Scala Map to Java Map if needed
+   */
+  @SuppressWarnings("unchecked")
+  private static Map<String, Object> convertToJavaMap(Object mapObject) {
+    if (mapObject == null) {
+      return null;
+    }
+    
+    if (mapObject instanceof java.util.Map) {
+      return (Map<String, Object>) mapObject;
+    }
+    
+    // If it's a Scala Map, convert it to Java Map
+    try {
+      if (mapObject instanceof scala.collection.Map) {
+        scala.collection.Map<String, Object> scalaMap = (scala.collection.Map<String, Object>) mapObject;
+        Map<String, Object> javaMap = CollectionConverters.MapHasAsJava(scalaMap).asJava();
+        return javaMap;
+      }
+    } catch (Exception e) {
+      // Fallback: manual copy
+      return manualMapCopy(mapObject);
+    }
+    return null;
+  }
+
+  /**
+   * Manual map copy as fallback
+   */
+  @SuppressWarnings("unchecked")
+  private static Map<String, Object> manualMapCopy(Object mapObject) {
+    try {
+      // Try to iterate as if it's a Map-like structure
+      if (mapObject instanceof scala.collection.Iterable) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        scala.collection.Iterable<Object> iterable = (scala.collection.Iterable<Object>) mapObject;
+        scala.collection.Iterator<Object> iterator = iterable.iterator();
+        
+        while (iterator.hasNext()) {
+          Object entry = iterator.next();
+          if (entry instanceof scala.Tuple2) {
+            scala.Tuple2<Object, Object> tuple = (scala.Tuple2<Object, Object>) entry;
+            result.put(tuple._1().toString(), tuple._2());
+          }
+        }
+        
+        return result;
+      }
+    } catch (Exception e) {
+      // Failed to convert
+    }
+    
+    return null;
+  }
 
   public static final Map<String, DbInfo> dbInfoMap = new HashMap<>();
   public static final int RECOMENDED_LIST_SIZE = 10;
@@ -276,9 +335,16 @@ public final class Util {
           .put(JsonKey.NOT_EXISTS, searchQueryMap.get(JsonKey.NOT_EXISTS));
     }
     if (searchQueryMap.containsKey(JsonKey.SORT_BY)) {
-      search
-          .getSortBy()
-          .putAll((Map<? extends String, ? extends String>) searchQueryMap.get(JsonKey.SORT_BY));
+      Object sortByObject = searchQueryMap.get(JsonKey.SORT_BY);
+      Map<String, Object> sortByMap = convertToJavaMap(sortByObject);
+      if (sortByMap != null) {
+        // Convert Map<String, Object> to Map<String, String> for sortBy
+        Map<String, String> stringMap = new LinkedHashMap<>();
+        for (Map.Entry<String, Object> entry : sortByMap.entrySet()) {
+          stringMap.put(entry.getKey(), entry.getValue() != null ? entry.getValue().toString() : null);
+        }
+        search.getSortBy().putAll(stringMap);
+      }
     }
     if (searchQueryMap.containsKey(JsonKey.OFFSET)) {
       if ((searchQueryMap.get(JsonKey.OFFSET)) instanceof Integer) {

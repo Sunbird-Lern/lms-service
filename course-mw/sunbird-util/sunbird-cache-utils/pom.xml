@@ -6,19 +6,29 @@
       <groupId>org.sunbird</groupId>
       <version>1.0-SNAPSHOT</version>
    </parent>
-   <groupId>org.sunbird</groupId>
    <artifactId>sunbird-cache-utils</artifactId>
    <version>0.0.1-SNAPSHOT</version>
    <packaging>jar</packaging>
    <name>Sunbird Cache Utils</name>
-   <properties>
-      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-   </properties>
    <dependencies>
       <dependency>
          <groupId>org.redisson</groupId>
          <artifactId>redisson</artifactId>
-         <version>3.2.0</version>
+         <version>3.22.0</version>
+         <exclusions>
+            <exclusion>
+               <groupId>net.bytebuddy</groupId>
+               <artifactId>byte-buddy</artifactId>
+            </exclusion>
+            <exclusion>
+               <groupId>com.fasterxml.jackson.core</groupId>
+               <artifactId>jackson-databind</artifactId>
+            </exclusion>
+            <exclusion>
+               <groupId>com.fasterxml.jackson.core</groupId>
+               <artifactId>jackson-core</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>ch.qos.logback</groupId>
@@ -26,9 +36,28 @@
          <version>1.2.3</version>
       </dependency>
       <dependency>
+         <groupId>ch.qos.logback</groupId>
+         <artifactId>logback-core</artifactId>
+         <version>1.2.3</version>
+      </dependency>
+      <dependency>
          <groupId>net.logstash.logback</groupId>
          <artifactId>logstash-logback-encoder</artifactId>
-         <version>6.3</version>
+         <version>${logstash-logback-encoder.version}</version>
+         <exclusions>
+            <exclusion>
+               <groupId>com.fasterxml.jackson.core</groupId>
+               <artifactId>jackson-core</artifactId>
+            </exclusion>
+            <exclusion>
+               <groupId>com.fasterxml.jackson.core</groupId>
+               <artifactId>jackson-databind</artifactId>
+            </exclusion>
+            <exclusion>
+               <groupId>com.fasterxml.jackson.core</groupId>
+               <artifactId>jackson-annotations</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>org.sunbird</groupId>
@@ -38,7 +67,7 @@
       <dependency>
          <groupId>org.powermock</groupId>
          <artifactId>powermock-module-junit4</artifactId>
-         <version>1.6.5</version>
+         <version>${powermock.version}</version>
          <scope>test</scope>
          <exclusions>
             <exclusion>
@@ -49,8 +78,8 @@
       </dependency>
       <dependency>
          <groupId>org.powermock</groupId>
-         <artifactId>powermock-api-mockito</artifactId>
-         <version>1.6.5</version>
+         <artifactId>powermock-api-mockito2</artifactId>
+         <version>${powermock.version}</version>
          <scope>test</scope>
       </dependency>
       <dependency>
@@ -81,7 +110,7 @@
             <plugin>
                <groupId>org.apache.maven.plugins</groupId>
                <artifactId>maven-surefire-plugin</artifactId>
-               <version>3.0.0-M4</version>
+               <version>3.0.0</version>
                <configuration>
                   <includes>
                      <include>**/*Spec.java</include>
@@ -95,7 +124,7 @@
          <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.7.5.201505241946</version>
+            <version>${jacoco-maven-plugin.version}</version>
             <configuration>
                <destFile>${basedir}/target/coverage-reports/jacoco-unit.exec</destFile>
                <dataFile>${basedir}/target/coverage-reports/jacoco-unit.exec</dataFile>
@@ -113,6 +142,44 @@
                   <goals>
                      <goal>report</goal>
                   </goals>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-shade-plugin</artifactId>
+            <version>3.2.4</version>
+            <executions>
+               <execution>
+                  <phase>package</phase>
+                  <goals>
+                     <goal>shade</goal>
+                  </goals>
+                  <configuration>
+                     <filters>
+                        <filter>
+                           <artifact>*:*</artifact>
+                           <excludes>
+                              <exclude>META-INF/*.SF</exclude>
+                              <exclude>META-INF/*.DSA</exclude>
+                              <exclude>META-INF/*.RSA</exclude>
+                              <!-- Exclude SLF4J bindings to prevent conflicts -->
+                              <exclude>org/slf4j/impl/StaticLoggerBinder.class</exclude>
+                              <exclude>org/slf4j/impl/StaticMarkerBinder.class</exclude>
+                              <exclude>org/slf4j/impl/StaticMDCBinder.class</exclude>
+                           </excludes>
+                        </filter>
+                     </filters>
+                     <relocations>
+                        <relocation>
+                           <pattern>io.netty</pattern>
+                           <shadedPattern>org.sunbird.shaded.io.netty</shadedPattern>
+                        </relocation>
+                     </relocations>
+                     <transformers>
+                        <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                     </transformers>
+                  </configuration>
                </execution>
             </executions>
          </plugin>

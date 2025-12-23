@@ -1,12 +1,10 @@
 package controllers.collectionsummaryaggregate.validator;
 
-import org.apache.log4j.MDC;
 import org.sunbird.common.models.util.JsonKey;
 import org.sunbird.common.request.BaseRequestValidator;
 import org.sunbird.common.request.Request;
 import org.sunbird.common.responsecode.ResponseCode;
 
-import java.util.List;
 import java.util.Map;
 
 public class Validator extends BaseRequestValidator {

@@ -1,12 +1,14 @@
 package filters;
 
+import org.apache.pekko.stream.Materializer;
+import play.Logger;
+import play.mvc.Filter;
+import play.mvc.Http;
+import play.mvc.Result;
+
+import javax.inject.Inject;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
-import javax.inject.Inject;
-
-import akka.stream.Materializer;
-import play.Logger;
-import play.mvc.*;
 
 public class LoggingFilter extends Filter {
 

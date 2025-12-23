@@ -1,16 +1,15 @@
 /** */
 package controllers;
 
-import akka.actor.ActorRef;
+import org.apache.pekko.actor.ActorRef;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
 import org.sunbird.common.request.LearnerStateRequestValidator;
 import org.sunbird.common.request.Request;
 import org.sunbird.keys.SunbirdKey;
 import play.mvc.Http;
+import java.util.List;
 import play.mvc.Result;
 import play.mvc.Results;
 import util.Attrs;
@@ -46,6 +45,7 @@ public class LearnerController extends BaseController {
       JsonNode requestJson = httpRequest.body().asJson();
       Request request =
           createAndInitRequest("getConsumption", requestJson, httpRequest);
+      
       String userId = (String) request.getContext().getOrDefault(JsonKey.REQUESTED_FOR, request.getContext().get(JsonKey.REQUESTED_BY));
       validator.validateRequestedBy(userId);
       request.getRequest().put(JsonKey.USER_ID, userId);

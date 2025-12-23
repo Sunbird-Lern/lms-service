@@ -24,6 +24,9 @@
                     <exclude>META-INF/*.SF</exclude>
                     <exclude>META-INF/*.DSA</exclude>
                     <exclude>META-INF/*.RSA</exclude>
+                    <exclude>org/slf4j/impl/StaticLoggerBinder.class</exclude>
+                    <exclude>org/slf4j/impl/StaticMarkerBinder.class</exclude>
+                    <exclude>org/slf4j/impl/StaticMDCBinder.class</exclude>
                   </excludes>
                 </filter>
               </filters>

@@ -3837,6 +3837,166 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
 
 
   /**
+   * Performs a generic batch action containing mixed INSERT and UPDATE operations.
+   * Processes a map of operations where each key indicates the operation type (INSERT/UPDATE)
+   * and the value contains the record data to be processed.
+   *
+   * @param keyspaceName The keyspace name.
+   * @param tableName The table name.
+   * @param inputData Map where keys are operation types (INSERT/UPDATE) and values are record maps.
+   * @param requestContext Request context for logging.
+   * @return Response with "SUCCESS" status.
+   * @throws ProjectCommonException if batch execution fails.
+   */
+  @Override
+  public Response performBatchAction(
+      String keyspaceName,
+      String tableName,
+      Map<String, Object> inputData,
+      RequestContext requestContext) {
+
+    long startTime = System.currentTimeMillis();
+    int operationCount = inputData != null ? inputData.size() : 0;
+
+    logDebug(
+        requestContext,
+        formatLogMessage(
+            "Starting performBatchAction - keyspace: {}, table: {}, operations: {}",
+            keyspaceName,
+            tableName,
+            operationCount));
+
+    Response response = new Response();
+    BatchStatement batchStatement = new BatchStatement();
+    int insertCount = 0;
+    int updateCount = 0;
+
+    try {
+      Session session = connectionManager.getSession(keyspaceName);
+
+      // Process each operation in the input data
+      for (Map.Entry<String, Object> entry : inputData.entrySet()) {
+        String key = entry.getKey();
+        Map<String, Object> record = (Map<String, Object>) entry.getValue();
+
+        if (key.equals(Constants.INSERT)) {
+          Insert insert = createInsertStatement(keyspaceName, tableName, record);
+          batchStatement.add(insert);
+          insertCount++;
+          logDebug(requestContext, formatLogMessage("Added INSERT operation for key: {}", key));
+        } else if (key.equals(Constants.UPDATE)) {
+          Update update = createUpdateStatement(keyspaceName, tableName, record);
+          batchStatement.add(update);
+          updateCount++;
+          logDebug(requestContext, formatLogMessage("Added UPDATE operation for key: {}", key));
+        } else {
+          logWarn(
+              requestContext,
+              formatLogMessage("Unknown operation type: {} - skipping", key));
+        }
+      }
+
+      logDebug(
+          requestContext,
+          formatLogMessage(
+              "Executing batch action - total: {}, inserts: {}, updates: {}",
+              batchStatement.size(),
+              insertCount,
+              updateCount));
+
+      // Execute batch
+      ResultSet resultSet = session.execute(batchStatement);
+      response.put(Constants.RESPONSE, Constants.SUCCESS);
+
+      // Log successful batch action at INFO level
+      logInfo(
+          requestContext,
+          formatLogMessage(
+              "Successfully performed batch action - keyspace: {}, table: {}, total: {}, inserts: {}, updates: {}",
+              keyspaceName,
+              tableName,
+              batchStatement.size(),
+              insertCount,
+              updateCount));
+
+    } catch (QueryExecutionException e) {
+      // Handle query execution errors
+      logError(
+          requestContext,
+          "Batch action query execution failed - keyspace: {}, table: {}, operations: {}, error: {}",
+          keyspaceName,
+          tableName,
+          operationCount,
+          e.getMessage(),
+          e);
+      throw new ProjectCommonException(
+          ResponseCode.SERVER_ERROR.getErrorCode(),
+          e.getMessage(),
+          ResponseCode.SERVER_ERROR.getResponseCode());
+
+    } catch (QueryValidationException e) {
+      // Handle query validation errors
+      logError(
+          requestContext,
+          "Batch action query validation failed - keyspace: {}, table: {}, operations: {}, error: {}",
+          keyspaceName,
+          tableName,
+          operationCount,
+          e.getMessage(),
+          e);
+      throw new ProjectCommonException(
+          ResponseCode.SERVER_ERROR.getErrorCode(),
+          e.getMessage(),
+          ResponseCode.SERVER_ERROR.getResponseCode());
+
+    } catch (NoHostAvailableException e) {
+      // Handle no available hosts errors
+      logError(
+          requestContext,
+          "No Cassandra hosts available for batch action - keyspace: {}, table: {}, operations: {}, error: {}",
+          keyspaceName,
+          tableName,
+          operationCount,
+          e.getMessage(),
+          e);
+      throw new ProjectCommonException(
+          ResponseCode.SERVER_ERROR.getErrorCode(),
+          e.getMessage(),
+          ResponseCode.SERVER_ERROR.getResponseCode());
+
+    } catch (IllegalStateException e) {
+      // Handle illegal state errors
+      logError(
+          requestContext,
+          "Illegal state during batch action - keyspace: {}, table: {}, operations: {}, error: {}",
+          keyspaceName,
+          tableName,
+          operationCount,
+          e.getMessage(),
+          e);
+      throw new ProjectCommonException(
+          ResponseCode.SERVER_ERROR.getErrorCode(),
+          e.getMessage(),
+          ResponseCode.SERVER_ERROR.getResponseCode());
+
+    } finally {
+      // Log query execution time
+      if (batchStatement != null && batchStatement.size() > 0) {
+        logQueryElapseTime(
+            "performBatchAction",
+            startTime,
+            batchStatement.getStatements().toString(),
+            requestContext);
+      } else {
+        logQueryElapseTime("performBatchAction", startTime);
+      }
+    }
+
+    return response;
+  }
+
+
+  /**
    * Retrieves records by composite partition key values.
    * Supports both single values (EQ) and lists (IN) for each column. ALL partition key columns must be specified.
    *
@@ -3967,35 +4127,6 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
     return response;
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   /**
    * Executes a SELECT query with WHERE IN clause for multiple IDs.
    * Private helper method used by various public methods for efficient bulk retrieval.
@@ -4086,8 +4217,58 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
   }
 
 
+  /**
+   * Creates an INSERT statement for batch operations.
+   * Builds a Cassandra INSERT query from a record map containing column-value pairs.
+   * This is a helper method used by performBatchAction for batch insert operations.
+   *
+   * @param keyspaceName The keyspace name.
+   * @param tableName The table name.
+   * @param record Map of column names to values to be inserted.
+   * @return Insert statement ready to be added to a batch.
+   */
+  private Insert createInsertStatement(
+      String keyspaceName, String tableName, Map<String, Object> record) {
+    Insert insert = QueryBuilder.insertInto(keyspaceName, tableName);
+    
+    // Add all column-value pairs from the record to the INSERT statement
+    for (Map.Entry<String, Object> entry : record.entrySet()) {
+      insert.value(entry.getKey(), entry.getValue());
+    }
+    
+    return insert;
+  }
 
-
+  /**
+   * Creates an UPDATE statement for batch operations.
+   * Builds a Cassandra UPDATE query from a record map. The record must contain an 'id' field
+   * which will be used in the WHERE clause. All other fields will be set in the UPDATE clause.
+   * This is a helper method used by performBatchAction for batch update operations.
+   *
+   * @param keyspaceName The keyspace name.
+   * @param tableName The table name.
+   * @param record Map of column names to values. Must include 'id' field for WHERE clause.
+   * @return Update statement ready to be added to a batch.
+   */
+  private Update createUpdateStatement(
+      String keyspaceName, String tableName, Map<String, Object> record) {
+    Update update = QueryBuilder.update(keyspaceName, tableName);
+    Assignments assignments = update.with();
+    Update.Where where = update.where();
+    
+    // Process each field: 'id' goes to WHERE clause, others go to SET clause
+    for (Map.Entry<String, Object> entry : record.entrySet()) {
+      if (Constants.ID.equals(entry.getKey())) {
+        // Use ID field for WHERE clause to identify the record to update
+        where.and(eq(entry.getKey(), entry.getValue()));
+      } else {
+        // Use all other fields for SET clause to update values
+        assignments.and(QueryBuilder.set(entry.getKey(), entry.getValue()));
+      }
+    }
+    
+    return update;
+  }
 
 
 

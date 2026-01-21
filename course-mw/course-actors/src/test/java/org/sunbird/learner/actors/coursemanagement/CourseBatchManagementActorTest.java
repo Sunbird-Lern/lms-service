@@ -85,7 +85,7 @@ public class CourseBatchManagementActorTest {
       String endDate,
       Response mockGetRecordByIdResponse) throws Exception {
     when(mockCassandraOperation.getRecordByIdentifier(
-            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
+          Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any(), Mockito.any()))
         .thenReturn(mockGetRecordByIdResponse);
     mockCourseEnrollmentActor();
    
@@ -115,11 +115,11 @@ public class CourseBatchManagementActorTest {
       Response mockUpdateRecordResponse) throws Exception {
 
     when(mockCassandraOperation.getRecordByIdentifier(
-            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
+            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any(), Mockito.any()))
         .thenReturn(mockGetRecordByIdResponse);
 
     when(mockCassandraOperation.updateRecord(
-            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyMap()))
+            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyMap(), Mockito.any()))
         .thenReturn(mockUpdateRecordResponse);
 
     PowerMockito.doNothing().when(CourseBatchUtil.class);
@@ -536,7 +536,7 @@ public class CourseBatchManagementActorTest {
     int batchProgressStatus = ProjectUtil.ProgressStatus.NOT_STARTED.getValue();
     Response mockGetRecordByIdResponse = getMockCassandraRecordByIdResponse(batchProgressStatus);
     when(mockCassandraOperation.getRecordByIdentifier(
-        Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
+        Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any(), Mockito.any()))
         .thenReturn(mockGetRecordByIdResponse);
     mockCourseEnrollmentActorWithOutLeafNodes();
 

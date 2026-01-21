@@ -29,7 +29,7 @@ public class PageCacheLoaderService implements Runnable {
   public Map<String, Map<String, Object>> cacheLoader(String tableName) {
     Map<String, Map<String, Object>> map = new HashMap<>();
     try {
-      Response response = cassandraOperation.getAllRecords(null, ProjectUtil.getConfigValue(JsonKey.SUNBIRD_KEYSPACE), tableName);
+      Response response = cassandraOperation.getAllRecords(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_KEYSPACE), tableName, null);
       List<Map<String, Object>> responseList =
           (List<Map<String, Object>>) response.get(JsonKey.RESPONSE);
       if (CollectionUtils.isNotEmpty(responseList)) {

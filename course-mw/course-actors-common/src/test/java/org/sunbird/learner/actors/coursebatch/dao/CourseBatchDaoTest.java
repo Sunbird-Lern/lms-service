@@ -52,7 +52,7 @@ public class CourseBatchDaoTest {
     CourseBatch courseBatch = new CourseBatch();
     courseBatch.setStatus(ProjectUtil.ProgressStatus.STARTED.getValue());
     when(cassandraOperation.insertRecord(
-            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
+            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
         .thenReturn(new Response());
     Response response = courseBatchDao.create(null, courseBatch);
 
@@ -63,7 +63,7 @@ public class CourseBatchDaoTest {
   public void updateCourseBatchSuccess() {
     Map<String, Object> courseBatch = new HashMap<>();
     when(cassandraOperation.updateRecord(
-            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyMap()))
+            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.anyMap(), Mockito.any()))
         .thenReturn(new Response());
     Response response = courseBatchDao.update(null, JsonKey.COURSE_ID, JsonKey.BATCH_ID, courseBatch);
     Assert.assertNotEquals(null, response);
@@ -76,7 +76,7 @@ public class CourseBatchDaoTest {
     courseBatchMap.put(JsonKey.ID, JsonKey.BATCH_ID);
     response.put(JsonKey.RESPONSE, Arrays.asList(courseBatchMap));
     when(cassandraOperation.getRecordByIdentifier(
-            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
+            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any(), Mockito.any()))
         .thenReturn(response);
     CourseBatch courseBatch = courseBatchDao.readById(JsonKey.COURSE_ID, JsonKey.BATCH_ID, null);
     Assert.assertNotEquals(null, courseBatch);
@@ -87,7 +87,7 @@ public class CourseBatchDaoTest {
     Response response = new Response();
     response.put(JsonKey.RESPONSE, Arrays.asList());
     when(cassandraOperation.getRecordByIdentifier(
-            Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
+            Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any(), Mockito.any()))
         .thenReturn(response);
     try {
       courseBatchDao.readById(JsonKey.COURSE_ID, JsonKey.BATCH_ID, null);

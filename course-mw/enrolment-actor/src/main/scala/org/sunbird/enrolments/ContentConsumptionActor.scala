@@ -177,9 +177,9 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                             })
                             // First push the event to kafka and then update cassandra user_content_consumption table
                             pushInstructionEvent(requestContext, userId, batchId, courseId, contents.asJava)
-                            cassandraOperation.batchInsertLogged(requestContext, consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, contents)
+                            cassandraOperation.batchInsertLogged(consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, contents, requestContext)
                             val updateData = getLatestReadDetails(userId, batchId, contents)
-                            cassandraOperation.updateRecordV2(requestContext, enrolmentDBInfo.getKeySpace, enrolmentDBInfo.getTableName, updateData._1, updateData._2, true)
+                            cassandraOperation.updateRecordV2(enrolmentDBInfo.getKeySpace, enrolmentDBInfo.getTableName, updateData._1, updateData._2, true, requestContext)
                             contentIds.map(id => responseMessage.put(id,JsonKey.SUCCESS))
 
                         } else {
@@ -243,7 +243,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             if(CollectionUtils.isNotEmpty(contentIds))
                 put("contentid", contentIds)
         }}
-        val response = cassandraOperation.getRecords(requestContext, consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, filters, null)
+        val response = cassandraOperation.getRecords(consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, filters, null, requestContext)
         response.getResult.getOrDefault(JsonKey.RESPONSE, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
     }
 
@@ -412,7 +412,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         }}
         val limit = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("assessment.attempts.limit")))
             (ProjectUtil.getConfigValue("assessment.attempts.limit")).asInstanceOf[Integer] else 25.asInstanceOf[Integer]
-        val response = cassandraOperation.getRecordsWithLimit(requestContext, assessmentAggregatorDBInfo.getKeySpace, assessmentAggregatorDBInfo.getTableName, filters, fieldsToGet, limit)
+        val response = cassandraOperation.getRecordsWithLimit(assessmentAggregatorDBInfo.getKeySpace, assessmentAggregatorDBInfo.getTableName, filters, fieldsToGet, limit, requestContext)
         response.getResult.getOrDefault(JsonKey.RESPONSE, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
     }
 
@@ -423,8 +423,8 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         val batchId: String = request.getOrDefault(JsonKey.BATCH_ID, "").asInstanceOf[String]
         val filters = Map[String, AnyRef]("userid"-> userId, "courseid"-> courseId, "batchid"-> batchId).asJava
         val result = cassandraOperation
-          .getRecords(request.getRequestContext, enrolmentDBInfo.getKeySpace, enrolmentDBInfo.getTableName, filters,
-              null)
+          .getRecords(enrolmentDBInfo.getKeySpace, enrolmentDBInfo.getTableName, filters,
+              null, request.getRequestContext)
         val resp = result.getResult
           .getOrDefault(JsonKey.RESPONSE, new java.util.ArrayList[java.util.Map[String, AnyRef]])
           .asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]

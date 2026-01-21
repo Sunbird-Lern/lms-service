@@ -147,7 +147,7 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
     map.put(JsonKey.PROCESS_END_TIME, ProjectUtil.getFormattedDate());
     map.put(JsonKey.STATUS, ProjectUtil.BulkProcessStatus.COMPLETED.getValue());
     try {
-      cassandraOperation.updateRecord(requestContext, bulkDb.getKeySpace(), bulkDb.getTableName(), map);
+      cassandraOperation.updateRecord(bulkDb.getKeySpace(), bulkDb.getTableName(), map, requestContext);
     } catch (Exception e) {
       logger.error(requestContext, "Exception Occurred while updating bulk_upload_process in BulkUploadBackGroundJobActor : ", e);
     }
@@ -238,7 +238,7 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
     userCourses.put(JsonKey.COURSE_PROGRESS, 0);
     try {
       cassandraOperation.insertRecord(
-              requestContext, courseEnrollmentdbInfo.getKeySpace(), courseEnrollmentdbInfo.getTableName(), userCourses);
+              courseEnrollmentdbInfo.getKeySpace(), courseEnrollmentdbInfo.getTableName(), userCourses, requestContext);
       userCourses.put(JsonKey.DATE_TIME, ProjectUtil.formatDate(ts));
       String id = UserCoursesService.generateUserCourseESId(batchId, userId);
       userCourses.put(JsonKey.ID, id);
@@ -361,7 +361,7 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
     map.put(JsonKey.ID, processId);
     map.put(JsonKey.STATUS, ProjectUtil.BulkProcessStatus.IN_PROGRESS.getValue());
     try {
-      cassandraOperation.updateRecord(requestContext, bulkDb.getKeySpace(), bulkDb.getTableName(), map);
+      cassandraOperation.updateRecord(bulkDb.getKeySpace(), bulkDb.getTableName(), map, requestContext);
     } catch (Exception e) {
       logger.error(requestContext, "Exception Occurred while updating bulk_upload_process in BulkUploadBackGroundJobActor : ", e);
     }
@@ -374,12 +374,12 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
       map.put(JsonKey.ID, processId);
       map.put(JsonKey.PROCESS_START_TIME, ProjectUtil.getFormattedDate());
       map.put(JsonKey.STATUS, ProjectUtil.BulkProcessStatus.IN_PROGRESS.getValue());
-      cassandraOperation.updateRecord(requestContext, bulkDb.getKeySpace(), bulkDb.getTableName(), map);
+      cassandraOperation.updateRecord(bulkDb.getKeySpace(), bulkDb.getTableName(), map, requestContext);
     } catch (Exception ex) {
       logger.error(requestContext, "Exception occurred while updating status to bulk_upload_process "
                       + "table in BulkUploadBackGroundJobActor.", ex);
     }
-    Response res = cassandraOperation.getRecordByIdentifier(requestContext, bulkDb.getKeySpace(), bulkDb.getTableName(), processId, null);
+    Response res = cassandraOperation.getRecordByIdentifier(bulkDb.getKeySpace(), bulkDb.getTableName(), processId, null, requestContext);
     return (((List<Map<String, Object>>) res.get(JsonKey.RESPONSE)).get(0));
   }
 }

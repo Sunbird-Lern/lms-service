@@ -68,7 +68,7 @@ public class EsSyncActor extends BaseActor {
       logger.info(req.getRequestContext(), "EsSyncBackgroundActor:sync: Sync all data for type = " + objectType);
 
       cassandraOperation.applyOperationOnRecordsAsync(
-              req.getRequestContext(), dbInfo.getKeySpace(), dbInfo.getTableName(), null, null, getSyncCallback(req.getRequestContext(), objectType));
+              dbInfo.getKeySpace(), dbInfo.getTableName(), null, null, getSyncCallback(req.getRequestContext(), objectType), req.getRequestContext());
       return;
     }
 
@@ -94,17 +94,16 @@ public class EsSyncActor extends BaseActor {
       Map<String, Object> filters = new HashMap<>();
       filters.put(partitionKey, partitionKeys);
       cassandraOperation.applyOperationOnRecordsAsync(
-              req.getRequestContext(), dbInfo.getKeySpace(), dbInfo.getTableName(), filters, null, getSyncCallback(req.getRequestContext(), objectType));
+              dbInfo.getKeySpace(), dbInfo.getTableName(), filters, null, getSyncCallback(req.getRequestContext(), objectType), req.getRequestContext());
     }
 
     if (CollectionUtils.isNotEmpty(idFilters)) {
       idFilters.forEach(idMap ->
               cassandraOperation.applyOperationOnRecordsAsync(
-                      req.getRequestContext(), dbInfo.getKeySpace(),
-                  dbInfo.getTableName(),
+                      dbInfo.getKeySpace(), dbInfo.getTableName(),
                   idMap,
                   null,
-                  getSyncCallback(req.getRequestContext(), objectType)));
+                  getSyncCallback(req.getRequestContext(), objectType), req.getRequestContext()));
     }
     logger.info(req.getRequestContext(), "EsSyncBackgroundActor:sync: Syncing data for " + requestLogMsg + " completed");
   }

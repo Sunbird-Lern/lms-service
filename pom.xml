@@ -154,6 +154,7 @@
   			<activeByDefault>true</activeByDefault>
   		</activation>
   		<modules>
+  			<module>core</module>
   			<module>course-mw</module>
 	  		<module>service</module>
   		</modules>
@@ -161,12 +162,14 @@
   	<profile>
   		<id>play-run</id>
   		<modules>
+  			<module>core</module>
 	  		<module>service</module>
   		</modules>
   	</profile>
   	<profile>
         <id>jacoco</id>
         <modules>
+  			<module>core</module>
   			<module>course-mw</module>
 	  		<module>service</module>
   		</modules>

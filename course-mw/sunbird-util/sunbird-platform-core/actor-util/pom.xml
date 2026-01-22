@@ -17,6 +17,7 @@
 		<pekko.version>1.0.3</pekko.version>
 		<jackson.version>2.13.5</jackson.version>
 		<logstash-logback-encoder.version>7.3</logstash-logback-encoder.version>
+		<logback.version>1.4.14</logback.version>
 	</properties>
 
 	<dependencies>
@@ -71,12 +72,12 @@
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<version>1.2.3</version>
+			<version>${logback.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-core</artifactId>
-			<version>1.2.3</version>
+			<version>${logback.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>net.logstash.logback</groupId>

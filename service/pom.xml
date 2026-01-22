@@ -39,11 +39,23 @@
 		<jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
 		<netty.version>4.1.112.Final</netty.version>
 		<asm.version>9.2</asm.version>
+		<guava.version>31.1-jre</guava.version>
+		<logback.version>1.4.14</logback.version>
 		<guice.version>5.1.0</guice.version>
 	</properties>
-
+	
 	<dependencyManagement>
 		<dependencies>
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-classic</artifactId>
+				<version>${logback.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-core</artifactId>
+				<version>${logback.version}</version>
+			</dependency>
 			<!-- Force all Guice versions to 5.1.0 -->
 			<dependency>
 				<groupId>com.google.inject</groupId>
@@ -140,13 +152,23 @@
 			<artifactId>guice</artifactId>
 			<version>${guice.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${guava.version}</version>
+		</dependency>
 		<!-- https://mvnrepository.com/artifact/com.google.inject.extensions/guice-assistedinject -->
 		<dependency>
 		    <groupId>com.google.inject.extensions</groupId>
 		    <artifactId>guice-assistedinject</artifactId>
 		    <version>${guice.version}</version>
+		</dependency>	
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-resolver-dns-native-macos</artifactId>
+			<version>4.1.68.Final</version>
+			<classifier>osx-aarch_64</classifier>
 		</dependency>
-		
 		<dependency>
 			<groupId>org.playframework</groupId>
 			<artifactId>play-netty-server_${scala.major.version}</artifactId>
@@ -327,6 +349,17 @@
 		</dependency>
 		<dependency>
 			<groupId>org.sunbird</groupId>
+			<artifactId>assessment-aggregator</artifactId>
+			<version>1.0-SNAPSHOT</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-simple</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.sunbird</groupId>
 			<artifactId>sunbird-commons</artifactId>
 			<version>1.0-SNAPSHOT</version>
 			<exclusions>
@@ -400,14 +433,12 @@
 			</exclusions>
 		</dependency>
 		<!-- Commented out to avoid conflicts with Sunbird's Logback 1.2.3 -->
-		<!--
 		<dependency>
 			<groupId>org.playframework</groupId>
 			<artifactId>play-logback_${scala.major.version}</artifactId>
 			<version>${play2.version}</version>
 			<scope>runtime</scope>
 		</dependency>
-		-->
 		<dependency>
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-library</artifactId>

@@ -45,8 +45,23 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         request.getOperation match {
             case "updateConsumption" => updateConsumption(request)
             case "getConsumption" => getConsumption(request)
+            case "syncAssessmentData" => handleSyncAssessmentData(request)
             case _ => onReceiveUnsupportedOperation(request.getOperation)
         }
+    }
+
+    def handleSyncAssessmentData(request: Request): Unit = {
+        val requestContext = request.getRequestContext
+        val requestBy = request.get(JsonKey.REQUESTED_BY).asInstanceOf[String]
+        val requestedFor = request.get(JsonKey.REQUESTED_FOR).asInstanceOf[String]
+        val assessmentEvents = request.getRequest.getOrDefault(JsonKey.ASSESSMENT_EVENTS, new java.util.ArrayList[java.util.Map[String, AnyRef]]).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]
+        if (CollectionUtils.isNotEmpty(assessmentEvents)) {
+            val userAssessments = updateAssessEventUserid(assessmentEvents.asScala.toList, requestBy, requestedFor)
+            userAssessments.values.flatten.foreach(assessment => {
+                syncAssessmentData(assessment, requestContext)
+            })
+        }
+        sender().tell(successResponse(), self)
     }
 
     def updateConsumption(request: Request): Unit = {
@@ -123,7 +138,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
                         val userId = assessments._1
                         if(validUserIds.contains(userId)){
                             assessments._2.foreach(assessment => {
-                                syncAssessmentData(assessment)
+                                syncAssessmentData(assessment, requestContext)
                                 responseMessage.put(batchId, JsonKey.SUCCESS)
                             })
                         } else {
@@ -217,10 +232,34 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         updatedData.groupBy(d => d.get(JsonKey.USER_ID).asInstanceOf[String])
     }
 
-    def syncAssessmentData(assessment: java.util.Map[String, AnyRef]) = {
-        val topic = ProjectUtil.getConfigValue("kafka_assessment_topic")
-        if (StringUtils.isNotBlank(topic)) KafkaClient.send(mapper.writeValueAsString(assessment), topic)
-        else throw new ProjectCommonException("BE_JOB_REQUEST_EXCEPTION", "Invalid topic id.", ResponseCode.CLIENT_ERROR.getResponseCode)
+    def syncAssessmentData(assessment: java.util.Map[String, AnyRef], requestContext: RequestContext): Unit = {
+        val useDirectAggregation = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("assessment_direct_aggregation_enabled")))
+            ProjectUtil.getConfigValue("assessment_direct_aggregation_enabled").toBoolean else false
+        if (useDirectAggregation) {
+            logger.info(requestContext, "Using assessment aggregator module")
+            val request = createAssessmentRequest(assessment, requestContext)
+            val assessmentAggregatorActor = context.actorSelection("/user/assessment-aggregator-actor")
+            assessmentAggregatorActor ! request
+            logger.info(requestContext, s"Assessment sent to aggregator (async): attemptId=${assessment.get("attemptId")}")
+        } else {
+            logger.info(requestContext, "Using Kafka-based assessment aggregation")
+            val topic = ProjectUtil.getConfigValue("kafka_assessment_topic")
+            if (StringUtils.isNotBlank(topic)) KafkaClient.send(mapper.writeValueAsString(assessment), topic)
+            else throw new ProjectCommonException("BE_JOB_REQUEST_EXCEPTION", "Invalid topic id.", ResponseCode.CLIENT_ERROR.getResponseCode)
+        }
+    }
+    
+    private def createAssessmentRequest(assessment: java.util.Map[String, AnyRef], requestContext: RequestContext): Request = {
+        val request = new Request()
+        request.setRequestContext(requestContext)
+        request.setOperation("aggregateAssessment")
+        val fields = List(JsonKey.ATTEMPT_ID -> "attemptId", JsonKey.USER_ID -> "userId", JsonKey.COURSE_ID -> "courseId", JsonKey.BATCH_ID -> "batchId", JsonKey.CONTENT_ID -> "contentId")
+        fields.foreach { case (k, target) => request.put(target, assessment.get(k)) }
+        val ts = Option(assessment.get("assessmentTimestamp")).orElse(Option(assessment.get(JsonKey.ASSESSMENT_TS))).getOrElse(System.currentTimeMillis().asInstanceOf[AnyRef])
+        request.put("assessmentTimestamp", ts)
+        Option(assessment.get("events")).foreach(e => request.getRequest.put("events", e))
+        logger.info(requestContext, s"Extracted attemptId: ${assessment.get(JsonKey.ATTEMPT_ID)}, courseId: ${assessment.get(JsonKey.COURSE_ID)}, batchId: ${assessment.get(JsonKey.BATCH_ID)}, events: ${if (assessment.get("events") != null) "present" else "null"}")
+        request
     }
 
     private def pushInvalidDataToKafka(requestContext: RequestContext, data: java.util.Map[String, AnyRef], dataType: String): Unit = {

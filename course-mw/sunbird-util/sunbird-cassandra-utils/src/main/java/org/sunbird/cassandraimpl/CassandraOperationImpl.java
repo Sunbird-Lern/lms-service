@@ -11,6 +11,7 @@ import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import com.datastax.driver.core.exceptions.WriteTimeoutException;
 import com.datastax.driver.core.exceptions.QueryExecutionException;
 import com.datastax.driver.core.exceptions.QueryValidationException;
+import com.datastax.driver.core.UserType;
 import com.datastax.driver.core.querybuilder.*;
 import com.datastax.driver.core.querybuilder.Select.Builder;
 import com.datastax.driver.core.querybuilder.Select.Where;
@@ -772,4 +773,13 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
     return response;
   }
 
+  @Override
+  public UserType getUDTType(String keyspaceName, String typeName) {
+    return connectionManager
+        .getSession(keyspaceName)
+        .getCluster()
+        .getMetadata()
+        .getKeyspace(keyspaceName)
+        .getUserType(typeName);
+  }
 }

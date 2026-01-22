@@ -2,6 +2,7 @@ package util;
 
 import org.sunbird.actor.exhaustjob.ExhaustJobActor;
 import org.sunbird.aggregate.CollectionSummaryAggregate;
+import org.sunbird.assessment.actor.AssessmentAggregatorActor;
 import org.sunbird.enrolments.ContentConsumptionActor;
 import org.sunbird.enrolments.CourseEnrolmentActor;
 import org.sunbird.group.GroupAggregatesActor;
@@ -43,7 +44,8 @@ public enum ACTOR_NAMES {
   COURSE_ENROLMENT_ACTOR(CourseEnrolmentActor.class, "course-enrolment-actor"),
   CONTENT_CONSUMPTION_ACTOR(ContentConsumptionActor.class, "content-consumption-actor"),
   GROUP_AGGREGATES_ACTORS(GroupAggregatesActor.class, "group-aggregates-actor"),
-  EXHAUST_JOB_ACTOR(ExhaustJobActor.class, "exhaust-job-actor");
+  EXHAUST_JOB_ACTOR(ExhaustJobActor.class, "exhaust-job-actor"),
+  ASSESSMENT_AGGREGATOR_ACTOR(AssessmentAggregatorActor.class, "assessment-aggregator-actor");
   private ACTOR_NAMES(Class clazz, String name) {
     actorClass = clazz;
     actorName = name;

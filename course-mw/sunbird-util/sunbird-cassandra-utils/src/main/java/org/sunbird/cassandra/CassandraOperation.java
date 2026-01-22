@@ -2,6 +2,7 @@
 package org.sunbird.cassandra;
 
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.UserType;
 import com.google.common.util.concurrent.FutureCallback;
 import java.util.List;
 import java.util.Map;
@@ -289,5 +290,7 @@ public interface CassandraOperation {
    * @return Response indicating status of operation
    */
   Response batchInsertLogged(RequestContext requestContext, String keyspaceName, String tableName, List<Map<String, Object>> records);
+
+  public UserType getUDTType(String keyspaceName, String typeName);
 
 }

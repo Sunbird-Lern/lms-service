@@ -82,9 +82,23 @@ public class CassandraDACImpl extends CassandraOperationImpl {
       }
 
       // Log and execute query
-      logDebug(requestContext, select.getQueryString());
+      logDebug(requestContext, formatLogMessage("Executing CQL query: {}", select.getQueryString()));
       ResultSet results = session.execute(select);
       response = CassandraUtil.createResponse(results);
+
+      // Log successful query at INFO level
+      int recordCount =
+          response.getResult() != null
+              ? ((List<?>) response.getResult().get(Constants.RESPONSE)).size()
+              : 0;
+
+      logInfo(
+          requestContext, formatLogMessage("Successfully retrieved records - keyspace: {}, table: {}, filters: {}, fields: {}, count: {}",
+          keySpace,
+          table,
+          filters != null ? filters.size() : 0,
+          fields != null ? fields.size() : "all",
+          recordCount));
 
     } catch (Exception e) {
       logger.error(
@@ -149,9 +163,17 @@ public class CassandraDACImpl extends CassandraOperationImpl {
       }
 
       // Log and execute async query
-      logDebug(requestContext, select.getQueryString());
+      logDebug(requestContext, formatLogMessage("Executing async CQL query: {}", select.getQueryString()));
       ResultSetFuture future = session.executeAsync(select);
       Futures.addCallback(future, callback, Executors.newFixedThreadPool(1));
+      
+      // Log async operation initiation at INFO level
+      logInfo(
+          requestContext, formatLogMessage("Successfully initiated async query - keyspace: {}, table: {}, filters: {}, fields: {}",
+          keySpace,
+          table,
+          filters != null ? filters.size() : 0,
+          fields != null ? fields.size() : "all"));
 
     } catch (Exception e) {
       logger.error(
@@ -258,7 +280,9 @@ public class CassandraDACImpl extends CassandraOperationImpl {
     if (MapUtils.isEmpty(primaryKey)) {
       String errorMsg =
           Constants.EXCEPTION_MSG_FETCH + table + " : primary key is a must for update call";
-      logger.error(requestContext, errorMsg, null);
+      logError(requestContext, "Primary key validation failed for map operation - table: {}, error: {}",
+          table,
+          errorMsg);
       throw new ProjectCommonException(
           ResponseCode.SERVER_ERROR.getErrorCode(),
           ResponseCode.SERVER_ERROR.getErrorMessage(),
@@ -278,16 +302,32 @@ public class CassandraDACImpl extends CassandraOperationImpl {
 
     try {
       Response response = new Response();
-      logInfo(requestContext, "Map operation Query: " + update.toString());
-      logDebug(requestContext, update.getQueryString());
+      logDebug(requestContext, formatLogMessage("Executing map operation query: {}", update.getQueryString()));
       connectionManager.getSession(keySpace).execute(update);
       response.put(Constants.RESPONSE, Constants.SUCCESS);
+      
+      // Log successful map operation at INFO level
+      logInfo(
+          requestContext, formatLogMessage("Successfully {} map column - keyspace: {}, table: {}, column: {}, key: {}, operation: {}",
+          add ? "added to" : "removed from",
+          keySpace,
+          table,
+          column,
+          key,
+          add ? "add" : "remove"));
+      
       return response;
 
     } catch (Exception e) {
-      logger.error(
+      logError(
           requestContext,
-          Constants.EXCEPTION_MSG_FETCH + table + " : " + e.getMessage(),
+          "Map operation failed - keyspace: {}, table: {}, column: {}, key: {}, operation: {}, error: {}",
+          keySpace,
+          table,
+          column,
+          key,
+          add ? "add" : "remove",
+          e.getMessage(),
           e);
       throw new ProjectCommonException(
           ResponseCode.SERVER_ERROR.getErrorCode(),
@@ -320,6 +360,13 @@ public class CassandraDACImpl extends CassandraOperationImpl {
       String column,
       Object value,
       RequestContext requestContext) {
+    logDebug(
+        requestContext,
+        formatLogMessage("Starting updateAddSetRecord - keyspace: {}, table: {}, column: {}, value: {}",
+            keySpace,
+            table,
+            column,
+            value));
     return updateSetRecord(keySpace, table, primaryKey, column, value, true, requestContext);
   }
 
@@ -343,6 +390,13 @@ public class CassandraDACImpl extends CassandraOperationImpl {
       String column,
       Object value,
       RequestContext requestContext) {
+    logDebug(
+        requestContext,
+        formatLogMessage("Starting updateRemoveSetRecord - keyspace: {}, table: {}, column: {}, value: {}",
+            keySpace,
+            table,
+            column,
+            value));
     return updateSetRecord(keySpace, table, primaryKey, column, value, false, requestContext);
   }
 
@@ -371,7 +425,12 @@ public class CassandraDACImpl extends CassandraOperationImpl {
     long startTime = System.currentTimeMillis();
     logDebug(
         requestContext,
-        "Cassandra Service updateSetRecord method started at == " + startTime);
+        formatLogMessage("Starting updateSetRecord - keyspace: {}, table: {}, column: {}, value: {}, operation: {}",
+            keySpace,
+            table,
+            column,
+            value,
+            add ? "add" : "remove"));
 
     Update update = QueryBuilder.update(keySpace, table);
 
@@ -386,7 +445,9 @@ public class CassandraDACImpl extends CassandraOperationImpl {
     if (MapUtils.isEmpty(primaryKey)) {
       String errorMsg =
           Constants.EXCEPTION_MSG_FETCH + table + " : primary key is a must for update call";
-      logger.error(requestContext, errorMsg, null);
+      logError(requestContext, "Primary key validation failed for set operation - table: {}, error: {}",
+          table,
+          errorMsg);
       throw new ProjectCommonException(
           ResponseCode.SERVER_ERROR.getErrorCode(),
           ResponseCode.SERVER_ERROR.getErrorMessage(),
@@ -406,22 +467,32 @@ public class CassandraDACImpl extends CassandraOperationImpl {
 
     try {
       Response response = new Response();
-      logDebug(requestContext, "updateSetRecord: Update set Query:: " + update.toString());
+      logDebug(requestContext, formatLogMessage("Executing set operation query: {}", update.getQueryString()));
       connectionManager.getSession(keySpace).execute(update);
       response.put(Constants.RESPONSE, Constants.SUCCESS);
-
-      long stopTime = System.currentTimeMillis();
-      logDebug(
-          requestContext,
-          String.format(
-              "Cassandra operation %s started at %d and completed at %d. Total time elapsed is %d",
-              "updateSetRecord", startTime, stopTime, (stopTime - startTime)));
+      
+      // Log successful set operation at INFO level
+      logInfo(
+          requestContext, formatLogMessage("Successfully {} set column - keyspace: {}, table: {}, column: {}, value: {}, operation: {}",
+          add ? "added to" : "removed from",
+          keySpace,
+          table,
+          column,
+          value,
+          add ? "add" : "remove"));
+      
       return response;
 
     } catch (Exception e) {
-      logger.error(
+      logError(
           requestContext,
-          Constants.EXCEPTION_MSG_FETCH + table + " : " + e.getMessage(),
+          "Set operation failed - keyspace: {}, table: {}, column: {}, value: {}, operation: {}, error: {}",
+          keySpace,
+          table,
+          column,
+          value,
+          add ? "add" : "remove",
+          e.getMessage(),
           e);
       throw new ProjectCommonException(
           ResponseCode.SERVER_ERROR.getErrorCode(),
@@ -456,6 +527,15 @@ public class CassandraDACImpl extends CassandraOperationImpl {
       Integer limit,
       RequestContext requestContext) {
     long startTime = System.currentTimeMillis();
+    logDebug(
+        requestContext,
+        formatLogMessage("Starting getRecordsWithLimit - keyspace: {}, table: {}, limit: {}, fields: {}, filters: {}",
+            keyspace,
+            table,
+            limit,
+            fields != null ? fields.size() : "all",
+            filters != null ? filters.size() : 0));
+
     Response response = new Response();
     Session session = connectionManager.getSession(keyspace);
     Select select = null;
@@ -485,14 +565,33 @@ public class CassandraDACImpl extends CassandraOperationImpl {
       select.limit(limit);
 
       // Log and execute query
-      logDebug(requestContext, select.getQueryString());
+      logDebug(requestContext, formatLogMessage("Executing CQL query: {}", select.getQueryString()));
       ResultSet results = session.execute(select);
       response = CassandraUtil.createResponse(results);
 
+      // Log successful query at INFO level
+      int recordCount =
+          response.getResult() != null
+              ? ((List<?>) response.getResult().get(Constants.RESPONSE)).size()
+              : 0;
+
+      logInfo(
+          requestContext, formatLogMessage("Successfully retrieved records with limit - keyspace: {}, table: {}, filters: {}, fields: {}, limit: {}, count: {}",
+          keyspace,
+          table,
+          filters != null ? filters.size() : 0,
+          fields != null ? fields.size() : "all",
+          limit,
+          recordCount));
+
     } catch (Exception e) {
-      logger.error(
+      logError(
           requestContext,
-          Constants.EXCEPTION_MSG_FETCH + table + " : " + e.getMessage(),
+          "Failed to retrieve records with limit - keyspace: {}, table: {}, limit: {}, error: {}",
+          keyspace,
+          table,
+          limit,
+          e.getMessage(),
           e);
       throw new ProjectCommonException(
           ResponseCode.SERVER_ERROR.getErrorCode(),

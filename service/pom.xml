@@ -98,8 +98,11 @@
 	</dependencyManagement>
 
 	<dependencies>
-		<!-- Don't move this dependency below play dependency otherwise it will 
-			be overriden by play jackson jar, which uses older version -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>2.0.12</version>
+		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
@@ -437,7 +440,6 @@
 			<groupId>org.playframework</groupId>
 			<artifactId>play-logback_${scala.major.version}</artifactId>
 			<version>${play2.version}</version>
-			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.scala-lang</groupId>
@@ -474,19 +476,16 @@
 			<artifactId>logback-kafka-appender</artifactId>
 			<version>0.2.0-RC2</version>
 		</dependency>
-		<!-- Remove explicit logback dependencies - let Play Framework manage them -->
-		<!-- 
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<version>1.2.3</version>
+			<version>${logback.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-core</artifactId>
-			<version>1.2.3</version>
+			<version>${logback.version}</version>
 		</dependency>
-		-->
 		<dependency>
 			<groupId>net.logstash.logback</groupId>
 			<artifactId>logstash-logback-encoder</artifactId>
@@ -509,7 +508,7 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.25</version>
+			<version>2.0.12</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>

@@ -15,7 +15,7 @@
       		<guava.version>31.1-jre</guava.version>
 		<guice.version>5.1.0</guice.version>
       <asm.version>7.1</asm.version>
-      <logback.version>1.4.14</logback.version>
+      <guice.version>4.2.2</guice.version>
       <apache.httpcomponents.version>4.5.14</apache.httpcomponents.version>
       <apache.httpcore.version>4.4.16</apache.httpcore.version>
   </properties>
@@ -58,11 +58,6 @@
         <groupId>com.google.inject.extensions</groupId>
         <artifactId>guice-assistedinject</artifactId>
         <version>${guice.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.google.guava</groupId>
-        <artifactId>guava</artifactId>
-        <version>${guava.version}</version>
       </dependency>
       <!-- Netty dependency management - enforce version 4.1.112.Final across all modules -->
       <dependency>
@@ -150,21 +145,6 @@
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpmime</artifactId>
         <version>${apache.httpcomponents.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>ch.qos.logback</groupId>
-        <artifactId>logback-classic</artifactId>
-        <version>${logback.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>ch.qos.logback</groupId>
-        <artifactId>logback-core</artifactId>
-        <version>${logback.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-api</artifactId>
-        <version>2.0.12</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

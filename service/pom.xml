@@ -40,22 +40,11 @@
 		<netty.version>4.1.112.Final</netty.version>
 		<asm.version>9.2</asm.version>
 		<guava.version>31.1-jre</guava.version>
-		<logback.version>1.4.14</logback.version>
 		<guice.version>5.1.0</guice.version>
 	</properties>
 	
 	<dependencyManagement>
 		<dependencies>
-			<dependency>
-				<groupId>ch.qos.logback</groupId>
-				<artifactId>logback-classic</artifactId>
-				<version>${logback.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>ch.qos.logback</groupId>
-				<artifactId>logback-core</artifactId>
-				<version>${logback.version}</version>
-			</dependency>
 			<!-- Force all Guice versions to 5.1.0 -->
 			<dependency>
 				<groupId>com.google.inject</groupId>
@@ -98,11 +87,6 @@
 	</dependencyManagement>
 
 	<dependencies>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>2.0.12</version>
-		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
@@ -440,6 +424,7 @@
 			<groupId>org.playframework</groupId>
 			<artifactId>play-logback_${scala.major.version}</artifactId>
 			<version>${play2.version}</version>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.scala-lang</groupId>
@@ -476,16 +461,19 @@
 			<artifactId>logback-kafka-appender</artifactId>
 			<version>0.2.0-RC2</version>
 		</dependency>
+		<!-- Remove explicit logback dependencies - let Play Framework manage them -->
+		<!-- 
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<version>${logback.version}</version>
+			<version>1.2.3</version>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-core</artifactId>
-			<version>${logback.version}</version>
+			<version>1.2.3</version>
 		</dependency>
+		-->
 		<dependency>
 			<groupId>net.logstash.logback</groupId>
 			<artifactId>logstash-logback-encoder</artifactId>
@@ -508,7 +496,7 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>2.0.12</version>
+			<version>1.7.25</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>

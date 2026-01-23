@@ -16,6 +16,8 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
   private lazy val cassandraService = new CassandraService()
   private lazy val redisService = new RedisService()
   private lazy val kafkaService = new KafkaService()
+  private lazy val contentService = new ContentService()
+
   override def onReceive(message: Any): Unit = {
     message match {
       case request: Request =>
@@ -51,6 +53,16 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
 
   private def processAttempt(req: AssessmentRequest, context: RequestContext): Unit = {
     val uniqueEvents = assessmentService.getUniqueQuestions(req.events)
+    val skipMissing = Option(ProjectUtil.getConfigValue("assessment_skip_missing_records")).getOrElse("true").toBoolean
+    if (skipMissing) {
+      val totalQuestions = redisService.getTotalQuestionsCount(req.contentId).getOrElse(contentService.getQuestionCount(req.contentId))
+      logger.info(context, s"Total questions for contentId=${req.contentId} is $totalQuestions, unique events=${uniqueEvents.size}")
+      if (totalQuestions > 0 && uniqueEvents.size > totalQuestions) {
+        logger.warn(context, s"Skipping assessment ${req.attemptId}: unique events (${uniqueEvents.size}) exceed total questions ($totalQuestions)")
+        return
+      }
+    }
+
     val scoreMetrics = assessmentService.computeScoreMetrics(uniqueEvents)
     val existing = cassandraService.getAssessment(req.attemptId, req.userId, req.courseId, req.batchId, req.contentId, context)
     if (existing.exists(_.lastAttemptedOn >= req.assessmentTimestamp)) {
@@ -98,7 +110,12 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
 
   private def validateAssessment(req: AssessmentRequest, context: RequestContext): Unit = {
     val enableVal = ProjectUtil.getConfigValue("assessment_enable_content_validation") == "true"
-    if (enableVal && !redisService.isValidContent(req.courseId, req.contentId)) throw new RuntimeException("Invalid Content")
+    if (enableVal) {
+      val isValidInRedis = redisService.isValidContent(req.courseId, req.contentId)
+      if (!isValidInRedis && !contentService.isValidContent(req.contentId)) {
+        throw new RuntimeException("Invalid Content")
+      }
+    }
   }
 
   private def getVal(m: java.util.Map[String, AnyRef], k1: String, k2: String): String = {

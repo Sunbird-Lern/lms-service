@@ -12,7 +12,7 @@ class CassandraService {
 
   private val logger = LoggerFactory.getLogger(classOf[CassandraService])
   private lazy val dao = ServiceFactory.getInstance.asInstanceOf[CassandraOperation]
-  private val keyspace = Option(ProjectUtil.getConfigValue("cassandra_keyspace")).getOrElse("sunbird_courses")
+  private val keyspace = Option(ProjectUtil.getConfigValue("sunbird_course_keyspace")).getOrElse("sunbird_courses")
   private val assessmentTable = Option(ProjectUtil.getConfigValue("assessment_aggregator_table")).getOrElse("assessment_aggregator")
   private val activityTable = Option(ProjectUtil.getConfigValue("user_activity_agg_table")).getOrElse("user_activity_agg")
   private lazy val questionType: UserType = dao.getUDTType(keyspace, Option(ProjectUtil.getConfigValue("assessment_question_udt_type")).getOrElse("question"))

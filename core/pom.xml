@@ -14,8 +14,106 @@
     <packaging>pom</packaging>
     <name>core</name>
 
+    <properties>
+        <!-- Java Compiler Settings -->
+        <maven.compiler.release>11</maven.compiler.release>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        
+        <!-- Encoding Settings -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        
+        <!-- Cassandra Dependencies -->
+        <cassandra.driver.version>3.7.0</cassandra.driver.version>
+        
+        <!-- Elasticsearch Dependencies -->
+        <elasticsearch.version>7.10.2</elasticsearch.version>
+        
+        <!-- Apache HTTP Components -->
+        <httpcomponents.httpclient.version>4.5.14</httpcomponents.httpclient.version>
+        <httpcomponents.httpcore.version>4.4.16</httpcomponents.httpcore.version>
+        <httpcomponents.httpasyncclient.version>4.1.5</httpcomponents.httpasyncclient.version>
+        
+        <!-- Jackson -->
+        <jackson.version>2.13.5</jackson.version>
+        
+        <!-- Logging -->
+        <logback.version>1.2.3</logback.version>
+        <logstash-logback-encoder.version>6.6</logstash-logback-encoder.version>
+        
+        <!-- Apache Commons -->
+        <commons-collections.version>3.2.2</commons-collections.version>
+        <commons-lang3.version>3.12.0</commons-lang3.version>
+        
+        <!-- Testing -->
+        <junit.version>4.13.1</junit.version>
+        <powermock.version>2.0.9</powermock.version>
+        
+        <!-- Build Plugins -->
+        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+        <maven-surefire-plugin.version>3.0.0</maven-surefire-plugin.version>
+        <jacoco-maven-plugin.version>0.8.7</jacoco-maven-plugin.version>
+        <scoverage.plugin.version>1.1.1</scoverage.plugin.version>
+    </properties>
+
     <modules>
         <module>sunbird-cassandra-utils</module>
+        <module>sunbird-es-utils</module>
     </modules>
+
+    <build>
+        <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
+        <testSourceDirectory>${basedir}/src/test/java</testSourceDirectory>
+
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven-compiler-plugin.version}</version>
+                    <configuration>
+                        <release>11</release>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven-surefire-plugin.version}</version>
+                    <configuration>
+                        <argLine>--illegal-access=warn</argLine>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco-maven-plugin.version}</version>
+                <configuration>
+                    <destFile>${basedir}/target/coverage-reports/jacoco-unit.exec</destFile>
+                    <dataFile>${basedir}/target/coverage-reports/jacoco-unit.exec</dataFile>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>jacoco-initialize</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>jacoco-site</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

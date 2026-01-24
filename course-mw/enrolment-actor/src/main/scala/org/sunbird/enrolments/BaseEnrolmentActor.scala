@@ -21,7 +21,7 @@ abstract class BaseEnrolmentActor extends BaseActor {
         dto.getAdditionalProperties().put(JsonKey.FILTERS, new java.util.HashMap[String, AnyRef](){{ put(JsonKey.BATCH_ID, batchIds)}})
         if(CollectionUtils.isNotEmpty(requestedFields))
             dto.setFields(requestedFields)
-        val future = esService.search(requestContext, dto, ProjectUtil.EsType.courseBatch.getTypeName)
+        val future = esService.search(dto, ProjectUtil.EsType.courseBatch.getTypeName, requestContext)
         val response = ElasticSearchHelper.getResponseFromFuture(future).asInstanceOf[java.util.Map[String, AnyRef]]
         response.getOrDefault(JsonKey.CONTENT, new java.util.ArrayList[util.Map[String, AnyRef]]).asInstanceOf[util.List[util.Map[String, AnyRef]]]
     }

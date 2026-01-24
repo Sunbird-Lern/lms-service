@@ -74,7 +74,7 @@ public class UserCoursesService {
     filter.put(JsonKey.ACTIVE, ProjectUtil.ActiveStatus.ACTIVE.getValue());
     SearchDTO searchDto = new SearchDTO();
     searchDto.getAdditionalProperties().put(JsonKey.FILTERS, filter);
-    Future<Map<String, Object>> resultF = esService.search(null, searchDto, ProjectUtil.EsType.usercourses.getTypeName());
+    Future<Map<String, Object>> resultF = esService.search(searchDto, ProjectUtil.EsType.usercourses.getTypeName(), null);
     Map<String, Object> result = (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
     return result;
   }
@@ -83,7 +83,7 @@ public class UserCoursesService {
     String id = generateUserCourseESId(batchId, userId);
     courseMap.put(JsonKey.ID, id);
     courseMap.put(JsonKey.IDENTIFIER, id);
-    Future<Boolean> responseF = esService.upsert(requestContext, ProjectUtil.EsType.usercourses.getTypeName(), id, courseMap);
+    Future<Boolean> responseF = esService.upsert(ProjectUtil.EsType.usercourses.getTypeName(), id, courseMap, requestContext);
     boolean response = (boolean) ElasticSearchHelper.getResponseFromFuture(responseF);
   }
 

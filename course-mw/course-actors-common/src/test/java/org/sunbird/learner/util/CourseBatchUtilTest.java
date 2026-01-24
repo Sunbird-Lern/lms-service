@@ -124,7 +124,7 @@ public class CourseBatchUtilTest {
     group.withESMock(new ESMocker());
     CustomObjectWrapper<Map<String, Object>> courseBatchIn =
         CustomObjectBuilder.getRandomCourseBatch();
-    when(group.getESMockerService().getDataByIdentifier(Mockito.any(), Mockito.anyString(), Mockito.anyString()))
+    when(group.getESMockerService().getDataByIdentifier(Mockito.anyString(), Mockito.anyString(), Mockito.any()))
         .thenReturn(courseBatchIn.asESIdentifierResult());
     Map<String, Object> courseBatchOut =
         CourseBatchUtil.validateCourseBatch(
@@ -138,7 +138,7 @@ public class CourseBatchUtilTest {
   @PrepareForTest({EsClientFactory.class, ElasticSearchHelper.class, Unirest.class})
   public void validateCourseBatchFailureTest() {
     group.withESMock(new ESMocker());
-    when(group.getESMockerService().getDataByIdentifier(Mockito.any(), Mockito.anyString(), Mockito.anyString()))
+    when(group.getESMockerService().getDataByIdentifier(Mockito.anyString(), Mockito.anyString(), Mockito.any()))
         .thenReturn(CustomObjectBuilder.getEmptyMap().asESIdentifierResult());
     try {
       CourseBatchUtil.validateCourseBatch(Mockito.any(), "courseId", "batchId");
@@ -154,7 +154,7 @@ public class CourseBatchUtilTest {
     group.withESMock(new ESMocker());
     CustomObjectWrapper<Map<String, Object>> courseBatchIn =
         CustomObjectBuilder.getRandomCourseBatch();
-    when(group.getESMockerService().getDataByIdentifier(Mockito.any(), Mockito.anyString(), Mockito.anyString()))
+    when(group.getESMockerService().getDataByIdentifier(Mockito.anyString(), Mockito.anyString(), Mockito.any()))
         .thenReturn(courseBatchIn.asESIdentifierResult());
     try {
       Map<String, Object> courseBatchOut =
@@ -173,7 +173,7 @@ public class CourseBatchUtilTest {
     group.withESMock(new ESMocker());
     when(group
             .getESMockerService()
-            .save(Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
+            .save(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
         .thenReturn(Futures.successful("randomBatchId"));
     CourseBatchUtil.syncCourseBatchForeground(
             null, "randomBatchId", CustomObjectBuilder.getRandomCourseBatch().get());

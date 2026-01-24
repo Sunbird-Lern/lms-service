@@ -143,12 +143,12 @@ public class EsSyncActor extends BaseActor {
             docList.add(doc);
             count++;
             if (docList.size() >= BATCH_SIZE) {
-              esService.bulkInsert(requestContext, getType(objectType), docList);
+              esService.bulkInsert(getType(objectType), docList, requestContext);
               docList.clear();
             }
           }
           if (!docList.isEmpty()) {
-            esService.bulkInsert(requestContext, getType(objectType), docList);
+            esService.bulkInsert(getType(objectType), docList, requestContext);
           }
           logger.info(requestContext, "getSyncCallback sync successful objectType=" + objectType + " count=" + count);
         } catch (Exception e) {

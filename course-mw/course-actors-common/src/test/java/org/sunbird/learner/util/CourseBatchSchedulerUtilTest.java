@@ -122,7 +122,7 @@ public class CourseBatchSchedulerUtilTest {
     PowerMockito.when(
             group
                 .getESMockerService()
-                .update(Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
+                .update(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
         .thenReturn(Futures.successful(true));
     PowerMockito.when(
             group

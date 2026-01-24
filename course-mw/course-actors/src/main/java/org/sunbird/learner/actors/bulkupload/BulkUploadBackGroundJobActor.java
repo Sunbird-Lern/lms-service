@@ -105,7 +105,7 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
       Map<String, Object> tempSuccessList = new HashMap<>();
 
       String batchId = (String) batchMap.get(JsonKey.BATCH_ID);
-      Future<Map<String, Object>> resultF = esService.getDataByIdentifier(requestContext, ProjectUtil.EsType.courseBatch.getTypeName(), batchId);
+      Future<Map<String, Object>> resultF = esService.getDataByIdentifier(ProjectUtil.EsType.courseBatch.getTypeName(), batchId, requestContext);
       Map<String, Object> courseBatchObject = (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
       String msg = validateBatchInfo(courseBatchObject);
       if (msg.equals(JsonKey.SUCCESS)) {
@@ -188,7 +188,7 @@ public class BulkUploadBackGroundJobActor extends BaseActor {
           updateAttributes.put(JsonKey.COURSE_ENROLL_DATE, ProjectUtil.getFormattedDate());
           userCourseDao.update(requestContext, batchId, userId, updateAttributes);
           String id = UserCoursesService.generateUserCourseESId(batchId, userId);
-          esService.update(requestContext, EsType.usercourses.getTypeName(), id, updateAttributes);
+          esService.update(EsType.usercourses.getTypeName(), id, updateAttributes, requestContext);
         }
       } else {
         addUserCourses(

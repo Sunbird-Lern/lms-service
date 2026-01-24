@@ -630,7 +630,7 @@ public class PageManagementActor extends BaseActor {
       return null;
     }
 
-    Future<Map<String, Object>> resultF = esService.search(requestContext, searcDto, type);
+    Future<Map<String, Object>> resultF = esService.search(searcDto, type, requestContext);
     Map<String, Object> result =
         (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
     return result;

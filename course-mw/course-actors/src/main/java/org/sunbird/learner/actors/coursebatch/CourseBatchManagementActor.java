@@ -243,8 +243,8 @@ public class CourseBatchManagementActor extends BaseActor {
 
   private void getCourseBatch(Request actorMessage) {
     Future<Map<String, Object>> resultF =
-        esService.getDataByIdentifier(actorMessage.getRequestContext(), ProjectUtil.EsType.courseBatch.getTypeName(),
-            (String) actorMessage.getContext().get(JsonKey.BATCH_ID));
+        esService.getDataByIdentifier(ProjectUtil.EsType.courseBatch.getTypeName(),
+            (String) actorMessage.getContext().get(JsonKey.BATCH_ID), actorMessage.getRequestContext());
     Map<String, Object> result = (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
     if (result.containsKey(JsonKey.COURSE_ID))
       result.put(JsonKey.COLLECTION_ID, result.getOrDefault(JsonKey.COURSE_ID, ""));

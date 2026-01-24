@@ -61,7 +61,7 @@ public class UserClientImpl implements UserClient {
     searchDto.setFacets(list);
 
     Future<Map<String, Object>> esResponseF =
-        esUtil.search(null, searchDto, ProjectUtil.EsType.user.getTypeName());
+        esUtil.search(searchDto, ProjectUtil.EsType.user.getTypeName(), null);
     Map<String, Object> esResponse =
         (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(esResponseF);
 

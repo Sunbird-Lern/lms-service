@@ -127,7 +127,7 @@ public class BackgroundJobManager extends BaseActor {
   }
 
   private boolean updateDataToElastic(RequestContext requestContext, String indexName, String typeName, String identifier, Map<String, Object> data) {
-    Future<Boolean> responseF = esService.update(requestContext, typeName, identifier, data);
+    Future<Boolean> responseF = esService.update(typeName, identifier, data, requestContext);
     boolean response = (boolean) ElasticSearchHelper.getResponseFromFuture(responseF);
     if (response) {
       return true;
@@ -149,7 +149,7 @@ public class BackgroundJobManager extends BaseActor {
    */
   private boolean insertDataToElastic(RequestContext requestContext, String index, String type, String identifier, Map<String, Object> data) {
     logger.info(requestContext, "BackgroundJobManager:insertDataToElastic: type = " + type + " identifier = " + identifier);
-    Future<String> responseF = esService.save(requestContext, type, identifier, data);
+    Future<String> responseF = esService.save(type, identifier, data, requestContext);
     String response = (String) ElasticSearchHelper.getResponseFromFuture(responseF);
     logger.debug(requestContext, "ES save response for identifier :" + identifier, null, new HashMap<String, Object>() {{put("response", response);}});
     if (!StringUtils.isBlank(response)) {

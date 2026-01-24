@@ -13,7 +13,6 @@
     <artifactId>sunbird-util</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>sunbird-es-utils</module>
         <module>sunbird-platform-core</module>
         <module>sunbird-notification</module>
         <module>sunbird-cache-utils</module>

@@ -35,7 +35,6 @@ class KafkaService {
     } catch {
       case ex: Exception =>
         logger.error(s"Failed to publish certificate event: ${ex.getMessage}", ex)
-        // Don't throw - certificate events are not critical
     }
   }
   
@@ -58,7 +57,6 @@ class KafkaService {
     } catch {
       case ex: Exception =>
         logger.error(s"Failed to publish failed event: ${ex.getMessage}", ex)
-        // Don't throw - just log the error
     }
   }
 }

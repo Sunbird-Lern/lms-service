@@ -80,8 +80,7 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
       val agg = assessmentService.computeUserAggregates(assessments).copy(userId = userId, courseId = courseId, batchId = batchId)
       cassandraService.updateUserActivity(userId, courseId, batchId, agg, context)
       val attemptId = assessmentService.getLatestAttemptId(agg)
-      if (StringUtils.isNotBlank(attemptId)) kafkaService.publishCertificateEvent(userId, courseId, batchId, attemptId)
-    }
+      kafkaService.publishCertificateEvent(userId, courseId, batchId, attemptId)    }
   }
 
   private def extractAssessment(data: java.util.Map[String, AnyRef], root: java.util.Map[String, AnyRef]): AssessmentRequest = {

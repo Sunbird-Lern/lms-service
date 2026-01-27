@@ -25,10 +25,7 @@ class ContentService {
   def getQuestionCount(contentId: String): Int = {
     val url = s"$baseUrl$contentReadPath$contentId"
     try {
-      val headers = Map(
-        JsonKey.AUTHORIZATION -> ProjectUtil.getConfigValue(JsonKey.EKSTEP_AUTHORIZATION)
-      ).asJava
-      
+      val headers = Map(JsonKey.AUTHORIZATION -> ProjectUtil.getConfigValue(JsonKey.EKSTEP_AUTHORIZATION)).asJava
       val response = HttpUtil.sendGetRequest(url, headers)
       if (StringUtils.isNotBlank(response)) {
         val respMap = ProjectUtil.convertJsonStringToMap(response).asInstanceOf[java.util.Map[String, AnyRef]]

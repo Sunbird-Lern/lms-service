@@ -56,7 +56,6 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
     val skipMissing = Option(ProjectUtil.getConfigValue("assessment_skip_missing_records")).getOrElse("true").toBoolean
     if (skipMissing) {
       val totalQuestions = redisService.getTotalQuestionsCount(req.contentId).getOrElse(contentService.getQuestionCount(req.contentId))
-      logger.info(context, s"Total questions for contentId=${req.contentId} is $totalQuestions, unique events=${uniqueEvents.size}")
       if (totalQuestions > 0 && uniqueEvents.size > totalQuestions) {
         logger.warn(context, s"Skipping assessment ${req.attemptId}: unique events (${uniqueEvents.size}) exceed total questions ($totalQuestions)")
         return

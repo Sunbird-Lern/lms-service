@@ -33,9 +33,7 @@ class ContentService {
           val result = respMap.getOrDefault("result", new java.util.HashMap[String, AnyRef]()).asInstanceOf[java.util.Map[String, AnyRef]]
           val content = result.getOrDefault("content", new java.util.HashMap[String, AnyRef]()).asInstanceOf[java.util.Map[String, AnyRef]]
           val totalQuestions = content.get("totalQuestions")
-          val count = if (totalQuestions != null) totalQuestions.asInstanceOf[Number].intValue() else 0
-          logger.info(s"Fetched the totalQuestion Value from the Content Read API - ContentId:$contentId, TotalQuestionCount:$count")
-          count
+          if (totalQuestions != null) totalQuestions.asInstanceOf[Number].intValue() else 0
         } else {
           logger.error(s"API Failed to Fetch the TotalQuestion Count - ContentId:$contentId, ResponseCode - ${respMap.get("responseCode")}")
           throw new RuntimeException(s"Failed to fetch content metadata for $contentId. ResponseCode: ${respMap.get("responseCode")}")

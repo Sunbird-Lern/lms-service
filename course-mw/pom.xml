@@ -17,9 +17,9 @@
 		<powermock.version>2.0.9</powermock.version>
 		<jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
 		<scoverage.plugin.version>1.4.1</scoverage.plugin.version>
+		<slf4j.version>1.6.1</slf4j.version>
 		<logstash-logback-encoder.version>7.3</logstash-logback-encoder.version>
 		<guice.version>5.1.0</guice.version>
-		<guava.version>31.1-jre</guava.version>
 		<asm.version>9.2</asm.version>
 	</properties>
 	

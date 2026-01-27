@@ -233,8 +233,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     }
 
     def syncAssessmentData(assessment: java.util.Map[String, AnyRef], requestContext: RequestContext): Unit = {
-        val useDirectAggregation = if (StringUtils.isNotBlank(ProjectUtil.getConfigValue("assessment_direct_aggregation_enabled")))
-            ProjectUtil.getConfigValue("assessment_direct_aggregation_enabled").toBoolean else false
+        val useDirectAggregation = ProjectUtil.getConfigValue("assessment_direct_aggregation_enabled").toBoolean
         if (useDirectAggregation) {
             logger.info(requestContext, "Using assessment aggregator module")
             val request = createAssessmentRequest(assessment, requestContext)

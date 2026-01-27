@@ -46,7 +46,7 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
   }
 
   private def processIndividual(req: AssessmentRequest, context: RequestContext): Unit = {
-    validateAssessment(req, context)
+    validateAssessment(req)
     if (req.events.isEmpty) processUserAggregates(req.userId, req.courseId, req.batchId, context)
     else processAttempt(req, context)
   }
@@ -106,7 +106,7 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
     }
   }
 
-  private def validateAssessment(req: AssessmentRequest, context: RequestContext): Unit = {
+  private def validateAssessment(req: AssessmentRequest): Unit = {
     val enableVal = ProjectUtil.getConfigValue("assessment_enable_content_validation") == "true"
     if (enableVal) {
       val isValidInRedis = redisService.isValidContent(req.courseId, req.contentId)

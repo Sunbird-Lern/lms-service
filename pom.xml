@@ -18,6 +18,8 @@
       <guice.version>4.2.2</guice.version>
       <apache.httpcomponents.version>4.5.14</apache.httpcomponents.version>
       <apache.httpcore.version>4.4.16</apache.httpcore.version>
+      <slf4j.version>2.0.13</slf4j.version>
+      <logback.version>1.4.14</logback.version>
   </properties>
 
   <dependencyManagement>
@@ -145,6 +147,21 @@
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpmime</artifactId>
         <version>${apache.httpcomponents.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>${logback.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-core</artifactId>
+        <version>${logback.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

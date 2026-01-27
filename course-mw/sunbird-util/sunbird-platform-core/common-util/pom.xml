@@ -16,7 +16,6 @@
         <pekko.version>1.0.3</pekko.version>
         <jackson.version>2.13.5</jackson.version>
         <logstash-logback-encoder.version>7.3</logstash-logback-encoder.version>
-        <guava.version>31.1-jre</guava.version>
         <powermock.version>2.0.9</powermock.version>
         <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
         <CLOUD_STORAGE_GROUP_ID>org.sunbird</CLOUD_STORAGE_GROUP_ID>
@@ -248,7 +247,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
+            <version>18.0</version>
         </dependency>
         <dependency>
             <groupId>${CLOUD_STORAGE_GROUP_ID}</groupId>

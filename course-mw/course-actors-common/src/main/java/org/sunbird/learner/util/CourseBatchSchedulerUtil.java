@@ -88,7 +88,7 @@ public final class CourseBatchSchedulerUtil {
   public static void updateDataIntoCassandra(RequestContext requestContext, Map<String, Object> map) {
     CassandraOperation cassandraOperation = ServiceFactory.getInstance();
     Util.DbInfo courseBatchDBInfo = Util.dbInfoMap.get(JsonKey.COURSE_BATCH_DB);
-    cassandraOperation.updateRecord(requestContext, courseBatchDBInfo.getKeySpace(), courseBatchDBInfo.getTableName(), map);
+    cassandraOperation.updateRecord(courseBatchDBInfo.getKeySpace(), courseBatchDBInfo.getTableName(), map, requestContext);
     logger.info(requestContext, "CourseBatchSchedulerUtil:updateDataIntoCassandra: Update Successful for batchId "
             + map.get(JsonKey.ID));
   }

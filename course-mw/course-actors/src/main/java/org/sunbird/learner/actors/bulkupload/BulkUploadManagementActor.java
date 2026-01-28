@@ -117,7 +117,7 @@ public class BulkUploadManagementActor extends BaseBulkUploadActor {
             JsonKey.FAILURE_RESULT);
     response =
         cassandraOperation.getRecordByIdentifier(
-                actorMessage.getRequestContext(), bulkDb.getKeySpace(), bulkDb.getTableName(), processId, fields);
+                bulkDb.getKeySpace(), bulkDb.getTableName(), processId, fields, actorMessage.getRequestContext());
     @SuppressWarnings("unchecked")
     List<Map<String, Object>> resList =
         ((List<Map<String, Object>>) response.get(JsonKey.RESPONSE));
@@ -261,7 +261,7 @@ public class BulkUploadManagementActor extends BaseBulkUploadActor {
     map.put(JsonKey.PROCESS_START_TIME, ProjectUtil.getFormattedDate());
     map.put(JsonKey.STATUS, ProjectUtil.BulkProcessStatus.NEW.getValue());
     Response res =
-        cassandraOperation.insertRecord(requestContext, bulkDb.getKeySpace(), bulkDb.getTableName(), map);
+        cassandraOperation.insertRecord(bulkDb.getKeySpace(), bulkDb.getTableName(), map, requestContext);
     res.put(JsonKey.PROCESS_ID, processId);
     logger.info(requestContext, "uploadCsvToDB returned response for processId: " + processId);
     sender().tell(res, self());

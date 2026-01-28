@@ -30,7 +30,7 @@ public class BulkUploadProcessDaoImpl implements BulkUploadProcessDao {
   public Response create(BulkUploadProcess bulkUploadProcess, RequestContext requestContext) {
     Map<String, Object> map = mapper.convertValue(bulkUploadProcess, Map.class);
     map.put(JsonKey.CREATED_ON, new Timestamp(Calendar.getInstance().getTimeInMillis()));
-    Response response = cassandraOperation.insertRecord(requestContext, ProjectUtil.getConfigValue(JsonKey.SUNBIRD_KEYSPACE), TableNameUtil.BULK_UPLOAD_PROCESS_TABLENAME, map);
+    Response response = cassandraOperation.insertRecord(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_KEYSPACE), TableNameUtil.BULK_UPLOAD_PROCESS_TABLENAME, map, requestContext);
     // need to send ID along with success msg
     response.put(JsonKey.ID, map.get(JsonKey.ID));
     return response;
@@ -43,12 +43,12 @@ public class BulkUploadProcessDaoImpl implements BulkUploadProcessDao {
       map.remove(JsonKey.CREATED_ON);
     }
     map.put(JsonKey.LAST_UPDATED_ON, new Timestamp(Calendar.getInstance().getTimeInMillis()));
-    return cassandraOperation.updateRecord(requestContext, ProjectUtil.getConfigValue(JsonKey.SUNBIRD_KEYSPACE), TableNameUtil.BULK_UPLOAD_PROCESS_TABLENAME, map);
+    return cassandraOperation.updateRecord(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_KEYSPACE), TableNameUtil.BULK_UPLOAD_PROCESS_TABLENAME, map, requestContext);
   }
 
   @Override
   public BulkUploadProcess read(RequestContext requestContext, String id) {
-    Response response = cassandraOperation.getRecordByIdentifier(requestContext, ProjectUtil.getConfigValue(JsonKey.SUNBIRD_KEYSPACE), TableNameUtil.BULK_UPLOAD_PROCESS_TABLENAME, id, null);
+    Response response = cassandraOperation.getRecordByIdentifier(ProjectUtil.getConfigValue(JsonKey.SUNBIRD_KEYSPACE), TableNameUtil.BULK_UPLOAD_PROCESS_TABLENAME, id, null, requestContext);
     List<Map<String, Object>> list = (List<Map<String, Object>>) response.get(JsonKey.RESPONSE);
     if (CollectionUtils.isEmpty(list)) {
       return null;

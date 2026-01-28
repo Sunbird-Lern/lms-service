@@ -31,12 +31,12 @@ public class DataCacheHandlerTest {
     PowerMockito.when(
             group
                 .getCassandraMockerService()
-                .getAllRecords(Mockito.any(), Mockito.anyString(), Mockito.eq("page_management")))
+                .getAllRecords(Mockito.anyString(), Mockito.eq("page_management"),Mockito.any()))
         .thenReturn(CustomObjectBuilder.getRandomPageManagements(10).asCassandraResponse());
     PowerMockito.when(
             group
                 .getCassandraMockerService()
-                .getAllRecords(Mockito.any(), Mockito.anyString(), Mockito.eq("page_section")))
+                .getAllRecords(Mockito.anyString(), Mockito.eq("page_section"),Mockito.any()))
         .thenReturn(CustomObjectBuilder.getRandomPageSections(4).asCassandraResponse());
     DataCacheHandler cacheHandler = new DataCacheHandler();
     cacheHandler.run();

@@ -43,7 +43,7 @@ public class GroupDaoImplTest {
         groupActivityMap.put("user_id", "user1");
         response.put(JsonKey.RESPONSE, Arrays.asList(groupActivityMap));
         when(cassandraOperation.getRecordByIdentifier(
-                Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any())).thenReturn(response);
+                Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any(), Mockito.any())).thenReturn(response);
         Response readResponse = groupDao.read("do_1234", "course", Arrays.asList("user1"), null);
         Assert.assertNotNull(readResponse);
     }
@@ -52,8 +52,8 @@ public class GroupDaoImplTest {
     public void readEntriesSuccess() throws Exception {
         GroupDaoImpl groupDao = new GroupDaoImpl();
         Response response = getReadEntriesResponse();
-        when(cassandraOperation.getRecordsByProperties(Mockito.any(),
-                Mockito.anyString(), Mockito.anyString(), Mockito.anyMap())).thenReturn(response);
+        when(cassandraOperation.getRecordsByProperties(
+                Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any())).thenReturn(response);
         Response readResponse = groupDao.readEntries("Course",  Arrays.asList("user1"), Arrays.asList("do_1234", "do_3456"), null);
         Assert.assertNotNull(readResponse);
         Assert.assertEquals(readResponse.getResponseCode(), ResponseCode.OK);

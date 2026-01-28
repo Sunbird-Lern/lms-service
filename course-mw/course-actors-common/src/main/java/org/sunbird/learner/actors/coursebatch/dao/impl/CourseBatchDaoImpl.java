@@ -34,7 +34,7 @@ public class CourseBatchDaoImpl implements CourseBatchDao {
     Map<String, Object> map = CourseBatchUtil.cassandraCourseMapping(courseBatch, dateFormat);
     map = CassandraUtil.changeCassandraColumnMapping(map);
     return cassandraOperation.insertRecord(
-            requestContext, courseBatchDb.getKeySpace(), courseBatchDb.getTableName(), map);
+            courseBatchDb.getKeySpace(), courseBatchDb.getTableName(), map, requestContext);
   }
 
   @Override
@@ -48,7 +48,7 @@ public class CourseBatchDaoImpl implements CourseBatchDao {
     attributeMap.remove(JsonKey.BATCH_ID);
     attributeMap = CassandraUtil.changeCassandraColumnMapping(attributeMap);
     return cassandraOperation.updateRecord(
-            requestContext, courseBatchDb.getKeySpace(), courseBatchDb.getTableName(), attributeMap, primaryKey);
+            courseBatchDb.getKeySpace(), courseBatchDb.getTableName(), attributeMap, primaryKey, requestContext);
   }
 
   @Override
@@ -58,7 +58,7 @@ public class CourseBatchDaoImpl implements CourseBatchDao {
     primaryKey.put(JsonKey.BATCH_ID, batchId);
     Response courseBatchResult =
         cassandraOperation.getRecordByIdentifier(
-                requestContext, courseBatchDb.getKeySpace(), courseBatchDb.getTableName(), primaryKey,null);
+                courseBatchDb.getKeySpace(), courseBatchDb.getTableName(), primaryKey, null, requestContext);
     List<Map<String, Object>> courseList =
         (List<Map<String, Object>>) courseBatchResult.get(JsonKey.RESPONSE);
     if (courseList.isEmpty()) {
@@ -79,7 +79,7 @@ public class CourseBatchDaoImpl implements CourseBatchDao {
     primaryKey.put(JsonKey.BATCH_ID, batchId);
     Response courseBatchResult =
         cassandraOperation.getRecordByIdentifier(
-                requestContext, courseBatchDb.getKeySpace(), courseBatchDb.getTableName(), primaryKey, null);
+                courseBatchDb.getKeySpace(), courseBatchDb.getTableName(), primaryKey, null, requestContext);
     List<Map<String, Object>> courseList =
         (List<Map<String, Object>>) courseBatchResult.get(JsonKey.RESPONSE);
     return courseList.get(0);
@@ -98,12 +98,12 @@ public class CourseBatchDaoImpl implements CourseBatchDao {
     primaryKey.put(JsonKey.COURSE_ID, courseId);
     primaryKey.put(JsonKey.BATCH_ID, batchId);
     cassandraOperation.updateAddMapRecord(
-            requestContext, courseBatchDb.getKeySpace(),
+            courseBatchDb.getKeySpace(),
         courseBatchDb.getTableName(),
         primaryKey,
         CourseJsonKey.CERTIFICATE_TEMPLATES_COLUMN,
         templateId,
-        templateDetails);
+        templateDetails, requestContext);
   }
 
   @Override
@@ -113,10 +113,10 @@ public class CourseBatchDaoImpl implements CourseBatchDao {
     primaryKey.put(JsonKey.COURSE_ID, courseId);
     primaryKey.put(JsonKey.BATCH_ID, batchId);
     cassandraOperation.updateRemoveMapRecord(
-            requestContext, courseBatchDb.getKeySpace(),
+            courseBatchDb.getKeySpace(),
         courseBatchDb.getTableName(),
         primaryKey,
         CourseJsonKey.CERTIFICATE_TEMPLATES_COLUMN,
-        templateId);
+        templateId, requestContext);
   }
 }

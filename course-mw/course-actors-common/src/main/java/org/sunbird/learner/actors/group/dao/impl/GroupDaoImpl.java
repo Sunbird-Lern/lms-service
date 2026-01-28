@@ -23,7 +23,7 @@ public class GroupDaoImpl {
         primaryKey.put(SunbirdKey.ACTIVITY_TYPE, activityType);
         primaryKey.put(SunbirdKey.ACTIVITY_ID, activityId);
         primaryKey.put(SunbirdKey.USER_ID, userId);
-        Response response = cassandraOperation.getRecordByIdentifier(requestContext, KEYSPACE_NAME, TABLE_NAME, primaryKey, null);
+        Response response = cassandraOperation.getRecordByIdentifier(KEYSPACE_NAME, TABLE_NAME, primaryKey, null, requestContext);
         return response;
     }
 
@@ -32,7 +32,7 @@ public class GroupDaoImpl {
         primaryKey.put(SunbirdKey.ACTIVITY_TYPE, activityType);
         primaryKey.put(SunbirdKey.ACTIVITY_ID, activityIds);
         primaryKey.put(SunbirdKey.USER_ID, userId);
-        Response response = cassandraOperation.getRecordsByProperties(requestContext, KEYSPACE_NAME, TABLE_NAME, primaryKey);
+        Response response = cassandraOperation.getRecordsByProperties(KEYSPACE_NAME, TABLE_NAME, primaryKey, requestContext);
         return response;
     }
 

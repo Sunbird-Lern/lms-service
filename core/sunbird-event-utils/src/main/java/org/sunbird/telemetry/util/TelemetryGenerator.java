@@ -1,42 +1,33 @@
 package org.sunbird.telemetry.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.common.models.util.LoggerUtil;
 import org.sunbird.common.models.util.ProjectUtil;
-import org.sunbird.common.models.util.TelemetryEnvKey;
-import org.sunbird.telemetry.dto.Actor;
-import org.sunbird.telemetry.dto.Context;
-import org.sunbird.telemetry.dto.Producer;
-import org.sunbird.telemetry.dto.Target;
-import org.sunbird.telemetry.dto.Telemetry;
+import org.sunbird.telemetry.dto.*;
+import org.sunbird.telemetry.dto.TelemetryEnvKey;
 
 /**
- * class to transform the request data to telemetry events
- *
- * @author Arvind
+ * Utility class to generate telemetry events.
+ * Provides static methods to construct standard telemetry objects.
  */
 public class TelemetryGenerator {
 
-  private static ObjectMapper mapper = new ObjectMapper();
+  private static final ObjectMapper mapper = new ObjectMapper();
+  private static final LoggerUtil logger = new LoggerUtil(TelemetryGenerator.class);
 
+  /** Private constructor to prevent instantiation. */
   private TelemetryGenerator() {}
 
   /**
-   * To generate api_access LOG telemetry JSON string.
+   * Generates api_access AUDIT telemetry JSON string.
    *
    * @param context Map contains the telemetry context info like actor info, env info etc.
-   * @param params Map contains the telemetry event data info
-   * @return Telemetry event
+   * @param params  Map contains the telemetry event data info
+   * @return Telemetry event as JSON string
    */
   public static String audit(Map<String, Object> context, Map<String, Object> params) {
     if (!validateRequest(context, params)) {
@@ -44,35 +35,49 @@ public class TelemetryGenerator {
     }
     String actorId = (String) context.get(JsonKey.ACTOR_ID);
     String actorType = (String) context.get(JsonKey.ACTOR_TYPE);
-    Actor actor = new Actor(actorId, StringUtils.capitalize(actorType));
     Target targetObject =
         generateTargetObject((Map<String, Object>) params.get(JsonKey.TARGET_OBJECT));
+
+    Actor actor = new Actor(actorId, StringUtils.capitalize(actorType));
     Context eventContext = getContext(context);
-    // assign cdata into context from params correlated objects...
+    Map<String, Object> edata = generateAuditEdata(params);
+
+    /* Assign cdata into context from params correlated objects */
     if (params.containsKey(JsonKey.CORRELATED_OBJECTS)) {
       setCorrelatedDataToContext(params.get(JsonKey.CORRELATED_OBJECTS), eventContext);
     }
 
-    // assign request id into context cdata ...
-    String reqId = (String) context.get(JsonKey.REQUEST_ID);
-    if (!StringUtils.isBlank(reqId)) {
+    /* Assign request id into context cdata */
+    String reqId = (String) context.get(JsonKey.X_REQUEST_ID);
+    if (StringUtils.isBlank(reqId)) {
+      reqId = (String) context.get(JsonKey.REQUEST_ID);
+    }
+
+    if (StringUtils.isNotBlank(reqId)) {
       Map<String, Object> map = new HashMap<>();
       map.put(JsonKey.ID, reqId);
       map.put(JsonKey.TYPE, TelemetryEnvKey.REQUEST_UPPER_CAMEL);
       eventContext.getCdata().add(map);
     }
 
-    Map<String, Object> edata = generateAuditEdata(params);
-
+    /* Construct telemetry object and set message ID */
     Telemetry telemetry =
         new Telemetry(TelemetryEvents.AUDIT.getName(), actor, eventContext, edata, targetObject);
     telemetry.setMid(reqId);
     return getTelemetry(telemetry);
   }
 
+  /**
+   * Sets correlated data (cdata) to the telemetry context.
+   *
+   * @param correlatedObjects List of correlated objects
+   * @param eventContext      The context object to update
+   */
   private static void setCorrelatedDataToContext(Object correlatedObjects, Context eventContext) {
     ArrayList<Map<String, Object>> list = (ArrayList<Map<String, Object>>) correlatedObjects;
     ArrayList<Map<String, Object>> targetList = new ArrayList<>();
+
+    /* Convert correlated objects to standardized map format */
     if (null != list && !list.isEmpty()) {
       for (Map<String, Object> m : list) {
         Map<String, Object> map = new HashMap<>();
@@ -84,8 +89,13 @@ public class TelemetryGenerator {
     eventContext.setCdata(targetList);
   }
 
+  /**
+   * Generates a Target object from the provided map.
+   *
+   * @param targetObject Map containing target object properties (ID, Type, Rollup)
+   * @return Constructed Target object
+   */
   private static Target generateTargetObject(Map<String, Object> targetObject) {
-
     Target target =
         new Target(
             (String) targetObject.get(JsonKey.ID),
@@ -96,35 +106,55 @@ public class TelemetryGenerator {
     return target;
   }
 
+  /**
+   * Generates event data (edata) for AUDIT telemetry events.
+   *
+   * @param params Map containing event parameters (props, type, target object)
+   * @return Constructed edata map
+   */
   private static Map<String, Object> generateAuditEdata(Map<String, Object> params) {
-
     Map<String, Object> edata = new HashMap<>();
     Map<String, Object> props = (Map<String, Object>) params.get(JsonKey.PROPS);
+
     // TODO: need to rethink about this one .. if map is null then what to do
     if (null != props) {
       edata.put(JsonKey.PROPS, getProps(props));
     }
 
+    String type = (String) params.get(JsonKey.TYPE);
+    if (null != type) {
+      edata.put(JsonKey.TYPE, type);
+    }
+
     Map<String, Object> target = (Map<String, Object>) params.get(JsonKey.TARGET_OBJECT);
-    if (target.get(JsonKey.CURRENT_STATE) != null) {
+    if (target != null && target.get(JsonKey.CURRENT_STATE) != null) {
       edata.put(JsonKey.STATE, StringUtils.capitalize((String) target.get(JsonKey.CURRENT_STATE)));
       if (JsonKey.UPDATE.equalsIgnoreCase((String) target.get(JsonKey.CURRENT_STATE))
           && edata.get(props) != null) {
         removeAttributes((Map<String, Object>) edata.get(props), JsonKey.ID);
       }
     }
-    if(params.containsKey("type")){
-      edata.put("type", params.get("type"));
-    }
     return edata;
   }
 
+  /**
+   * Removes specified attributes from the map.
+   *
+   * @param map        The map to modify
+   * @param properties The keys to remove
+   */
   private static void removeAttributes(Map<String, Object> map, String... properties) {
     for (String property : properties) {
       map.remove(property);
     }
   }
 
+  /**
+   * Recursively extracts properties from a map, flattening nested keys.
+   *
+   * @param map The map to extract properties from
+   * @return List of property keys (dot-separated for nested keys)
+   */
   private static List<String> getProps(Map<String, Object> map) {
     try {
       return map.entrySet()
@@ -144,11 +174,17 @@ public class TelemetryGenerator {
           .flatMap(List::stream)
           .collect(Collectors.toList());
     } catch (Exception e) {
-      ProjectLogger.log("TelemetryGenerator:getProps error =" + e, LoggerEnum.ERROR.name());
+      logger.error("TelemetryGenerator:getProps error =", e);
     }
     return new ArrayList<>();
   }
 
+  /**
+   * Constructs the Context object from the context map.
+   *
+   * @param context Map containing context info
+   * @return Constructed Context object
+   */
   private static Context getContext(Map<String, Object> context) {
     String channel = (String) context.get(JsonKey.CHANNEL);
     String env = (String) context.get(JsonKey.ENV);
@@ -163,6 +199,12 @@ public class TelemetryGenerator {
     return eventContext;
   }
 
+  /**
+   * Constructs a Producer object from the context map.
+   *
+   * @param context Map containing producer info
+   * @return Constructed Producer object
+   */
   private static Producer getProducer(Map<String, Object> context) {
     String id = "";
     if (context != null && context.size() != 0) {
@@ -171,35 +213,40 @@ public class TelemetryGenerator {
       } else {
         id = (String) context.get(JsonKey.PDATA_ID);
       }
-      return new Producer(id, "lms-service", "1.0");
+      String pid = (String) context.get(JsonKey.PDATA_PID);
+      String ver = (String) context.get(JsonKey.PDATA_VERSION);
+      return new Producer(id, pid, ver);
     } else {
-      return new Producer("", "lms-service", "1.0");
+      return new Producer("", "", "");
     }
   }
 
+  /**
+   * Serializes the Telemetry object to a JSON string.
+   *
+   * @param telemetry Telemetry object
+   * @return JSON string representation
+   */
   private static String getTelemetry(Telemetry telemetry) {
     String event = "";
     try {
       event = mapper.writeValueAsString(telemetry);
-      ProjectLogger.log(
-          "TelemetryGenerator:getTelemetry = Telemetry Event : " + event, LoggerEnum.DEBUG.name());
+      logger.info("TelemetryGenerator:getTelemetry = Telemetry Event : " + event);
     } catch (Exception e) {
-      ProjectLogger.log(
-          "TelemetryGenerator:getTelemetry = Telemetry Event: failed to generate audit events:" + e,
-          LoggerEnum.ERROR.name());
+      logger.error(
+          "TelemetryGenerator:getTelemetry = Telemetry Event: failed to generate audit events:", e);
     }
     return event;
   }
-
+  
   /**
-   * Method to generate the search type telemetry event.
+   * Generates SEARCH telemetry event.
    *
    * @param context Map contains the telemetry context info like actor info, env info etc.
-   * @param params Map contains the telemetry event data info
-   * @return Search Telemetry event
+   * @param params  Map contains the telemetry event data info
+   * @return Search Telemetry event as JSON string
    */
   public static String search(Map<String, Object> context, Map<String, Object> params) {
-
     if (!validateRequest(context, params)) {
       return "";
     }
@@ -209,13 +256,19 @@ public class TelemetryGenerator {
 
     Context eventContext = getContext(context);
 
-    String reqId = (String) context.get(JsonKey.REQUEST_ID);
-    if (!StringUtils.isBlank(reqId)) {
+    /* Assign request id into context cdata */
+    String reqId = (String) context.get(JsonKey.X_REQUEST_ID);
+    if (StringUtils.isBlank(reqId)) {
+      reqId = (String) context.get(JsonKey.REQUEST_ID);
+    }
+
+    if (StringUtils.isNotBlank(reqId)) {
       Map<String, Object> map = new HashMap<>();
       map.put(JsonKey.ID, reqId);
       map.put(JsonKey.TYPE, TelemetryEnvKey.REQUEST_UPPER_CAMEL);
       eventContext.getCdata().add(map);
     }
+
     Map<String, Object> edata = generateSearchEdata(params);
     Telemetry telemetry =
         new Telemetry(TelemetryEvents.SEARCH.getName(), actor, eventContext, edata);
@@ -223,8 +276,13 @@ public class TelemetryGenerator {
     return getTelemetry(telemetry);
   }
 
+  /**
+   * Generates event data (edata) for SEARCH telemetry events.
+   *
+   * @param params Map containing search event parameters
+   * @return Constructed edata map
+   */
   private static Map<String, Object> generateSearchEdata(Map<String, Object> params) {
-
     Map<String, Object> edata = new HashMap<>();
     String type = (String) params.get(JsonKey.TYPE);
     String query = (String) params.get(JsonKey.QUERY);
@@ -245,14 +303,13 @@ public class TelemetryGenerator {
   }
 
   /**
-   * Method to generate the log type telemetry event.
+   * Generates LOG telemetry event.
    *
    * @param context Map contains the telemetry context info like actor info, env info etc.
-   * @param params Map contains the telemetry event data info
-   * @return Search Telemetry event
+   * @param params  Map contains the telemetry event data info
+   * @return Log Telemetry event as JSON string
    */
   public static String log(Map<String, Object> context, Map<String, Object> params) {
-
     if (!validateRequest(context, params)) {
       return "";
     }
@@ -262,9 +319,13 @@ public class TelemetryGenerator {
 
     Context eventContext = getContext(context);
 
-    // assign request id into context cdata ...
-    String reqId = (String) context.get(JsonKey.REQUEST_ID);
-    if (!StringUtils.isBlank(reqId)) {
+    /* Assign request id into context cdata */
+    String reqId = (String) context.get(JsonKey.X_REQUEST_ID);
+    if (StringUtils.isBlank(reqId)) {
+      reqId = (String) context.get(JsonKey.REQUEST_ID);
+    }
+
+    if (StringUtils.isNotBlank(reqId)) {
       Map<String, Object> map = new HashMap<>();
       map.put(JsonKey.ID, reqId);
       map.put(JsonKey.TYPE, TelemetryEnvKey.REQUEST_UPPER_CAMEL);
@@ -277,8 +338,13 @@ public class TelemetryGenerator {
     return getTelemetry(telemetry);
   }
 
+  /**
+   * Generates event data (edata) for LOG telemetry events.
+   *
+   * @param params Map containing log event parameters
+   * @return Constructed edata map
+   */
   private static Map<String, Object> generateLogEdata(Map<String, Object> params) {
-
     Map<String, Object> edata = new HashMap<>();
     String logType = (String) params.get(JsonKey.LOG_TYPE);
     String logLevel = (String) params.get(JsonKey.LOG_LEVEL);
@@ -294,13 +360,20 @@ public class TelemetryGenerator {
     return edata;
   }
 
+  /**
+   * Extracts parameters from a map, excluding specified keys.
+   *
+   * @param params Map to extract parameters from
+   * @param ignore List of keys to exclude
+   * @return List of parameter maps
+   */
   private static List<Map<String, Object>> getParamsList(
       Map<String, Object> params, List<String> ignore) {
-    List<Map<String, Object>> paramsList = new ArrayList<Map<String, Object>>();
+    List<Map<String, Object>> paramsList = new ArrayList<>();
     if (null != params && !params.isEmpty()) {
-      for (Entry<String, Object> entry : params.entrySet()) {
+      for (Map.Entry<String, Object> entry : params.entrySet()) {
         if (!ignore.contains(entry.getKey())) {
-          Map<String, Object> param = new HashMap<String, Object>();
+          Map<String, Object> param = new HashMap<>();
           param.put(entry.getKey(), entry.getValue());
           paramsList.add(param);
         }
@@ -310,14 +383,13 @@ public class TelemetryGenerator {
   }
 
   /**
-   * Method to generate the error type telemetry event.
+   * Generates ERROR telemetry event.
    *
    * @param context Map contains the telemetry context info like actor info, env info etc.
-   * @param params Map contains the error event data info
-   * @return Search Telemetry event
+   * @param params  Map contains the error event data info
+   * @return Error Telemetry event as JSON string
    */
   public static String error(Map<String, Object> context, Map<String, Object> params) {
-
     if (!validateRequest(context, params)) {
       return "";
     }
@@ -327,9 +399,13 @@ public class TelemetryGenerator {
 
     Context eventContext = getContext(context);
 
-    // assign request id into context cdata ...
-    String reqId = (String) context.get(JsonKey.REQUEST_ID);
-    if (!StringUtils.isBlank(reqId)) {
+    /* Assign request id into context cdata */
+    String reqId = (String) context.get(JsonKey.X_REQUEST_ID);
+    if (StringUtils.isBlank(reqId)) {
+      reqId = (String) context.get(JsonKey.REQUEST_ID);
+    }
+
+    if (StringUtils.isNotBlank(reqId)) {
       Map<String, Object> map = new HashMap<>();
       map.put(JsonKey.ID, reqId);
       map.put(JsonKey.TYPE, TelemetryEnvKey.REQUEST_UPPER_CAMEL);
@@ -337,12 +413,19 @@ public class TelemetryGenerator {
     }
 
     Map<String, Object> edata = generateErrorEdata(params);
+    edata.put(JsonKey.REQUEST_ID, reqId);
     Telemetry telemetry =
         new Telemetry(TelemetryEvents.ERROR.getName(), actor, eventContext, edata);
     telemetry.setMid(reqId);
     return getTelemetry(telemetry);
   }
 
+  /**
+   * Generates event data (edata) for ERROR telemetry events.
+   *
+   * @param params Map contains error event parameters
+   * @return Constructed edata map
+   */
   private static Map<String, Object> generateErrorEdata(Map<String, Object> params) {
     Map<String, Object> edata = new HashMap<>();
     String error = (String) params.get(JsonKey.ERROR);
@@ -350,16 +433,32 @@ public class TelemetryGenerator {
     String stackTrace = (String) params.get(JsonKey.STACKTRACE);
     edata.put(JsonKey.ERROR, error);
     edata.put(JsonKey.ERR_TYPE, errorType);
-    edata.put(JsonKey.STACKTRACE, ProjectUtil.getFirstNCharacterString(stackTrace, 100));
+    
+    int stackTraceLength = 100;
+    try {
+        String lengthStr = ProjectUtil.getConfigValue(JsonKey.STACKTRACE_CHAR_LENGTH);
+        if (StringUtils.isNotBlank(lengthStr)) {
+            stackTraceLength = Integer.parseInt(lengthStr);
+        }
+    } catch (Exception e) {
+        logger.error("TelemetryGenerator:generateErrorEdata: Error parsing stacktrace length", e);
+    }
+    
+    edata.put(
+        JsonKey.STACKTRACE,
+        ProjectUtil.getFirstNCharacterString(stackTrace, stackTraceLength));
     return edata;
   }
-
+  
+    /**
+   * Validates if context and params are present.
+   *
+   * @param context Telemetry context map
+   * @param params  Telemetry params map
+   * @return true if valid, false otherwise
+   */
   private static boolean validateRequest(Map<String, Object> context, Map<String, Object> params) {
-
-    boolean flag = true;
-    if (null == context || context.isEmpty() || params == null || params.isEmpty()) {
-      flag = false;
-    }
-    return flag;
+    return context != null && !context.isEmpty() && params != null && !params.isEmpty();
   }
+
 }

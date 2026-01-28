@@ -266,6 +266,8 @@ public final class JsonKey {
   public static final String PROCESS_ID = "processId";
   public static final String PROCESS_START_TIME = "processStartTime";
   public static final String PDATA_ID = "telemetry_pdata_id";
+  public static final String PDATA_PID = "telemetry_pdata_pid";
+  public static final String PDATA_VERSION = "telemetry_pdata_version";
   public static final String PROFILE_SUMMARY = "profileSummary";
   public static final String PROFILE_VISIBILITY = "profileVisibility";
   public static final String PROGRESS = "progress";
@@ -315,6 +317,7 @@ public final class JsonKey {
   public static final String SSO_URL = "sso.url";
   public static final String SSO_USERNAME = "sso.username";
   public static final String STACKTRACE = "stacktrace";
+  public static final String STACKTRACE_CHAR_LENGTH = "stacktrace_char_length";
   public static final String START_DATE = "startDate";
   public static final String START_TIME = "startTime";
   public static final String STATE = "state";
@@ -598,6 +601,7 @@ public final class JsonKey {
   public static final String ES_USER_INDEX = "es_user_index";
   public static final String ES_ORGANISATION_INDEX = "es_organisation_index";
   public static final String ES_USER_COURSES_INDEX = "es_user_courses_index";
+  public static final String X_REQUEST_ID = "x-request-id";
 
   private JsonKey() {}
 }

@@ -60,6 +60,7 @@
     <modules>
         <module>sunbird-cassandra-utils</module>
         <module>sunbird-es-utils</module>
+        <module>sunbird-event-utils</module>
     </modules>
 
     <build>

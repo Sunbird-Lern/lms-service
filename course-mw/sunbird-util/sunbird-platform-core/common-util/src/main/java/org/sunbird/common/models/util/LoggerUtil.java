@@ -40,6 +40,10 @@ public class LoggerUtil {
         info(requestContext, message, null, null);
     }
 
+    public void info(String message) {
+        info(null, message, null, null);
+    }
+
     public void debug(RequestContext requestContext, String message, Map<String, Object> object, Map<String, Object> param) {
         if (isDebugEnabled(requestContext)) {
             requestContext.setLoggerLevel(debugLevel);
@@ -49,6 +53,10 @@ public class LoggerUtil {
 
     public void debug(RequestContext requestContext, String message) {
         debug(requestContext, message, null, null);
+    }
+
+    public void debug(String message) {
+        debug(null, message, null, null);
     }
 
     public void error(RequestContext requestContext, String message, Map<String, Object> object, Map<String, Object> param, Throwable e) {
@@ -70,6 +78,10 @@ public class LoggerUtil {
         error(requestContext, message, null, null, e);
     }
 
+    public void error(String message, Throwable e) {
+        error(null, message, null, null, e);
+    }
+
     public void error(RequestContext requestContext, String message, Throwable e, Map<String, Object> telemetryInfo) {
         error(requestContext, message, null, null, e, telemetryInfo);
     }
@@ -83,6 +95,10 @@ public class LoggerUtil {
 
     public void warn(RequestContext requestContext, String message, Throwable e) {
         warn(requestContext, message, null, null, e);
+    }
+
+    public void warn(String message, Throwable e) {
+        warn(null, message, null, null, e);
     }
 
     private static boolean isDebugEnabled(RequestContext requestContext) {

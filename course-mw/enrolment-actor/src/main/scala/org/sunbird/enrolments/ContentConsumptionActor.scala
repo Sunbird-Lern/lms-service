@@ -200,15 +200,14 @@ class ContentConsumptionActor @Inject() (
                             if (StringUtils.isNotBlank(useActivityAggregator) && useActivityAggregator.equalsIgnoreCase("true")) {
                                 logger.info(requestContext, s"ContentConsumptionActor: Routing to ActivityAggregatorActor for userId: $userId, batchId: $batchId, courseId: $courseId")
                                 callActivityAggregatorActor(requestContext, userId, batchId, courseId, entry._2.asJava)
-                                contentIds.map(id => responseMessage.put(id,JsonKey.SUCCESS))
                             } else {
                                 logger.info(requestContext, s"ContentConsumptionActor: Using legacy Kafka workflow for userId: $userId, batchId: $batchId, courseId: $courseId")
                                 pushInstructionEvent(requestContext, userId, batchId, courseId, contents.asJava)
-                                cassandraOperation.batchInsertLogged(consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, contents, requestContext)
-                                val updateData = getLatestReadDetails(userId, batchId, contents)
-                                cassandraOperation.updateRecordV2(enrolmentDBInfo.getKeySpace, enrolmentDBInfo.getTableName, updateData._1, updateData._2, true, requestContext)
-                                contentIds.map(id => responseMessage.put(id, JsonKey.SUCCESS))
                             }
+                            cassandraOperation.batchInsertLogged(consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, contents, requestContext)
+                            val updateData = getLatestReadDetails(userId, batchId, contents)
+                            cassandraOperation.updateRecordV2(enrolmentDBInfo.getKeySpace, enrolmentDBInfo.getTableName, updateData._1, updateData._2, true, requestContext)
+                            contentIds.map(id => responseMessage.put(id,JsonKey.SUCCESS))
 
                         } else {
                             logger.info(requestContext, "ContentConsumptionActor: addContent : User Id is invalid : " + userId)

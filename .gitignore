@@ -19,3 +19,4 @@ RUNNING_PID
 /bin/
 /logs
 **.vscodedependency-reduced-pom.xml
+.DS_Store

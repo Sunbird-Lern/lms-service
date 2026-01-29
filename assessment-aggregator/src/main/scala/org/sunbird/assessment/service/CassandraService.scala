@@ -30,7 +30,7 @@ class CassandraService {
     try {
       val rec = new java.util.HashMap[String, AnyRef]()
       rec.putAll(Map("attempt_id" -> res.attemptId, "user_id" -> res.userId, "course_id" -> res.courseId, "batch_id" -> res.batchId, "content_id" -> res.contentId, "total_score" -> res.totalScore.asInstanceOf[AnyRef], "total_max_score" -> res.totalMaxScore.asInstanceOf[AnyRef], "grand_total" -> res.grandTotal, "created_on" -> new java.sql.Timestamp(res.createdOn), "last_attempted_on" -> new java.sql.Timestamp(res.lastAttemptedOn), "updated_on" -> new java.sql.Timestamp(System.currentTimeMillis())).asJava)
-      val qs = res.questions.map(q => questionType.newValue().setString("id", q.questionId).setTimestamp("assess_ts", new java.util.Date(q.assessmentTimestamp)).setDouble("max_score", q.maxScore).setDouble("score", q.score).setString("type", q.questionType).setString("title", q.title).setString("description", q.description).setDecimal("duration", java.math.BigDecimal.valueOf(q.duration))).asJava
+      val qs = res.questions.map(q => questionType.newValue().setString("id", q.questionId).setTimestamp("assess_ts", new java.util.Date(q.assessmentTimestamp)).setDouble("max_score", q.maxScore).setDouble("score", q.score).setString("type", q.questionType).setString("title", q.title).setString("description", q.description).setDecimal("duration", java.math.BigDecimal.valueOf(q.duration)).setList("resvalues", q.resvalues).setList("params", q.params)).asJava
       rec.put("question", qs)
       dao.upsertRecord(keyspace, assessmentTable, rec, ctx)
     } catch { case e: Exception => logger.error(s"Save failed for ${res.attemptId}", e); throw e }

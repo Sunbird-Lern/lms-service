@@ -22,7 +22,9 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
     message match {
       case request: Request =>
         val replyTo = sender()
-        try { processAggregation(request, replyTo) } catch {
+        try { 
+          processAggregation(request, replyTo) 
+        } catch {
           case ex: Exception =>
             logger.error(request.getRequestContext, "Request failed", ex)
             replyTo ! createErrorResponse("SERVER_ERROR", ex.getMessage)
@@ -39,9 +41,21 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
       assessments.foreach { item => processIndividual(extractAssessment(item, body), context) }
       replyTo ! createSuccess(body.asScala.getOrElse("attemptId", "N/A").toString)
     } else {
-      val assessment = extractAssessment(body, body)
-      processIndividual(assessment, context)
-      replyTo ! createSuccess(assessment.attemptId)
+      try {
+        val assessment = extractAssessment(body, body)
+        processIndividual(assessment, context)
+        replyTo ! createSuccess(assessment.attemptId)
+      } catch {
+        case ex: Exception => 
+          logger.error(context, "Assessment failed", ex)
+          // We don't have the full request here in the catch block easily if extractAssessment failed, 
+          // but we can try to extract basic info for the failed event
+          try {
+            val req = AssessmentRequest(body.getOrDefault("attemptId","").toString, body.getOrDefault("userId","").toString, body.getOrDefault("courseId","").toString, body.getOrDefault("batchId","").toString, body.getOrDefault("contentId","").toString, System.currentTimeMillis(), List.empty)
+            kafkaService.publishFailedEvent(req, s"Processing error: ${ex.getMessage}")
+          } catch { case _: Exception => }
+          replyTo ! createErrorResponse("SERVER_ERROR", ex.getMessage)
+      }
     }
   }
 
@@ -58,6 +72,7 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
       val totalQuestions = redisService.getTotalQuestionsCount(req.contentId).getOrElse(contentService.getQuestionCount(req.contentId))
       if (totalQuestions > 0 && uniqueEvents.size > totalQuestions) {
         logger.warn(context, s"Skipping assessment ${req.attemptId}: unique events (${uniqueEvents.size}) exceed total questions ($totalQuestions)")
+        kafkaService.publishFailedEvent(req, s"Question count mismatch: unique=${uniqueEvents.size}, total=$totalQuestions")
         return
       }
     }
@@ -100,9 +115,13 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
     if (m.containsKey("edata")) {
       val edata = m.get("edata").asInstanceOf[java.util.Map[String, AnyRef]]
       val item = edata.getOrDefault("item", new java.util.HashMap()).asInstanceOf[java.util.Map[String, AnyRef]]
-      AssessmentEvent(item.getOrDefault("id","").toString, getD(edata, "score"), getD(item, "maxscore"), getD(edata, "duration"), Option(m.get("ets")).getOrElse(0L).asInstanceOf[Number].longValue(), item.getOrDefault("type","").toString, item.getOrDefault("title","").toString, item.getOrDefault("desc","").toString)
+      val resvalues = getListValues(edata.getOrDefault("resvalues", new java.util.ArrayList()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]])
+      val params = getListValues(item.getOrDefault("params", new java.util.ArrayList()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]])
+      AssessmentEvent(item.getOrDefault("id","").toString, getD(edata, "score"), getD(item, "maxscore"), getD(edata, "duration"), Option(m.get("ets")).getOrElse(0L).asInstanceOf[Number].longValue(), item.getOrDefault("type","").toString, item.getOrDefault("title","").toString, item.getOrDefault("desc","").toString, resvalues.asJava, params.asJava)
     } else {
-      AssessmentEvent(m.getOrDefault("questionId","").toString, getD(m, "score"), getD(m, "maxScore"), getD(m, "duration"), Option(m.get("timestamp")).getOrElse(0L).asInstanceOf[Number].longValue(), m.getOrDefault("questionType","").toString, m.getOrDefault("title","").toString, m.getOrDefault("description","").toString)
+      val resvalues = getListValues(m.getOrDefault("resvalues", new java.util.ArrayList()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]])
+      val params = getListValues(m.getOrDefault("params", new java.util.ArrayList()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]])
+      AssessmentEvent(m.getOrDefault("questionId","").toString, getD(m, "score"), getD(m, "maxScore"), getD(m, "duration"), Option(m.get("timestamp")).getOrElse(0L).asInstanceOf[Number].longValue(), m.getOrDefault("questionType","").toString, m.getOrDefault("title","").toString, m.getOrDefault("description","").toString, resvalues.asJava, params.asJava)
     }
   }
 
@@ -111,6 +130,7 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
     if (enableVal) {
       val isValidInRedis = redisService.isValidContent(req.courseId, req.contentId)
       if (!isValidInRedis && !contentService.isValidContent(req.contentId)) {
+        kafkaService.publishFailedEvent(req, "Invalid Content")
         throw new RuntimeException("Invalid Content")
       }
     }
@@ -121,6 +141,19 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
   }
 
   private def getD(m: java.util.Map[String, AnyRef], k: String): Double = Option(m.get(k)).map(_.asInstanceOf[Number].doubleValue()).getOrElse(0.0)
+
+  private def getListValues(values: java.util.List[java.util.Map[String, AnyRef]]): List[java.util.Map[String, AnyRef]] = {
+    import com.google.gson.Gson
+    val gson = new Gson()
+    values.asScala.map { res =>
+      res.asScala.map {
+        case (key, value) => 
+          val finalValue = if (null != value && !value.isInstanceOf[String]) gson.toJson(value) else value
+          key -> finalValue.asInstanceOf[AnyRef]
+      }.asJava
+    }.toList
+  }
+
   private def createSuccess(aid: String) = { val r = new org.sunbird.common.models.response.Response(); r.put("response", "SUCCESS"); r.put("attemptId", aid); r }
   private def createErrorResponse(code: String, msg: String): ProjectCommonException = new ProjectCommonException(code, msg, ResponseCode.SERVER_ERROR.getResponseCode)
 }

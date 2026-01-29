@@ -20,7 +20,6 @@ class RedisService {
       val key = s"$courseId:$courseId:leafnodes"
       val set = redisClient.getSet[String](key)
       if (set.isEmpty) {
-        logger.info(s"No leaf nodes found in Redis for courseId=$courseId, allowing content")
         true // If no hierarchy in Redis, allow processing
       } else {
         val isValid = set.contains(contentId)
@@ -46,7 +45,6 @@ class RedisService {
       if (map.isExists && map.containsKey("totalquestions")) {
         extractCount(map.get("totalquestions"))
       } else {
-        logger.info(s"Total questions not in Redis for $contentId")
         None
       }
     } catch {

@@ -15,7 +15,7 @@ class AssessmentService {
     val scores = events.map(e => (e.score, e.maxScore))
     val totalScore = scores.map(_._1).sum
     val totalMaxScore = scores.map(_._2).sum
-    val questions = events.map(e => QuestionScore(e.questionId, e.score, e.maxScore, e.duration, e.questionType, e.title, e.description, e.timestamp))
+    val questions = events.map(e => QuestionScore(e.questionId, e.score, e.maxScore, e.duration, e.questionType, e.title, e.description, e.timestamp, e.resvalues, e.params))
     val grandTotal = s"${decimalFormat.format(totalScore)}/${decimalFormat.format(totalMaxScore)}"
     ScoreMetrics(totalScore, totalMaxScore, grandTotal, questions)
   }
@@ -34,7 +34,7 @@ class AssessmentService {
     if (aggregate.aggregateDetails.isEmpty) return ""
     val scoreKeys = aggregate.aggregates.keySet.filter(_.startsWith("score:"))
     if (scoreKeys.size == 1) {
-      aggregate.aggregateDetails.maxBy(_.lastAttemptedOn).attemptId
+      aggregate.aggregateDetails.maxBy(_.last_attempted_on).attempt_id
     } else ""
   }
 }

@@ -23,14 +23,10 @@ class KafkaService {
    */
   def publishCertificateEvent(userId: String, courseId: String, batchId: String, attemptId: String): Unit = {
     try {
-      val event = new java.util.HashMap[String, AnyRef]()
-      event.put("userId", userId)
-      event.put("courseId", courseId)
-      event.put("batchId", batchId)
-      event.put("attemptId", attemptId)
-      event.put("timestamp", System.currentTimeMillis().asInstanceOf[AnyRef])
-      val eventJson = mapper.writeValueAsString(event)
-      KafkaClient.send(eventJson, certificateTopic)
+      val ets = System.currentTimeMillis()
+      val mid = s"LP.$ets.${java.util.UUID.randomUUID()}"
+      val event = s"""{"eid":"BE_JOB_REQUEST","ets":$ets,"mid":"$mid","actor":{"id":"Course Certificate Generator","type":"System"},"context":{"pdata":{"ver":"1.0","id":"org.sunbird.platform"}},"object":{"id":"${batchId}_$courseId","type":"CourseCertificateGeneration"},"edata":{"userIds":["$userId"],"action":"issue-certificate","iteration":1,"trigger":"auto-issue","batchId":"$batchId","reIssue":false,"courseId":"$courseId","attemptId":"$attemptId"}}"""
+      KafkaClient.send(event, certificateTopic)
       logger.info(s"Certificate event published: userId=$userId, courseId=$courseId")
     } catch {
       case ex: Exception =>

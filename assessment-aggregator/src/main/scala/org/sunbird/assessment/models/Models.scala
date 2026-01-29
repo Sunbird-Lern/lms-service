@@ -18,7 +18,9 @@ case class AssessmentEvent(
   timestamp: Long,
   questionType: String = "",
   title: String = "",
-  description: String = ""
+  description: String = "",
+  resvalues: java.util.List[java.util.Map[String, AnyRef]] = new java.util.ArrayList(),
+  params: java.util.List[java.util.Map[String, AnyRef]] = new java.util.ArrayList()
 )
 
 case class AssessmentResult(
@@ -43,7 +45,9 @@ case class QuestionScore(
   questionType: String,
   title: String,
   description: String,
-  assessmentTimestamp: Long
+  assessmentTimestamp: Long,
+  resvalues: java.util.List[java.util.Map[String, AnyRef]],
+  params: java.util.List[java.util.Map[String, AnyRef]]
 )
 
 case class UserActivityAggregate(
@@ -54,17 +58,19 @@ case class UserActivityAggregate(
   aggregateDetails: List[AttemptDetail]
 )
 
-case class AttemptDetail(
-  attemptId: String,
-  lastAttemptedOn: Long,
-  score: Double,
-  contentId: String,
-  maxScore: Double,
-  `type`: String = "assessment"
-) {
+case class AttemptDetail(attempt_id: String,last_attempted_on: Long,score: Double,content_id: String,max_score: Double,`type`: String = "assessment") {
   def toJson: String = {
-    import com.google.gson.Gson
-    new Gson().toJson(this)
+    import com.google.gson.GsonBuilder
+    import java.util.Date
+    val gson = new GsonBuilder().setDateFormat("MMM dd, yyyy, h:mm:ss a").create()
+    val map = new java.util.HashMap[String, AnyRef]()
+    map.put("attempt_id", attempt_id)
+    map.put("last_attempted_on", new Date(last_attempted_on))
+    map.put("score", score.asInstanceOf[AnyRef])
+    map.put("content_id", content_id)
+    map.put("max_score", max_score.asInstanceOf[AnyRef])
+    map.put("type", `type`)
+    gson.toJson(map)
   }
 }
 

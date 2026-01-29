@@ -101,17 +101,36 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
   }
 
   private def extractAssessment(data: java.util.Map[String, AnyRef], root: java.util.Map[String, AnyRef]): AssessmentRequest = {
-    val userId = getVal(data, "userId", getVal(root, "userId", "requestedBy"))
-    val courseId = getVal(data, "courseId", getVal(root, "courseId", ""))
-    val batchId = getVal(data, "batchId", getVal(root, "batchId", ""))
-    val contentId = getVal(data, "contentId", getVal(root, "contentId", ""))
-    val tsValue = Option(data.get("assessmentTimestamp")).orElse(Option(data.get("assessmentTs"))).orElse(Option(root.get("assessmentTimestamp")))
+    val userId = getValWithFallback(data, root, "userId", "requestedBy")
+    val courseId = getValWithFallback(data, root, "courseId", "courseId")
+    val batchId = getValWithFallback(data, root, "batchId", "batchId")
+    val contentId = getValWithFallback(data, root, "contentId", "contentId")
+    
+    val tsValue = Option(data.get("assessmentTimestamp")).orElse(Option(data.get("assessmentTs")))
+      .orElse(Option(root.get("assessmentTimestamp"))).orElse(Option(root.get("assessmentTs")))
+    
     val timestamp = tsValue.map(_.asInstanceOf[Number].longValue()).getOrElse(System.currentTimeMillis())
     val eventsRaw = data.get("events")
     val events = if (eventsRaw != null) eventsRaw.asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]].asScala.map(mapToEvent).toList else List.empty
     val attemptId = Option(data.get("attemptId")).map(_.asInstanceOf[String]).getOrElse(s"${userId}_${contentId}_$timestamp".hashCode.abs.toString)
-    if (StringUtils.isBlank(userId) || StringUtils.isBlank(courseId)) throw new RuntimeException("Missing userId/courseId")
+    
+    if (StringUtils.isBlank(userId) || StringUtils.isBlank(courseId)) {
+      throw new RuntimeException(s"Missing userId/courseId: userId=$userId, courseId=$courseId")
+    }
     AssessmentRequest(attemptId, userId, courseId, batchId, contentId, timestamp, events)
+  }
+
+  private def getValWithFallback(data: java.util.Map[String, AnyRef], root: java.util.Map[String, AnyRef], key: String, fallbackKey: String): String = {
+    val v = data.get(key)
+    if (v != null && StringUtils.isNotBlank(v.toString)) v.toString
+    else {
+      val rv = root.get(key)
+      if (rv != null && StringUtils.isNotBlank(rv.toString)) rv.toString
+      else {
+        val fv = root.get(fallbackKey)
+        if (fv != null && StringUtils.isNotBlank(fv.toString)) fv.toString else ""
+      }
+    }
   }
 
   private def mapToEvent(m: java.util.Map[String, AnyRef]): AssessmentEvent = {

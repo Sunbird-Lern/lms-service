@@ -1,50 +1,39 @@
 package org.sunbird.assessment.service
 
-import org.sunbird.common.models.util.{HttpUtil, ProjectUtil, JsonKey}
-import org.slf4j.LoggerFactory
+import org.sunbird.common.models.util.{HttpUtil, ProjectUtil, JsonKey, LoggerUtil}
 import org.apache.commons.lang3.StringUtils
 import scala.collection.JavaConverters._
 
-/**
- * Service to interact with the Content Service APIs
- */
+case class ContentMetadata(isValid: Boolean, totalQuestions: Int)
+
 class ContentService {
+  private val logger = new LoggerUtil(classOf[ContentService])
+  private val baseUrl = ProjectUtil.getConfigValue(JsonKey.SUNBIRD_API_BASE_URL)
+  private val contentReadPath = ProjectUtil.getConfigValue(JsonKey.SUNBIRD_CONTENT_READ_API_PATH)
 
-  private val logger = LoggerFactory.getLogger(classOf[ContentService])
-  private val baseUrl = ProjectUtil.getConfigValue("content_service_base_url")
-  private val contentReadPath = "/content/v3/read/"
-
-  def isValidContent(contentId: String): Boolean = {
-    try {
-      getQuestionCount(contentId) >= 0
-    } catch {
-      case _: Exception => true // Fallback to true to avoid blocking on API errors
-    }
-  }
-
-  def getQuestionCount(contentId: String): Int = {
+  def fetchMetadata(contentId: String): ContentMetadata = {
     val url = s"$baseUrl$contentReadPath$contentId"
     try {
       val headers = Map(JsonKey.AUTHORIZATION -> ProjectUtil.getConfigValue(JsonKey.EKSTEP_AUTHORIZATION)).asJava
       val response = HttpUtil.sendGetRequest(url, headers)
-      if (StringUtils.isNotBlank(response)) {
-        val respMap = ProjectUtil.convertJsonStringToMap(response).asInstanceOf[java.util.Map[String, AnyRef]]
-        if (respMap.getOrDefault("responseCode", "").toString.equalsIgnoreCase("OK")) {
-          val result = respMap.getOrDefault("result", new java.util.HashMap[String, AnyRef]()).asInstanceOf[java.util.Map[String, AnyRef]]
-          val content = result.getOrDefault("content", new java.util.HashMap[String, AnyRef]()).asInstanceOf[java.util.Map[String, AnyRef]]
-          val totalQuestions = content.get("totalQuestions")
-          if (totalQuestions != null) totalQuestions.asInstanceOf[Number].intValue() else 0
-        } else {
-          logger.error(s"API Failed to Fetch the TotalQuestion Count - ContentId:$contentId, ResponseCode - ${respMap.get("responseCode")}")
-          throw new RuntimeException(s"Failed to fetch content metadata for $contentId. ResponseCode: ${respMap.get("responseCode")}")
-        }
+      if (StringUtils.isBlank(response)) return ContentMetadata(isValid = false, totalQuestions = 0)
+      val respMap = ProjectUtil.convertJsonStringToMap(response).asScala
+      val isOk = respMap.get("responseCode").exists(_.toString.equalsIgnoreCase("OK"))
+      if (isOk) {
+        val result = respMap.get("result").collect { case m: java.util.Map[_, _] => m.asScala }.getOrElse(Map.empty)
+        val content = result.get("content").collect { case m: java.util.Map[_, _] => m.asScala }.getOrElse(Map.empty)
+        val count = content.get("totalQuestions").map(_.toString.toDouble.toInt).getOrElse(0)
+        ContentMetadata(isValid = true, totalQuestions = count)
       } else {
-        throw new RuntimeException(s"Empty response from Content Read API for contentId: $contentId")
+        ContentMetadata(isValid = false, totalQuestions = 0)
       }
     } catch {
       case ex: Exception =>
-        logger.error(s"Error retrieving question count for contentId=$contentId: ${ex.getMessage}", ex)
-        throw ex
+        logger.error(s"Error retrieving content metadata for $contentId: ${ex.getMessage}", ex)
+        ContentMetadata(isValid = true, totalQuestions = 0)
     }
   }
+
+  def isValidContent(contentId: String): Boolean = fetchMetadata(contentId).isValid
+  def getQuestionCount(contentId: String): Int = fetchMetadata(contentId).totalQuestions
 }

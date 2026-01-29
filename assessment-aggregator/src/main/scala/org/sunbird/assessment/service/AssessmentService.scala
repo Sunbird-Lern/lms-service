@@ -1,8 +1,9 @@
 package org.sunbird.assessment.service
 import org.sunbird.assessment.models._
+import org.sunbird.common.models.util.ProjectUtil
 import java.text.DecimalFormat
 
-class AssessmentService {
+class AssessmentService(redisService: RedisService, contentService: ContentService) {
 
   private val decimalFormat = new DecimalFormat("0.0#")
   private val aggType = Option(org.sunbird.common.models.util.ProjectUtil.getConfigValue("user_activity_agg_type")).getOrElse("assessment")
@@ -20,14 +21,36 @@ class AssessmentService {
     ScoreMetrics(totalScore, totalMaxScore, grandTotal, questions)
   }
 
-  def computeUserAggregates(assessments: List[ExistingAssessment]): UserActivityAggregate = {
-    if (assessments.isEmpty) return UserActivityAggregate("", "", "", Map.empty, List.empty)
+  /**
+   * Fetches content metadata once by combining Redis and Content API checks.
+   */
+  def getMetadata(courseId: String, contentId: String): ContentMetadata = {
+    val isValidInCache = redisService.isValidContent(courseId, contentId)
+    val cachedCount = redisService.getTotalQuestionsCount(contentId)
+
+    if (isValidInCache && cachedCount.isDefined) {
+      ContentMetadata(isValid = true, totalQuestions = cachedCount.get)
+    } else {
+      val apiMetadata = contentService.fetchMetadata(contentId)
+      val finalValidity = if (apiMetadata.isValid) true else isValidInCache
+      val finalCount = if (apiMetadata.totalQuestions > 0) apiMetadata.totalQuestions else cachedCount.getOrElse(0)
+      ContentMetadata(finalValidity, finalCount)
+    }
+  }
+
+  def validateContent(req: AssessmentRequest, metadata: ContentMetadata): Boolean = {
+    val isValidationEnabled = ProjectUtil.getConfigValue("assessment_enable_content_validation") == "true"
+    if (isValidationEnabled) metadata.isValid else true
+  }
+
+  def computeUserAggregates(userId: String, courseId: String, batchId: String, assessments: List[ExistingAssessment]): UserActivityAggregate = {
+    if (assessments.isEmpty) return UserActivityAggregate(userId, courseId, batchId, Map.empty, List.empty)
     val aggregates = assessments.groupBy(_.contentId).flatMap { case (cid, attempts) =>
       val best = attempts.maxBy(_.totalScore)
       Map(s"score:$cid" -> best.totalScore, s"max_score:$cid" -> best.totalMaxScore, s"attempts_count:$cid" -> attempts.size.toDouble)
     }
     val details = assessments.map(a => AttemptDetail(a.attemptId, a.lastAttemptedOn, a.totalScore, a.contentId, a.totalMaxScore, aggType))
-    UserActivityAggregate("", "", "", aggregates, details)
+    UserActivityAggregate(userId, courseId, batchId, aggregates, details)
   }
   
   def getLatestAttemptId(aggregate: UserActivityAggregate): String = {

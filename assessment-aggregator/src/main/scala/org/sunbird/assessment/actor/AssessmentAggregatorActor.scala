@@ -115,20 +115,30 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
     val attemptId = Option(data.get("attemptId")).map(_.asInstanceOf[String]).getOrElse(s"${userId}_${contentId}_$timestamp".hashCode.abs.toString)
     
     if (StringUtils.isBlank(userId) || StringUtils.isBlank(courseId)) {
-      throw new RuntimeException(s"Missing userId/courseId: userId=$userId, courseId=$courseId")
+      val dataKeys = data.keySet().asScala.mkString(", ")
+      val rootKeys = root.keySet().asScala.mkString(", ")
+      throw new RuntimeException(s"Missing userId/courseId: userId=$userId, courseId=$courseId. Available keys in item: [$dataKeys], in root: [$rootKeys]")
     }
     AssessmentRequest(attemptId, userId, courseId, batchId, contentId, timestamp, events)
   }
 
   private def getValWithFallback(data: java.util.Map[String, AnyRef], root: java.util.Map[String, AnyRef], key: String, fallbackKey: String): String = {
-    val v = data.get(key)
-    if (v != null && StringUtils.isNotBlank(v.toString)) v.toString
+    // Check item data first (multiple variations)
+    val variations = List(key, key.toLowerCase, fallbackKey, fallbackKey.toLowerCase)
+    val v = variations.flatMap(k => Option(data.get(k))).find(x => StringUtils.isNotBlank(x.toString))
+    
+    if (v.isDefined) v.get.toString
     else {
-      val rv = root.get(key)
-      if (rv != null && StringUtils.isNotBlank(rv.toString)) rv.toString
+      // Check root body
+      val rv = variations.flatMap(k => Option(root.get(k))).find(x => StringUtils.isNotBlank(x.toString))
+      if (rv.isDefined) rv.get.toString
       else {
-        val fv = root.get(fallbackKey)
-        if (fv != null && StringUtils.isNotBlank(fv.toString)) fv.toString else ""
+        // Ultimate fallback: check if it's inside the 'contents' list if available
+        if (root.containsKey("contents") && root.get("contents").isInstanceOf[java.util.List[_]]) {
+          val contents = root.get("contents").asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]].asScala
+          val cv = contents.flatMap(c => variations.flatMap(k => Option(c.get(k)))).find(x => StringUtils.isNotBlank(x.toString))
+          if (cv.isDefined) cv.get.toString else ""
+        } else ""
       }
     }
   }

@@ -174,7 +174,8 @@ public enum ActorOperations {
   ONDEMAND_START_SCHEDULER("onDemandStartScheduler"),
   GROUP_ACTIVITY_AGGREGATES("groupActivityAggregates"),
   SUBMIT_JOB_REQUEST("submitJobRequest"),
-  LIST_JOB_REQUEST("listJobRequest");
+  LIST_JOB_REQUEST("listJobRequest"),
+  UPDATE_ACTIVITY_AGGREGATES("updateActivityAggregates");
 
   private String value;
 

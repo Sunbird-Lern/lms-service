@@ -237,6 +237,25 @@ class RedisCacheUtil {
     }
 
     /**
+      * This method returns list data from cache for a given key from specific database
+      *
+      * @param key
+      * @param database
+      * @return
+      */
+    def getList(key: String, database: Int): List[String] = {
+        val jedis = getConnection(database)
+        try {
+            val data = jedis.smembers(key).asScala.toList
+            data
+        } catch {
+            case e: Exception =>
+                logger.error(null, "Exception Occurred While Fetching List Data from Redis Cache for Key : " + key + " from database: " + database + " | Exception is:", e)
+                throw e
+        } finally returnConnection(jedis)
+    }
+
+    /**
       * This method returns list data from cache for a given key
       *
       * @param key

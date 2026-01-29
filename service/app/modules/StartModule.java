@@ -1,6 +1,7 @@
 package modules;
 
 import com.google.inject.AbstractModule;
+import org.sunbird.cache.util.RedisCacheUtil;
 
 /**
  * This class is responsible for creating instance of
@@ -14,6 +15,7 @@ public class StartModule extends AbstractModule {
         System.out.println("StartModule:configure: Start");
         try {
             bind(ApplicationStart.class).asEagerSingleton();
+            bind(RedisCacheUtil.class).asEagerSingleton();
         } catch (Exception | Error e) {
             e.printStackTrace();
             throw e;

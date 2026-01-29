@@ -87,7 +87,7 @@ class ActivityAggregatorActor @Inject()(implicit val cacheUtil: RedisCacheUtil) 
                                          contents: util.List[util.Map[String, AnyRef]],
                                          requestContext: RequestContext
                                        ): Unit = {
-    logger.debug(requestContext, s"ActivityAggregatorActor: START processActivityAggregates - userId: $userId, courseId: $courseId, batchId: $batchId")
+    logger.info(requestContext, s"ActivityAggregatorActor: START processActivityAggregates - userId: $userId, courseId: $courseId, batchId: $batchId")
     
     val filteredContents = filterValidContents(contents)
     if (filteredContents.isEmpty) {
@@ -161,7 +161,7 @@ class ActivityAggregatorActor @Inject()(implicit val cacheUtil: RedisCacheUtil) 
       return contents
     }
     
-    logger.debug(requestContext, s"deduplicateContents: Checking ${contents.size} contents for duplicates")
+    logger.info(requestContext, s"deduplicateContents: Checking ${contents.size} contents for duplicates")
     val unique = contents.filter(content => {
       val contentId = Option(content.get(JsonKey.CONTENT_ID)).getOrElse(content.get("contentid")).asInstanceOf[String]
       val status = content.get("status").asInstanceOf[Number].intValue()
@@ -220,7 +220,7 @@ class ActivityAggregatorActor @Inject()(implicit val cacheUtil: RedisCacheUtil) 
       logger.info(requestContext, s"computeCourseAggregations: Module aggregation enabled, computing module-level aggregations")
       val ancestors = userConsumption.contents.map { case (contentId, content) =>
         val ancestorList = redisUtil.getAncestors(courseId, content.contentId, requestContext)
-        logger.debug(requestContext, s"computeCourseAggregations: contentId: $contentId has ${ancestorList.size} ancestors")
+        logger.info(requestContext, s"computeCourseAggregations: contentId: $contentId has ${ancestorList.size} ancestors")
         (contentId, ancestorList)
       }.toMap
       
@@ -229,7 +229,7 @@ class ActivityAggregatorActor @Inject()(implicit val cacheUtil: RedisCacheUtil) 
       
       val collectionsWithLeafNodes = childCollections.map(collectionId => {
         val collectionLeafNodes = redisUtil.getRequiredLeafNodes(courseId, collectionId, requestContext)
-        logger.debug(requestContext, s"computeCourseAggregations: collectionId: $collectionId has ${collectionLeafNodes.size} required leaf nodes")
+        logger.info(requestContext, s"computeCourseAggregations: collectionId: $collectionId has ${collectionLeafNodes.size} required leaf nodes")
         (collectionId, collectionLeafNodes)
       }).toMap
 
@@ -323,9 +323,9 @@ class ActivityAggregatorActor @Inject()(implicit val cacheUtil: RedisCacheUtil) 
   private def publishAuditEvent(event: TelemetryEvent, requestContext: RequestContext): Unit = {
     try {
       val eventJson = gson.toJson(event)
-      logger.debug(requestContext, s"publishAuditEvent: Publishing event to Kafka - topic: $auditEventTopic")
+      logger.info(requestContext, s"publishAuditEvent: Publishing event to Kafka - topic: $auditEventTopic")
       KafkaClient.send(eventJson, auditEventTopic)
-      logger.debug(requestContext, s"publishAuditEvent: Event published successfully")
+      logger.info(requestContext, s"publishAuditEvent: Event published successfully")
     } catch {
       case ex: Exception =>
         logger.error(requestContext, s"publishAuditEvent: Failed to publish audit event to Kafka topic $auditEventTopic: ${ex.getMessage}", ex)
@@ -345,7 +345,7 @@ class ActivityAggregatorActor @Inject()(implicit val cacheUtil: RedisCacheUtil) 
   }
 
   private def getEnrolmentStatus(userId: String, courseId: String, batchId: String, requestContext: RequestContext): Int = {
-    logger.debug(requestContext, s"getEnrolmentStatus: Querying user_enrolments for userId: $userId, courseId: $courseId, batchId: $batchId")
+    logger.info(requestContext, s"getEnrolmentStatus: Querying user_enrolments for userId: $userId, courseId: $courseId, batchId: $batchId")
     val selectMap = new util.HashMap[String, AnyRef]() {{
       put("userid", userId)
       put("courseid", courseId)
@@ -359,10 +359,10 @@ class ActivityAggregatorActor @Inject()(implicit val cacheUtil: RedisCacheUtil) 
       if (!result.isEmpty) {
         val enrolment = result.get(0)
         val status = enrolment.getOrDefault("status", 0.asInstanceOf[AnyRef]).asInstanceOf[Number].intValue()
-        logger.debug(requestContext, s"getEnrolmentStatus: Found enrolment with status: $status")
+        logger.info(requestContext, s"getEnrolmentStatus: Found enrolment with status: $status")
         return status
       } else {
-        logger.debug(requestContext, s"getEnrolmentStatus: No enrolment found, returning status 0")
+        logger.info(requestContext, s"getEnrolmentStatus: No enrolment found, returning status 0")
       }
     } else {
       logger.warn(requestContext, s"getEnrolmentStatus: Null response from Cassandra")
@@ -372,7 +372,7 @@ class ActivityAggregatorActor @Inject()(implicit val cacheUtil: RedisCacheUtil) 
   }
 
   private def getContentStatusFromDB(userId: String, courseId: String, batchId: String, requestContext: RequestContext): UserContentConsumption = {
-    logger.debug(requestContext, s"getContentStatusFromDB: Querying user_content_consumption for userId: $userId, courseId: $courseId, batchId: $batchId")
+    logger.info(requestContext, s"getContentStatusFromDB: Querying user_content_consumption for userId: $userId, courseId: $courseId, batchId: $batchId")
     val response = cassandraOperation.getRecordsByProperties(consumptionDBInfo.getKeySpace, "user_content_consumption", 
       new util.HashMap[String, AnyRef]() {{
         put("userid", userId)
@@ -382,7 +382,7 @@ class ActivityAggregatorActor @Inject()(implicit val cacheUtil: RedisCacheUtil) 
     
     if (response != null && response.getResult != null) {
       val result = response.getResult.get(JsonKey.RESPONSE).asInstanceOf[util.List[util.Map[String, AnyRef]]]
-      logger.debug(requestContext, s"getContentStatusFromDB: Found ${result.size()} records in DB")
+      logger.info(requestContext, s"getContentStatusFromDB: Found ${result.size()} records in DB")
       
       if (!result.isEmpty) {
         
@@ -414,7 +414,7 @@ class ActivityAggregatorActor @Inject()(implicit val cacheUtil: RedisCacheUtil) 
       }
     }
     
-    logger.debug(requestContext, s"getContentStatusFromDB: No existing consumption found, returning empty")
+    logger.info(requestContext, s"getContentStatusFromDB: No existing consumption found, returning empty")
     UserContentConsumption(userId, batchId, courseId, Map.empty)
   }
 }

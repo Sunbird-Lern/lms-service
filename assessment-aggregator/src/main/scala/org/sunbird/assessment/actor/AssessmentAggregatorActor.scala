@@ -34,31 +34,40 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
   }
 
   private def processAggregation(request: Request, replyTo: org.apache.pekko.actor.ActorRef): Unit = {
-    val context = request.getRequestContext
     val body = request.getRequest
-    if (body.containsKey("assessments") && body.get("assessments").isInstanceOf[java.util.List[_]]) {
-      val assessments = body.get("assessments").asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]].asScala
-      assessments.foreach { item => 
-        try {
-          processIndividual(extractAssessment(item, body), item, context)
-        } catch {
-          case ex: Exception => 
-            logger.error(context, s"Individual assessment failed in batch: ${ex.getMessage}", ex)
-            kafkaService.publishFailedEvent(item, s"Processing error: ${ex.getMessage}")
-        }
-      }
+    val context = request.getRequestContext
+    if (body.containsKey("assessments")) {
+      handleBatchRequest(body, context)
       replyTo ! createSuccess(body.asScala.getOrElse("attemptId", "N/A").toString)
     } else {
+      handleSingleRequest(body, context, replyTo)
+    }
+  }
+
+  private def handleBatchRequest(body: java.util.Map[String, AnyRef], context: RequestContext): Unit = {
+    val assessments = body.getOrDefault("assessments", new java.util.ArrayList()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]].asScala
+    assessments.foreach { item =>
       try {
-        val assessment = extractAssessment(body, body)
-        processIndividual(assessment, body, context)
-        replyTo ! createSuccess(assessment.attemptId)
+        val assessment = extractFromAggregatorApi(item, body)
+        processIndividual(assessment, item, context)
       } catch {
-        case ex: Exception => 
-          logger.error(context, "Assessment request failed", ex)
-          kafkaService.publishFailedEvent(body, s"Processing error: ${ex.getMessage}")
-          replyTo ! createErrorResponse("SERVER_ERROR", ex.getMessage)
+        case ex: Exception =>
+          logger.error(context, s"Individual assessment failed in batch: ${ex.getMessage}", ex)
+          kafkaService.publishFailedEvent(item, s"Processing error: ${ex.getMessage}")
       }
+    }
+  }
+
+  private def handleSingleRequest(body: java.util.Map[String, AnyRef], context: RequestContext, replyTo: org.apache.pekko.actor.ActorRef): Unit = {
+    try {
+      val assessment = extractFromContentConsumptionActor(body)
+      processIndividual(assessment, body, context)
+      replyTo ! createSuccess(assessment.attemptId)
+    } catch {
+      case ex: Exception =>
+        logger.error(context, "Assessment request failed", ex)
+        kafkaService.publishFailedEvent(body, s"Processing error: ${ex.getMessage}")
+        replyTo ! createErrorResponse("SERVER_ERROR", ex.getMessage)
     }
   }
 
@@ -79,7 +88,6 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
         return
       }
     }
-
     val scoreMetrics = assessmentService.computeScoreMetrics(uniqueEvents)
     val existing = cassandraService.getAssessment(req.attemptId, req.userId, req.courseId, req.batchId, req.contentId, context)
     if (existing.exists(_.lastAttemptedOn >= req.assessmentTimestamp)) {
@@ -100,47 +108,67 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
       kafkaService.publishCertificateEvent(userId, courseId, batchId, attemptId)    }
   }
 
-  private def extractAssessment(data: java.util.Map[String, AnyRef], root: java.util.Map[String, AnyRef]): AssessmentRequest = {
-    val userId = getValWithFallback(data, root, "userId", "requestedBy")
-    val courseId = getValWithFallback(data, root, "courseId", "courseId")
-    val batchId = getValWithFallback(data, root, "batchId", "batchId")
-    val contentId = getValWithFallback(data, root, "contentId", "contentId")
-    
-    val tsValue = Option(data.get("assessmentTimestamp")).orElse(Option(data.get("assessmentTs")))
-      .orElse(Option(root.get("assessmentTimestamp"))).orElse(Option(root.get("assessmentTs")))
-    
-    val timestamp = tsValue.map(_.asInstanceOf[Number].longValue()).getOrElse(System.currentTimeMillis())
-    val eventsRaw = data.get("events")
-    val events = if (eventsRaw != null) eventsRaw.asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]].asScala.map(mapToEvent).toList else List.empty
-    val attemptId = Option(data.get("attemptId")).map(_.asInstanceOf[String]).getOrElse(s"${userId}_${contentId}_$timestamp".hashCode.abs.toString)
-    
+  /**
+   * Extraction logic for Content Consumption Actor Flow (Single Request)
+   */
+  private def extractFromContentConsumptionActor(data: java.util.Map[String, AnyRef]): AssessmentRequest = {
+    val userId = getInternalVal(data, "userId", "requestedBy")
+    val courseId = getInternalVal(data, "courseId", "")
+    val batchId = getInternalVal(data, "batchId", "")
+    val contentId = getInternalVal(data, "contentId", "")
     if (StringUtils.isBlank(userId) || StringUtils.isBlank(courseId)) {
-      val dataKeys = data.keySet().asScala.mkString(", ")
-      val rootKeys = root.keySet().asScala.mkString(", ")
-      throw new RuntimeException(s"Missing userId/courseId: userId=$userId, courseId=$courseId. Available keys in item: [$dataKeys], in root: [$rootKeys]")
+      throw new RuntimeException(s"Missing userId/courseId in Request Body")
     }
+    val timestamp = extractTs(data)
+    val events = extractEvents(data)
+    val attemptId = Option(data.get("attemptId")).map(_.toString).getOrElse(s"${userId}_${contentId}_$timestamp".hashCode.abs.toString)
     AssessmentRequest(attemptId, userId, courseId, batchId, contentId, timestamp, events)
   }
 
-  private def getValWithFallback(data: java.util.Map[String, AnyRef], root: java.util.Map[String, AnyRef], key: String, fallbackKey: String): String = {
-    // Check item data first (multiple variations)
-    val variations = List(key, key.toLowerCase, fallbackKey, fallbackKey.toLowerCase)
-    val v = variations.flatMap(k => Option(data.get(k))).find(x => StringUtils.isNotBlank(x.toString))
-    
-    if (v.isDefined) v.get.toString
+  /**
+   * Extraction logic for Aggregator API Flow (Batch Processing)
+   */
+  private def extractFromAggregatorApi(item: java.util.Map[String, AnyRef], root: java.util.Map[String, AnyRef]): AssessmentRequest = {
+    // 1. Get IDs from item first, then from root body
+    val userId = getApiVal(item, root, "userId", "requestedBy")
+    val courseId = getApiVal(item, root, "courseId", "courseId")
+    val batchId = getApiVal(item, root, "batchId", "batchId")
+    val contentId = getApiVal(item, root, "contentId", "contentId")
+    if (StringUtils.isBlank(userId) || StringUtils.isBlank(courseId)) {
+      throw new RuntimeException(s"Missing userId/courseId in batch item or root body")
+    }
+    // 2. Get metric data specifically from the item
+    val timestamp = extractTs(item)
+    val events = extractEvents(item)
+    val attemptId = Option(item.get("attemptId")).map(_.toString).getOrElse(s"${userId}_${contentId}_$timestamp".hashCode.abs.toString)
+    AssessmentRequest(attemptId, userId, courseId, batchId, contentId, timestamp, events)
+  }
+
+  private def getInternalVal(m: java.util.Map[String, AnyRef], k1: String, k2: String): String = {
+    val v = m.get(k1); if (v != null) v.toString else { val v2 = m.get(k2); if (v2 != null) v2.toString else "" }
+  }
+
+  private def getApiVal(item: java.util.Map[String, AnyRef], root: java.util.Map[String, AnyRef], key: String, fallback: String): String = {
+    val v = item.get(key)
+    if (v != null && StringUtils.isNotBlank(v.toString)) v.toString
     else {
-      // Check root body
-      val rv = variations.flatMap(k => Option(root.get(k))).find(x => StringUtils.isNotBlank(x.toString))
-      if (rv.isDefined) rv.get.toString
+      val rv = root.get(key)
+      if (rv != null && StringUtils.isNotBlank(rv.toString)) rv.toString
       else {
-        // Ultimate fallback: check if it's inside the 'contents' list if available
-        if (root.containsKey("contents") && root.get("contents").isInstanceOf[java.util.List[_]]) {
-          val contents = root.get("contents").asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]].asScala
-          val cv = contents.flatMap(c => variations.flatMap(k => Option(c.get(k)))).find(x => StringUtils.isNotBlank(x.toString))
-          if (cv.isDefined) cv.get.toString else ""
-        } else ""
+        val fv = root.get(fallback)
+        if (fv != null && StringUtils.isNotBlank(fv.toString)) fv.toString else ""
       }
     }
+  }
+
+  private def extractTs(m: java.util.Map[String, AnyRef]): Long = {
+    Option(m.get("assessmentTimestamp")).orElse(Option(m.get("assessmentTs")))
+      .map(_.asInstanceOf[Number].longValue()).getOrElse(System.currentTimeMillis())
+  }
+
+  private def extractEvents(m: java.util.Map[String, AnyRef]): List[AssessmentEvent] = {
+    val eventsRaw = m.get("events")
+    if (eventsRaw != null) eventsRaw.asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]].asScala.map(mapToEvent).toList else List.empty
   }
 
   private def mapToEvent(m: java.util.Map[String, AnyRef]): AssessmentEvent = {

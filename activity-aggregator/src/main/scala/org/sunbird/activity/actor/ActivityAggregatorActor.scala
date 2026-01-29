@@ -51,7 +51,7 @@ class ActivityAggregatorActor @Inject()(implicit val cacheUtil: RedisCacheUtil) 
   
   private val dedupEnabled = ProjectUtil.getConfigValue("activity_input_dedup_enabled") match {
     case value if value != null => value.toBoolean
-    case _ => true
+    case _ => false
   }
 
   override def onReceive(request: Request): Unit = {

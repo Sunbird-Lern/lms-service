@@ -99,7 +99,7 @@ public class SearchHandlerActor extends BaseActor {
       logger.info(request.getRequestContext(), "SearchHandlerActor:onReceive  request search instant duration="
               + (Instant.now().toEpochMilli() - instant.toEpochMilli()));
       String searchType = (types != null && types.length > 0) ? types[0] : "";
-      Future<Map<String, Object>> resultF = esService.search(request.getRequestContext(), searchDto, searchType);
+      Future<Map<String, Object>> resultF = esService.search(searchDto, searchType, request.getRequestContext());
       result = (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
       logger.info(request.getRequestContext(), 
           "SearchHandlerActor:onReceive search complete instant duration=" + (Instant.now().toEpochMilli() - instant.toEpochMilli()));

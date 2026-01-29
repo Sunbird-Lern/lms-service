@@ -73,7 +73,7 @@ public final class CourseBatchSchedulerUtil {
   public static boolean updateDataIntoES(RequestContext requestContext, Map<String, Object> map) {
     boolean flag = true;
     try {
-      Future<Boolean> flagF = esService.update(requestContext, ProjectUtil.EsType.course.getTypeName(), (String) map.get(JsonKey.ID), map);
+      Future<Boolean> flagF = esService.update(ProjectUtil.EsType.course.getTypeName(), (String) map.get(JsonKey.ID), map, requestContext);
       flag = (boolean) ElasticSearchHelper.getResponseFromFuture(flagF);
     } catch (Exception e) {
       logger.error(requestContext, "CourseBatchSchedulerUtil:updateDataIntoES: Exception occurred while saving course batch data to ES", e);

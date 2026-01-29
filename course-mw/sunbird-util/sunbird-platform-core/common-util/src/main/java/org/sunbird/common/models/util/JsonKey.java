@@ -9,6 +9,8 @@ import java.util.List;
  * @author Manzarul
  */
 public final class JsonKey {
+
+  public static final String SEARCH_FUZZY = "fuzzy";
   public static final String ANONYMOUS = "Anonymous";
   public static final String UNAUTHORIZED = "Unauthorized";
   public static final String MW_SYSTEM_HOST = "sunbird_mw_system_host";
@@ -250,6 +252,7 @@ public final class JsonKey {
   public static final String PARTICIPANTS = "participants";
   public static final String PASSWORD = "password";
   public static final String PDATA = "pdata";
+  public static final String REST = "rest";
 
   public static final String PERCENTAGE = "percentage";
   public static final String PHONE = "phone";

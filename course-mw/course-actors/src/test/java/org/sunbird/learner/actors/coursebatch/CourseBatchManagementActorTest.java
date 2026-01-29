@@ -70,7 +70,7 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
             .get();
     when(group
             .getESMockerService()
-            .save(Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.anyMap()))
+            .save(Mockito.anyString(), Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
         .thenReturn(Futures.successful("randomESID"));
     when(ContentUtil.searchContent(Mockito.anyString(), Mockito.anyMap()))
         .thenReturn(CustomObjectBuilder.getRandomCourse().get());
@@ -129,7 +129,7 @@ public class CourseBatchManagementActorTest extends SunbirdApplicationActorTest 
   @PrepareForTest({EsClientFactory.class})
   public void getBatchSuccess() {
     group = MockerBuilder.getFreshMockerGroup().withESMock(new ESMocker());
-    when(group.getESMockerService().getDataByIdentifier(Mockito.any(), Mockito.anyString(), Mockito.anyString()))
+    when(group.getESMockerService().getDataByIdentifier(Mockito.anyString(), Mockito.anyString(), Mockito.any()))
         .thenReturn(CustomObjectBuilder.getRandomCourseBatch().asESIdentifierResult());
     Request req = new Request();
     req.setOperation("getBatch");

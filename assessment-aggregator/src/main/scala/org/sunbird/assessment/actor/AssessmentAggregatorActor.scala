@@ -47,9 +47,7 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
         replyTo ! createSuccess(assessment.attemptId)
       } catch {
         case ex: Exception => 
-          logger.error(context, "Assessment failed", ex)
-          // We don't have the full request here in the catch block easily if extractAssessment failed, 
-          // but we can try to extract basic info for the failed event
+          logger.error(context, "Assessment request failed", ex)
           try {
             val req = AssessmentRequest(body.getOrDefault("attemptId","").toString, body.getOrDefault("userId","").toString, body.getOrDefault("courseId","").toString, body.getOrDefault("batchId","").toString, body.getOrDefault("contentId","").toString, System.currentTimeMillis(), List.empty)
             kafkaService.publishFailedEvent(req, s"Processing error: ${ex.getMessage}")

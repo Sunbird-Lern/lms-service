@@ -38,39 +38,44 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
     val body = request.getRequest
     if (body.containsKey("assessments") && body.get("assessments").isInstanceOf[java.util.List[_]]) {
       val assessments = body.get("assessments").asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]].asScala
-      assessments.foreach { item => processIndividual(extractAssessment(item, body), context) }
+      assessments.foreach { item => 
+        try {
+          processIndividual(extractAssessment(item, body), item, context)
+        } catch {
+          case ex: Exception => 
+            logger.error(context, s"Individual assessment failed in batch: ${ex.getMessage}", ex)
+            kafkaService.publishFailedEvent(item, s"Processing error: ${ex.getMessage}")
+        }
+      }
       replyTo ! createSuccess(body.asScala.getOrElse("attemptId", "N/A").toString)
     } else {
       try {
         val assessment = extractAssessment(body, body)
-        processIndividual(assessment, context)
+        processIndividual(assessment, body, context)
         replyTo ! createSuccess(assessment.attemptId)
       } catch {
         case ex: Exception => 
           logger.error(context, "Assessment request failed", ex)
-          try {
-            val req = AssessmentRequest(body.getOrDefault("attemptId","").toString, body.getOrDefault("userId","").toString, body.getOrDefault("courseId","").toString, body.getOrDefault("batchId","").toString, body.getOrDefault("contentId","").toString, System.currentTimeMillis(), List.empty)
-            kafkaService.publishFailedEvent(req, s"Processing error: ${ex.getMessage}")
-          } catch { case _: Exception => }
+          kafkaService.publishFailedEvent(body, s"Processing error: ${ex.getMessage}")
           replyTo ! createErrorResponse("SERVER_ERROR", ex.getMessage)
       }
     }
   }
 
-  private def processIndividual(req: AssessmentRequest, context: RequestContext): Unit = {
-    validateAssessment(req)
+  private def processIndividual(req: AssessmentRequest, rawMap: java.util.Map[String, AnyRef], context: RequestContext): Unit = {
+    validateAssessment(req, rawMap)
     if (req.events.isEmpty) processUserAggregates(req.userId, req.courseId, req.batchId, context)
-    else processAttempt(req, context)
+    else processAttempt(req, rawMap, context)
   }
 
-  private def processAttempt(req: AssessmentRequest, context: RequestContext): Unit = {
+  private def processAttempt(req: AssessmentRequest, rawMap: java.util.Map[String, AnyRef], context: RequestContext): Unit = {
     val uniqueEvents = assessmentService.getUniqueQuestions(req.events)
     val skipMissing = Option(ProjectUtil.getConfigValue("assessment_skip_missing_records")).getOrElse("true").toBoolean
     if (skipMissing) {
       val totalQuestions = redisService.getTotalQuestionsCount(req.contentId).getOrElse(contentService.getQuestionCount(req.contentId))
       if (totalQuestions > 0 && uniqueEvents.size > totalQuestions) {
         logger.warn(context, s"Skipping assessment ${req.attemptId}: unique events (${uniqueEvents.size}) exceed total questions ($totalQuestions)")
-        kafkaService.publishFailedEvent(req, s"Question count mismatch: unique=${uniqueEvents.size}, total=$totalQuestions")
+        kafkaService.publishFailedEvent(rawMap, s"Question count mismatch: unique=${uniqueEvents.size}, total=$totalQuestions")
         return
       }
     }
@@ -123,12 +128,12 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
     }
   }
 
-  private def validateAssessment(req: AssessmentRequest): Unit = {
+  private def validateAssessment(req: AssessmentRequest, rawMap: java.util.Map[String, AnyRef]): Unit = {
     val enableVal = ProjectUtil.getConfigValue("assessment_enable_content_validation") == "true"
     if (enableVal) {
       val isValidInRedis = redisService.isValidContent(req.courseId, req.contentId)
       if (!isValidInRedis && !contentService.isValidContent(req.contentId)) {
-        kafkaService.publishFailedEvent(req, "Invalid Content")
+        kafkaService.publishFailedEvent(rawMap, "Invalid Content")
         throw new RuntimeException("Invalid Content")
       }
     }

@@ -37,19 +37,21 @@ class KafkaService {
   /**
    * Publish failed assessment event
    */
-  def publishFailedEvent(request: AssessmentRequest, reason: String): Unit = {
+  def publishFailedEvent(eventMap: java.util.Map[String, AnyRef], reason: String): Unit = {
     try {
-      val event = new java.util.HashMap[String, AnyRef]()
-      event.put("attemptId", request.attemptId)
-      event.put("userId", request.userId)
-      event.put("courseId", request.courseId)
-      event.put("batchId", request.batchId)
-      event.put("contentId", request.contentId)
-      event.put("reason", reason)
-      event.put("timestamp", System.currentTimeMillis().asInstanceOf[AnyRef])
-      val eventJson = mapper.writeValueAsString(event)
+      val metadata = new java.util.HashMap[String, AnyRef]()
+      metadata.put("validation_error", reason)
+      metadata.put("src", "AssessmentAggregator")
+      
+      val flags = new java.util.HashMap[String, AnyRef]()
+      flags.put("error_processed", true.asInstanceOf[AnyRef])
+
+      eventMap.put("metadata", metadata)
+      eventMap.put("flags", flags)
+      
+      val eventJson = mapper.writeValueAsString(eventMap)
       KafkaClient.send(eventJson, failedEventsTopic)
-      logger.info(s"Failed event published: attemptId=${request.attemptId}, reason=$reason")
+      logger.info(s"Failed event published: attemptId=${eventMap.get("attemptId")}, reason=$reason")
     } catch {
       case ex: Exception =>
         logger.error(s"Failed to publish failed event: ${ex.getMessage}", ex)

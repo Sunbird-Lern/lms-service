@@ -41,7 +41,7 @@ class ActivityAggregatorActor @Inject()(implicit val cacheUtil: RedisCacheUtil) 
   
   private val moduleAggEnabled = ProjectUtil.getConfigValue("enable_module_aggregation") match {
     case value if value != null => value.toBoolean
-    case _ => false
+    case _ => true
   }
   
   private val filterCompletedEnrolments = ProjectUtil.getConfigValue("filter_processed_enrolments") match {

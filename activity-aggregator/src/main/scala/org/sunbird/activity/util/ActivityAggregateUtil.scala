@@ -35,18 +35,13 @@ class ActivityAggregateUtil {
         ContentStatus(contentId, status, completedCount, viewCount, progress, lastAccessTime, lastCompletedTime, fromInput = true)
       }).filter(t => StringUtils.isNotBlank(t.contentId) && t.status > 0)
         .groupBy(_.contentId)
-
-      // Merge multiple entries for same content in input
       val result = enrichedContents.map { case (contentId, contentList) =>
         val finalStatus = contentList.map(_.status).max
         val views = contentList.map(_.viewCount).sum
         val completion = contentList.map(_.completedCount).sum
         val maxProgress = contentList.map(_.progress).max
-        
-        // Take latest timestamps from input
         val latestAccess = contentList.flatMap(c => Option(c.lastAccessTime)).sortWith(_.after(_)).headOption.orNull
         val latestCompleted = contentList.flatMap(c => Option(c.lastCompletedTime)).sortWith(_.after(_)).headOption.orNull
-        
         (contentId, ContentStatus(contentId, finalStatus, completion, views, maxProgress, latestAccess, latestCompleted, fromInput = true))
       }
       result
@@ -62,39 +57,22 @@ class ActivityAggregateUtil {
                             dbData: UserContentConsumption
                           ): UserContentConsumption = {
     val dbContents = dbData.contents
-    
-    // Process input contents and merge with DB data
     val processedContents = inputData.contents.map { case (contentId, inputCC) =>
       val dbCC = dbContents.getOrElse(contentId, ContentStatus(contentId, 0, 0, 0, fromInput = false))
-      
-      // Final status is max of DB and Input
       val finalStatus = List(inputCC.status, dbCC.status).max
-      
-      // View count is sum of DB and Input
       val views = inputCC.viewCount + dbCC.viewCount
-      
-      // Completed count is sum of DB and Input
       val completion = inputCC.completedCount + dbCC.completedCount
-      
-      // Progress calculation
       val progress = if (finalStatus == 2) 100 else List(inputCC.progress, dbCC.progress).max
-      
-      // Merge timestamps
       val lastAccessTime = compareTime(dbCC.lastAccessTime, inputCC.lastAccessTime)
-      
-      // Handle lastCompletedTime
       val lastCompletedTime = if (finalStatus == 2) {
-        if (dbCC.status < 2) compareTime(null, inputCC.lastCompletedTime) // Just became completed
+        if (dbCC.status < 2) compareTime(null, inputCC.lastCompletedTime)
         else compareTime(dbCC.lastCompletedTime, inputCC.lastCompletedTime)
       } else null
-      
-      // Determine which events to generate
       val eventsFor = getEventActions(dbCC, inputCC)
       
       (contentId, ContentStatus(contentId, finalStatus, completion, views, progress, lastAccessTime, lastCompletedTime, ProjectUtil.getTimeStamp, inputCC.fromInput, eventsFor))
     }
     
-    // Add remaining DB contents that weren't in input
     val existingContents = processedContents.keys.toList
     val remainingContents = dbData.contents.filterKeys(key => !existingContents.contains(key))
     val finalContentsMap = processedContents ++ remainingContents
@@ -210,14 +188,8 @@ class ActivityAggregateUtil {
                                ): List[UserEnrolmentAgg] = {
     val userId = userConsumption.userId
     val contextId = "cb:" + userConsumption.batchId
-
-    // Get unique child collections (excluding the course itself)
     val childCollections = ancestors.values.flatten.filter(a => !StringUtils.equals(a, courseId)).toList.distinct
-
-    // Get completed contents by this user
     val userCompletedContents = userConsumption.contents.filter(cc => cc._2.status == 2).map(cc => cc._2.contentId).toList.distinct
-
-    // Compute aggregates for each child collection
     childCollections.flatMap(collectionId => {
       collectionsWithLeafNodes.get(collectionId).map(leafNodes => {
         val completedCount = leafNodes.intersect(userCompletedContents).size

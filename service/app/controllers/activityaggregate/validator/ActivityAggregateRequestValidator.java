@@ -47,50 +47,44 @@ public class ActivityAggregateRequestValidator {
         }
 
         List<Map<String, Object>> contents = (List<Map<String, Object>>) request.get(JsonKey.CONTENTS);
-        if (contents == null || contents.isEmpty()) {
-            throw new ProjectCommonException(
-                ResponseCode.mandatoryParamsMissing.getErrorCode(),
-                "contents is mandatory and cannot be empty",
-                ResponseCode.CLIENT_ERROR.getResponseCode()
-            );
-        }
+        if (contents != null && !contents.isEmpty()) {
+            for (Map<String, Object> content : contents) {
+                String contentId = (String) content.get(JsonKey.CONTENT_ID);
+                if (contentId == null || contentId.trim().isEmpty()) {
+                    throw new ProjectCommonException(
+                        ResponseCode.mandatoryParamsMissing.getErrorCode(),
+                        "contentId is mandatory in contents",
+                        ResponseCode.CLIENT_ERROR.getResponseCode()
+                    );
+                }
 
-        for (Map<String, Object> content : contents) {
-            String contentId = (String) content.get(JsonKey.CONTENT_ID);
-            if (contentId == null || contentId.trim().isEmpty()) {
-                throw new ProjectCommonException(
-                    ResponseCode.mandatoryParamsMissing.getErrorCode(),
-                    "contentId is mandatory in contents",
-                    ResponseCode.CLIENT_ERROR.getResponseCode()
-                );
-            }
+                Object statusObj = content.get("status");
+                if (statusObj == null) {
+                    throw new ProjectCommonException(
+                        ResponseCode.mandatoryParamsMissing.getErrorCode(),
+                        "status is mandatory in contents",
+                        ResponseCode.CLIENT_ERROR.getResponseCode()
+                    );
+                }
 
-            Object statusObj = content.get("status");
-            if (statusObj == null) {
-                throw new ProjectCommonException(
-                    ResponseCode.mandatoryParamsMissing.getErrorCode(),
-                    "status is mandatory in contents",
-                    ResponseCode.CLIENT_ERROR.getResponseCode()
-                );
-            }
+                int status;
+                if (statusObj instanceof Number) {
+                    status = ((Number) statusObj).intValue();
+                } else {
+                    throw new ProjectCommonException(
+                        ResponseCode.invalidRequestData.getErrorCode(),
+                        "status must be a number",
+                        ResponseCode.CLIENT_ERROR.getResponseCode()
+                    );
+                }
 
-            int status;
-            if (statusObj instanceof Number) {
-                status = ((Number) statusObj).intValue();
-            } else {
-                throw new ProjectCommonException(
-                    ResponseCode.invalidRequestData.getErrorCode(),
-                    "status must be a number",
-                    ResponseCode.CLIENT_ERROR.getResponseCode()
-                );
-            }
-
-            if (status < 0 || status > 2) {
-                throw new ProjectCommonException(
-                    ResponseCode.invalidRequestData.getErrorCode(),
-                    "status must be 0, 1, or 2",
-                    ResponseCode.CLIENT_ERROR.getResponseCode()
-                );
+                if (status < 0 || status > 2) {
+                    throw new ProjectCommonException(
+                        ResponseCode.invalidRequestData.getErrorCode(),
+                        "status must be 0, 1, or 2",
+                        ResponseCode.CLIENT_ERROR.getResponseCode()
+                    );
+                }
             }
         }
     }

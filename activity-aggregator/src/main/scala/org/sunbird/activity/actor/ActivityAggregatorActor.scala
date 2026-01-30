@@ -66,12 +66,11 @@ class ActivityAggregatorActor @Inject()(implicit val cacheUtil: RedisCacheUtil) 
     val userId = request.get(JsonKey.USER_ID).asInstanceOf[String]
     val batchId = request.get(JsonKey.BATCH_ID).asInstanceOf[String]
     val courseId = request.get(JsonKey.COURSE_ID).asInstanceOf[String]
-    val contents = request.get(JsonKey.CONTENTS).asInstanceOf[util.List[util.Map[String, AnyRef]]]
+    val contentsRaw = request.get(JsonKey.CONTENTS)
+    val contents = if (contentsRaw != null) contentsRaw.asInstanceOf[util.List[util.Map[String, AnyRef]]] else null
 
     try {
-      if (!contents.isEmpty) {
-        processActivityAggregates(userId, batchId, courseId, contents, requestContext)
-      }
+      processActivityAggregates(userId, batchId, courseId, contents, requestContext)
       sender().tell(successResponse(), self)
     } catch {
       case ex: Exception =>
@@ -89,22 +88,51 @@ class ActivityAggregatorActor @Inject()(implicit val cacheUtil: RedisCacheUtil) 
                                        ): Unit = {
     logger.info(requestContext, s"ActivityAggregatorActor: START processActivityAggregates - userId: $userId, courseId: $courseId, batchId: $batchId")
     
-    val filteredContents = filterValidContents(contents)
-    if (filteredContents.isEmpty) {
-      logger.info(requestContext, s"No valid contents to process for userId: $userId, courseId: $courseId")
-      return
-    }
+    var dbUserConsumption: UserContentConsumption = null
     
-    val uniqueContents = deduplicateContents(filteredContents, userId, batchId, courseId, requestContext)
-    if (uniqueContents.isEmpty) {
-      logger.info(requestContext, s"No unique contents after deduplication for userId: $userId, courseId: $courseId")
+    val uniqueContents = if (contents != null && !contents.isEmpty) {
+      val filteredContents = filterValidContents(contents)
+      if (filteredContents.isEmpty) {
+        logger.info(requestContext, s"No valid contents to process for userId: $userId, courseId: $courseId")
+        return
+      }
+      
+      val unique = deduplicateContents(filteredContents, userId, batchId, courseId, requestContext)
+      if (unique.isEmpty) {
+        logger.info(requestContext, s"No unique contents after deduplication for userId: $userId, courseId: $courseId")
+        return
+      }
+      unique
+    } else if (contents == null) {
+      logger.info(requestContext, s"Contents key missing, fetching from DB (Force Sync) for userId: $userId, courseId: $courseId")
+      dbUserConsumption = getContentStatusFromDB(userId, courseId, batchId, requestContext)
+      if (dbUserConsumption.contents.isEmpty) {
+        logger.info(requestContext, s"No existing consumption in DB to sync for userId: $userId, courseId: $courseId")
+        return
+      }
+      dbUserConsumption.contents.values.map(c => {
+         val m = new java.util.HashMap[String, AnyRef]()
+         m.put(JsonKey.CONTENT_ID, c.contentId)
+         m.put(JsonKey.STATUS, c.status.asInstanceOf[AnyRef])
+         m.put(JsonKey.LAST_ACCESS_TIME, c.lastAccessTime)
+         m.put(JsonKey.COMPLETED_COUNT, c.completedCount.asInstanceOf[AnyRef])
+         m.put(JsonKey.VIEW_COUNT, c.viewCount.asInstanceOf[AnyRef])
+         m.put(JsonKey.PROGRESS, c.progress.asInstanceOf[AnyRef])
+         if (c.lastUpdatedTime != null) m.put(JsonKey.LAST_UPDATED_TIME, c.lastUpdatedTime)
+         if (c.lastCompletedTime != null) m.put(JsonKey.LAST_COMPLETED_TIME, c.lastCompletedTime)
+         m
+      }).toList
+    } else {
+      logger.info(requestContext, s"Received empty contents list. No processing required.")
       return
     }
     
     val contentStatusMap = activityAggUtil.getContentStatusFromContents(uniqueContents.asJava)
     val inputUserConsumption = UserContentConsumption(userId, batchId, courseId, contentStatusMap)
     
-    val dbUserConsumption = getContentStatusFromDB(userId, courseId, batchId, requestContext)
+    if (dbUserConsumption == null) {
+      dbUserConsumption = getContentStatusFromDB(userId, courseId, batchId, requestContext)
+    }
     val finalUserConsumption = activityAggUtil.mergeConsumptionData(inputUserConsumption, dbUserConsumption)
     
     updateContentConsumption(finalUserConsumption, requestContext)

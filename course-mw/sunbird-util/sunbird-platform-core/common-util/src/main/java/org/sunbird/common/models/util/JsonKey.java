@@ -78,6 +78,8 @@ public final class JsonKey {
   public static final String CONTENTS = "contents";
   public static final String CONTEXT = "context";
   public static final String CORRELATED_OBJECTS = "correlatedObjects";
+  public static final String COMPLETED_COUNT = "completedcount";
+  public static final String VIEW_COUNT = "viewcount";
   public static final String COUNT = "count";
   public static final String COUNTRY = "country";
   public static final String COUNTRY_CODE = "countryCode";

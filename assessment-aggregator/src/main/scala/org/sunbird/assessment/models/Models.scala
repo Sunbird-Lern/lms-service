@@ -7,7 +7,9 @@ case class AssessmentRequest(
   batchId: String,
   contentId: String,
   assessmentTimestamp: Long,
-  events: List[AssessmentEvent]
+  events: List[AssessmentEvent],
+  rawJson: Option[String] = None,
+  ignoreTimestampValidation: Boolean = false
 )
 
 case class AssessmentEvent(
@@ -80,7 +82,8 @@ case class ExistingAssessment(
   lastAttemptedOn: Long,
   createdOn: Long,
   totalScore: Double,
-  totalMaxScore: Double
+  totalMaxScore: Double,
+  questions: List[AssessmentEvent] = List.empty
 )
 
 case class ScoreMetrics(

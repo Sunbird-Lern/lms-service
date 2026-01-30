@@ -16,6 +16,7 @@ import org.sunbird.kafka.client.{InstructionEventGenerator, KafkaClient}
 import org.sunbird.learner.constants.{CourseJsonKey, InstructionEvent}
 import org.sunbird.learner.util.Util
 
+import com.datastax.driver.core.{UDTValue, UserType}
 import java.util
 import java.util.{Date, TimeZone, UUID}
 import javax.inject.Inject
@@ -35,6 +36,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     private val enrolmentDBInfo = Util.dbInfoMap.get(JsonKey.LEARNER_COURSE_DB)
     val dateFormatter = ProjectUtil.getDateFormatter
     val jsonFields = Set[String]("progressdetails")
+    private lazy val questionUDTType = cassandraOperation.getUDTType(assessmentAggregatorDBInfo.get(JsonKey.KEYSPACE).asInstanceOf[String], "question")
 
     override def onReceive(request: Request): Unit = {
         Util.initializeContext(request, TelemetryEnvKey.BATCH, this.getClass.getName)
@@ -236,10 +238,12 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
         val useDirectAggregation = ProjectUtil.getConfigValue("assessment_direct_aggregation_enabled").toBoolean
         if (useDirectAggregation) {
             logger.info(requestContext, "Using assessment aggregator module")
+            val attemptId = AssessmentAuditRecorder.record(assessment, questionUDTType, requestContext)
+            assessment.put(JsonKey.ATTEMPT_ID, attemptId)
             val request = createAssessmentRequest(assessment, requestContext)
             val assessmentAggregatorActor = context.actorSelection("/user/assessment-aggregator-actor")
             assessmentAggregatorActor ! request
-            logger.info(requestContext, s"Assessment sent to aggregator (async): attemptId=${assessment.get("attemptId")}")
+            logger.info(requestContext, s"Assessment sent to aggregator (async): attemptId=$attemptId")
         } else {
             logger.info(requestContext, "Using Kafka-based assessment aggregation")
             val topic = ProjectUtil.getConfigValue("kafka_assessment_topic")

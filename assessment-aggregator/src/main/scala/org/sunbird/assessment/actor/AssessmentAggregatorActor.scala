@@ -68,15 +68,55 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
     }
   }
 
-  private def processIndividual(req: AssessmentRequest, rawMap: java.util.Map[String, AnyRef], context: RequestContext): Unit = {
-    val metadata = assessmentService.getMetadata(req.courseId, req.contentId)
+  private def processIndividual(request: AssessmentRequest, rawMap: java.util.Map[String, AnyRef], context: RequestContext): Unit = {
+    val syncedRequests = recoverAssessmentData(request, context)
+    syncedRequests.foreach { syncedReq =>
+      val calculatedMetadata = assessmentService.getMetadata(syncedReq.courseId, syncedReq.contentId)
+      validateContent(syncedReq, calculatedMetadata, context)
+
+      if (syncedReq.events.nonEmpty) {
+        processAttempt(syncedReq, calculatedMetadata, rawMap, context)
+      } else {
+        processUserAggregates(syncedReq.userId, syncedReq.courseId, syncedReq.batchId, syncedReq.contentId, context)
+      }
+    }
+  }
+
+  private def recoverAssessmentData(request: AssessmentRequest, context: RequestContext): List[AssessmentRequest] = {
+    if (request.events.nonEmpty) return List(request)
+    val existing = fetchStoredAssessments(request, context)
+    if (existing.isEmpty) {
+      logger.warn(context, s"Sync Flow: No stored events found for userId=${request.userId}, contentId=${request.contentId}, attemptId=${request.attemptId}")
+      return List(request)
+    }
+    logger.info(context, s"Sync Flow: Recovered ${existing.size} attempt(s) for userId=${request.userId}, contentId=${request.contentId}")
+    existing.map(toSyncRequest(request, _))
+  }
+
+  private def fetchStoredAssessments(request: AssessmentRequest, context: RequestContext): List[ExistingAssessment] = {
+    if (StringUtils.isNotBlank(request.attemptId)) {
+      cassandraService.getAssessment(request.attemptId, request.userId, request.courseId, request.batchId, request.contentId, context).toList
+    } else {
+      cassandraService.getUserAssessments(request.userId, request.courseId, request.batchId, request.contentId, context)
+    }
+  }
+
+  private def toSyncRequest(original: AssessmentRequest, stored: ExistingAssessment): AssessmentRequest = {
+    original.copy(
+      attemptId = stored.attemptId,
+      events = stored.questions,
+      assessmentTimestamp = stored.questions.headOption.map(_.timestamp).getOrElse(stored.lastAttemptedOn),
+      rawJson = None,
+      ignoreTimestampValidation = true
+    )
+  }
+
+  private def validateContent(req: AssessmentRequest, metadata: ContentMetadata, context: RequestContext): Unit = {
     if (!assessmentService.validateContent(req, metadata)) {
       val msg = s"Content validation failed: contentId ${req.contentId} is not valid for courseId ${req.courseId}"
       logger.error(context, msg + s" (userId: ${req.userId})")
       throw new RuntimeException(msg)
     }
-    if (req.events.isEmpty) processUserAggregates(req.userId, req.courseId, req.batchId, context)
-    else processAttempt(req, metadata, rawMap, context)
   }
 
   private def processAttempt(req: AssessmentRequest, metadata: ContentMetadata, rawMap: java.util.Map[String, AnyRef], context: RequestContext): Unit = {
@@ -91,17 +131,17 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
     }
     val scoreMetrics = assessmentService.computeScoreMetrics(uniqueEvents)
     val existing = cassandraService.getAssessment(req.attemptId, req.userId, req.courseId, req.batchId, req.contentId, context)
-    if (existing.exists(_.lastAttemptedOn >= req.assessmentTimestamp)) {
+    if (!req.ignoreTimestampValidation && existing.exists(_.lastAttemptedOn >= req.assessmentTimestamp)) {
       logger.info(context, s"Skipping stale assessment: ${req.attemptId}")
       return
     }
-    val result = AssessmentResult(req.attemptId, req.userId, req.courseId, req.batchId, req.contentId, scoreMetrics.totalScore, scoreMetrics.totalMaxScore, scoreMetrics.grandTotal, scoreMetrics.questions, existing.map(_.createdOn).getOrElse(System.currentTimeMillis()), req.assessmentTimestamp)
+    val result = AssessmentResult(req.attemptId, req.userId, req.courseId, req.batchId, req.contentId, scoreMetrics.totalScore, scoreMetrics.totalMaxScore, scoreMetrics.grandTotal, scoreMetrics.questions, existing.map(_.createdOn).getOrElse(System.currentTimeMillis()), req.assessmentTimestamp, req.rawJson.orElse(Option(ProjectUtil.convertMapToJsonString(rawMap))))
     cassandraService.saveAssessment(result, context)
-    processUserAggregates(req.userId, req.courseId, req.batchId, context)
+    processUserAggregates(req.userId, req.courseId, req.batchId, req.contentId, context)
   }
 
-  private def processUserAggregates(userId: String, courseId: String, batchId: String, context: RequestContext): Unit = {
-    val assessments = cassandraService.getUserAssessments(userId, courseId, batchId, context)
+  private def processUserAggregates(userId: String, courseId: String, batchId: String, contentId: String, context: RequestContext): Unit = {
+    val assessments = cassandraService.getUserAssessments(userId, courseId, batchId, contentId, context)
     if (assessments.nonEmpty) {
       val agg = assessmentService.computeUserAggregates(userId, courseId, batchId, assessments)
       cassandraService.updateUserActivity(userId, courseId, batchId, agg, context)

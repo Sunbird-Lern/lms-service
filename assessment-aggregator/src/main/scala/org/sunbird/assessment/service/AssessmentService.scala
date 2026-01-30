@@ -27,7 +27,6 @@ class AssessmentService(redisService: RedisService, contentService: ContentServi
   def getMetadata(courseId: String, contentId: String): ContentMetadata = {
     val isValidInCache = redisService.isValidContent(courseId, contentId)
     val cachedCount = redisService.getTotalQuestionsCount(contentId)
-
     if (isValidInCache && cachedCount.isDefined) {
       ContentMetadata(isValid = true, totalQuestions = cachedCount.get)
     } else {

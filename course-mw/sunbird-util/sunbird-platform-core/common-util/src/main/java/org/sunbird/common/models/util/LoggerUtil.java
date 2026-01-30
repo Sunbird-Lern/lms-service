@@ -29,40 +29,48 @@ public class LoggerUtil {
         defaultLogger = LoggerFactory.getLogger("defaultLogger");
     }
 
-    public void info(RequestContext requestContext, String message, Map<String, Object> object, Map<String, Object> param) {
+    public void info(RequestContext requestContext, String message, Map<String, Object> object,
+            Map<String, Object> param) {
         if (requestContext != null) {
             requestContext.setLoggerLevel(infoLevel);
             logger.info(jsonMapper(requestContext, message, object, param));
-        } else defaultLogger.info(message);
+        } else
+            defaultLogger.info(message);
     }
 
     public void info(RequestContext requestContext, String message) {
         info(requestContext, message, null, null);
     }
 
-    public void debug(RequestContext requestContext, String message, Map<String, Object> object, Map<String, Object> param) {
+    public void debug(RequestContext requestContext, String message, Map<String, Object> object,
+            Map<String, Object> param) {
         if (isDebugEnabled(requestContext)) {
             requestContext.setLoggerLevel(debugLevel);
             logger.info(jsonMapper(requestContext, message, object, param));
-        } else defaultLogger.debug(message);
+        } else
+            defaultLogger.debug(message);
     }
 
     public void debug(RequestContext requestContext, String message) {
         debug(requestContext, message, null, null);
     }
 
-    public void error(RequestContext requestContext, String message, Map<String, Object> object, Map<String, Object> param, Throwable e) {
+    public void error(RequestContext requestContext, String message, Map<String, Object> object,
+            Map<String, Object> param, Throwable e) {
         if (requestContext != null) {
             requestContext.setLoggerLevel(errorLevel);
             logger.error(jsonMapper(requestContext, message, object, param), e);
-        } else defaultLogger.error(message, e);
+        } else
+            defaultLogger.error(message, e);
     }
 
-    public void error(RequestContext requestContext, String message, Map<String, Object> object, Map<String, Object> param, Throwable e, Map<String, Object> telemetryInfo) {
+    public void error(RequestContext requestContext, String message, Map<String, Object> object,
+            Map<String, Object> param, Throwable e, Map<String, Object> telemetryInfo) {
         if (requestContext != null) {
             requestContext.setLoggerLevel(errorLevel);
             logger.error(jsonMapper(requestContext, message, object, param), e);
-        } else defaultLogger.error(message, e);
+        } else
+            defaultLogger.error(message, e);
         telemetryProcess(requestContext, telemetryInfo, e);
     }
 
@@ -74,15 +82,21 @@ public class LoggerUtil {
         error(requestContext, message, null, null, e, telemetryInfo);
     }
 
-    public void warn(RequestContext requestContext, String message, Map<String, Object> object, Map<String, Object> param, Throwable e) {
+    public void warn(RequestContext requestContext, String message, Map<String, Object> object,
+            Map<String, Object> param, Throwable e) {
         if (requestContext != null) {
             requestContext.setLoggerLevel(warnLevel);
             logger.warn((jsonMapper(requestContext, message, object, param)), e);
-        } else defaultLogger.warn(message, e);
+        } else
+            defaultLogger.warn(message, e);
     }
 
     public void warn(RequestContext requestContext, String message, Throwable e) {
         warn(requestContext, message, null, null, e);
+    }
+
+    public void warn(RequestContext requestContext, String message) {
+        warn(requestContext, message, null, null, null);
     }
 
     private static boolean isDebugEnabled(RequestContext requestContext) {
@@ -94,11 +108,10 @@ public class LoggerUtil {
         if (e instanceof ProjectCommonException) {
             projectCommonException = (ProjectCommonException) e;
         } else {
-            projectCommonException =
-                    new ProjectCommonException(
-                            ResponseCode.internalError.getErrorCode(),
-                            ResponseCode.internalError.getErrorMessage(),
-                            ResponseCode.SERVER_ERROR.getResponseCode());
+            projectCommonException = new ProjectCommonException(
+                    ResponseCode.internalError.getErrorCode(),
+                    ResponseCode.internalError.getErrorMessage(),
+                    ResponseCode.SERVER_ERROR.getResponseCode());
         }
         Request request = new Request(requestContext);
         telemetryInfo.put(JsonKey.TELEMETRY_EVENT_TYPE, TelemetryEvents.ERROR.getName());
@@ -107,7 +120,7 @@ public class LoggerUtil {
         params.put(JsonKey.ERROR, projectCommonException.getCode());
         params.put(JsonKey.STACKTRACE, generateStackTrace(e.getStackTrace()));
         request.setRequest(telemetryInfo);
-        //		lmaxWriter.submitMessage(request);
+        // lmaxWriter.submitMessage(request);
         TelemetryWriter.write(request);
     }
 
@@ -119,7 +132,8 @@ public class LoggerUtil {
         return builder.toString();
     }
 
-    private String jsonMapper(RequestContext requestContext, String message, Map<String, Object> object, Map<String, Object> param) {
+    private String jsonMapper(RequestContext requestContext, String message, Map<String, Object> object,
+            Map<String, Object> param) {
         try {
             return mapper.writeValueAsString(new CustomLogFormat(requestContext, message, object, param).getEventMap());
         } catch (JsonProcessingException e) {

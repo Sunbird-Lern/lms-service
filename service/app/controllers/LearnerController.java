@@ -34,6 +34,10 @@ public class LearnerController extends BaseController {
   @Named("content-consumption-actor")
   private ActorRef contentConsumptionActor;
 
+  @Inject
+  @Named("assessment-aggregator-actor")
+  private ActorRef assessmentAggregatorActor;
+
   /**
    * This method will provide list of user content state. Content refer user activity {started,half
    * completed ,completed} against TOC (table of content).
@@ -119,6 +123,34 @@ public class LearnerController extends BaseController {
             logger.info(null,apiDebugLog + ":: ResponseStatus: " + r.status() + " Headers: " + loggingHeaders +  " ErrMessage: " + e.getMessage());
             return r;
         });
+    }
+  }
+
+  public CompletionStage<Result> syncContent(Http.Request httpRequest) {
+    try {
+      JsonNode requestJson = httpRequest.body().asJson();
+      Request request = createAndInitRequest("syncAssessmentData", requestJson, httpRequest);
+      return actorResponseHandler(
+              contentConsumptionActor, request, timeout, null, httpRequest);
+    } catch (Exception e) {
+      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
+    }
+  }
+
+  /**
+   * Direct assessment aggregation endpoint
+   * @param httpRequest
+   * @return
+   */
+  public CompletionStage<Result> aggregateAssessment(Http.Request httpRequest) {
+    try {
+      JsonNode requestJson = httpRequest.body().asJson();
+      Request request = createAndInitRequest("aggregateAssessment", requestJson, httpRequest);
+      // Use ask pattern for synchronous response
+      return actorResponseHandler(
+              assessmentAggregatorActor, request, timeout, null, httpRequest);
+    } catch (Exception e) {
+      return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
     }
   }
 

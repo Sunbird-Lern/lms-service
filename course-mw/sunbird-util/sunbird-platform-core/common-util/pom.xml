@@ -9,6 +9,13 @@
     <name>common-util</name>
     <url>http://maven.apache.org</url>
 
+    <parent>
+        <groupId>org.sunbird</groupId>
+        <artifactId>course-mw</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath>../../../pom.xml</relativePath>
+    </parent>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <scala.major.version>2.13</scala.major.version>
@@ -247,7 +254,6 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>18.0</version>
         </dependency>
         <dependency>
             <groupId>${CLOUD_STORAGE_GROUP_ID}</groupId>

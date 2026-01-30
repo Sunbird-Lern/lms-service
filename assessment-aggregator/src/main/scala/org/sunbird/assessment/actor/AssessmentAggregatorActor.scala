@@ -1,6 +1,8 @@
 package org.sunbird.assessment.actor
 import org.apache.pekko.actor.{Props, UntypedAbstractActor}
 import org.sunbird.common.exception.ProjectCommonException
+import org.sunbird.common.request.{Request, RequestContext}
+import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.assessment.models._
 import org.sunbird.assessment.service._
 import org.sunbird.assessment.util.AssessmentParser
@@ -71,7 +73,7 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
   private def processIndividual(request: AssessmentRequest, rawMap: java.util.Map[String, AnyRef], context: RequestContext): Unit = {
     val syncedRequests = recoverAssessmentData(request, context)
     syncedRequests.foreach { syncedReq =>
-      val calculatedMetadata = assessmentService.getMetadata(syncedReq.courseId, syncedReq.contentId)
+      val calculatedMetadata = assessmentService.getMetadata(syncedReq.courseId, syncedReq.contentId, context)
       validateContent(syncedReq, calculatedMetadata, context)
 
       if (syncedReq.events.nonEmpty) {
@@ -114,7 +116,7 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
   private def validateContent(req: AssessmentRequest, metadata: ContentMetadata, context: RequestContext): Unit = {
     if (!assessmentService.validateContent(req, metadata)) {
       val msg = s"Content validation failed: contentId ${req.contentId} is not valid for courseId ${req.courseId}"
-      logger.error(context, msg + s" (userId: ${req.userId})")
+      logger.error(context, msg + s" (userId: ${req.userId})", null)
       throw new RuntimeException(msg)
     }
   }
@@ -135,7 +137,7 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
       logger.info(context, s"Skipping stale assessment: ${req.attemptId}")
       return
     }
-    val result = AssessmentResult(req.attemptId, req.userId, req.courseId, req.batchId, req.contentId, scoreMetrics.totalScore, scoreMetrics.totalMaxScore, scoreMetrics.grandTotal, scoreMetrics.questions, existing.map(_.createdOn).getOrElse(System.currentTimeMillis()), req.assessmentTimestamp, req.rawJson.orElse(Option(ProjectUtil.convertMapToJsonString(rawMap))))
+    val result = AssessmentResult(req.attemptId, req.userId, req.courseId, req.batchId, req.contentId, scoreMetrics.totalScore, scoreMetrics.totalMaxScore, scoreMetrics.grandTotal, scoreMetrics.questions, existing.map(_.createdOn).getOrElse(System.currentTimeMillis()), req.assessmentTimestamp)
     cassandraService.saveAssessment(result, context)
     processUserAggregates(req.userId, req.courseId, req.batchId, req.contentId, context)
   }

@@ -24,13 +24,13 @@ class AssessmentService(redisService: RedisService, contentService: ContentServi
   /**
    * Fetches content metadata once by combining Redis and Content API checks.
    */
-  def getMetadata(courseId: String, contentId: String): ContentMetadata = {
+  def getMetadata(courseId: String, contentId: String, context: org.sunbird.common.request.RequestContext): ContentMetadata = {
     val isValidInCache = redisService.isValidContent(courseId, contentId)
     val cachedCount = redisService.getTotalQuestionsCount(contentId)
     if (isValidInCache && cachedCount.isDefined) {
       ContentMetadata(isValid = true, totalQuestions = cachedCount.get)
     } else {
-      val apiMetadata = contentService.fetchMetadata(contentId)
+      val apiMetadata = contentService.fetchMetadata(contentId, context)
       val finalValidity = if (apiMetadata.isValid) true else isValidInCache
       val finalCount = if (apiMetadata.totalQuestions > 0) apiMetadata.totalQuestions else cachedCount.getOrElse(0)
       ContentMetadata(finalValidity, finalCount)

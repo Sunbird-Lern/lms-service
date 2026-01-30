@@ -36,7 +36,7 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
     private val enrolmentDBInfo = Util.dbInfoMap.get(JsonKey.LEARNER_COURSE_DB)
     val dateFormatter = ProjectUtil.getDateFormatter
     val jsonFields = Set[String]("progressdetails")
-    private lazy val questionUDTType = cassandraOperation.getUDTType(assessmentAggregatorDBInfo.get(JsonKey.KEYSPACE).asInstanceOf[String], "question")
+    private lazy val questionUDTType = cassandraOperation.getUDTType(assessmentAggregatorDBInfo.getKeySpace, "question")
 
     override def onReceive(request: Request): Unit = {
         Util.initializeContext(request, TelemetryEnvKey.BATCH, this.getClass.getName)

@@ -3,15 +3,14 @@ package org.sunbird.enrolments
 import com.datastax.driver.core.{UDTValue, UserType}
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.sunbird.cassandra.CassandraOperation
-import org.sunbird.common.models.util.{JsonKey, ProjectUtil}
+import org.sunbird.common.models.util.{JsonKey, LoggerUtil, ProjectUtil}
 import org.sunbird.common.request.RequestContext
 import org.sunbird.helper.ServiceFactory
-import org.slf4j.LoggerFactory
 import java.util
 import scala.collection.JavaConverters._
 
 object AssessmentAuditRecorder {
-  private val logger = LoggerFactory.getLogger(AssessmentAuditRecorder.getClass)
+  private val logger = new LoggerUtil(AssessmentAuditRecorder.getClass)
   private val mapper = new ObjectMapper()
   private val cassandraOperation = ServiceFactory.getInstance
   
@@ -86,6 +85,6 @@ object AssessmentAuditRecorder {
 
   private def persist(data: util.Map[String, AnyRef], ctx: RequestContext): Unit = {
     val db = org.sunbird.learner.util.Util.dbInfoMap.get(JsonKey.ASSESSMENT_AGGREGATOR_DB)
-    cassandraOperation.upsertRecord(db.get(JsonKey.KEYSPACE).asInstanceOf[String], db.get(JsonKey.TABLE).asInstanceOf[String], data, ctx)
+    cassandraOperation.upsertRecord(db.getKeySpace, db.getTableName, data, ctx)
   }
 }

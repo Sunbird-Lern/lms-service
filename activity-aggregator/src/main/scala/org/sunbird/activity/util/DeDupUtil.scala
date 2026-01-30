@@ -20,7 +20,7 @@ class DeDupUtil(implicit cacheUtil: RedisCacheUtil) {
   
   private val dedupEnabled = ProjectUtil.getConfigValue("activity_input_dedup_enabled") match {
     case value if value != null => value.toBoolean
-    case _ => true
+    case _ => false
   }
 
   def getMessageId(courseId: String, batchId: String, userId: String, contentId: String, status: Int): String = {

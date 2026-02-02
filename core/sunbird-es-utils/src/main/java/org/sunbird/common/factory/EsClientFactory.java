@@ -2,8 +2,8 @@ package org.sunbird.common.factory;
 
 import org.sunbird.common.ElasticSearchRestHighImpl;
 import org.sunbird.common.inf.ElasticSearchService;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerUtil;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.logging.LoggerUtil;
 
 /**
  * Factory class to provide instances of ElasticSearchService.

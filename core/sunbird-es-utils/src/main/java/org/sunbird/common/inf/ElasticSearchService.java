@@ -2,7 +2,7 @@ package org.sunbird.common.inf;
 
 import java.util.List;
 import java.util.Map;
-import org.sunbird.common.request.RequestContext;
+import org.sunbird.request.RequestContext;
 import org.sunbird.dto.SearchDTO;
 import scala.concurrent.Future;
 

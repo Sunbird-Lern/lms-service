@@ -1,6 +1,6 @@
 package org.sunbird.common;
 
-import static org.sunbird.common.models.util.ProjectUtil.isNotNull;
+import static org.sunbird.common.ProjectUtil.isNotNull;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -38,8 +38,8 @@ import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket;
 import org.elasticsearch.search.sort.SortOrder;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerUtil;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.logging.LoggerUtil;
 import org.sunbird.dto.SearchDTO;
 import scala.concurrent.Await;
 import scala.concurrent.Future;

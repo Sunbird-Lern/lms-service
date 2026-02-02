@@ -7,8 +7,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerUtil;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.logging.LoggerUtil;
 
 /**
  * Manages Elasticsearch REST high-level client connections with thread-safe singleton access.

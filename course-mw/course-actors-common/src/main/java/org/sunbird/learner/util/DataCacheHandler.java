@@ -2,11 +2,11 @@
 package org.sunbird.learner.util;
 
 import org.sunbird.cassandra.CassandraOperation;
-import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.ProjectUtil;
-import org.sunbird.common.models.util.TableNameUtil;
-import org.sunbird.common.models.util.LoggerUtil;
+import org.sunbird.response.Response;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.common.ProjectUtil;
+import org.sunbird.utils.TableNameUtil;
+import org.sunbird.logging.LoggerUtil;
 import org.sunbird.helper.ServiceFactory;
 
 import java.util.List;

@@ -13,13 +13,17 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
-import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.response.HttpUtilResponse;
-import org.sunbird.common.models.util.*;
-import org.sunbird.common.request.Request;
-import org.sunbird.common.request.RequestContext;
-import org.sunbird.common.responsecode.ResponseCode;
-import org.sunbird.common.util.JsonUtil;
+import org.sunbird.exception.ProjectCommonException;
+import org.sunbird.response.HttpUtilResponse;
+import org.sunbird.telemetry.dto.*;
+import org.sunbird.request.Request;
+import org.sunbird.request.RequestContext;
+import org.sunbird.response.ResponseCode;
+import org.sunbird.utils.JsonUtil;
+import org.sunbird.http.HttpUtil;
+import org.sunbird.common.*;
+import org.sunbird.logging.LoggerUtil;
+import org.sunbird.keys.JsonKey;
 
 /**
  * This class will make the call to EkStep content search

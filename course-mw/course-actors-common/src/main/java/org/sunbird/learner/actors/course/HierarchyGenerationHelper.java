@@ -3,11 +3,11 @@ package org.sunbird.learner.actors.course;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerUtil;
-import org.sunbird.common.request.Request;
-import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.exception.ProjectCommonException;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.logging.LoggerUtil;
+import org.sunbird.request.Request;
+import org.sunbird.response.ResponseCode;
 import org.sunbird.keys.SunbirdKey;
 
 import java.util.ArrayList;
@@ -18,8 +18,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
-import static org.sunbird.common.responsecode.ResponseCode.CLIENT_ERROR;
+import static org.sunbird.common.ProjectUtil.getConfigValue;
+import static org.sunbird.response.ResponseCode.CLIENT_ERROR;
 
 public class HierarchyGenerationHelper {
     private static List<String> metadataToBeAdded = Arrays.stream((StringUtils.isNotBlank(getConfigValue(JsonKey.CONTENT_PROPS_TO_ADD)) ? getConfigValue(JsonKey.CONTENT_PROPS_TO_ADD) : "mimeType,contentType,name,code,description,keywords,framework,copyright,topic").split(",")).map(String::trim).collect(Collectors.toList());

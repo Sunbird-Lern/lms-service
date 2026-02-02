@@ -6,9 +6,13 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHeaders;
-import org.sunbird.common.models.util.*;
-import org.sunbird.common.request.RequestContext;
+import org.sunbird.telemetry.dto.*;
+import org.sunbird.request.RequestContext;
+import org.sunbird.logging.LoggerUtil;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.common.*;
 import org.sunbird.keys.SunbirdKey;
+import org.sunbird.http.HttpUtil;
 import org.sunbird.learner.util.ContentSearchUtil;
 
 import javax.ws.rs.core.MediaType;

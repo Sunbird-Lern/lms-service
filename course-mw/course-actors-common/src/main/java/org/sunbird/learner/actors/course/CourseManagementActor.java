@@ -6,11 +6,11 @@ import com.mashape.unirest.http.Unirest;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.base.BaseActor;
-import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.TelemetryEnvKey;
-import org.sunbird.common.request.Request;
-import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.exception.ProjectCommonException;
+import org.sunbird.response.Response;
+import org.sunbird.telemetry.dto.TelemetryEnvKey;
+import org.sunbird.request.Request;
+import org.sunbird.response.ResponseCode;
 import org.sunbird.keys.SunbirdKey;
 import org.sunbird.learner.util.Util;
 
@@ -21,8 +21,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static org.sunbird.common.models.util.JsonKey.CONTENT_SERVICE_BASE_URL;
-import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
+import static org.sunbird.keys.JsonKey.CONTENT_SERVICE_BASE_URL;
+import static org.sunbird.common.ProjectUtil.getConfigValue;
 
 public class CourseManagementActor extends BaseActor {
     private static ObjectMapper mapper = new ObjectMapper();

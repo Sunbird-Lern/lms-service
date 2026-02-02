@@ -6,14 +6,14 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.sunbird.actor.base.BaseActor;
-import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.ProjectUtil;
-import org.sunbird.common.models.util.TelemetryEnvKey;
-import org.sunbird.common.request.Request;
-import org.sunbird.common.request.RequestContext;
-import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.exception.ProjectCommonException;
+import org.sunbird.response.Response;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.common.ProjectUtil;
+import org.sunbird.telemetry.dto.TelemetryEnvKey;
+import org.sunbird.request.Request;
+import org.sunbird.request.RequestContext;
+import org.sunbird.response.ResponseCode;
 import org.sunbird.common.util.CloudStorageUtil;
 import org.sunbird.learner.util.Util;
 
@@ -23,8 +23,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.io.File.separator;
-import static org.sunbird.common.models.util.JsonKey.*;
-import static org.sunbird.common.models.util.ProjectUtil.getConfigValue;
+import static org.sunbird.keys.JsonKey.*;
+import static org.sunbird.common.ProjectUtil.getConfigValue;
 
 /**
  * @Author : Rhea Fernandes This actor is used to create an html file for all the qr code images

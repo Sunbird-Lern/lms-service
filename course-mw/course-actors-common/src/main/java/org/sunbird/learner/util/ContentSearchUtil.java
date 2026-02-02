@@ -12,11 +12,11 @@ import org.apache.http.HttpHeaders;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerUtil;
-import org.sunbird.common.models.util.PropertiesCache;
-import org.sunbird.common.models.util.RestUtil;
-import org.sunbird.common.request.RequestContext;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.logging.LoggerUtil;
+import org.sunbird.common.PropertiesCache;
+import org.sunbird.utils.RestUtil;
+import org.sunbird.request.RequestContext;
 import scala.concurrent.ExecutionContextExecutor;
 import scala.concurrent.Future;
 

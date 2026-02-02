@@ -1,7 +1,7 @@
 package org.sunbird.learner.actors.bulkupload.dao;
 
-import org.sunbird.common.models.response.Response;
-import org.sunbird.common.request.RequestContext;
+import org.sunbird.response.Response;
+import org.sunbird.request.RequestContext;
 import org.sunbird.learner.actors.bulkupload.model.BulkUploadProcess;
 
 /** Created by arvind on 24/4/18. */

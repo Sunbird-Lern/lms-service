@@ -3,12 +3,11 @@ package org.sunbird.learner.actors.coursebatch.dao.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.CassandraUtil;
-import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.CassandraPropertyReader;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.request.RequestContext;
-import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.exception.ProjectCommonException;
+import org.sunbird.response.Response;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.request.RequestContext;
+import org.sunbird.response.ResponseCode;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao;
 import org.sunbird.learner.constants.CourseJsonKey;
@@ -23,8 +22,8 @@ import java.util.Map;
 public class CourseBatchDaoImpl implements CourseBatchDao {
   private CassandraOperation cassandraOperation = ServiceFactory.getInstance();
   private Util.DbInfo courseBatchDb = Util.dbInfoMap.get(JsonKey.COURSE_BATCH_DB);
-  private static final CassandraPropertyReader propertiesCache =
-          CassandraPropertyReader.getInstance();
+  // private static final CassandraPropertyReader propertiesCache =
+  //         CassandraPropertyReader.getInstance();
   private ObjectMapper mapper = new ObjectMapper();
   private String dateFormat = "yyyy-MM-dd";
 

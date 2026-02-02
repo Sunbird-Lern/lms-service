@@ -6,11 +6,15 @@ import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.inf.ElasticSearchService;
-import org.sunbird.common.models.util.*;
-import org.sunbird.common.request.HeaderParam;
-import org.sunbird.common.request.RequestContext;
+import org.sunbird.telemetry.dto.*;
+import org.sunbird.request.HeaderParam;
+import org.sunbird.request.RequestContext;
 import org.sunbird.helper.ServiceFactory;
 import scala.concurrent.Future;
+import org.sunbird.common.*;
+import org.sunbird.logging.LoggerUtil;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.http.HttpUtil;
 
 import java.util.HashMap;
 import java.util.List;

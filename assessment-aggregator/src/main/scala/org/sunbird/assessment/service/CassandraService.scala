@@ -136,8 +136,8 @@ class CassandraService {
       udt.getString("type"),
       udt.getString("title"),
       udt.getString("description"),
-      udt.getList("resvalues", classOf[java.util.Map[String, AnyRef]]),
-      udt.getList("params", classOf[java.util.Map[String, AnyRef]])
+      Option(udt.getList("resvalues", classOf[java.util.Map[String, String]])).map(_.asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]).getOrElse(new java.util.ArrayList()),
+      Option(udt.getList("params", classOf[java.util.Map[String, String]])).map(_.asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]).getOrElse(new java.util.ArrayList())
     )
 
   private def getString(row: java.util.Map[String, AnyRef], k1: String, k2: String): String = 

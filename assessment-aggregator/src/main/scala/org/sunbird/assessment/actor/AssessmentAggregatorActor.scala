@@ -75,7 +75,6 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
     syncedRequests.foreach { syncedReq =>
       val calculatedMetadata = assessmentService.getMetadata(syncedReq.courseId, syncedReq.contentId, context)
       validateContent(syncedReq, calculatedMetadata, context)
-
       if (syncedReq.events.nonEmpty) {
         processAttempt(syncedReq, calculatedMetadata, rawMap, context)
       } else {

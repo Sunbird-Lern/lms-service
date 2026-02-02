@@ -9,11 +9,12 @@ case class ContentMetadata(isValid: Boolean, totalQuestions: Int)
 
 class ContentService {
   private val logger = new LoggerUtil(classOf[ContentService])
-  private val baseUrl = ProjectUtil.getConfigValue("sunbird_api_base_url")
-  private val contentReadPath = ProjectUtil.getConfigValue("sunbird_content_read_api_path")
+  private val baseUrl = Option(ProjectUtil.getConfigValue("sunbird_api_base_url")).filter(StringUtils.isNotBlank).getOrElse("http://localhost:9000")
+  private val contentReadPath = Option(ProjectUtil.getConfigValue("sunbird_content_read_api_path")).filter(StringUtils.isNotBlank).getOrElse("/content/v1/read/")
 
   def fetchMetadata(contentId: String, context: RequestContext): ContentMetadata = {
     val url = s"$baseUrl$contentReadPath$contentId"
+    logger.info(context, s"Fetching content metadata from URL: $url")
     try {
       val headers = Map(JsonKey.AUTHORIZATION -> ProjectUtil.getConfigValue(JsonKey.EKSTEP_AUTHORIZATION)).asJava
       val response = HttpUtil.sendGetRequest(url, headers)

@@ -7,6 +7,7 @@ import org.sunbird.common.models.util.ProjectUtil
 import scala.collection.JavaConverters._
 import com.datastax.driver.core.{UserType, UDTValue}
 import org.slf4j.LoggerFactory
+import com.google.common.reflect.TypeToken
 
 class CassandraService {
 
@@ -142,17 +143,17 @@ class CassandraService {
   }
 
   private def extractAndConvert(udt: UDTValue, name: String): java.util.List[java.util.Map[String, AnyRef]] = {
-    Option(udt.getList(name, classOf[java.util.Map[String, String]]))
+    val mapType = new TypeToken[java.util.Map[String, String]]() {}
+    Option(udt.getList(name, mapType))
       .map { rawList =>
-        rawList.asScala.map { m =>
+        val result = new java.util.ArrayList[java.util.Map[String, AnyRef]]()
+        rawList.asScala.foreach { m =>
           val converted = new java.util.HashMap[String, AnyRef]()
-          if (m != null) {
-            m.asScala.foreach { case (k, v) => converted.put(k, v) }
-          }
-          converted
-        }.toList.asJava
-      }
-      .getOrElse(new java.util.ArrayList[java.util.Map[String, AnyRef]]())
+          if (m != null) m.asScala.foreach { case (k, v) => converted.put(k, v) }
+          result.add(converted)
+        }
+        result
+      }.getOrElse(new java.util.ArrayList[java.util.Map[String, AnyRef]]())
   }
 
   private def getString(row: java.util.Map[String, AnyRef], k1: String, k2: String): String = 

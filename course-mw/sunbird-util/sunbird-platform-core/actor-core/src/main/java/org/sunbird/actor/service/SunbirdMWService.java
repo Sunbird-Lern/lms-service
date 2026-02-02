@@ -4,8 +4,8 @@ import org.apache.pekko.actor.ActorRef;
 import org.apache.pekko.actor.ActorSelection;
 import org.sunbird.actor.router.BackgroundRequestRouter;
 import org.sunbird.actor.router.RequestRouter;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.request.Request;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.request.Request;
 
 /** @author Mahesh Kumar Gangula */
 public class SunbirdMWService extends BaseMWService {

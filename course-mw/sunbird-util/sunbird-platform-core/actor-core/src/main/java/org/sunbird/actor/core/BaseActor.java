@@ -10,12 +10,12 @@ import org.sunbird.actor.router.BackgroundRequestRouter;
 import org.sunbird.actor.router.RequestRouter;
 import org.sunbird.actor.service.BaseMWService;
 import org.sunbird.actor.service.SunbirdMWService;
-import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.LoggerUtil;
-import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.request.Request;
-import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.exception.ProjectCommonException;
+import org.sunbird.response.Response;
+import org.sunbird.logging.LoggerUtil;
+import org.sunbird.logging.ProjectLogger;
+import org.sunbird.request.Request;
+import org.sunbird.response.ResponseCode;
 import scala.concurrent.duration.Duration;
 
 public abstract class BaseActor extends UntypedAbstractActor {

@@ -2,7 +2,7 @@ package org.sunbird.actorutil.email;
 
 import org.apache.pekko.actor.ActorRef;
 import java.util.Map;
-import org.sunbird.common.models.response.Response;
+import org.sunbird.response.Response;
 
 public interface EmailServiceClient {
   /**

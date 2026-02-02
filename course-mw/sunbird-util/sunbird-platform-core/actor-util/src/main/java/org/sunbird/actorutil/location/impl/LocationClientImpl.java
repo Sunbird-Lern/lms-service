@@ -11,11 +11,13 @@ import org.apache.commons.collections.CollectionUtils;
 import org.sunbird.actorutil.InterServiceCommunication;
 import org.sunbird.actorutil.InterServiceCommunicationFactory;
 import org.sunbird.actorutil.location.LocationClient;
-import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.*;
-import org.sunbird.common.request.Request;
-import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.exception.ProjectCommonException;
+import org.sunbird.response.Response;
+import org.sunbird.logging.LoggerUtil;
+import org.sunbird.keys.*;
+import org.sunbird.operations.lms.LocationActorOperation;
+import org.sunbird.request.Request;
+import org.sunbird.response.ResponseCode;
 import org.sunbird.models.location.Location;
 import org.sunbird.models.location.apirequest.UpsertLocationRequest;
 

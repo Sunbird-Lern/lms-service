@@ -9,14 +9,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.sunbird.actorutil.InterServiceCommunication;
 import org.sunbird.actorutil.InterServiceCommunicationFactory;
 import org.sunbird.actorutil.systemsettings.SystemSettingClient;
-import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.ActorOperations;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.request.Request;
-import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.exception.ProjectCommonException;
+import org.sunbird.response.Response;
+import org.sunbird.operations.lms.ActorOperations;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.logging.LoggerEnum;
+import org.sunbird.logging.ProjectLogger;
+import org.sunbird.request.Request;
+import org.sunbird.response.ResponseCode;
 import org.sunbird.models.systemsetting.SystemSetting;
 
 public class SystemSettingClientImpl implements SystemSettingClient {

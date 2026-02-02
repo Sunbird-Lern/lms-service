@@ -1,7 +1,7 @@
 package org.sunbird.actorutil;
 
 import org.apache.pekko.actor.ActorRef;
-import org.sunbird.common.request.Request;
+import org.sunbird.request.Request;
 import scala.concurrent.Future;
 
 /** Interface for actor to actor communication. */

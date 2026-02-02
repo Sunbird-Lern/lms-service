@@ -13,10 +13,8 @@
   <name>sunbird-platform-core</name>
 
   <modules>
-    <module>common-util</module>
     <module>actor-util</module>
     <module>actor-core</module>
 	<module>sunbird-commons</module>
-    <module>auth-verifier</module>
   </modules>
 </project>

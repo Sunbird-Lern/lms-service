@@ -132,7 +132,7 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
     }
     val scoreMetrics = assessmentService.computeScoreMetrics(uniqueEvents)
     val existing = cassandraService.getAssessment(req.attemptId, req.userId, req.courseId, req.batchId, req.contentId, context)
-    if (!req.ignoreTimestampValidation && existing.exists(_.lastAttemptedOn >= req.assessmentTimestamp)) {
+    if (!req.ignoreTimestampValidation && existing.exists(_.lastAttemptedOn > req.assessmentTimestamp)) {
       logger.info(context, s"Skipping stale assessment: ${req.attemptId}")
       return
     }

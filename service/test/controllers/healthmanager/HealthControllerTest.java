@@ -10,7 +10,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import org.sunbird.common.models.util.HttpUtil;
+import org.sunbird.http.HttpUtil;
 import play.mvc.Http;
 import play.mvc.Http.RequestBuilder;
 import play.mvc.Result;

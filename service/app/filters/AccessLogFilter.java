@@ -4,8 +4,8 @@ import org.apache.pekko.util.ByteString;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerUtil;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.logging.LoggerUtil;
 import org.sunbird.telemetry.util.TelemetryEvents;
 import org.sunbird.telemetry.util.TelemetryWriter;
 import play.libs.streams.Accumulator;
@@ -43,7 +43,7 @@ public class AccessLogFilter extends EssentialFilter {
                                 long endTime = System.currentTimeMillis();
                                 long requestTime = endTime - startTime;
                                 try {
-                                    org.sunbird.common.request.Request req = new org.sunbird.common.request.Request();
+                                    org.sunbird.request.Request req = new org.sunbird.request.Request();
                                     Map<String, Object> params = new WeakHashMap<>();
                                     params.put(JsonKey.URL, request.uri());
                                     params.put(JsonKey.METHOD, request.method());

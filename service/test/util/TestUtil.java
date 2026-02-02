@@ -1,7 +1,7 @@
 package util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.logging.ProjectLogger;
 
 import java.io.IOException;
 import java.util.Map;

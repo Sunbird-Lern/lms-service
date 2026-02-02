@@ -2,9 +2,9 @@ package util;
 
 import org.sunbird.auth.verifier.Base64Util;
 import org.sunbird.cassandra.CassandraOperation;
-import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerUtil;
+import org.sunbird.response.Response;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.logging.LoggerUtil;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.util.Util;
 import org.sunbird.learner.util.Util.DbInfo;

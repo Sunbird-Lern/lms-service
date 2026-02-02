@@ -1,9 +1,9 @@
 package controllers.qrcodedownload.validator;
 
-import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.request.Request;
-import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.exception.ProjectCommonException;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.request.Request;
+import org.sunbird.response.ResponseCode;
 
 import java.util.List;
 import java.util.Map;

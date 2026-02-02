@@ -3,8 +3,8 @@ package controllers.coursemanagement;
 import org.apache.pekko.actor.ActorRef;
 import controllers.BaseController;
 import controllers.coursemanagement.validator.CourseCreateRequestValidator;
-import org.sunbird.common.models.util.ActorOperations;
-import org.sunbird.common.request.Request;
+import org.sunbird.operations.lms.ActorOperations;
+import org.sunbird.request.Request;
 import play.mvc.Http;
 import play.mvc.Result;
 

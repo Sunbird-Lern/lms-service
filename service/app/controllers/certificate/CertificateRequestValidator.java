@@ -2,11 +2,11 @@ package controllers.certificate;
 
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.request.BaseRequestValidator;
-import org.sunbird.common.request.Request;
-import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.exception.ProjectCommonException;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.validators.BaseRequestValidator;
+import org.sunbird.request.Request;
+import org.sunbird.response.ResponseCode;
 import org.sunbird.learner.constants.CourseJsonKey;
 
 import java.text.MessageFormat;

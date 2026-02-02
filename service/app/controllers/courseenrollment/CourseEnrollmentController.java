@@ -3,9 +3,9 @@ package controllers.courseenrollment;
 import org.apache.pekko.actor.ActorRef;
 import controllers.BaseController;
 import controllers.courseenrollment.validator.CourseEnrollmentRequestValidator;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.ProjectUtil;
-import org.sunbird.common.request.Request;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.common.ProjectUtil;
+import org.sunbird.request.Request;
 import play.mvc.Http;
 import play.mvc.Result;
 

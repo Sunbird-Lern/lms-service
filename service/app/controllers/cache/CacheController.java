@@ -2,8 +2,8 @@ package controllers.cache;
 
 import org.apache.pekko.actor.ActorRef;
 import controllers.BaseController;
-import org.sunbird.common.models.util.ActorOperations;
-import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.operations.lms.ActorOperations;
+import org.sunbird.keys.JsonKey;
 import play.mvc.Http;
 import play.mvc.Result;
 

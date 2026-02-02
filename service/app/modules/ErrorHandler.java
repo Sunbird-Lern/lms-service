@@ -2,10 +2,10 @@ package modules;
 
 import com.typesafe.config.Config;
 import controllers.BaseController;
-import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.LoggerUtil;
-import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.exception.ProjectCommonException;
+import org.sunbird.response.Response;
+import org.sunbird.logging.LoggerUtil;
+import org.sunbird.response.ResponseCode;
 import play.Environment;
 import play.api.OptionalSourceMapper;
 import play.api.routing.Router;

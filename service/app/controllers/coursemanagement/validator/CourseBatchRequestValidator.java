@@ -2,12 +2,12 @@ package controllers.coursemanagement.validator;
 
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.ProjectUtil;
-import org.sunbird.common.request.BaseRequestValidator;
-import org.sunbird.common.request.Request;
-import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.exception.ProjectCommonException;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.common.ProjectUtil;
+import org.sunbird.validators.BaseRequestValidator;
+import org.sunbird.request.Request;
+import org.sunbird.response.ResponseCode;
 
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
@@ -48,7 +48,7 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
       boolean status = validateBatchStatus(request);
       if (!status) {
         throw new ProjectCommonException(
-            ResponseCode.progressStatusError.getErrorCode(),
+            ResponseCode.progressStatusError,
             ResponseCode.progressStatusError.getErrorMessage(),
             ERROR_CODE);
       }
@@ -56,7 +56,7 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
     if (request.getRequest().containsKey(JsonKey.NAME)
         && StringUtils.isBlank((String) request.getRequest().get(JsonKey.NAME))) {
       throw new ProjectCommonException(
-          ResponseCode.invalidParameterValue.getErrorCode(),
+          ResponseCode.invalidParameterValue,
           ResponseCode.invalidParameterValue.getErrorMessage(),
           ERROR_CODE,
           (String) request.getRequest().get(JsonKey.NAME),
@@ -78,7 +78,7 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
     boolean bool = validateDateWithTodayDate(endDate);
     if (!bool) {
       throw new ProjectCommonException(
-          ResponseCode.invalidBatchEndDateError.getErrorCode(),
+          ResponseCode.invalidBatchEndDateError,
           ResponseCode.invalidBatchEndDateError.getErrorMessage(),
           ERROR_CODE);
     }
@@ -95,7 +95,7 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
   private void validateBatchId(Request courseRequest) {
     if (courseRequest.getRequest().get(JsonKey.BATCH_ID) == null) {
       throw new ProjectCommonException(
-          ResponseCode.courseBatchIdRequired.getErrorCode(),
+          ResponseCode.courseBatchIdRequired,
           ResponseCode.courseBatchIdRequired.getErrorMessage(),
           ERROR_CODE);
     }
@@ -104,7 +104,7 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
   public void validateUserId(Request courseRequest) {
     if (courseRequest.getRequest().get(JsonKey.USER_IDs) == null) {
       throw new ProjectCommonException(
-          ResponseCode.userIdRequired.getErrorCode(),
+          ResponseCode.userIdRequired,
           ResponseCode.userIdRequired.getErrorMessage(),
           ERROR_CODE);
     }
@@ -119,7 +119,7 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
     if (!(ProjectUtil.EnrolmentType.open.getVal().equalsIgnoreCase(enrolmentType)
           || ProjectUtil.EnrolmentType.inviteOnly.getVal().equalsIgnoreCase(enrolmentType))) {
       throw new ProjectCommonException(
-          ResponseCode.invalidParameterValue.getErrorCode(),
+          ResponseCode.invalidParameterValue,
           ResponseCode.invalidParameterValue.getErrorMessage(),
           ResponseCode.CLIENT_ERROR.getResponseCode(),
           enrolmentType,
@@ -140,7 +140,7 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
       cal2.setTime(todayDate);
       if (batchStartDate.before(todayDate)) {
         throw new ProjectCommonException(
-            ResponseCode.courseBatchStartDateError.getErrorCode(),
+            ResponseCode.courseBatchStartDateError,
             ResponseCode.courseBatchStartDateError.getErrorMessage(),
             ResponseCode.CLIENT_ERROR.getResponseCode());
       }
@@ -148,7 +148,7 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
       throw e;
     } catch (Exception e) {
       throw new ProjectCommonException(
-          ResponseCode.dateFormatError.getErrorCode(),
+          ResponseCode.dateFormatError,
           ResponseCode.dateFormatError.getErrorMessage(),
           ResponseCode.CLIENT_ERROR.getResponseCode());
     }
@@ -166,13 +166,13 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
       }
     } catch (Exception e) {
       throw new ProjectCommonException(
-          ResponseCode.dateFormatError.getErrorCode(),
+          ResponseCode.dateFormatError,
           ResponseCode.dateFormatError.getErrorMessage(),
           ResponseCode.CLIENT_ERROR.getResponseCode());
     }
     if (StringUtils.isNotEmpty(endDate) && batchStartDate.getTime() >= batchEndDate.getTime()) {
       throw new ProjectCommonException(
-          ResponseCode.endDateError.getErrorCode(),
+          ResponseCode.endDateError,
           ResponseCode.endDateError.getErrorMessage(),
           ResponseCode.CLIENT_ERROR.getResponseCode());
     }
@@ -196,14 +196,14 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
 
     } catch (Exception e) {
       throw new ProjectCommonException(
-          ResponseCode.dateFormatError.getErrorCode(),
+          ResponseCode.dateFormatError,
           ResponseCode.dateFormatError.getErrorMessage(),
           ResponseCode.CLIENT_ERROR.getResponseCode());
     }
     if (StringUtils.isNotEmpty(enrollmentEndDate)
         && batchStartDate.getTime() > batchenrollmentEndDate.getTime()) {
       throw new ProjectCommonException(
-          ResponseCode.enrollmentEndDateStartError.getErrorCode(),
+          ResponseCode.enrollmentEndDateStartError,
           ResponseCode.enrollmentEndDateStartError.getErrorMessage(),
           ResponseCode.CLIENT_ERROR.getResponseCode());
     }
@@ -211,7 +211,7 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
         && StringUtils.isNotEmpty(endDate)
         && batchEndDate.getTime() < batchenrollmentEndDate.getTime()) {
       throw new ProjectCommonException(
-          ResponseCode.enrollmentEndDateEndError.getErrorCode(),
+          ResponseCode.enrollmentEndDateEndError,
           ResponseCode.enrollmentEndDateEndError.getErrorMessage(),
           ResponseCode.CLIENT_ERROR.getResponseCode());
     }
@@ -221,7 +221,7 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
     if (request.getRequest().containsKey(JsonKey.COURSE_CREATED_FOR)
         && !(request.getRequest().get(JsonKey.COURSE_CREATED_FOR) instanceof List)) {
       throw new ProjectCommonException(
-          ResponseCode.dataTypeError.getErrorCode(),
+          ResponseCode.dataTypeError,
           ResponseCode.dataTypeError.getErrorMessage(),
           ERROR_CODE,
           JsonKey.COURSE_CREATED_FOR,
@@ -231,7 +231,7 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
     if (request.getRequest().containsKey(JsonKey.MENTORS)
         && !(request.getRequest().get(JsonKey.MENTORS) instanceof List)) {
       throw new ProjectCommonException(
-          ResponseCode.dataTypeError.getErrorCode(),
+          ResponseCode.dataTypeError,
           ResponseCode.dataTypeError.getErrorMessage(),
           ERROR_CODE,
           JsonKey.MENTORS,
@@ -245,7 +245,7 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
       format.parse(startDate);
     } catch (Exception e) {
       throw new ProjectCommonException(
-          ResponseCode.dateFormatError.getErrorCode(),
+          ResponseCode.dateFormatError,
           ResponseCode.dateFormatError.getErrorMessage(),
           ERROR_CODE);
     }
@@ -268,7 +268,7 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
       }
     } catch (Exception e) {
       throw new ProjectCommonException(
-          ResponseCode.dateFormatError.getErrorCode(),
+          ResponseCode.dateFormatError,
           ResponseCode.dateFormatError.getErrorMessage(),
           ERROR_CODE);
     }
@@ -293,13 +293,13 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
         cal2.setTime(batchEndDate);
       } catch (Exception e) {
         throw new ProjectCommonException(
-            ResponseCode.dateFormatError.getErrorCode(),
+            ResponseCode.dateFormatError,
             ResponseCode.dateFormatError.getErrorMessage(),
             ERROR_CODE);
       }
       if (batchEndDate.before(batchStartDate)) {
         throw new ProjectCommonException(
-            ResponseCode.invalidBatchEndDateError.getErrorCode(),
+            ResponseCode.invalidBatchEndDateError,
             ResponseCode.invalidBatchEndDateError.getErrorMessage(),
             ERROR_CODE);
       }
@@ -329,7 +329,7 @@ public class CourseBatchRequestValidator extends BaseRequestValidator {
   public void validateGetParticipantsRequest(Request request) {
     if(MapUtils.isEmpty((Map) request.getRequest().get(JsonKey.BATCH))){
         throw new ProjectCommonException(
-                ResponseCode.invalidRequestData.getErrorCode(),
+                ResponseCode.invalidRequestData,
                 MessageFormat.format(ResponseCode.invalidRequestData.getErrorMessage(), JsonKey.BATCH),
                 ResponseCode.CLIENT_ERROR.getResponseCode());
     }

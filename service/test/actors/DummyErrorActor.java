@@ -2,7 +2,7 @@ package actors;
 
 import org.apache.pekko.actor.ActorRef;
 import org.apache.pekko.actor.UntypedAbstractActor;
-import org.sunbird.common.exception.ProjectCommonException;
+import org.sunbird.exception.ProjectCommonException;
 
 public class DummyErrorActor extends UntypedAbstractActor {
 

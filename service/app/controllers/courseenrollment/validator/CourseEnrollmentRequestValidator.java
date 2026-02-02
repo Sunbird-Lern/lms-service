@@ -1,9 +1,9 @@
 package controllers.courseenrollment.validator;
 
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.request.BaseRequestValidator;
-import org.sunbird.common.request.Request;
-import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.validators.BaseRequestValidator;
+import org.sunbird.request.Request;
+import org.sunbird.response.ResponseCode;
 
 public class CourseEnrollmentRequestValidator extends BaseRequestValidator {
 

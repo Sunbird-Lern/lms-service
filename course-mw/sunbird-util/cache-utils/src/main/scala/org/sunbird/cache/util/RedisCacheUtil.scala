@@ -3,7 +3,8 @@ package org.sunbird.cache.util
 import java.time.Duration
 import org.apache.commons.lang3.StringUtils
 import org.sunbird.cache.platform.Platform
-import org.sunbird.common.models.util.{JsonKey, LoggerUtil}
+import org.sunbird.keys.JsonKey
+import org.sunbird.logging.LoggerUtil
 import redis.clients.jedis.{Jedis, JedisPool, JedisPoolConfig}
 
 import scala.collection.JavaConverters._

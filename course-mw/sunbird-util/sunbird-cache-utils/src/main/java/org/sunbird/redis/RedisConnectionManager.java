@@ -6,10 +6,10 @@ import org.redisson.client.codec.StringCodec;
 import org.redisson.config.ClusterServersConfig;
 import org.redisson.config.Config;
 import org.redisson.config.SingleServerConfig;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.LoggerUtil;
-import org.sunbird.common.models.util.ProjectUtil;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.logging.LoggerEnum;
+import org.sunbird.logging.LoggerUtil;
+import org.sunbird.common.ProjectUtil;
 
 public class RedisConnectionManager {
   private static String host = ProjectUtil.getConfigValue(JsonKey.REDIS_HOST_VALUE);

@@ -6,7 +6,7 @@ import org.apache.pekko.actor.ActorSystem;
 import org.apache.pekko.actor.Props;
 import org.apache.pekko.testkit.javadsl.TestKit;
 import java.time.Duration;
-import org.sunbird.common.request.Request;
+import org.sunbird.request.Request;
 
 /** @author rahul */
 public class SunbirdApplicationActorTest {

@@ -7,16 +7,19 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.base.BaseActor;
 import org.sunbird.common.ElasticSearchHelper;
-import org.sunbird.common.exception.ProjectCommonException;
+import org.sunbird.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.inf.ElasticSearchService;
-import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.*;
-import org.sunbird.common.models.util.ProjectUtil.ProgressStatus;
-import org.sunbird.common.request.Request;
-import org.sunbird.common.request.RequestContext;
-import org.sunbird.common.responsecode.ResponseCode;
-import org.sunbird.common.util.JsonUtil;
+import org.sunbird.response.Response;
+import org.sunbird.telemetry.dto.*;
+import org.sunbird.common.ProjectUtil.ProgressStatus;
+import org.sunbird.request.Request;
+import org.sunbird.request.RequestContext;
+import org.sunbird.response.ResponseCode;
+import org.sunbird.utils.JsonUtil;
+import org.sunbird.common.*;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.operations.lms.ActorOperations;
 import org.sunbird.learner.actors.coursebatch.dao.CourseBatchDao;
 import org.sunbird.learner.actors.coursebatch.dao.impl.CourseBatchDaoImpl;
 import org.sunbird.learner.actors.coursebatch.service.UserCoursesService;
@@ -296,7 +299,7 @@ public class CourseBatchManagementActor extends BaseActor {
             String mentorRootOrgId = getRootOrgFromUserMap(result);
             if (StringUtils.isEmpty(batchCreatorRootOrgId) || !batchCreatorRootOrgId.equals(mentorRootOrgId)) {
               throw new ProjectCommonException(
-                      ResponseCode.userNotAssociatedToRootOrg.getErrorCode(),
+                      ResponseCode.userNotAssociatedToRootOrg,
                       ResponseCode.userNotAssociatedToRootOrg.getErrorMessage(),
                       ResponseCode.CLIENT_ERROR.getResponseCode(),
                       mentorId);

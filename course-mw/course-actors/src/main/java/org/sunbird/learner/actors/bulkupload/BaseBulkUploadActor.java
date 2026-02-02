@@ -6,13 +6,13 @@ import com.opencsv.CSVReaderBuilder;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.sunbird.actor.base.BaseActor;
-import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerUtil;
-import org.sunbird.common.models.util.ProjectUtil;
-import org.sunbird.common.models.util.ProjectUtil.BulkProcessStatus;
-import org.sunbird.common.request.RequestContext;
-import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.exception.ProjectCommonException;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.logging.LoggerUtil;
+import org.sunbird.common.ProjectUtil;
+import org.sunbird.common.ProjectUtil.BulkProcessStatus;
+import org.sunbird.request.RequestContext;
+import org.sunbird.response.ResponseCode;
 import org.sunbird.learner.actors.bulkupload.dao.BulkUploadProcessDao;
 import org.sunbird.learner.actors.bulkupload.dao.impl.BulkUploadProcessDaoImpl;
 import org.sunbird.learner.actors.bulkupload.model.BulkUploadProcess;
@@ -70,7 +70,7 @@ public abstract class BaseBulkUploadActor extends BaseActor {
                 }
                 if (!(ArrayUtils.contains(csvHeaderLine, x))) {
                   throw new ProjectCommonException(
-                      ResponseCode.mandatoryParamsMissing.getErrorCode(),
+                      ResponseCode.mandatoryParamsMissing,
                       ResponseCode.mandatoryParamsMissing.getErrorMessage(),
                       ResponseCode.CLIENT_ERROR.getResponseCode(),
                       x);
@@ -91,7 +91,7 @@ public abstract class BaseBulkUploadActor extends BaseActor {
 
   private void throwInvalidColumnException(String invalidColumn, String validColumns) {
     throw new ProjectCommonException(
-        ResponseCode.invalidColumns.getErrorCode(),
+        ResponseCode.invalidColumns,
         ResponseCode.invalidColumns.getErrorMessage(),
         ResponseCode.CLIENT_ERROR.getResponseCode(),
         invalidColumn,

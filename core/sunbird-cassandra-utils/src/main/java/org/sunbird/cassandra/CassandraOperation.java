@@ -5,8 +5,8 @@ import com.datastax.driver.core.UserType;
 import com.google.common.util.concurrent.FutureCallback;
 import java.util.List;
 import java.util.Map;
-import org.sunbird.common.request.RequestContext;
-import org.sunbird.common.models.response.Response;
+import org.sunbird.request.RequestContext;
+import org.sunbird.response.Response;
 
 /**
  * Interface defining core CRUD operations for Cassandra database interactions.

@@ -5,14 +5,16 @@ import org.apache.commons.collections4.{CollectionUtils, MapUtils}
 import org.apache.commons.lang3.StringUtils
 import org.sunbird.cassandra.CassandraOperation
 import org.sunbird.common.CassandraUtil
-import org.sunbird.common.exception.ProjectCommonException
-import org.sunbird.common.models.response.Response
-import org.sunbird.common.models.util._
-import org.sunbird.common.request.{Request, RequestContext}
-import org.sunbird.common.responsecode.ResponseCode
-import org.sunbird.common.util.JsonUtil
+import org.sunbird.exception.ProjectCommonException
+import org.sunbird.response.Response
+import org.sunbird.keys.JsonKey
+import org.sunbird.telemetry.dto.TelemetryEnvKey
+import org.sunbird.request.{Request, RequestContext}
+import org.sunbird.response.ResponseCode
+import org.sunbird.utils.JsonUtil
+import org.sunbird.common.ProjectUtil
 import org.sunbird.helper.ServiceFactory
-import org.sunbird.kafka.client.{InstructionEventGenerator, KafkaClient}
+import org.sunbird.kafka.{InstructionEventGenerator, KafkaClient}
 import org.sunbird.learner.constants.{CourseJsonKey, InstructionEvent}
 import org.sunbird.learner.util.Util
 

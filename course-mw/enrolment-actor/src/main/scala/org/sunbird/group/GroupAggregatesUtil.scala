@@ -6,12 +6,13 @@ import java.util.Map
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.mashape.unirest.http.Unirest
 import org.apache.commons.lang3.StringUtils
-import org.sunbird.common.exception.ProjectCommonException
-import org.sunbird.common.models.response.Response
-import org.sunbird.common.models.util.ProjectUtil.getConfigValue
-import org.sunbird.common.models.util.{JsonKey, LoggerEnum, LoggerUtil, ProjectLogger}
-import org.sunbird.common.request.{HeaderParam, Request}
-import org.sunbird.common.responsecode.ResponseCode
+import org.sunbird.exception.ProjectCommonException
+import org.sunbird.response.Response
+import org.sunbird.common.ProjectUtil.getConfigValue
+import org.sunbird.keys.JsonKey
+import org.sunbird.logging.{LoggerEnum, LoggerUtil, ProjectLogger}
+import org.sunbird.request.{HeaderParam, Request}
+import org.sunbird.response.ResponseCode
 import org.sunbird.keys.SunbirdKey
 
 class GroupAggregatesUtil {

@@ -8,12 +8,13 @@ import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FlatSpec, Matchers}
 import org.sunbird.cassandra.CassandraOperation
 import org.sunbird.common.Constants
-import org.sunbird.common.exception.ProjectCommonException
+import org.sunbird.exception.ProjectCommonException
 import org.sunbird.common.inf.ElasticSearchService
-import org.sunbird.common.models.response.Response
-import org.sunbird.common.models.util.{JsonKey, ProjectUtil}
-import org.sunbird.common.request.{Request, RequestContext}
-import org.sunbird.common.responsecode.ResponseCode
+import org.sunbird.response.Response
+import org.sunbird.keys.JsonKey
+import org.sunbird.common.ProjectUtil
+import org.sunbird.request.{Request, RequestContext}
+import org.sunbird.response.ResponseCode
 import org.sunbird.dto.SearchDTO
 
 import scala.concurrent.ExecutionContext

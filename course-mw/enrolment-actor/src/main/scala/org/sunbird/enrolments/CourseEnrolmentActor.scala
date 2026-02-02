@@ -6,12 +6,16 @@ import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang3.StringUtils
 import org.sunbird.cache.util.RedisCacheUtil
 import org.sunbird.common.CassandraUtil
-import org.sunbird.common.exception.ProjectCommonException
-import org.sunbird.common.models.response.Response
-import org.sunbird.common.models.util.ProjectUtil.EnrolmentType
-import org.sunbird.common.models.util._
-import org.sunbird.common.request.{Request, RequestContext}
-import org.sunbird.common.responsecode.ResponseCode
+import org.sunbird.exception.ProjectCommonException
+import org.sunbird.response.Response
+import org.sunbird.common.ProjectUtil
+import org.sunbird.common.ProjectUtil.EnrolmentType
+import org.sunbird.common.PropertiesCache
+import org.sunbird.operations.lms.ActorOperations
+import org.sunbird.keys.JsonKey
+import org.sunbird.telemetry.dto.TelemetryEnvKey
+import org.sunbird.request.{Request, RequestContext}
+import org.sunbird.response.ResponseCode
 import org.sunbird.learner.actors.coursebatch.dao.impl.{CourseBatchDaoImpl, UserCoursesDaoImpl}
 import org.sunbird.learner.actors.coursebatch.dao.{CourseBatchDao, UserCoursesDao}
 import org.sunbird.learner.actors.group.dao.impl.GroupDaoImpl

@@ -5,8 +5,9 @@ import org.sunbird.actor.base.BaseActor
 import org.sunbird.common.ElasticSearchHelper
 import org.sunbird.common.factory.EsClientFactory
 import org.sunbird.common.inf.ElasticSearchService
-import org.sunbird.common.models.util.{JsonKey, ProjectUtil}
-import org.sunbird.common.request.RequestContext
+import org.sunbird.keys.JsonKey
+import org.sunbird.common.ProjectUtil
+import org.sunbird.request.RequestContext
 import org.sunbird.dto.SearchDTO
 
 import java.util

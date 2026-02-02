@@ -126,7 +126,7 @@ class CassandraService {
         .toList
     }.getOrElse(List.empty)
 
-  private def toAssessmentEvent(udt: UDTValue): AssessmentEvent = 
+  private def toAssessmentEvent(udt: UDTValue): AssessmentEvent = {
     AssessmentEvent(
       udt.getString("id"),
       udt.getDouble("score"),
@@ -136,9 +136,24 @@ class CassandraService {
       udt.getString("type"),
       udt.getString("title"),
       udt.getString("description"),
-      Option(udt.getList("resvalues", classOf[java.util.Map[String, String]])).map(_.asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]).getOrElse(new java.util.ArrayList()),
-      Option(udt.getList("params", classOf[java.util.Map[String, String]])).map(_.asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]]).getOrElse(new java.util.ArrayList())
+      extractAndConvert(udt, "resvalues"),
+      extractAndConvert(udt, "params")
     )
+  }
+
+  private def extractAndConvert(udt: UDTValue, name: String): java.util.List[java.util.Map[String, AnyRef]] = {
+    Option(udt.getList(name, classOf[java.util.Map[String, String]]))
+      .map { rawList =>
+        rawList.asScala.map { m =>
+          val converted = new java.util.HashMap[String, AnyRef]()
+          if (m != null) {
+            m.asScala.foreach { case (k, v) => converted.put(k, v) }
+          }
+          converted
+        }.toList.asJava
+      }
+      .getOrElse(new java.util.ArrayList[java.util.Map[String, AnyRef]]())
+  }
 
   private def getString(row: java.util.Map[String, AnyRef], k1: String, k2: String): String = 
     Option(row.get(k1)).orElse(Option(row.get(k2))).map(_.toString).getOrElse("")

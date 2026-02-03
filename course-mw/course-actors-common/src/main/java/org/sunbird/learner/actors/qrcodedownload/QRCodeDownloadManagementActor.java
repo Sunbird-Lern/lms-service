@@ -14,7 +14,7 @@ import org.sunbird.telemetry.dto.TelemetryEnvKey;
 import org.sunbird.request.Request;
 import org.sunbird.request.RequestContext;
 import org.sunbird.response.ResponseCode;
-import org.sunbird.common.util.CloudStorageUtil;
+import org.sunbird.utils.CloudStorageUtil;
 import org.sunbird.learner.util.Util;
 
 import java.io.File;

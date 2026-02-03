@@ -1,4 +1,4 @@
-package org.sunbird.common.util;
+package org.sunbird.utils;
 
 import static org.sunbird.keys.JsonKey.CLOUD_STORAGE_CNAME_URL;
 import static org.sunbird.keys.JsonKey.CLOUD_STORE_BASE_PATH;

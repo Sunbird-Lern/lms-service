@@ -347,6 +347,12 @@
             <version>${powermock.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- Apache Kafka -->
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>${kafka.version}</version>
+        </dependency>
     </dependencies>
 
     <repositories>
@@ -355,42 +361,5 @@
             <url>https://oss.sonatype.org/content/repositories/orgsunbird-1021</url>
         </repository>
     </repositories>
-
-    <build>
-        <plugins>
-            <!-- Add telemetry source from event-utils for compilation (excluding Kafka) -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.2.0</version>
-                <executions>
-                    <execution>
-                        <id>add-telemetry-source</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>../sunbird-event-utils/src/main/java/org/sunbird/telemetry</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            
-            <!-- Exclude Kafka classes from compilation -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven-compiler-plugin.version}</version>
-                <configuration>
-                    <excludes>
-                        <exclude>**/kafka/**</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 
 </project>

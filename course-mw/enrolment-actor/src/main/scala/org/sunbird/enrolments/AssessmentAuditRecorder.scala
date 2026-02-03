@@ -19,7 +19,7 @@ object AssessmentAuditRecorder {
       val userId = assessment.get(JsonKey.USER_ID).asInstanceOf[String]
       val contentId = assessment.get(JsonKey.CONTENT_ID).asInstanceOf[String]
       val attemptId = getAttemptId(assessment, userId, contentId)
-      val recordMap = createRecordMap(assessment, attemptId, userId, contentId)
+      val recordMap = createRecordMap(assessment, attemptId, userId, contentId, ctx)
       val events = getEvents(assessment)
       recordMap.put("question", transformEventsToUDTs(events, udtType))
       persist(recordMap, ctx)
@@ -37,11 +37,14 @@ object AssessmentAuditRecorder {
   private def generateId(uid: String, cid: String): String = 
     s"${uid}_${cid}_${System.currentTimeMillis()}".hashCode.abs.toString
 
-  private def createRecordMap(m: util.Map[String, AnyRef], aid: String, uid: String, cid: String): util.Map[String, AnyRef] = {
+  private def createRecordMap(m: util.Map[String, AnyRef], aid: String, uid: String, cid: String, ctx: RequestContext): util.Map[String, AnyRef] = {
     val rec = new util.HashMap[String, AnyRef]()
     rec.put("user_id", uid); rec.put("course_id", m.get(JsonKey.COURSE_ID))
     rec.put("batch_id", m.get(JsonKey.BATCH_ID)); rec.put("content_id", cid)
-    rec.put("attempt_id", aid); rec.put("last_attempted_on", new java.sql.Timestamp(System.currentTimeMillis()))
+    rec.put("attempt_id", aid)
+    val ts = Option(m.get("assessmentTimestamp")).orElse(Option(m.get(JsonKey.ASSESSMENT_TS))).map(_.asInstanceOf[Number].longValue()).getOrElse(System.currentTimeMillis())
+    logger.info(ctx, s"AssessmentAuditRecorder: Recording attemptId=$aid with last_attempted_on=$ts")
+    rec.put("last_attempted_on", new java.sql.Timestamp(ts))
     rec.put("created_on", new java.sql.Timestamp(System.currentTimeMillis()))
     rec
   }

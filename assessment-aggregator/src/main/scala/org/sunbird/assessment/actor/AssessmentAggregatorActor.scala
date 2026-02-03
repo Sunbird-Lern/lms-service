@@ -132,7 +132,9 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
     }
     val scoreMetrics = assessmentService.computeScoreMetrics(uniqueEvents)
     val existing = cassandraService.getAssessment(req.attemptId, req.userId, req.courseId, req.batchId, req.contentId, context)
-    if (!req.ignoreTimestampValidation && existing.exists(_.lastAttemptedOn > req.assessmentTimestamp)) {
+    val existingTs = existing.map(_.lastAttemptedOn).getOrElse(0L)
+    logger.info(context, s"AssessmentAggregatorActor: Comparing timestamps for attemptId=${req.attemptId} | Incoming=${req.assessmentTimestamp} | Existing=$existingTs")
+    if (!req.ignoreTimestampValidation && existingTs > req.assessmentTimestamp) {
       logger.info(context, s"Skipping stale assessment: ${req.attemptId}")
       return
     }
@@ -204,8 +206,10 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
   }
 
   private def extractTs(m: java.util.Map[String, AnyRef]): Long = {
-    Option(m.get("assessmentTimestamp")).orElse(Option(m.get("assessmentTs")))
+    val timestamp = Option(m.get("assessmentTimestamp")).orElse(Option(m.get(JsonKey.ASSESSMENT_TS)))
       .map(_.asInstanceOf[Number].longValue()).getOrElse(System.currentTimeMillis())
+    logger.info(null, s"Extracted assessment timestamp: $timestamp from map: $m") // Added logger call
+    timestamp
   }
 
   private def extractEvents(m: java.util.Map[String, AnyRef]): List[AssessmentEvent] = {

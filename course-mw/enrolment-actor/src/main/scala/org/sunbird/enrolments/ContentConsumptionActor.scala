@@ -28,7 +28,8 @@ case class InternalContentConsumption(courseId: String, batchId: String, content
   def validConsumption() = StringUtils.isNotBlank(courseId) && StringUtils.isNotBlank(batchId) && StringUtils.isNotBlank(contentId)
 }
 
-class ContentConsumptionActor @Inject() ( @Named("assessment-aggregator-actor") assessmentAggregatorActor: ActorRef) extends BaseEnrolmentActor {
+class ContentConsumptionActor extends BaseEnrolmentActor {
+    private val assessmentAggregator = context.actorSelection("/user/assessment-aggregator-actor")
     private val mapper = new ObjectMapper
     private var cassandraOperation = ServiceFactory.getInstance
     private var pushTokafkaEnabled: Boolean = true //TODO: to be removed once all are in scala
@@ -242,7 +243,7 @@ class ContentConsumptionActor @Inject() ( @Named("assessment-aggregator-actor") 
             val attemptId = AssessmentAuditRecorder.record(assessment, questionUDTType, requestContext)
             assessment.put(JsonKey.ATTEMPT_ID, attemptId)
             val request = createAssessmentRequest(assessment, requestContext)
-            assessmentAggregatorActor ! request
+            assessmentAggregator ! request
             logger.info(requestContext, s"Assessment sent to aggregator (async): attemptId=$attemptId")
         } else {
             logger.info(requestContext, "Using Kafka-based assessment aggregation")

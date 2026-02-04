@@ -15,12 +15,12 @@ object AssessmentAuditRecorder {
   private val cassandraOperation = ServiceFactory.getInstance
   
   def record(assessment: util.Map[String, AnyRef], udtType: UserType, ctx: RequestContext): String = {
+    val attemptTs = extractTimestamp(assessment)
     try {
       val userId = assessment.get(JsonKey.USER_ID).asInstanceOf[String]
       val contentId = assessment.get(JsonKey.CONTENT_ID).asInstanceOf[String]
-      val ts = extractTimestamp(assessment)
-      val attemptId = getAttemptId(assessment, userId, contentId, ts)
-      val recordMap = createRecordMap(assessment, attemptId, userId, contentId, ts, ctx)
+      val attemptId = getAttemptId(assessment, userId, contentId, attemptTs)
+      val recordMap = createRecordMap(assessment, attemptId, userId, contentId, attemptTs, ctx)
       val events = getEvents(assessment)
       recordMap.put("question", transformEventsToUDTs(events, udtType))
       persist(recordMap, ctx)
@@ -31,7 +31,7 @@ object AssessmentAuditRecorder {
         Option(assessment.get(JsonKey.ATTEMPT_ID)).map(_.toString).getOrElse {
           val uid = Option(assessment.get(JsonKey.USER_ID)).map(_.toString).getOrElse("unknown")
           val cid = Option(assessment.get(JsonKey.CONTENT_ID)).map(_.toString).getOrElse("unknown")
-          generateId(uid, cid)
+          generateId(uid, cid, attemptTs)
         }
     }
   }

@@ -60,19 +60,23 @@
         
         <!-- Keycloak and RestEasy -->
         <keycloak.version>21.1.2</keycloak.version>
-        <jaxrs-api.version>3.0.11.Final</jaxrs-api.version>
+        <jaxrs-api.version>3.0.12.Final</jaxrs-api.version>
         <resteasy-client.version>4.7.9.Final</resteasy-client.version>
-        <resteasy-jackson2-provider.version>3.1.3.Final</resteasy-jackson2-provider.version>
+        <resteasy-jackson2-provider.version>4.7.9.Final</resteasy-jackson2-provider.version>
         
         <!-- Google Libraries -->
         <libphonenumber.version>8.10.2</libphonenumber.version>
-        <guava.version>18.0</guava.version>
+        <guava.version>32.1.2-jre</guava.version>
         
         <!-- Cloud Storage -->
         <cloud-store-sdk.version>1.4.8.1</cloud-store-sdk.version>
         
         <!-- Unirest HTTP Client -->
         <unirest.version>1.4.9</unirest.version>
+        
+        <!-- Play Framework -->
+        <play2.version>3.0.5</play2.version>
+        <scala.major.version>2.13</scala.major.version>
         
         <!-- Testing -->
         <junit.version>4.13.1</junit.version>

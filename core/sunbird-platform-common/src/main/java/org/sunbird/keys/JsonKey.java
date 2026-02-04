@@ -5,8 +5,6 @@ import java.util.List;
 
 /**
  * This class will contains all the key related to request and response.
- *
- * @author Manzarul
  */
 public final class JsonKey {
 

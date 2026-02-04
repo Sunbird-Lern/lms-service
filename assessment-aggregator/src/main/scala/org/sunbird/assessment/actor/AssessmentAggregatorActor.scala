@@ -1,6 +1,6 @@
 package org.sunbird.assessment.actor
-import org.apache.pekko.actor.{Props, UntypedAbstractActor}
-import org.sunbird.common.exception.ProjectCommonException
+import org.sunbird.actor.core.BaseActor
+import javax.inject.Inject
 import org.sunbird.common.request.{Request, RequestContext}
 import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.assessment.models._
@@ -10,27 +10,29 @@ import org.sunbird.common.models.util.{JsonKey, LoggerUtil, ProjectUtil}
 import scala.collection.JavaConverters._
 import org.apache.commons.lang3.StringUtils
 
-class AssessmentAggregatorActor extends UntypedAbstractActor {
+class AssessmentAggregatorActor @Inject()(
+  _redisService: Option[RedisService],
+  _contentService: Option[ContentService],
+  _cassandraService: Option[CassandraService],
+  _kafkaService: Option[KafkaService]
+) extends BaseActor {
 
-  private val logger = new LoggerUtil(classOf[AssessmentAggregatorActor])
-  private lazy val redisService = new RedisService()
-  private lazy val contentService = new ContentService()
+  def this() = this(None, None, None, None)
+
+  private lazy val redisService = _redisService.getOrElse(new RedisService())
+  private lazy val contentService = _contentService.getOrElse(new ContentService())
   private lazy val assessmentService = new AssessmentService(redisService, contentService)
-  private lazy val cassandraService = new CassandraService()
-  private lazy val kafkaService = new KafkaService()
+  private lazy val cassandraService = _cassandraService.getOrElse(new CassandraService())
+  private lazy val kafkaService = _kafkaService.getOrElse(new KafkaService())
 
-  override def onReceive(message: Any): Unit = {
-    message match {
-      case request: Request =>
-        val replyTo = sender()
-        try { 
-          processAggregation(request, replyTo) 
-        } catch {
-          case ex: Exception =>
-            logger.error(request.getRequestContext, "Request failed", ex)
-            replyTo ! createErrorResponse("SERVER_ERROR", ex.getMessage)
-        }
-      case _ => sender() ! createErrorResponse("INVALID_MESSAGE", "Invalid message")
+  override def onReceive(request: Request): Unit = {
+    val replyTo = sender()
+    try { 
+      processAggregation(request, replyTo) 
+    } catch {
+      case ex: Exception =>
+        logger.error(request.getRequestContext, "Request failed", ex)
+        replyTo ! createErrorResponse("SERVER_ERROR", ex.getMessage, ResponseCode.SERVER_ERROR.getResponseCode)
     }
   }
 
@@ -66,7 +68,7 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
     } catch {
       case ex: Exception =>
         logger.error(context, s"Assessment request failed. Reason: ${ex.getMessage} | Data: $body", ex)
-        replyTo ! createErrorResponse("SERVER_ERROR", ex.getMessage)
+        replyTo ! createErrorResponse("CLIENT_ERROR", ex.getMessage, ResponseCode.CLIENT_ERROR.getResponseCode)
     }
   }
 
@@ -208,7 +210,6 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
   private def extractTs(m: java.util.Map[String, AnyRef]): Long = {
     val timestamp = Option(m.get("assessmentTimestamp")).orElse(Option(m.get(JsonKey.ASSESSMENT_TS)))
       .map(_.asInstanceOf[Number].longValue()).getOrElse(System.currentTimeMillis())
-    logger.info(null, s"Extracted assessment timestamp: $timestamp from map: $m") // Added logger call
     timestamp
   }
 
@@ -220,7 +221,7 @@ class AssessmentAggregatorActor extends UntypedAbstractActor {
   private def getD(m: java.util.Map[String, AnyRef], k: String): Double = Option(m.get(k)).map(_.asInstanceOf[Number].doubleValue()).getOrElse(0.0)
 
   private def createSuccess(aid: String) = { val r = new org.sunbird.common.models.response.Response(); r.put("response", "SUCCESS"); r.put("attemptId", aid); r }
-  private def createErrorResponse(code: String, msg: String): ProjectCommonException = new ProjectCommonException(code, msg, ResponseCode.SERVER_ERROR.getResponseCode)
+  private def createErrorResponse(code: String, msg: String, responseCode: Int): ProjectCommonException = new ProjectCommonException(code, msg, responseCode)
 }
 
 object AssessmentAggregatorActor {

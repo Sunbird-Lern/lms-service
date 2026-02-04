@@ -18,8 +18,9 @@ object AssessmentAuditRecorder {
     try {
       val userId = assessment.get(JsonKey.USER_ID).asInstanceOf[String]
       val contentId = assessment.get(JsonKey.CONTENT_ID).asInstanceOf[String]
-      val attemptId = getAttemptId(assessment, userId, contentId)
-      val recordMap = createRecordMap(assessment, attemptId, userId, contentId, ctx)
+      val ts = extractTimestamp(assessment)
+      val attemptId = getAttemptId(assessment, userId, contentId, ts)
+      val recordMap = createRecordMap(assessment, attemptId, userId, contentId, ts, ctx)
       val events = getEvents(assessment)
       recordMap.put("question", transformEventsToUDTs(events, udtType))
       persist(recordMap, ctx)
@@ -27,22 +28,28 @@ object AssessmentAuditRecorder {
     } catch {
       case e: Exception => 
         logger.error(ctx, "AssessmentAuditRecorder: Error during record", e)
-        Option(assessment.get(JsonKey.ATTEMPT_ID)).map(_.toString).getOrElse(generateId(assessment.get(JsonKey.USER_ID).asInstanceOf[String], assessment.get(JsonKey.CONTENT_ID).asInstanceOf[String]))
+        Option(assessment.get(JsonKey.ATTEMPT_ID)).map(_.toString).getOrElse {
+          val uid = Option(assessment.get(JsonKey.USER_ID)).map(_.toString).getOrElse("unknown")
+          val cid = Option(assessment.get(JsonKey.CONTENT_ID)).map(_.toString).getOrElse("unknown")
+          generateId(uid, cid)
+        }
     }
   }
 
-  private def getAttemptId(m: util.Map[String, AnyRef], uid: String, cid: String): String = 
-    Option(m.get(JsonKey.ATTEMPT_ID)).map(_.toString).getOrElse(generateId(uid, cid))
+  private def getAttemptId(m: util.Map[String, AnyRef], uid: String, cid: String, ts: Long): String = 
+    Option(m.get(JsonKey.ATTEMPT_ID)).map(_.toString).getOrElse(generateId(uid, cid, ts))
 
-  private def generateId(uid: String, cid: String): String = 
-    s"${uid}_${cid}_${System.currentTimeMillis()}".hashCode.abs.toString
+  private def generateId(uid: String, cid: String, ts: Long): String = 
+    s"${uid}_${cid}_$ts".hashCode.abs.toString
 
-  private def createRecordMap(m: util.Map[String, AnyRef], aid: String, uid: String, cid: String, ctx: RequestContext): util.Map[String, AnyRef] = {
+  private def extractTimestamp(m: util.Map[String, AnyRef]): Long = 
+    Option(m.get("assessmentTimestamp")).orElse(Option(m.get(JsonKey.ASSESSMENT_TS))).map(_.asInstanceOf[Number].longValue()).getOrElse(System.currentTimeMillis())
+
+  private def createRecordMap(m: util.Map[String, AnyRef], aid: String, uid: String, cid: String, ts: Long, ctx: RequestContext): util.Map[String, AnyRef] = {
     val rec = new util.HashMap[String, AnyRef]()
     rec.put("user_id", uid); rec.put("course_id", m.get(JsonKey.COURSE_ID))
     rec.put("batch_id", m.get(JsonKey.BATCH_ID)); rec.put("content_id", cid)
     rec.put("attempt_id", aid)
-    val ts = Option(m.get("assessmentTimestamp")).orElse(Option(m.get(JsonKey.ASSESSMENT_TS))).map(_.asInstanceOf[Number].longValue()).getOrElse(System.currentTimeMillis())
     logger.info(ctx, s"AssessmentAuditRecorder: Recording attemptId=$aid with last_attempted_on=$ts")
     rec.put("last_attempted_on", new java.sql.Timestamp(ts))
     rec.put("created_on", new java.sql.Timestamp(System.currentTimeMillis()))

@@ -19,7 +19,8 @@ import org.sunbird.learner.util.Util
 import com.datastax.driver.core.{UDTValue, UserType}
 import java.util
 import java.util.{Date, TimeZone, UUID}
-import javax.inject.Inject
+import javax.inject.{Inject, Named}
+import org.apache.pekko.actor.ActorRef
 import scala.collection.JavaConverters._
 import scala.collection.convert.ImplicitConversions._
 
@@ -27,7 +28,7 @@ case class InternalContentConsumption(courseId: String, batchId: String, content
   def validConsumption() = StringUtils.isNotBlank(courseId) && StringUtils.isNotBlank(batchId) && StringUtils.isNotBlank(contentId)
 }
 
-class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
+class ContentConsumptionActor @Inject() ( @Named("assessment-aggregator-actor") assessmentAggregatorActor: ActorRef) extends BaseEnrolmentActor {
     private val mapper = new ObjectMapper
     private var cassandraOperation = ServiceFactory.getInstance
     private var pushTokafkaEnabled: Boolean = true //TODO: to be removed once all are in scala
@@ -241,7 +242,6 @@ class ContentConsumptionActor @Inject() extends BaseEnrolmentActor {
             val attemptId = AssessmentAuditRecorder.record(assessment, questionUDTType, requestContext)
             assessment.put(JsonKey.ATTEMPT_ID, attemptId)
             val request = createAssessmentRequest(assessment, requestContext)
-            val assessmentAggregatorActor = context.actorSelection("/user/assessment-aggregator-actor")
             assessmentAggregatorActor ! request
             logger.info(requestContext, s"Assessment sent to aggregator (async): attemptId=$attemptId")
         } else {

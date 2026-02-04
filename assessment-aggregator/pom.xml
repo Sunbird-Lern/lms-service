@@ -26,6 +26,7 @@
         <scala.maj.version>2.13.12</scala.maj.version>
         <pekko.version>1.0.3</pekko.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <scoverage.plugin.version>1.4.1</scoverage.plugin.version>
     </properties>
     
     <dependencies>
@@ -52,7 +53,7 @@
         </dependency>
         <dependency>
             <groupId>org.sunbird</groupId>
-            <artifactId>sunbird-actor-core</artifactId>
+            <artifactId>actor-core</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
@@ -161,6 +162,16 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.scoverage</groupId>
+                <artifactId>scoverage-maven-plugin</artifactId>
+                <version>${scoverage.plugin.version}</version>
+                <configuration>
+                    <scalaVersion>${scala.maj.version}</scalaVersion>
+                    <aggregate>true</aggregate>
+                    <highlighting>true</highlighting>
+                </configuration>
             </plugin>
         </plugins>
     </build>

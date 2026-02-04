@@ -7,10 +7,10 @@ import org.slf4j.LoggerFactory
 /**
  * Redis service using Sunbird's shared Redis connection
  */
-class RedisService {
+class RedisService(client: Option[RedissonClient] = None) {
   
   private val logger = LoggerFactory.getLogger(classOf[RedisService])
-  private val redisClient: RedissonClient = RedisConnectionManager.getClient()
+  private val redisClient: RedissonClient = client.getOrElse(RedisConnectionManager.getClient())
   
   /**
    * Check if content is valid by verifying it exists in the course hierarchy

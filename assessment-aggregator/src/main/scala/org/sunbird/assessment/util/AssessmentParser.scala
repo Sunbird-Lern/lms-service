@@ -18,7 +18,7 @@ object AssessmentParser {
         getD(edata, "score"),
         getD(item, "maxscore"),
         getD(edata, "duration"),
-        Option(m.get("ets")).getOrElse(0L).asInstanceOf[Number].longValue(),
+        Option(m.get("ets")).map(_.asInstanceOf[Number].longValue()).getOrElse(System.currentTimeMillis()),
         item.getOrDefault("type", "").toString,
         item.getOrDefault("title", "").toString,
         item.getOrDefault("desc", "").toString,
@@ -29,11 +29,11 @@ object AssessmentParser {
       val resvalues = getListValues(m.getOrDefault("resvalues", new java.util.ArrayList()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]])
       val params = getListValues(m.getOrDefault("params", new java.util.ArrayList()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]])
       AssessmentEvent(
-        m.getOrDefault("questionId", "").toString,
+        Option(m.get("questionId")).getOrElse(m.getOrDefault(org.sunbird.common.models.util.JsonKey.IDENTIFIER, "")).toString,
         getD(m, "score"),
         getD(m, "maxScore"),
         getD(m, "duration"),
-        Option(m.get("timestamp")).getOrElse(0L).asInstanceOf[Number].longValue(),
+        Option(m.get("timestamp")).map(_.asInstanceOf[Number].longValue()).getOrElse(System.currentTimeMillis()),
         m.getOrDefault("questionType", "").toString,
         m.getOrDefault("title", "").toString,
         m.getOrDefault("description", "").toString,
@@ -43,8 +43,7 @@ object AssessmentParser {
     }
   }
 
-  private def getD(m: java.util.Map[String, AnyRef], k: String): Double = 
-    Option(m.get(k)).map(_.asInstanceOf[Number].doubleValue()).getOrElse(0.0)
+  private def getD(m: java.util.Map[String, AnyRef], k: String): Double = Option(m.get(k)).map(_.asInstanceOf[Number].doubleValue()).getOrElse(0.0)
 
   private def getListValues(values: java.util.List[java.util.Map[String, AnyRef]]): List[java.util.Map[String, AnyRef]] = {
     values.asScala.map { res =>

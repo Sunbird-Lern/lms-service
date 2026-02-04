@@ -9,10 +9,10 @@ import com.datastax.driver.core.{UserType, UDTValue}
 import org.slf4j.LoggerFactory
 import com.google.common.reflect.TypeToken
 
-class CassandraService {
+class CassandraService(optionalDao: Option[CassandraOperation] = None) {
 
   private val logger = LoggerFactory.getLogger(classOf[CassandraService])
-  private lazy val dao = ServiceFactory.getInstance.asInstanceOf[CassandraOperation]
+  private lazy val dao = optionalDao.getOrElse(ServiceFactory.getInstance.asInstanceOf[CassandraOperation])
   private val keyspace = Option(ProjectUtil.getConfigValue("sunbird_course_keyspace")).getOrElse("sunbird_courses")
   private val assessmentTable = Option(ProjectUtil.getConfigValue("assessment_aggregator_table")).getOrElse("assessment_aggregator")
   private val activityTable = Option(ProjectUtil.getConfigValue("user_activity_agg_table")).getOrElse("user_activity_agg")
@@ -24,7 +24,7 @@ class CassandraService {
       val fields = java.util.Arrays.asList("attempt_id", "content_id", "last_attempted_on", "created_on", "total_score", "total_max_score", "question")
       val records = fetchRecords(filters, fields, ctx)
       records.headOption.map(mapToExisting)
-    } catch { case e: Exception => logger.error(s"Get failed for $aid", e); None }
+    } catch { case e: Throwable => logger.error(s"Get failed for $aid", e); None }
   }
 
   def getUserAssessments(uid: String, cid: String, bid: String, contId: String, ctx: RequestContext): List[ExistingAssessment] = {
@@ -32,7 +32,7 @@ class CassandraService {
       val filters = buildFilters("user_id" -> uid, "course_id" -> cid, "batch_id" -> bid, "content_id" -> contId)
       val fields = java.util.Arrays.asList("content_id", "attempt_id", "last_attempted_on", "total_max_score", "total_score", "question")
       fetchRecords(filters, fields, ctx).map(mapToExisting)
-    } catch { case e: Exception => logger.error(s"List failed for $uid", e); List.empty }
+    } catch { case e: Throwable => logger.error(s"List failed for $uid", e); List.empty }
   }
 
   def saveAssessment(res: AssessmentResult, ctx: RequestContext): Unit = {

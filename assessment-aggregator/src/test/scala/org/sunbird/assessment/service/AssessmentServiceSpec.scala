@@ -5,6 +5,7 @@ import org.mockito.MockitoSugar
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.sunbird.assessment.models._
+import org.sunbird.common.models.util.PropertiesCache
 import org.sunbird.common.request.RequestContext
 
 class AssessmentServiceSpec extends AnyFlatSpec with Matchers with MockitoSugar {
@@ -35,7 +36,7 @@ class AssessmentServiceSpec extends AnyFlatSpec with Matchers with MockitoSugar 
     val metrics = assessmentService.computeScoreMetrics(events)
     metrics.totalScore should be (5.0)
     metrics.totalMaxScore should be (10.0)
-    metrics.grandTotal should be ("5/10")
+    metrics.grandTotal should be ("5.0/10.0")
     metrics.questions.size should be (2)
   }
 
@@ -70,5 +71,51 @@ class AssessmentServiceSpec extends AnyFlatSpec with Matchers with MockitoSugar 
     agg.aggregates("score:cont1") should be (8.0)
     agg.aggregates("attempts_count:cont1") should be (2.0)
     agg.aggregateDetails.size should be (2)
+  }
+
+  it should "return latest attemptId from aggregate" in {
+    val details = List(
+      AttemptDetail("att1", 1000L, 5.0, "cont1", 10.0, "assessment"),
+      AttemptDetail("att2", 2000L, 8.0, "cont1", 10.0, "assessment")
+    )
+    val aggregate = UserActivityAggregate("u1", "c1", "b1", Map("score:cont1" -> 8.0), details)
+    assessmentService.getLatestAttemptId(aggregate) should be ("att2")
+  }
+
+  it should "validate content based on configuration" in {
+    val metadata = ContentMetadata(isValid = false, totalQuestions = 10)
+    val req = AssessmentRequest("att", "u1", "c1", "b1", "cont1", 1000L, List.empty)
+    
+    // Default (validation disabled)
+    assessmentService.validateContent(req, metadata) should be (true)
+    
+    // Enabled but valid
+    val validMetadata = ContentMetadata(isValid = true, totalQuestions = 10)
+    PropertiesCache.getInstance().saveConfigProperty("assessment_enable_content_validation", "true")
+    assessmentService.validateContent(req, validMetadata) should be (true)
+    
+    // Enabled and invalid
+    assessmentService.validateContent(req, metadata) should be (false)
+    PropertiesCache.getInstance().saveConfigProperty("assessment_enable_content_validation", "false")
+  }
+
+  it should "handle empty assessments in computeUserAggregates" in {
+    val agg = assessmentService.computeUserAggregates("u1", "c1", "b1", List.empty)
+    agg.aggregates should be (Map.empty)
+    agg.aggregateDetails should be (List.empty)
+  }
+
+  it should "return empty string for getLatestAttemptId if details are empty" in {
+    val aggregate = UserActivityAggregate("u1", "c1", "b1", Map.empty, List.empty)
+    assessmentService.getLatestAttemptId(aggregate) should be ("")
+  }
+
+  it should "return empty string for getLatestAttemptId if multiple content IDs are present" in {
+    val details = List(
+      AttemptDetail("att1", 1000L, 5.0, "cont1", 10.0, "assessment"),
+      AttemptDetail("att2", 2000L, 8.0, "cont2", 10.0, "assessment")
+    )
+    val aggregate = UserActivityAggregate("u1", "c1", "b1", Map("score:cont1" -> 5.0, "score:cont2" -> 8.0), details)
+    assessmentService.getLatestAttemptId(aggregate) should be ("")
   }
 }

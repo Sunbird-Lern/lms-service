@@ -9,10 +9,11 @@ import org.slf4j.LoggerFactory
 /**
  * Kafka service using Sunbird's shared Kafka client
  */
-class KafkaService {
+class KafkaService(client: Option[KafkaClientWrapper] = None) {
   
   private val logger = LoggerFactory.getLogger(classOf[KafkaService])
   private val mapper = new ObjectMapper()
+  private val kafkaClient = client.getOrElse(DefaultKafkaClientWrapper)
   
   // Get topic names from configuration
   private val certificateTopic = ProjectUtil.getConfigValue("kafka_topics_certificate_instruction")
@@ -26,7 +27,7 @@ class KafkaService {
       val ets = System.currentTimeMillis()
       val mid = s"LP.$ets.${java.util.UUID.randomUUID()}"
       val event = s"""{"eid":"BE_JOB_REQUEST","ets":$ets,"mid":"$mid","actor":{"id":"Course Certificate Generator","type":"System"},"context":{"pdata":{"ver":"1.0","id":"org.sunbird.platform"}},"object":{"id":"${batchId}_$courseId","type":"CourseCertificateGeneration"},"edata":{"userIds":["$userId"],"action":"issue-certificate","iteration":1,"trigger":"auto-issue","batchId":"$batchId","reIssue":false,"courseId":"$courseId","attemptId":"$attemptId"}}"""
-      KafkaClient.send(event, certificateTopic)
+      kafkaClient.send(event, certificateTopic)
       logger.info(s"Certificate event published: userId=$userId, courseId=$courseId")
     } catch {
       case ex: Exception =>
@@ -50,7 +51,7 @@ class KafkaService {
       eventMap.put("flags", flags)
       
       val eventJson = mapper.writeValueAsString(eventMap)
-      KafkaClient.send(eventJson, failedEventsTopic)
+      kafkaClient.send(eventJson, failedEventsTopic)
       logger.info(s"Failed event published: attemptId=${eventMap.get("attemptId")}, reason=$reason")
     } catch {
       case ex: Exception =>

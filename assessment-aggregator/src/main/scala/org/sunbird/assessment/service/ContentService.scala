@@ -7,8 +7,17 @@ import scala.collection.JavaConverters._
 
 case class ContentMetadata(isValid: Boolean, totalQuestions: Int)
 
-class ContentService {
+trait HttpUtilWrapper {
+  def sendGetRequest(url: String, headers: java.util.Map[String, String]): String
+}
+
+object DefaultHttpUtilWrapper extends HttpUtilWrapper {
+  override def sendGetRequest(url: String, headers: java.util.Map[String, String]): String = HttpUtil.sendGetRequest(url, headers)
+}
+
+class ContentService(http: Option[HttpUtilWrapper] = None) {
   private val logger = new LoggerUtil(classOf[ContentService])
+  private val httpUtil = http.getOrElse(DefaultHttpUtilWrapper)
   private val baseUrl = Option(ProjectUtil.getConfigValue("sunbird_api_base_url")).filter(StringUtils.isNotBlank).getOrElse("http://localhost:9000")
   private val contentReadPath = Option(ProjectUtil.getConfigValue("sunbird_content_read_api_path")).filter(StringUtils.isNotBlank).getOrElse("/content/v1/read/")
 
@@ -17,7 +26,7 @@ class ContentService {
     logger.info(context, s"Fetching content metadata from URL: $url")
     try {
       val headers = Map(JsonKey.AUTHORIZATION -> ProjectUtil.getConfigValue(JsonKey.EKSTEP_AUTHORIZATION)).asJava
-      val response = HttpUtil.sendGetRequest(url, headers)
+      val response = httpUtil.sendGetRequest(url, headers)
       if (StringUtils.isBlank(response)) return ContentMetadata(isValid = false, totalQuestions = 0)
       val respMap = ProjectUtil.convertJsonStringToMap(response).asInstanceOf[java.util.Map[String, AnyRef]].asScala
       val isOk = respMap.get("responseCode").exists(_.toString.equalsIgnoreCase("OK"))

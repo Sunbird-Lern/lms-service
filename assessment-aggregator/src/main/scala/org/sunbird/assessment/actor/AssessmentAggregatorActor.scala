@@ -1,6 +1,8 @@
 package org.sunbird.assessment.actor
 import org.sunbird.actor.core.BaseActor
 import javax.inject.Inject
+import org.apache.pekko.actor.Props
+import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.request.{Request, RequestContext}
 import org.sunbird.common.responsecode.ResponseCode
 import org.sunbird.assessment.models._
@@ -10,12 +12,7 @@ import org.sunbird.common.models.util.{JsonKey, LoggerUtil, ProjectUtil}
 import scala.collection.JavaConverters._
 import org.apache.commons.lang3.StringUtils
 
-class AssessmentAggregatorActor @Inject()(
-  _redisService: Option[RedisService],
-  _contentService: Option[ContentService],
-  _cassandraService: Option[CassandraService],
-  _kafkaService: Option[KafkaService]
-) extends BaseActor {
+class AssessmentAggregatorActor @Inject()(_redisService: Option[RedisService],_contentService: Option[ContentService],_cassandraService: Option[CassandraService],_kafkaService: Option[KafkaService]) extends BaseActor {
 
   def this() = this(None, None, None, None)
 
@@ -151,7 +148,10 @@ class AssessmentAggregatorActor @Inject()(
       val agg = assessmentService.computeUserAggregates(userId, courseId, batchId, assessments)
       cassandraService.updateUserActivity(userId, courseId, batchId, agg, context)
       val attemptId = assessmentService.getLatestAttemptId(agg)
-      kafkaService.publishCertificateEvent(userId, courseId, batchId, attemptId)    }
+      if (ProjectUtil.getConfigValue("assessment_aggregator_publish_certificate") == "true") {
+        kafkaService.publishCertificateEvent(userId, courseId, batchId, attemptId)
+      }
+    }
   }
 
   /**

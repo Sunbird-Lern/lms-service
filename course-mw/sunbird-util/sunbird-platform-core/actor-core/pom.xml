@@ -6,6 +6,14 @@
 	<artifactId>actor-core</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<name>actor-core</name>
+
+	<parent>
+		<groupId>org.sunbird</groupId>
+		<artifactId>course-mw</artifactId>
+		<version>1.0-SNAPSHOT</version>
+		<relativePath>../../../pom.xml</relativePath>
+	</parent>
+
 	<properties>
 		<scala.major.version>2.13</scala.major.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -19,7 +27,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
+			<artifactId>logback-classic</artifactId>	
 			<version>1.2.3</version>
 		</dependency>
 		<dependency>
@@ -81,7 +89,6 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>18.0</version>
 		</dependency>
 	</dependencies>
 

@@ -28,8 +28,7 @@ case class InternalContentConsumption(courseId: String, batchId: String, content
   def validConsumption() = StringUtils.isNotBlank(courseId) && StringUtils.isNotBlank(batchId) && StringUtils.isNotBlank(contentId)
 }
 
-class ContentConsumptionActor extends BaseEnrolmentActor {
-    private val assessmentAggregator = context.actorSelection("/user/assessment-aggregator-actor")
+class ContentConsumptionActor @Inject() (@Named("assessment-aggregator-actor") assessmentAggregator: ActorRef) extends BaseEnrolmentActor {
     private val mapper = new ObjectMapper
     private var cassandraOperation = ServiceFactory.getInstance
     private var pushTokafkaEnabled: Boolean = true //TODO: to be removed once all are in scala

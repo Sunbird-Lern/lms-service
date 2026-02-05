@@ -41,14 +41,14 @@ public class CourseBatchUtil {
     logger.info(requestContext, "CourseBatchManagementActor: syncCourseBatchForeground called for course batch ID = " + uniqueId);
     req.put(JsonKey.ID, uniqueId);
     req.put(JsonKey.IDENTIFIER, uniqueId);
-    Future<String> esResponseF = esUtil.save(requestContext, ProjectUtil.EsType.courseBatch.getTypeName(), uniqueId, req);
+    Future<String> esResponseF = esUtil.save(ProjectUtil.EsType.courseBatch.getTypeName(), uniqueId, req, requestContext);
     String esResponse = (String) ElasticSearchHelper.getResponseFromFuture(esResponseF);
     logger.info(requestContext, "CourseBatchManagementActor::syncCourseBatchForeground: Sync response for course batch ID = "
             + uniqueId + " received response = " + esResponse);
   }
 
   public static Map<String, Object> validateCourseBatch(RequestContext requestContext, String courseId, String batchId) {
-    Future<Map<String, Object>> resultF = esUtil.getDataByIdentifier(requestContext, EsType.courseBatch.getTypeName(), batchId);
+    Future<Map<String, Object>> resultF = esUtil.getDataByIdentifier(EsType.courseBatch.getTypeName(), batchId, requestContext);
     Map<String, Object> result = (Map<String, Object>) ElasticSearchHelper.getResponseFromFuture(resultF);
     if (MapUtils.isEmpty(result)) {
       ProjectCommonException.throwClientErrorException(ResponseCode.CLIENT_ERROR, "No such batchId exists");

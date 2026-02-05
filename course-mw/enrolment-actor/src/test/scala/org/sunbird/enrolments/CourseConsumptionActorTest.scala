@@ -74,7 +74,7 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
                 put("contentId", "do_789")
             }})
         }})
-        (esService.search(_:RequestContext, _: SearchDTO, _: String)).expects(*,*,*).returns(concurrent.Future{validBatchData()})
+        (esService.search(_: SearchDTO, _: String, _: RequestContext)).expects(*,*,*).returns(concurrent.Future{validBatchData()})
         (cassandraOperation.getRecords(_: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.List[String], _:RequestContext)).expects(*,*,*,*,*).returns(response)
         (cassandraOperation.batchInsertLogged(_: String, _: String, _: java.util.List[java.util.Map[String, AnyRef]], _:RequestContext)).expects(*,*,*,*)
         (cassandraOperation.updateRecordV2(_: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.Map[String, AnyRef], _: Boolean, _:RequestContext)).expects("sunbird_courses", "user_enrolments",*,*,true,*)
@@ -119,7 +119,7 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
     "update AssessmentScore" should "return success on updating the progress" in {
         val cassandraOperation = mock[CassandraOperation]
         val esService = mock[ElasticSearchService]
-        ((requestContext: RequestContext, searchDTO: _root_.org.sunbird.dto.SearchDTO, index: _root_.scala.Predef.String) => esService.search(requestContext, searchDTO, index)).expects(*,*,*).returns(concurrent.Future{validBatchData()}).anyNumberOfTimes()
+        ((searchDTO: _root_.org.sunbird.dto.SearchDTO, index: _root_.scala.Predef.String, requestContext: RequestContext) => esService.search(searchDTO, index, requestContext)).expects(*,*,*).returns(concurrent.Future{validBatchData()}).anyNumberOfTimes()
         val response = new Response()
         response.put("response", new java.util.ArrayList[java.util.Map[String, AnyRef]]())
         (cassandraOperation.getRecords(_: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.List[String], _:RequestContext)).expects(*,*,*,*,*).returns(response)
@@ -330,7 +330,7 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
 
             }
         })
-        (esService.search(_: RequestContext, _: SearchDTO, _: String)).expects(*, *, *).returns(concurrent.Future {
+        (esService.search(_: SearchDTO, _: String, _: RequestContext)).expects(*, *, *).returns(concurrent.Future {
             validBatchData()
         })
         (cassandraOperation.getRecords(_: String, _: String, _: java.util.Map[String, AnyRef], _: java.util.List[String], _:RequestContext)).expects(*, *, *, *, *).returns(response)

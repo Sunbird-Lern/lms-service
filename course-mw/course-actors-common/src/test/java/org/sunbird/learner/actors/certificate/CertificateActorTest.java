@@ -54,7 +54,7 @@ public class CertificateActorTest extends SunbirdApplicationActorTest {
             .generateRandomFields()
             .addField("cert_templates", new HashMap<>())
             .build();
-    when(group.getESMockerService().getDataByIdentifier(Mockito.any(), Mockito.anyString(), Mockito.anyString()))
+    when(group.getESMockerService().getDataByIdentifier(Mockito.anyString(), Mockito.anyString(), Mockito.any()))
         .thenReturn(courseBatch.asESIdentifierResult());
     PowerMockito.doNothing().when(KafkaClient.class, "send", Mockito.any(), Mockito.anyString());
     Request req = new Request();
@@ -82,7 +82,7 @@ public class CertificateActorTest extends SunbirdApplicationActorTest {
             .generateRandomFields()
             .addField("cert_templates", new HashMap<>())
             .build();
-    when(group.getESMockerService().getDataByIdentifier(Mockito.any(), Mockito.anyString(), Mockito.anyString()))
+    when(group.getESMockerService().getDataByIdentifier(Mockito.anyString(), Mockito.anyString(), Mockito.any()))
         .thenReturn(courseBatch.asESIdentifierResult());
     PowerMockito.doNothing().when(KafkaClient.class, "send", Mockito.any(), Mockito.anyString());
     Request req = new Request();
@@ -109,7 +109,7 @@ public class CertificateActorTest extends SunbirdApplicationActorTest {
     group = MockerBuilder.getFreshMockerGroup().withESMock(new ESMocker());
     CustomObjectWrapper<Map<String, Object>> courseBatch =
         CustomObjectBuilder.getCourseBatchBuilder().generateRandomFields().build();
-    when(group.getESMockerService().getDataByIdentifier(Mockito.any(), Mockito.anyString(), Mockito.anyString()))
+    when(group.getESMockerService().getDataByIdentifier(Mockito.anyString(), Mockito.anyString(), Mockito.any()))
         .thenReturn(courseBatch.asESIdentifierResult());
     Request req = new Request();
     HashMap<String, Object> innerMap = new HashMap<>();
@@ -131,7 +131,7 @@ public class CertificateActorTest extends SunbirdApplicationActorTest {
     group = MockerBuilder.getFreshMockerGroup().withESMock(new ESMocker());
     CustomObjectWrapper<Map<String, Object>> courseBatch =
         CustomObjectBuilder.getCourseBatchBuilder().generateRandomFields().build();
-    when(group.getESMockerService().getDataByIdentifier(Mockito.any(), Mockito.anyString(), Mockito.anyString()))
+    when(group.getESMockerService().getDataByIdentifier(Mockito.anyString(), Mockito.anyString(), Mockito.any()))
         .thenReturn(courseBatch.asESIdentifierResult());
     Request req = new Request();
     HashMap<String, Object> innerMap = new HashMap<>();
@@ -152,7 +152,7 @@ public class CertificateActorTest extends SunbirdApplicationActorTest {
   public void issueCertificateMissingBatchTest() {
     group = MockerBuilder.getFreshMockerGroup().withESMock(new ESMocker());
     CustomObjectWrapper<Map<String, Object>> courseBatch = CustomObjectBuilder.getEmptyMap();
-    when(group.getESMockerService().getDataByIdentifier(Mockito.any(), Mockito.anyString(), Mockito.anyString()))
+    when(group.getESMockerService().getDataByIdentifier(Mockito.anyString(), Mockito.anyString(), Mockito.any()))
         .thenReturn(courseBatch.asESIdentifierResult());
     Request req = new Request();
     HashMap<String, Object> innerMap = new HashMap<>();

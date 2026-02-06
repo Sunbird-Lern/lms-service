@@ -12,14 +12,20 @@
       <maven.compiler.target>11</maven.compiler.target>
       <play2.plugin.version>1.0.0-rc5</play2.plugin.version>
       <netty.version>4.1.112.Final</netty.version>
-      <asm.version>7.1</asm.version>
-      <guice.version>4.2.2</guice.version>
+      <asm.version>9.2</asm.version>
+      <guice.version>6.0.0</guice.version>
+      <guava.version>32.1.3-jre</guava.version>
       <apache.httpcomponents.version>4.5.14</apache.httpcomponents.version>
       <apache.httpcore.version>4.4.16</apache.httpcore.version>
   </properties>
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>${guava.version}</version>
+      </dependency>
       <!-- ASM version management to prevent conflicts -->
       <dependency>
         <groupId>org.ow2.asm</groupId>
@@ -55,6 +61,11 @@
       <dependency>
         <groupId>com.google.inject.extensions</groupId>
         <artifactId>guice-assistedinject</artifactId>
+        <version>${guice.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.inject.extensions</groupId>
+        <artifactId>guice-multibindings</artifactId>
         <version>${guice.version}</version>
       </dependency>
       <!-- Netty dependency management - enforce version 4.1.112.Final across all modules -->
@@ -157,6 +168,7 @@
   			<module>core</module>
   			<module>course-mw</module>
 	  		<module>service</module>
+        <module>assessment-aggregator</module>
   		</modules>
   	</profile>
   	<profile>

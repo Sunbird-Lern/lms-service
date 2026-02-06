@@ -87,12 +87,25 @@
         <maven-surefire-plugin.version>3.0.0</maven-surefire-plugin.version>
         <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
         <scoverage.plugin.version>1.1.1</scoverage.plugin.version>
+        <reflections.version>0.9.10</reflections.version>
+        
+        <!-- Redis Dependencies -->
+        <redisson.version>3.22.0</redisson.version>
+        <jedis.version>2.10.2</jedis.version>
+        
+        <!-- Scala Dependencies -->
+        <scala.version>2.13.12</scala.version>
+        <scalatest.version>3.1.2</scalatest.version>
+        <scalamock.version>4.4.0</scalamock.version>
+        <scala-maven-plugin.version>4.4.0</scala-maven-plugin.version>
     </properties>
 
     <modules>
         <module>sunbird-platform-common</module>
         <module>sunbird-cassandra-utils</module>
         <module>sunbird-es-utils</module>
+        <module>sunbird-actor-utils</module>
+        <module>sunbird-redis-utils</module>
     </modules>
 
     <build>

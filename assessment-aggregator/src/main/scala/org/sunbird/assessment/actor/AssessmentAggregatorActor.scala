@@ -14,8 +14,9 @@ import org.sunbird.common.ProjectUtil
 import scala.collection.JavaConverters._
 import org.apache.commons.lang3.StringUtils
 
-class AssessmentAggregatorActor @Inject()(_redisService: Option[RedisService],_contentService: Option[ContentService],_cassandraService: Option[CassandraService],_kafkaService: Option[KafkaService]) extends BaseActor {
+class AssessmentAggregatorActor(_redisService: Option[RedisService],_contentService: Option[ContentService],_cassandraService: Option[CassandraService],_kafkaService: Option[KafkaService]) extends BaseActor {
 
+  @Inject()
   def this() = this(None, None, None, None)
 
   private lazy val redisService = _redisService.getOrElse(new RedisService())

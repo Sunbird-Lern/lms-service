@@ -7,16 +7,17 @@ import org.mockito.MockitoSugar
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.should.Matchers
-import org.sunbird.common.request.{Request, RequestContext}
+import org.sunbird.request.{Request, RequestContext}
 import org.sunbird.assessment.models._
-import org.sunbird.common.models.util.{JsonKey, PropertiesCache}
-import org.sunbird.common.exception.ProjectCommonException
-import org.sunbird.common.models.response.Response
+import org.sunbird.keys.JsonKey
+import org.sunbird.common.PropertiesCache
+import org.sunbird.exception.ProjectCommonException
+import org.sunbird.response.Response
 import java.util.HashMap
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 import org.sunbird.assessment.service.{CassandraService, ContentMetadata, ContentService, KafkaService, RedisService}
-import org.sunbird.common.responsecode.ResponseCode
+import org.sunbird.response.ResponseCode
 
 class AssessmentAggregatorActorSpec extends TestKit(ActorSystem("AssessmentAggregatorActorSpec"))
   with ImplicitSender with AnyFlatSpecLike with Matchers with BeforeAndAfterAll with MockitoSugar {

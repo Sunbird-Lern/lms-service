@@ -1,7 +1,7 @@
 package org.sunbird.assessment.service
 
-import org.sunbird.kafka.client.KafkaClient
-import org.sunbird.common.models.util.ProjectUtil
+import org.sunbird.kafka.KafkaClient
+import org.sunbird.common.ProjectUtil
 import org.sunbird.assessment.models.AssessmentRequest
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory

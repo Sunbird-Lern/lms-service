@@ -5,8 +5,8 @@ import org.mockito.MockitoSugar
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.sunbird.assessment.models._
-import org.sunbird.common.models.util.PropertiesCache
-import org.sunbird.common.request.RequestContext
+import org.sunbird.common.PropertiesCache
+import org.sunbird.request.RequestContext
 
 class AssessmentServiceSpec extends AnyFlatSpec with Matchers with MockitoSugar {
 

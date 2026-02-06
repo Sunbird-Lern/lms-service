@@ -5,8 +5,8 @@ import org.mockito.MockitoSugar
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.sunbird.cassandra.CassandraOperation
-import org.sunbird.common.models.response.Response
-import org.sunbird.common.request.RequestContext
+import org.sunbird.response.Response
+import org.sunbird.request.RequestContext
 import org.sunbird.assessment.models._
 import java.util.{ArrayList, HashMap, Map}
 import scala.collection.JavaConverters._

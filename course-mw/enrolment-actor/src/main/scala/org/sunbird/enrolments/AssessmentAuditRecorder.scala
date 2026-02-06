@@ -3,8 +3,10 @@ package org.sunbird.enrolments
 import com.datastax.driver.core.{UDTValue, UserType}
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.sunbird.cassandra.CassandraOperation
-import org.sunbird.common.models.util.{JsonKey, LoggerUtil, ProjectUtil}
-import org.sunbird.common.request.RequestContext
+import org.sunbird.keys.JsonKey
+import org.sunbird.logging.LoggerUtil
+import org.sunbird.common.ProjectUtil
+import org.sunbird.request.RequestContext
 import org.sunbird.helper.ServiceFactory
 import java.util
 import scala.collection.JavaConverters._

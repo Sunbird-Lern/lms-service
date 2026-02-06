@@ -4,7 +4,7 @@ import org.mockito.ArgumentMatchers._
 import org.mockito.MockitoSugar
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import org.sunbird.common.request.RequestContext
+import org.sunbird.request.RequestContext
 
 class ContentServiceSpec extends AnyFlatSpec with Matchers with MockitoSugar {
 

@@ -1,6 +1,6 @@
 package org.sunbird.assessment.service
 
-import org.sunbird.kafka.client.KafkaClient
+import org.sunbird.kafka.KafkaClient
 
 trait KafkaClientWrapper {
   def send(event: String, topic: String): Unit

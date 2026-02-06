@@ -103,6 +103,10 @@ public abstract class BaseActor extends UntypedAbstractActor {
     unSupportedMessage();
   }
 
+  protected void onReceiveUnsupportedOperation() throws Exception {
+    onReceiveUnsupportedOperation(this.getClass().getSimpleName());
+  }
+
   /**
    * Handles unsupported messages by logging and sending an exception.
    *
@@ -116,6 +120,10 @@ public abstract class BaseActor extends UntypedAbstractActor {
             ResponseCode.invalidOperationName.getErrorMessage(),
             ResponseCode.CLIENT_ERROR.getResponseCode());
     sender().tell(exception, self());
+  }
+
+  protected void onReceiveUnsupportedMessage() {
+    onReceiveUnsupportedMessage(this.getClass().getSimpleName());
   }
 
   /**

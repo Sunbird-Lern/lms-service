@@ -14,7 +14,6 @@
 
   <modules>
     <module>actor-util</module>
-    <module>actor-core</module>
 	<module>sunbird-commons</module>
   </modules>
 </project>

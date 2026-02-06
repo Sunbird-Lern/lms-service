@@ -6,7 +6,7 @@ import org.apache.commons.collections.MapUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.sunbird.common.request.Request;
+import org.sunbird.request.Request;
 import org.sunbird.learner.actors.course.HierarchyGenerationHelper;
 
 import java.util.Map;

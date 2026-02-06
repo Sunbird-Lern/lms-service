@@ -19,10 +19,10 @@ import org.sunbird.builder.mocker.MockerBuilder;
 import org.sunbird.builder.object.CustomObjectBuilder;
 import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.factory.EsClientFactory;
-import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.HttpUtil;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.ProjectUtil;
+import org.sunbird.response.Response;
+import org.sunbird.http.HttpUtil;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.common.ProjectUtil;
 import org.sunbird.helper.ServiceFactory;
 
 @RunWith(PowerMockRunner.class)

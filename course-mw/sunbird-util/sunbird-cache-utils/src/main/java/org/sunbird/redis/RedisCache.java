@@ -3,7 +3,7 @@ package org.sunbird.redis;
 import org.redisson.api.RMap;
 import org.redisson.api.RedissonClient;
 import org.sunbird.cache.interfaces.Cache;
-import org.sunbird.common.models.util.LoggerUtil;
+import org.sunbird.logging.LoggerUtil;
 import org.sunbird.notification.utils.JsonUtil;
 
 import java.util.Map;

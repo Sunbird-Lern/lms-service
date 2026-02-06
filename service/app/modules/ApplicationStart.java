@@ -1,9 +1,9 @@
 package modules;
 
 import org.sunbird.auth.verifier.KeyManager;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerUtil;
-import org.sunbird.common.models.util.ProjectUtil;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.logging.LoggerUtil;
+import org.sunbird.common.ProjectUtil;
 import org.sunbird.learner.util.ContentSearchMock;
 import org.sunbird.learner.util.SchedulerManager;
 import org.sunbird.learner.util.Util;

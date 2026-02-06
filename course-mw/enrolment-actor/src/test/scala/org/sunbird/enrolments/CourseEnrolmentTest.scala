@@ -6,14 +6,14 @@ import org.codehaus.jackson.map.ObjectMapper
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FlatSpec, Matchers}
 import org.sunbird.cache.util.RedisCacheUtil
-import org.sunbird.common.exception.ProjectCommonException
-import org.sunbird.common.models.response.Response
-import org.sunbird.common.models.util.ProjectUtil
-import org.sunbird.common.request.{Request, RequestContext}
-import org.sunbird.common.responsecode.ResponseCode
+import org.sunbird.exception.ProjectCommonException
+import org.sunbird.response.Response
+import org.sunbird.common.ProjectUtil
+import org.sunbird.request.{Request, RequestContext}
+import org.sunbird.response.ResponseCode
 import org.sunbird.learner.actors.coursebatch.dao.impl.{CourseBatchDaoImpl, UserCoursesDaoImpl}
 import org.sunbird.learner.actors.group.dao.impl.GroupDaoImpl
-import org.sunbird.learner.util.JsonUtil
+import org.sunbird.utils.JsonUtil
 import org.sunbird.models.course.batch.CourseBatch
 import org.sunbird.models.user.courses.UserCourses
 

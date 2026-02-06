@@ -4,7 +4,7 @@ import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
-import org.sunbird.common.models.util.LoggerUtil;
+import org.sunbird.logging.LoggerUtil;
 
 import java.io.IOException;
 import java.util.HashMap;

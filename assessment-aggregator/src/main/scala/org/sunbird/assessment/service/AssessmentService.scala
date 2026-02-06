@@ -1,12 +1,12 @@
 package org.sunbird.assessment.service
 import org.sunbird.assessment.models._
-import org.sunbird.common.models.util.ProjectUtil
+import org.sunbird.common.ProjectUtil
 import java.text.DecimalFormat
 
 class AssessmentService(redisService: RedisService, contentService: ContentService) {
 
   private val decimalFormat = new DecimalFormat("0.0#")
-  private val aggType = Option(org.sunbird.common.models.util.ProjectUtil.getConfigValue("user_activity_agg_type")).getOrElse("assessment")
+  private val aggType = Option(org.sunbird.common.ProjectUtil.getConfigValue("user_activity_agg_type")).getOrElse("assessment")
 
   def getUniqueQuestions(events: List[AssessmentEvent]): List[AssessmentEvent] = {
     events.sortBy(_.timestamp)(Ordering[Long].reverse).groupBy(_.questionId).values.map(_.head).toList
@@ -24,7 +24,7 @@ class AssessmentService(redisService: RedisService, contentService: ContentServi
   /**
    * Fetches content metadata once by combining Redis and Content API checks.
    */
-  def getMetadata(courseId: String, contentId: String, context: org.sunbird.common.request.RequestContext): ContentMetadata = {
+  def getMetadata(courseId: String, contentId: String, context: org.sunbird.request.RequestContext): ContentMetadata = {
     val isValidInCache = redisService.isValidContent(courseId, contentId)
     val cachedCount = redisService.getTotalQuestionsCount(contentId)
     if (isValidInCache && cachedCount.isDefined) {

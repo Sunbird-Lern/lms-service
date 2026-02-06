@@ -10,16 +10,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import modules.ApplicationStart;
 import modules.OnRequestHandler;
 import org.apache.commons.lang3.StringUtils;
-import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.response.ResponseParams;
-import org.sunbird.common.models.util.ActorOperations;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerUtil;
-import org.sunbird.common.models.util.ProjectUtil;
-import org.sunbird.common.request.HeaderParam;
-import org.sunbird.common.request.RequestContext;
-import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.exception.ProjectCommonException;
+import org.sunbird.response.Response;
+import org.sunbird.response.ResponseParams;
+import org.sunbird.operations.lms.ActorOperations;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.logging.LoggerUtil;
+import org.sunbird.common.ProjectUtil;
+import org.sunbird.request.HeaderParam;
+import org.sunbird.request.RequestContext;
+import org.sunbird.response.ResponseCode;
 import org.sunbird.keys.SunbirdKey;
 import org.sunbird.telemetry.util.TelemetryEvents;
 import org.sunbird.telemetry.util.TelemetryWriter;
@@ -59,8 +59,8 @@ public class BaseController extends Controller {
   private static final String debugEnabled = "false";
   public static final LoggerUtil logger = new LoggerUtil(BaseController.class);
 
-  private org.sunbird.common.request.Request initRequest(
-      org.sunbird.common.request.Request request, String operation, Http.Request httpRequest) {
+  private org.sunbird.request.Request initRequest(
+      org.sunbird.request.Request request, String operation, Http.Request httpRequest) {
     request.setOperation(operation);
     request.setRequestId(httpRequest.attrs().getOptional(Attrs.REQUEST_ID).orElse(null));
     request.setEnv(getEnvironment());
@@ -74,7 +74,7 @@ public class BaseController extends Controller {
     return request;
   }
 
-  private RequestContext getRequestContext(Http.Request httpRequest, org.sunbird.common.request.Request request) {
+  private RequestContext getRequestContext(Http.Request httpRequest, org.sunbird.request.Request request) {
     RequestContext requestContext = new RequestContext(
             JsonKey.SERVICE_NAME,
             JsonKey.PRODUCER_NAME,
@@ -93,16 +93,16 @@ public class BaseController extends Controller {
    *
    * @param operation A defined actor operation
    * @param requestBodyJson Optional information received in request body (JSON)
-   * @return Created and initialised Request (@see {@link org.sunbird.common.request.Request})
+   * @return Created and initialised Request (@see {@link org.sunbird.request.Request})
    *     instance.
    */
-  protected org.sunbird.common.request.Request createAndInitRequest(
+  protected org.sunbird.request.Request createAndInitRequest(
       String operation, JsonNode requestBodyJson, Http.Request httpRequest) {
     try {
-      org.sunbird.common.request.Request request =
-          (org.sunbird.common.request.Request)
+      org.sunbird.request.Request request =
+          (org.sunbird.request.Request)
               mapper.RequestMapper.mapRequest(
-                  requestBodyJson, org.sunbird.common.request.Request.class);
+                  requestBodyJson, org.sunbird.request.Request.class);
       return initRequest(request, operation, httpRequest);
     } catch (Exception e) {
       ProjectCommonException.throwServerErrorException(ResponseCode.SERVER_ERROR);
@@ -114,12 +114,12 @@ public class BaseController extends Controller {
    * Helper method for creating and initialising a request for given operation.
    *
    * @param operation A defined actor operation
-   * @return Created and initialised Request (@see {@link org.sunbird.common.request.Request})
+   * @return Created and initialised Request (@see {@link org.sunbird.request.Request})
    *     instance.
    */
-  protected org.sunbird.common.request.Request createAndInitRequest(
+  protected org.sunbird.request.Request createAndInitRequest(
       String operation, Http.Request httpRequest) {
-    org.sunbird.common.request.Request request = new org.sunbird.common.request.Request();
+    org.sunbird.request.Request request = new org.sunbird.request.Request();
     return initRequest(request, operation, httpRequest);
   }
 
@@ -229,7 +229,7 @@ public class BaseController extends Controller {
       boolean isJsonBodyRequired,
       Http.Request httpRequest) {
     try {
-      org.sunbird.common.request.Request request = null;
+      org.sunbird.request.Request request = null;
       if (!isJsonBodyRequired) {
         request = createAndInitRequest(operation, httpRequest);
       } else {
@@ -262,7 +262,7 @@ public class BaseController extends Controller {
       String esObjectType,
       Http.Request httpRequest) {
     try {
-      org.sunbird.common.request.Request request = null;
+      org.sunbird.request.Request request = null;
       if (null != requestBodyJson) {
         request = createAndInitRequest(operation, requestBodyJson, httpRequest);
       } else {
@@ -530,7 +530,7 @@ public class BaseController extends Controller {
    */
   public CompletionStage<Result> actorResponseHandler(
       Object actorRef,
-      org.sunbird.common.request.Request request,
+      org.sunbird.request.Request request,
       Timeout timeout,
       String responseKey,
       Http.Request httpReq) {
@@ -686,7 +686,7 @@ public class BaseController extends Controller {
   }
 
   public void setChannelAndActorInfo(
-      Http.Request httpReq, org.sunbird.common.request.Request reqObj) {
+      Http.Request httpReq, org.sunbird.request.Request reqObj) {
 
     reqObj.getContext().put(JsonKey.CHANNEL, httpReq.attrs().getOptional(Attrs.CHANNEL).orElse(null));
     reqObj.getContext().put(JsonKey.ACTOR_ID, httpReq.attrs().getOptional(Attrs.ACTOR_ID).orElse(null));
@@ -753,8 +753,8 @@ public class BaseController extends Controller {
     return "0.0";
   }
 
-  public org.sunbird.common.request.Request transformUserId(
-      org.sunbird.common.request.Request request) {
+  public org.sunbird.request.Request transformUserId(
+      org.sunbird.request.Request request) {
     if (request != null && request.getRequest() != null) {
       String id = (String) request.getRequest().get(JsonKey.ID);
       request.getRequest().put(JsonKey.ID, ProjectUtil.getLmsUserId(id));
@@ -801,7 +801,7 @@ public class BaseController extends Controller {
     return builder.toString();
   }
 
-  public void setContextData(Http.Request httpReq, org.sunbird.common.request.Request reqObj) {
+  public void setContextData(Http.Request httpReq, org.sunbird.request.Request reqObj) {
     try {
       String reqContext = httpReq.attrs().get(Attrs.CONTEXT);
       Map<String, Object> requestInfo =
@@ -818,7 +818,7 @@ public class BaseController extends Controller {
     try {
       String reqContext = request.attrs().get(Attrs.CONTEXT);
       Map<String, Object> requestInfo = objectMapper.readValue(reqContext, new TypeReference<Map<String, Object>>() {});
-      org.sunbird.common.request.Request reqForTelemetry = new org.sunbird.common.request.Request();
+      org.sunbird.request.Request reqForTelemetry = new org.sunbird.request.Request();
       Map<String, Object> params = (Map<String, Object>) requestInfo.getOrDefault(JsonKey.ADDITIONAL_INFO, new HashMap<>());
       params.put(JsonKey.LOG_TYPE, JsonKey.API_ACCESS);
       params.put(JsonKey.MESSAGE, "");

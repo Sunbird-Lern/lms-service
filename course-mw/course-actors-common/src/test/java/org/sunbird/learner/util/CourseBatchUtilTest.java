@@ -21,11 +21,11 @@ import org.sunbird.builder.mocker.MockerBuilder;
 import org.sunbird.builder.object.CustomObjectBuilder;
 import org.sunbird.builder.object.CustomObjectBuilder.CustomObjectWrapper;
 import org.sunbird.common.ElasticSearchHelper;
-import org.sunbird.common.exception.ProjectCommonException;
+import org.sunbird.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.responsecode.ResponseCode;
-import org.sunbird.common.util.JsonUtil;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.response.ResponseCode;
+import org.sunbird.utils.JsonUtil;
 import org.sunbird.models.course.batch.CourseBatch;
 
 import java.text.SimpleDateFormat;

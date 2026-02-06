@@ -3,14 +3,14 @@ package org.sunbird.learner.actors.cache;
 import org.sunbird.actor.base.BaseActor;
 import org.sunbird.cache.CacheFactory;
 import org.sunbird.cache.interfaces.Cache;
-import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.ActorOperations;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.LoggerUtil;
-import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.request.Request;
-import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.response.Response;
+import org.sunbird.operations.lms.ActorOperations;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.logging.LoggerEnum;
+import org.sunbird.logging.LoggerUtil;
+import org.sunbird.logging.ProjectLogger;
+import org.sunbird.request.Request;
+import org.sunbird.response.ResponseCode;
 
 public class CacheManagementActor extends BaseActor {
   private Cache cache = CacheFactory.getInstance();

@@ -3,11 +3,11 @@ package controllers.healthmanager;
 
 import org.apache.pekko.actor.ActorRef;
 import controllers.BaseController;
-import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.ActorOperations;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.ProjectUtil;
-import org.sunbird.common.request.Request;
+import org.sunbird.response.Response;
+import org.sunbird.operations.lms.ActorOperations;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.common.ProjectUtil;
+import org.sunbird.request.Request;
 import play.mvc.Http;
 import play.mvc.Result;
 import util.Attrs;

@@ -10,7 +10,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.modules.junit4.PowerMockRunner;
-import org.sunbird.common.request.RequestContext;
+import org.sunbird.request.RequestContext;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;

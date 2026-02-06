@@ -14,10 +14,11 @@ import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import org.sunbird.common.models.util.HttpUtil;
-import org.sunbird.common.models.util.ProjectUtil;
-import org.sunbird.common.models.util.RestUtil;
-import org.sunbird.common.request.Request;
+import org.sunbird.http.HttpUtil;
+import org.sunbird.common.ProjectUtil;
+import org.sunbird.utils.RestUtil;
+
+import org.sunbird.request.Request;
 import org.sunbird.learner.actors.qrcodedownload.QRCodeDownloadManager;
 
 import java.util.HashMap;

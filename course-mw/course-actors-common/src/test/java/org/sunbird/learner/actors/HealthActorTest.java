@@ -11,10 +11,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
-import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.ActorOperations;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.request.Request;
+import org.sunbird.response.Response;
+import org.sunbird.operations.lms.ActorOperations;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.request.Request;
 import org.sunbird.learner.actors.health.HealthActor;
 import org.sunbird.learner.util.Util;
 

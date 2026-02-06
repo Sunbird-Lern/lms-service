@@ -2,18 +2,21 @@ package org.sunbird.assessment.actor
 import org.sunbird.actor.core.BaseActor
 import javax.inject.Inject
 import org.apache.pekko.actor.Props
-import org.sunbird.common.exception.ProjectCommonException
-import org.sunbird.common.request.{Request, RequestContext}
-import org.sunbird.common.responsecode.ResponseCode
+import org.sunbird.exception.ProjectCommonException
+import org.sunbird.request.{Request, RequestContext}
+import org.sunbird.response.ResponseCode
 import org.sunbird.assessment.models._
 import org.sunbird.assessment.service._
 import org.sunbird.assessment.util.AssessmentParser
-import org.sunbird.common.models.util.{JsonKey, LoggerUtil, ProjectUtil}
+import org.sunbird.keys.JsonKey
+import org.sunbird.logging.LoggerUtil
+import org.sunbird.common.ProjectUtil
 import scala.collection.JavaConverters._
 import org.apache.commons.lang3.StringUtils
 
-class AssessmentAggregatorActor @Inject()(_redisService: Option[RedisService],_contentService: Option[ContentService],_cassandraService: Option[CassandraService],_kafkaService: Option[KafkaService]) extends BaseActor {
+class AssessmentAggregatorActor(_redisService: Option[RedisService],_contentService: Option[ContentService],_cassandraService: Option[CassandraService],_kafkaService: Option[KafkaService]) extends BaseActor {
 
+  @Inject()
   def this() = this(None, None, None, None)
 
   private lazy val redisService = _redisService.getOrElse(new RedisService())
@@ -86,7 +89,7 @@ class AssessmentAggregatorActor @Inject()(_redisService: Option[RedisService],_c
     if (request.events.nonEmpty) return List(request)
     val existing = fetchStoredAssessments(request, context)
     if (existing.isEmpty) {
-      logger.warn(context, s"Sync Flow: No stored events found for userId=${request.userId}, contentId=${request.contentId}, attemptId=${request.attemptId}")
+      logger.warn(context, s"Sync Flow: No stored events found for userId=${request.userId}, contentId=${request.contentId}, attemptId=${request.attemptId}", null)
       return List(request)
     }
     logger.info(context, s"Sync Flow: Recovered ${existing.size} attempt(s) for userId=${request.userId}, contentId=${request.contentId}")
@@ -125,7 +128,7 @@ class AssessmentAggregatorActor @Inject()(_redisService: Option[RedisService],_c
     if (skipMissing) {
       val totalQuestions = metadata.totalQuestions
       if (totalQuestions > 0 && uniqueEvents.size > totalQuestions) {
-        logger.warn(context, s"Skipping assessment ${req.attemptId}: unique events (${uniqueEvents.size}) exceed total questions ($totalQuestions)")
+        logger.warn(context, s"Skipping assessment ${req.attemptId}: unique events (${uniqueEvents.size}) exceed total questions ($totalQuestions)", null)
         return
       }
     }
@@ -220,7 +223,7 @@ class AssessmentAggregatorActor @Inject()(_redisService: Option[RedisService],_c
 
   private def getD(m: java.util.Map[String, AnyRef], k: String): Double = Option(m.get(k)).map(_.asInstanceOf[Number].doubleValue()).getOrElse(0.0)
 
-  private def createSuccess(aid: String) = { val r = new org.sunbird.common.models.response.Response(); r.put("response", "SUCCESS"); r.put("attemptId", aid); r }
+  private def createSuccess(aid: String) = { val r = new org.sunbird.response.Response(); r.put("response", "SUCCESS"); r.put("attemptId", aid); r }
   private def createErrorResponse(code: String, msg: String, responseCode: Int): ProjectCommonException = new ProjectCommonException(code, msg, responseCode)
 }
 

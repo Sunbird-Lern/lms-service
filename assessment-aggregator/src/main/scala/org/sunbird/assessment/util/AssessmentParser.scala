@@ -3,6 +3,7 @@ package org.sunbird.assessment.util
 import org.sunbird.assessment.models.AssessmentEvent
 import scala.collection.JavaConverters._
 import com.google.gson.Gson
+import org.sunbird.keys.JsonKey
 
 object AssessmentParser {
   private val gson = new Gson()
@@ -29,7 +30,7 @@ object AssessmentParser {
       val resvalues = getListValues(m.getOrDefault("resvalues", new java.util.ArrayList()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]])
       val params = getListValues(m.getOrDefault("params", new java.util.ArrayList()).asInstanceOf[java.util.List[java.util.Map[String, AnyRef]]])
       AssessmentEvent(
-        Option(m.get("questionId")).getOrElse(m.getOrDefault(org.sunbird.common.models.util.JsonKey.IDENTIFIER, "")).toString,
+        Option(m.get("questionId")).getOrElse(m.getOrDefault(JsonKey.IDENTIFIER, "")).toString,
         getD(m, "score"),
         getD(m, "maxScore"),
         getD(m, "duration"),

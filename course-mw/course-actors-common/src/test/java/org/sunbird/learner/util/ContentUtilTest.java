@@ -14,11 +14,11 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.sunbird.builder.mocker.MockerBuilder;
-import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.response.HttpUtilResponse;
-import org.sunbird.common.models.util.HttpUtil;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.exception.ProjectCommonException;
+import org.sunbird.response.HttpUtilResponse;
+import org.sunbird.http.HttpUtil;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.response.ResponseCode;
 
 /** @author rahul */
 @RunWith(PowerMockRunner.class)

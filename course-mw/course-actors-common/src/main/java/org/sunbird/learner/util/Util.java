@@ -1,11 +1,11 @@
 package org.sunbird.learner.util;
 
 import org.apache.commons.lang3.StringUtils;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.LoggerUtil;
-import org.sunbird.common.models.util.ProjectUtil;
-import org.sunbird.common.models.util.TableNameUtil;
-import org.sunbird.common.request.Request;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.logging.LoggerUtil;
+import org.sunbird.common.ProjectUtil;
+import org.sunbird.utils.TableNameUtil;
+import org.sunbird.request.Request;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.helper.CassandraConnectionManager;
 import org.sunbird.helper.CassandraConnectionMngrFactory;

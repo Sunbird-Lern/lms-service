@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.core.BaseRouter;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.request.Request;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.request.Request;
 
 /** @author Mahesh Kumar Gangula */
 public class BackgroundRequestRouter extends BaseRouter {

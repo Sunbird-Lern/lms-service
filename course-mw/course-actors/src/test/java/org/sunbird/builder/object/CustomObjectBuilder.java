@@ -8,9 +8,9 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.ProjectUtil;
+import org.sunbird.response.Response;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.common.ProjectUtil;
 import scala.concurrent.Future;
 import scala.concurrent.Promise;
 

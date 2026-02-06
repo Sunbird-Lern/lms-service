@@ -12,7 +12,7 @@
 
     <artifactId>core</artifactId>
     <packaging>pom</packaging>
-    <name>core</name>
+    <name>Sunbird Core</name>
 
     <properties>
         <!-- Java Compiler Settings -->
@@ -34,17 +34,49 @@
         <httpcomponents.httpclient.version>4.5.14</httpcomponents.httpclient.version>
         <httpcomponents.httpcore.version>4.4.16</httpcomponents.httpcore.version>
         <httpcomponents.httpasyncclient.version>4.1.5</httpcomponents.httpasyncclient.version>
+        <httpcomponents.httpmime.version>4.5.14</httpcomponents.httpmime.version>
         
         <!-- Jackson -->
         <jackson.version>2.13.5</jackson.version>
         
+        <!--  Apache Pekko -->
+        <pekko.version>1.0.3</pekko.version>
+        
+        <!-- Apache Kafka -->
+        <kafka.version>3.7.1</kafka.version>
+        
         <!-- Logging -->
         <logback.version>1.2.3</logback.version>
-        <logstash-logback-encoder.version>6.6</logstash-logback-encoder.version>
+        <logstash-logback-encoder.version>7.3</logstash-logback-encoder.version>
         
         <!-- Apache Commons -->
         <commons-collections.version>3.2.2</commons-collections.version>
+        <commons-collections4.version>4.4</commons-collections4.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
+        <commons-validator.version>1.7</commons-validator.version>
+        
+        <!-- Apache Velocity -->
+        <velocity-tools.version>2.0</velocity-tools.version>
+        
+        <!-- Keycloak and RestEasy -->
+        <keycloak.version>21.1.2</keycloak.version>
+        <jaxrs-api.version>3.0.12.Final</jaxrs-api.version>
+        <resteasy-client.version>4.7.9.Final</resteasy-client.version>
+        <resteasy-jackson2-provider.version>4.7.9.Final</resteasy-jackson2-provider.version>
+        
+        <!-- Google Libraries -->
+        <libphonenumber.version>8.10.2</libphonenumber.version>
+        <guava.version>32.1.2-jre</guava.version>
+        
+        <!-- Cloud Storage -->
+        <cloud-store-sdk.version>1.4.8.1</cloud-store-sdk.version>
+        
+        <!-- Unirest HTTP Client -->
+        <unirest.version>1.4.9</unirest.version>
+        
+        <!-- Play Framework -->
+        <play2.version>3.0.5</play2.version>
+        <scala.major.version>2.13</scala.major.version>
         
         <!-- Testing -->
         <junit.version>4.13.1</junit.version>
@@ -53,11 +85,12 @@
         <!-- Build Plugins -->
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>3.0.0</maven-surefire-plugin.version>
-        <jacoco-maven-plugin.version>0.8.7</jacoco-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
         <scoverage.plugin.version>1.1.1</scoverage.plugin.version>
     </properties>
 
     <modules>
+        <module>sunbird-platform-common</module>
         <module>sunbird-cassandra-utils</module>
         <module>sunbird-es-utils</module>
     </modules>

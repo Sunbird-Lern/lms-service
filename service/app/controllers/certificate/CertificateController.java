@@ -2,8 +2,8 @@ package controllers.certificate;
 
 import org.apache.pekko.actor.ActorRef;
 import controllers.BaseController;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.request.Request;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.request.Request;
 import org.sunbird.learner.actor.operations.CourseActorOperations;
 import play.mvc.Http;
 import play.mvc.Result;

@@ -1,7 +1,10 @@
 package org.sunbird.assessment.service
 
-import org.sunbird.common.models.util.{HttpUtil, ProjectUtil, JsonKey, LoggerUtil}
-import org.sunbird.common.request.RequestContext
+import org.sunbird.http.HttpUtil
+import org.sunbird.common.ProjectUtil
+import org.sunbird.keys.JsonKey
+import org.sunbird.logging.LoggerUtil
+import org.sunbird.request.RequestContext
 import org.apache.commons.lang3.StringUtils
 import scala.collection.JavaConverters._
 

@@ -1,9 +1,9 @@
 package controllers.coursemanagement.validator;
 
 import org.apache.commons.lang3.StringUtils;
-import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.request.Request;
-import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.exception.ProjectCommonException;
+import org.sunbird.request.Request;
+import org.sunbird.response.ResponseCode;
 import org.sunbird.keys.SunbirdKey;
 
 import java.text.MessageFormat;

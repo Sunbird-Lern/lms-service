@@ -4,9 +4,9 @@ package org.sunbird.learner.util;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.sunbird.common.cacheloader.PageCacheLoaderService;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.LoggerUtil;
-import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.logging.LoggerEnum;
+import org.sunbird.logging.LoggerUtil;
+import org.sunbird.logging.ProjectLogger;
 
 /** @author Manzarul All the scheduler job will be handle by this class. */
 public class SchedulerManager {

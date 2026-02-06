@@ -2,13 +2,13 @@ package org.sunbird.actor.exhaustjob;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.sunbird.actor.base.BaseActor;
-import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.ActorOperations;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.datasecurity.EncryptionService;
-import org.sunbird.common.request.Request;
-import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.exception.ProjectCommonException;
+import org.sunbird.response.Response;
+import org.sunbird.operations.lms.ActorOperations;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.datasecurity.EncryptionService;
+import org.sunbird.request.Request;
+import org.sunbird.response.ResponseCode;
 import org.sunbird.util.ExhaustAPIUtil;
 
 import java.util.HashMap;
@@ -17,7 +17,7 @@ import java.util.Map;
 public class ExhaustJobActor extends BaseActor {
   private ObjectMapper mapper = new ObjectMapper();
   private EncryptionService encryptionService =
-          org.sunbird.common.models.util.datasecurity.impl.ServiceFactory.getEncryptionServiceInstance(
+          org.sunbird.datasecurity.impl.ServiceFactory.getEncryptionServiceInstance(
                   null);
   @Override
   public void onReceive(Request request) throws Throwable {

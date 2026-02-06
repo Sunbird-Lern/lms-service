@@ -14,9 +14,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.sunbird.actor.core.RouterMode;
 import org.sunbird.actor.router.BackgroundRequestRouter;
 import org.sunbird.actor.router.RequestRouter;
-import org.sunbird.common.models.util.LoggerEnum;
-import org.sunbird.common.models.util.LoggerUtil;
-import org.sunbird.common.models.util.ProjectLogger;
+import org.sunbird.logging.LoggerEnum;
+import org.sunbird.logging.LoggerUtil;
+import org.sunbird.logging.ProjectLogger;
 
 /** @author Mahesh Kumar Gangula */
 public class BaseMWService {

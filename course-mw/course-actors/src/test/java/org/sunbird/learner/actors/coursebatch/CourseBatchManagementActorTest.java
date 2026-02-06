@@ -25,18 +25,18 @@ import org.sunbird.builder.mocker.MockerBuilder;
 import org.sunbird.builder.mocker.UserOrgMocker;
 import org.sunbird.builder.object.CustomObjectBuilder;
 import org.sunbird.common.factory.EsClientFactory;
-import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.request.Request;
-import org.sunbird.common.request.RequestContext;
+import org.sunbird.response.Response;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.request.Request;
+import org.sunbird.request.RequestContext;
 import org.sunbird.helper.ServiceFactory;
-import org.sunbird.kafka.client.InstructionEventGenerator;
-import org.sunbird.kafka.client.KafkaClient;
+import org.sunbird.kafka.InstructionEventGenerator;
+import org.sunbird.kafka.KafkaClient;
 import org.sunbird.learner.util.ContentUtil;
 import org.sunbird.userorg.UserOrgServiceImpl;
 
 @RunWith(PowerMockRunner.class)
-@SuppressStaticInitializationFor("org.sunbird.kafka.client.KafkaClient")
+@SuppressStaticInitializationFor("org.sunbird.kafka.KafkaClient")
 @PrepareForTest({ServiceFactory.class, InstructionEventGenerator.class, KafkaClient.class})
 @PowerMockIgnore({"javax.management.*", "javax.net.ssl.*", "javax.security.*", "jdk.internal.reflect.*",
         "sun.security.ssl.*", "javax.net.ssl.*", "javax.crypto.*",

@@ -20,19 +20,19 @@ import org.sunbird.builder.mocker.MockerBuilder;
 import org.sunbird.builder.object.CustomObjectBuilder;
 import org.sunbird.builder.object.CustomObjectBuilder.CustomObjectWrapper;
 import org.sunbird.common.ElasticSearchHelper;
-import org.sunbird.common.exception.ProjectCommonException;
+import org.sunbird.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
-import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.request.Request;
-import org.sunbird.common.request.RequestContext;
-import org.sunbird.kafka.client.InstructionEventGenerator;
-import org.sunbird.kafka.client.KafkaClient;
+import org.sunbird.response.Response;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.request.Request;
+import org.sunbird.request.RequestContext;
+import org.sunbird.kafka.InstructionEventGenerator;
+import org.sunbird.kafka.KafkaClient;
 import org.sunbird.learner.actors.certificate.service.CertificateActor;
 
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore("javax.management.*")
-@SuppressStaticInitializationFor("org.sunbird.kafka.client.KafkaClient")
+@SuppressStaticInitializationFor("org.sunbird.kafka.KafkaClient")
 public class CertificateActorTest extends SunbirdApplicationActorTest {
 
   private MockerBuilder.MockersGroup group;

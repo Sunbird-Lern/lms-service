@@ -2,7 +2,7 @@ package actors;
 
 import org.apache.pekko.actor.ActorRef;
 import org.apache.pekko.actor.UntypedAbstractActor;
-import org.sunbird.common.models.response.Response;
+import org.sunbird.response.Response;
 
 /** Created by arvind on 30/11/17. */
 public class DummyActor extends UntypedAbstractActor {

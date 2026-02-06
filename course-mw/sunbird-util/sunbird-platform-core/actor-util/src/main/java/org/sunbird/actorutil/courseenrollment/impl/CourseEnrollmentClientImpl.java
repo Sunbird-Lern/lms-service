@@ -5,11 +5,11 @@ import java.util.Map;
 import org.sunbird.actorutil.InterServiceCommunication;
 import org.sunbird.actorutil.InterServiceCommunicationFactory;
 import org.sunbird.actorutil.courseenrollment.CourseEnrollmentClient;
-import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.ActorOperations;
-import org.sunbird.common.request.Request;
-import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.exception.ProjectCommonException;
+import org.sunbird.response.Response;
+import org.sunbird.operations.lms.ActorOperations;
+import org.sunbird.request.Request;
+import org.sunbird.response.ResponseCode;
 
 public class CourseEnrollmentClientImpl implements CourseEnrollmentClient {
   private static InterServiceCommunication interServiceCommunication =

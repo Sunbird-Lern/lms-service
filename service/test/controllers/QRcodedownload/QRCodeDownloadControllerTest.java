@@ -9,7 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.modules.junit4.PowerMockRunner;
-import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.keys.JsonKey;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;

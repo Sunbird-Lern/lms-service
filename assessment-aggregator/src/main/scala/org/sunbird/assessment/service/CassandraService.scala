@@ -1,9 +1,9 @@
 package org.sunbird.assessment.service
 import org.sunbird.cassandra.CassandraOperation
 import org.sunbird.helper.ServiceFactory
-import org.sunbird.common.request.RequestContext
+import org.sunbird.request.RequestContext
 import org.sunbird.assessment.models._
-import org.sunbird.common.models.util.ProjectUtil
+import org.sunbird.common.ProjectUtil
 import scala.collection.JavaConverters._
 import com.datastax.driver.core.{UserType, UDTValue}
 import org.slf4j.LoggerFactory

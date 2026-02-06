@@ -22,11 +22,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sunbird.common.Constants;
-import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.util.JsonKey;
-import org.sunbird.common.models.util.ProjectUtil;
+import org.sunbird.exception.ProjectCommonException;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.common.ProjectUtil;
 import org.sunbird.common.CassandraPropertyReader;
-import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.response.ResponseCode;
 
 /**
  * Implementation of {@link CassandraConnectionManager} for managing Cassandra database connections.

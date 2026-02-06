@@ -2,8 +2,8 @@ package actors;
 
 import org.apache.pekko.actor.ActorRef;
 import org.apache.pekko.actor.UntypedAbstractActor;
-import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.JsonKey;
+import org.sunbird.response.Response;
+import org.sunbird.keys.JsonKey;
 
 import java.util.HashMap;
 import java.util.Map;

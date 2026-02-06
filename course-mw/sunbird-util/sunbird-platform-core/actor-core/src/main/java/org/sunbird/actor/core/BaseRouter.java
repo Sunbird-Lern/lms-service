@@ -7,11 +7,11 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.reflections.Reflections;
 import org.sunbird.actor.router.ActorConfig;
-import org.sunbird.common.exception.ProjectCommonException;
-import org.sunbird.common.models.util.ProjectLogger;
-import org.sunbird.common.models.util.PropertiesCache;
-import org.sunbird.common.request.Request;
-import org.sunbird.common.responsecode.ResponseCode;
+import org.sunbird.exception.ProjectCommonException;
+import org.sunbird.logging.ProjectLogger;
+import org.sunbird.common.PropertiesCache;
+import org.sunbird.request.Request;
+import org.sunbird.response.ResponseCode;
 
 /** @author Mahesh Kumar Gangula */
 public abstract class BaseRouter extends BaseActor {

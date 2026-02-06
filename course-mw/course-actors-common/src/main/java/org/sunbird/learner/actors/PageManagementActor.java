@@ -14,15 +14,19 @@ import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.common.CassandraUtil;
 import org.sunbird.common.ElasticSearchHelper;
 import org.sunbird.common.cacheloader.PageCacheLoaderService;
-import org.sunbird.common.exception.ProjectCommonException;
+import org.sunbird.exception.ProjectCommonException;
 import org.sunbird.common.factory.EsClientFactory;
 import org.sunbird.common.inf.ElasticSearchService;
-import org.sunbird.common.models.response.Response;
-import org.sunbird.common.models.util.*;
-import org.sunbird.common.request.Request;
-import org.sunbird.common.request.RequestContext;
-import org.sunbird.common.responsecode.ResponseCode;
-import org.sunbird.common.util.JsonUtil;
+import org.sunbird.response.Response;
+import org.sunbird.telemetry.dto.*;
+import org.sunbird.request.Request;
+import org.sunbird.request.RequestContext;
+import org.sunbird.response.ResponseCode;
+import org.sunbird.utils.JsonUtil;
+import org.sunbird.logging.LoggerUtil;
+import org.sunbird.keys.JsonKey;
+import org.sunbird.operations.lms.ActorOperations;
+import org.sunbird.common.*;
 import org.sunbird.dto.SearchDTO;
 import org.sunbird.helper.ServiceFactory;
 import org.sunbird.learner.util.ContentSearchUtil;
@@ -41,7 +45,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import static org.sunbird.common.models.util.JsonKey.ID;
+import static org.sunbird.keys.JsonKey.ID;
 
 /**
  * This actor will handle page management operation .

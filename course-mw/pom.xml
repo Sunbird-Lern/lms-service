@@ -105,10 +105,10 @@
 	</dependencyManagement>
 	
 	<modules>
-		<module>sunbird-util</module>
 		<module>course-actors-common</module>
 		<module>course-actors</module>
 		<module>enrolment-actor</module>
+		<module>actor-util</module>
 	</modules>
 	
 	<build>

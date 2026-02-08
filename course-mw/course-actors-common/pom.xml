@@ -81,7 +81,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.sunbird</groupId>
-			<artifactId>sunbird-notification</artifactId>
+			<artifactId>sunbird-notification-utils</artifactId>
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>

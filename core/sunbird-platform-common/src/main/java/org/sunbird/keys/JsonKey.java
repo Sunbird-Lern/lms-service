@@ -603,6 +603,12 @@ public final class JsonKey {
   public static final String ES_ORGANISATION_INDEX = "es_organisation_index";
   public static final String ES_USER_COURSES_INDEX = "es_user_courses_index";
   public static final String X_REQUEST_ID = "x-request-id";
+  public static final String SMS_GATEWAY_PROVIDER = "sms_gateway_provider";
+  public static final String MSG_91 = "msg_91";
+  public static final String NIC = "nic";
+  public static final String SMS_TEMPLATE_CONFIG = "smsTemplateConfig";
+  public static final String SYSTEM_SETTINGS_DB = "system_settings";
+  public static final String VALUE = "value";
 
   private JsonKey() {}
 }

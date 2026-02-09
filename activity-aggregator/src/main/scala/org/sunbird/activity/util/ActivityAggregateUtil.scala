@@ -75,8 +75,8 @@ class ActivityAggregateUtil {
       (contentId, ContentStatus(contentId, finalStatus, completion, views, progress, lastAccessTime, lastCompletedTime, ProjectUtil.getTimeStamp, inputCC.fromInput, eventsFor))
     }
     
-    val existingContents = processedContents.keys.toList
-    val remainingContents = dbData.contents.filterKeys(key => !existingContents.contains(key))
+    val existingContents = processedContents.keySet
+    val remainingContents = dbData.contents.filterNot { case (key, _) => existingContents.contains(key) }
     val finalContentsMap = processedContents ++ remainingContents
     UserContentConsumption(inputData.userId, inputData.batchId, inputData.courseId, finalContentsMap)
   }

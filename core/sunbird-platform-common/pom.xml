@@ -353,6 +353,12 @@
             <artifactId>kafka-clients</artifactId>
             <version>${kafka.version}</version>
         </dependency>
+        <!-- Play Framework -->
+        <dependency>
+            <groupId>org.playframework</groupId>
+            <artifactId>play_2.13</artifactId>
+            <version>${play2.version}</version>
+        </dependency>
     </dependencies>
 
     <repositories>

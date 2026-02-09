@@ -55,7 +55,7 @@ class CourseConsumptionActorTest extends FlatSpec with Matchers with MockFactory
         val cassandraOperation = mock[CassandraOperation]
         val response = new Response()
         response.put("response", new java.util.ArrayList[java.util.Map[String, AnyRef]])
-        ((requestContext: RequestContext, keyspace: _root_.scala.Predef.String, table: _root_.scala.Predef.String, filters: _root_.java.util.Map[_root_.scala.Predef.String, AnyRef], fields: _root_.java.util.List[_root_.scala.Predef.String]) => cassandraOperation.getRecords(keyspace, table, filters, fields, requestContext)).expects(*,*,*,*,*).returns(response)
+        ((keyspace: _root_.scala.Predef.String, table: _root_.scala.Predef.String, filters: _root_.java.util.Map[_root_.scala.Predef.String, AnyRef], fields: _root_.java.util.List[_root_.scala.Predef.String], requestContext: RequestContext) => cassandraOperation.getRecords(keyspace, table, filters, fields, requestContext)).expects(*,*,*,*,*).returns(response)
         val result = callActor(getStateReadRequest(), Props(new ContentConsumptionActor(mockActivityAggregatorActor, mockAssessmentAggregatorActor).setCassandraOperation(cassandraOperation, false)))
         println("RRRR ="+result.getResult)
         assert(null!= result)

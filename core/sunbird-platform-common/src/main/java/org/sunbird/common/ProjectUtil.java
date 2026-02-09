@@ -69,7 +69,7 @@ public class ProjectUtil {
   };
   public static PropertiesCache propertiesCache;
   private static Pattern pattern;
-  private static final String EMAIL_PATTERN =
+  public static final String EMAIL_PATTERN =
       "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
           + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
   public static final String[] excludes =
@@ -111,12 +111,29 @@ public class ProjectUtil {
     }
   }
 
+  public enum UserLookupType {
+    USERNAME(JsonKey.USER_LOOKUP_FILED_USER_NAME),
+    EMAIL(JsonKey.EMAIL),
+    PHONE(JsonKey.PHONE);
+
+    private String type;
+
+    UserLookupType(String type) {
+      this.type = type;
+    }
+
+    public String getType() {
+      return this.type;
+    }
+  }
+
   /**
    * Enumeration for Status.
    */
   public enum Status {
     ACTIVE(1),
-    INACTIVE(0);
+    INACTIVE(0),
+    DELETED(2);
 
     private int value;
 
@@ -412,7 +429,10 @@ public class ProjectUtil {
     courseBatch(EsConfigUtil.getConfigValue(JsonKey.ES_COURSE_BATCH_INDEX)),
     user(EsConfigUtil.getConfigValue(JsonKey.ES_USER_INDEX)),
     organisation(EsConfigUtil.getConfigValue(JsonKey.ES_ORGANISATION_INDEX)),
-    usercourses(EsConfigUtil.getConfigValue(JsonKey.ES_USER_COURSES_INDEX));
+    usercourses(EsConfigUtil.getConfigValue(JsonKey.ES_USER_COURSES_INDEX)),
+    location(EsConfigUtil.getConfigValue(JsonKey.ES_LOCATION_INDEX)),
+    usernotes(EsConfigUtil.getConfigValue(JsonKey.ES_USER_NOTES_INDEX)),
+    userfeed(EsConfigUtil.getConfigValue(JsonKey.ES_USER_FEED_INDEX));
 
     private String typeName;
 
@@ -661,7 +681,7 @@ public class ProjectUtil {
     if (StringUtils.isBlank(logoUrl)) {
       logoUrl = getConfigValue(JsonKey.SUNBIRD_ENV_LOGO_URL);
     }
-    logger.info(null,"ProjectUtil:getSunbirdLogoUrl: url = " + logoUrl);
+    logger.info("ProjectUtil:getSunbirdLogoUrl: url = " + logoUrl);
     return logoUrl;
   }
 
@@ -680,7 +700,7 @@ public class ProjectUtil {
     if (StringUtils.isBlank(fromEmail)) {
       fromEmail = getConfigValue(JsonKey.EMAIL_SERVER_FROM);
     }
-    logger.info(null,"ProjectUtil:getFromEmail: fromEmail = " + fromEmail);
+    logger.info("ProjectUtil:getFromEmail: fromEmail = " + fromEmail);
     return fromEmail;
   }
 
@@ -756,7 +776,7 @@ public class ProjectUtil {
       throws Exception {
     String tagStatus = "";
     try {
-      logger.info(null,"start call for registering the tag ==" + tagId);
+      logger.info("start call for registering the tag ==" + tagId);
       String analyticsBaseUrl = getConfigValue(JsonKey.ANALYTICS_API_BASE_URL);
       tagStatus =
           HttpUtil.sendPostRequest(
@@ -766,7 +786,7 @@ public class ProjectUtil {
                   + tagId,
               body,
               header);
-      logger.info(null,
+      logger.info(
           "end call for tag registration id and status  ==" + tagId + " " + tagStatus);
     } catch (Exception e) {
       throw e;
@@ -865,8 +885,8 @@ public class ProjectUtil {
       phoneNumber = phoneNumberUtil.parse(phNumber, isoCode);
       return phoneNumberUtil.isValidNumber(phoneNumber);
     } catch (NumberParseException e) {
-      logger.error(null,"Exception occurred while validating phone number : ", e);
-      logger.info(null,phNumber + "this phone no. is not a valid one.");
+      logger.error("Exception occurred while validating phone number : ", e);
+      logger.info(phNumber + "this phone no. is not a valid one.");
     }
     return false;
   }
@@ -884,6 +904,15 @@ public class ProjectUtil {
       Matcher matcher = patt.matcher(countryCode);
       return matcher.matches();
     } catch (RuntimeException e) {
+      return false;
+    }
+  }
+
+  public static boolean validateUUID(String uuidStr) {
+    try {
+      UUID.fromString(uuidStr);
+      return true;
+    } catch (Exception ex) {
       return false;
     }
   }
@@ -916,7 +945,7 @@ public class ProjectUtil {
       t.merge(context, writer);
       return writer.toString();
     } catch (Exception ex) {
-      logger.error(null,"Exception occurred while formating and sending SMS ", ex);
+      logger.error("Exception occurred while formating and sending SMS ", ex);
     }
     return "";
   }
@@ -937,7 +966,7 @@ public class ProjectUtil {
         date = null;
       }
     } catch (ParseException ex) {
-      logger.error(null, ex.getMessage(), ex);
+      logger.error(ex.getMessage(), ex);
     }
     return date != null;
   }
@@ -1043,7 +1072,7 @@ public class ProjectUtil {
     try {
       return mapper.writeValueAsString(mapList);
     } catch (IOException e) {
-      logger.error(null, e.getMessage(), e);
+      logger.error(e.getMessage(), e);
     }
     return null;
   }
@@ -1122,6 +1151,12 @@ public class ProjectUtil {
         ResponseCode.CLIENT_ERROR.getResponseCode());
   }
 
+  public static ProjectCommonException createClientException(
+      ResponseCode responseCode, String message) {
+    return new ProjectCommonException(
+        responseCode.getErrorCode(), message, ResponseCode.CLIENT_ERROR.getResponseCode());
+  }
+
   /**
    * Gets LMS User ID from federated ID.
    *
@@ -1172,6 +1207,14 @@ public class ProjectUtil {
 
     public String getValue() {
       return value;
+    }
+  }
+
+  public static void setTraceIdInHeader(
+      Map<String, String> header, org.sunbird.request.RequestContext context) {
+    if (null != context) {
+      header.put(JsonKey.X_TRACE_ENABLED, context.getDebugEnabled());
+      header.put(JsonKey.X_REQUEST_ID, context.getReqId());
     }
   }
 }

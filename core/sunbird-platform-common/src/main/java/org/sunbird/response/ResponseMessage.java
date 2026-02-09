@@ -439,6 +439,46 @@ public interface ResponseMessage {
     String ERROR_REGISTRY_ENTITY_ID_BLANK = "Request failed as entity id is not provided.";
     String ERROR_REGISTRY_ACCESS_TOKEN_BLANK =
         "Request failed as user access token is not provided.";
+    String INVALID_FILE_EXTENSION = "Please provide a valid file. File expected of format: {0}";
+    String DATA_FORMAT_ERROR = "Invalid format for given {0}.";
+    String ONLY_EMAIL_OR_PHONE_OR_MANAGEDBY_REQUIRED = "Please provide only email or phone or managed by";
+    String MANAGED_BY_NOT_ALLOWED = "managedBy cannot be updated.";
+    String MANAGED_USER_LIMIT_EXCEEDED = "Managed user creation limit exceeded";
+    String USER_TYPE_CONFIG_IS_EMPTY = "userType config is empty for the statecode {0}";
+    String ERROR_CONFLICTING_VALUES = "Conflicting values for {0} ({1}) and {2} ({3}).";
+    String ERROR_CONFLICTING_ROOT_ORG_ID =
+        "Root organisation channel of uploader user is conflicting with that of specified organisation ID/orgExternalId channel value.";
+    String ERROR_INVALID_PARAMETER_SIZE =
+        "Parameter {0} is of invalid size (expected: {1}, actual: {2}).";
+    String DECLARED_USER_ERROR_STATUS_IS_NOT_UPDATED = "Declared user error status is not updated";
+    String INVALID_ENCRYPTION_FILE = "Please provide valid public key file.";
+    String ERROR_PARAM_EXISTS = "{0} already exists";
+    String RECOVERY_PARAM_MATCH_EXCEPTION = "{0} could not be same as {1}";
+    String INVALID_SECURITY_LEVEL =
+        "Invalid data security level {0} provided for job {1}. Please provide a valid data security level.";
+    String INVALID_SECURITY_LEVEL_LOWER =
+        "Invalid data security level {0} provided for job {1}. Cannot be set lower than the default security level: {2}";
+    String MISSING_DEFAULT_SECURITY_LEVEL =
+        "Default data security policy settings is missing for the job: {0}";
+    String INVALID_TENANT_SECURITY_LEVEL_LOWER =
+        "Tenant level's security {0} cannot be lower than system level's security {1}. Please provide a valid data security level.";
+    String ERROR_USER_MIGRATION_FAILED = "User migration failed.";
+    String DECLARED_USER_VALIDATED_STATUS_IS_NOT_UPDATED =
+        "Declared user validated status is not updated";
+    String USER_STATUS_MSG = "User is already {0}.";
+    String ERROR_USER_UPDATE_PASSWORD = "User is created but password couldn't be updated.";
+    String EXTENDED_USER_PROFILE_NOT_LOADED =
+        "Failed to load extendedProfileSchemaConfig from System_Settings table";
+    String EXTERNAL_ID_FORMAT = "externalId (id: {0}, idType: {1}, provider: {2})";
+    String INACTIVE_USER = "User is Inactive. Please make it active to proceed.";
+    String ROLE_PROCESSING_INVALID_ORG = "Error while processing assign role. Invalid Organisation Id";
+    String CANNOT_DELETE_USER = "User is restricted from deleting account based on roles!";
+    String PARAM_NOT_MATCH = "Parameter mismatch.";
+    String CANNOT_TRANSFER_OWNERSHIP = "Ownership cannot be transferred.";
+    String SIZE_LIMIT_EXCEED = "Size limit exceeded.";
+    String INVALID_CONSENT_STATUS = "Invalid consent status.";
+    String INVALID_CAPTCHA = "Invalid captcha.";
+    String IM_A_TEAPOT = "I'm a teapot.";
   }
 
   interface Key {
@@ -467,6 +507,12 @@ public interface ResponseMessage {
     String INVALID_JSON = "INVALID_JSON";
     String NO_DATA = "NO_DATA";
     String INVALID_DATE_FORMAT = "INVALID_DATE_FORMAT";
+    String DECLARED_USER_VALIDATED_STATUS_IS_NOT_UPDATED = "0068";
+    String USER_STATUS_MSG = "0008";
+    String EXTENDED_USER_PROFILE_NOT_LOADED = "0075";
+    String INACTIVE_USER = "0073";
+    String ROLE_PROCESSING_INVALID_ORG = "0076";
+    String CANNOT_DELETE_USER = "0083";
     String DATE_FORMAT_ERRROR = "DATE_FORMAT_ERRROR";
     String INVALID_PROPERTY_ERROR = "INVALID_PROPERTY_ERROR";
     String INVALID_OBJECT_TYPE = "INVALID_OBJECT_TYPE";
@@ -558,6 +604,8 @@ public interface ResponseMessage {
     String USER_ORG_ASSOCIATION_ERROR = "USER_ORG_ASSOCIATION_ERROR";
     String ERROR_USER_HAS_NOT_CREATED_ANY_COURSE = "USER_HAS_NOT_CREATED_ANY_COURSE";
     String USER_NOT_ASSOCIATED_TO_ROOT_ORG = "USER_NOT_ASSOCIATED_TO_ROOT_ORG";
+    String PARAM_NOT_MATCH = "PARAM_NOT_MATCH";
+    String CANNOT_TRANSFER_OWNERSHIP = "CANNOT_TRANSFER_OWNERSHIP";
     String INVALID_CREDENTIAL = "INVALID_CREDENTIAL";
     String EMAIL_FORMAT = "EMAIL_FORMAT_ERROR";
     String URL_FORMAT_ERROR = "URL_FORMAT_ERROR";
@@ -798,6 +846,22 @@ public interface ResponseMessage {
     String GROUP_ID_MISSING = "GROUP_ID_MISSING";
     String ACTIVITY_ID_MISSING = "ACTIVITY_ID_MISSING";
     String ACTIVITY_TYPE_MISSING = "ACTIVITY_TYPE_MISSING";
+    String DATA_FORMAT_ERROR = "0009";
+    String ONLY_EMAIL_OR_PHONE_OR_MANAGEDBY_REQUIRED = "0011";
+    String MANAGED_BY_NOT_ALLOWED = "0065";
+    String MANAGED_USER_LIMIT_EXCEEDED = "0066";
+    String ERROR_CONFLICTING_VALUES = "0055";
+    String ERROR_CONFLICTING_ROOT_ORG_ID = "0056";
+    String ERROR_INVALID_PARAMETER_SIZE = "0058";
+    String DECLARED_USER_ERROR_STATUS_IS_NOT_UPDATED = "0067";
+    String INVALID_ENCRYPTION_FILE = "0078";
+    String ERROR_PARAM_EXISTS = "0002";
+    String RECOVERY_PARAM_MATCH_EXCEPTION = "0062";
+    String INVALID_SECURITY_LEVEL = "0079";
+    String INVALID_SECURITY_LEVEL_LOWER = "0080";
+    String MISSING_DEFAULT_SECURITY_LEVEL = "0081";
+    String INVALID_TENANT_SECURITY_LEVEL_LOWER = "0082";
+    String ERROR_USER_MIGRATION_FAILED = "0060";
     String ERROR_NO_DIALCODES_LINKED = "ERROR_NO_DIALCODES_LINKED";
     String SOURCE_MISSING = "SOURCE_MISSING";
     String INVALID_CONFIGURATION = "INVALID_CONFIGURATION";
@@ -826,5 +890,11 @@ public interface ResponseMessage {
     String ERROR_REGISTRY_ENTITY_TYPE_BLANK = "ERROR_REGISTRY_ENTITY_TYPE_BLANK";
     String ERROR_REGISTRY_ENTITY_ID_BLANK = "ERROR_REGISTRY_ENTITY_ID_BLANK";
     String ERROR_REGISTRY_ACCESS_TOKEN_BLANK = "ERROR_REGISTRY_ACCESS_TOKEN_BLANK";
+    String INVALID_FILE_EXTENSION = "INVALID_FILE_EXTENSION";
+    String SIZE_LIMIT_EXCEED = "SIZE_LIMIT_EXCEED";
+    String INVALID_CONSENT_STATUS = "INVALID_CONSENT_STATUS";
+    String INVALID_CAPTCHA = "INVALID_CAPTCHA";
+    String IM_A_TEAPOT = "IM_A_TEAPOT";
   }
+
 }

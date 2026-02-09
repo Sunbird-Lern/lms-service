@@ -62,6 +62,59 @@ public enum ResponseCode {
       ResponseMessage.Key.INVALID_PROPERTY_ERROR, ResponseMessage.Message.INVALID_PROPERTY_ERROR),
   invalidDateFormat(
        ResponseMessage.Key.INVALID_DATE_FORMAT, ResponseMessage.Message.INVALID_DATE_FORMAT),
+  passwordValidation(
+       ResponseMessage.Key.INVALID_PASSWORD, ResponseMessage.Message.INVALID_PASSWORD),
+  dataFormatError(
+       ResponseMessage.Key.DATA_FORMAT_ERROR, ResponseMessage.Message.DATA_FORMAT_ERROR),
+  OnlyEmailorPhoneorManagedByRequired(
+       ResponseMessage.Key.ONLY_EMAIL_OR_PHONE_OR_MANAGEDBY_REQUIRED,
+       ResponseMessage.Message.ONLY_EMAIL_OR_PHONE_OR_MANAGEDBY_REQUIRED),
+  managedByNotAllowed(
+       ResponseMessage.Key.MANAGED_BY_NOT_ALLOWED, ResponseMessage.Message.MANAGED_BY_NOT_ALLOWED),
+  managedUserLimitExceeded(
+       ResponseMessage.Key.MANAGED_USER_LIMIT_EXCEEDED, ResponseMessage.Message.MANAGED_USER_LIMIT_EXCEEDED),
+  errorConflictingValues(
+      ResponseMessage.Key.ERROR_CONFLICTING_VALUES, ResponseMessage.Message.ERROR_CONFLICTING_VALUES),
+  errorConflictingRootOrgId(
+      ResponseMessage.Key.ERROR_CONFLICTING_ROOT_ORG_ID, ResponseMessage.Message.ERROR_CONFLICTING_ROOT_ORG_ID),
+  errorInvalidParameterSize(
+      ResponseMessage.Key.ERROR_INVALID_PARAMETER_SIZE, ResponseMessage.Message.ERROR_INVALID_PARAMETER_SIZE),
+  declaredUserErrorStatusNotUpdated(
+      ResponseMessage.Key.DECLARED_USER_ERROR_STATUS_IS_NOT_UPDATED, ResponseMessage.Message.DECLARED_USER_ERROR_STATUS_IS_NOT_UPDATED),
+  invalidEncryptionFile(
+      ResponseMessage.Key.INVALID_ENCRYPTION_FILE, ResponseMessage.Message.INVALID_ENCRYPTION_FILE),
+  errorParamExists(
+      ResponseMessage.Key.ERROR_PARAM_EXISTS, ResponseMessage.Message.ERROR_PARAM_EXISTS),
+  recoveryParamsMatchException(
+      ResponseMessage.Key.RECOVERY_PARAM_MATCH_EXCEPTION,
+      ResponseMessage.Message.RECOVERY_PARAM_MATCH_EXCEPTION),
+  invalidSecurityLevel(
+      ResponseMessage.Key.INVALID_SECURITY_LEVEL, ResponseMessage.Message.INVALID_SECURITY_LEVEL),
+  invalidSecurityLevelLower(
+      ResponseMessage.Key.INVALID_SECURITY_LEVEL_LOWER,
+      ResponseMessage.Message.INVALID_SECURITY_LEVEL_LOWER),
+  defaultSecurityLevelConfigMissing(
+      ResponseMessage.Key.MISSING_DEFAULT_SECURITY_LEVEL,
+      ResponseMessage.Message.MISSING_DEFAULT_SECURITY_LEVEL),
+  invalidTenantSecurityLevelLower(
+      ResponseMessage.Key.INVALID_TENANT_SECURITY_LEVEL_LOWER,
+      ResponseMessage.Message.INVALID_TENANT_SECURITY_LEVEL_LOWER),
+  errorUserMigrationFailed(
+      ResponseMessage.Key.ERROR_USER_MIGRATION_FAILED,
+      ResponseMessage.Message.ERROR_USER_MIGRATION_FAILED),
+  declaredUserValidatedStatusNotUpdated(
+      ResponseMessage.Key.DECLARED_USER_VALIDATED_STATUS_IS_NOT_UPDATED,
+      ResponseMessage.Message.DECLARED_USER_VALIDATED_STATUS_IS_NOT_UPDATED),
+  userStatusError(ResponseMessage.Key.USER_STATUS_MSG, ResponseMessage.Message.USER_STATUS_MSG),
+  extendUserProfileNotLoaded(
+      ResponseMessage.Key.EXTENDED_USER_PROFILE_NOT_LOADED,
+      ResponseMessage.Message.EXTENDED_USER_PROFILE_NOT_LOADED),
+  inactiveUser(ResponseMessage.Key.INACTIVE_USER, ResponseMessage.Message.INACTIVE_USER),
+  cannotDeleteUser(
+      ResponseMessage.Key.CANNOT_DELETE_USER, ResponseMessage.Message.CANNOT_DELETE_USER),
+  roleProcessingInvalidOrgError(
+      ResponseMessage.Key.ROLE_PROCESSING_INVALID_ORG,
+      ResponseMessage.Message.ROLE_PROCESSING_INVALID_ORG),
   dateFormatError(
        ResponseMessage.Key.DATE_FORMAT_ERRROR, ResponseMessage.Message.DATE_FORMAT_ERRROR),
   unableToParseData(
@@ -221,6 +274,9 @@ public enum ResponseCode {
       ResponseMessage.Message.USER_NOT_ASSOCIATED_TO_ROOT_ORG),
   invalidCredentials(
       ResponseMessage.Key.INVALID_CREDENTIAL, ResponseMessage.Message.INVALID_CREDENTIAL),
+  cannotTransferOwnership(
+      ResponseMessage.Key.CANNOT_TRANSFER_OWNERSHIP,
+      ResponseMessage.Message.CANNOT_TRANSFER_OWNERSHIP),
   emailFormatError(ResponseMessage.Key.EMAIL_FORMAT, ResponseMessage.Message.EMAIL_FORMAT),
   urlFormatError(ResponseMessage.Key.URL_FORMAT_ERROR, ResponseMessage.Message.URL_FORMAT_ERROR),
   languageRequired(ResponseMessage.Key.LANGUAGE_MISSING, ResponseMessage.Message.LANGUAGE_MISSING),
@@ -607,6 +663,8 @@ public enum ResponseCode {
       ResponseMessage.Key.ERROR_MAX_SIZE_EXCEEDED, ResponseMessage.Message.ERROR_MAX_SIZE_EXCEEDED),
   missingFileAttachment(
       ResponseMessage.Key.MISSING_FILE_ATTACHMENT, ResponseMessage.Message.MISSING_FILE_ATTACHMENT),
+  invalidFileExtension(
+      ResponseMessage.Key.INVALID_FILE_EXTENSION, ResponseMessage.Message.INVALID_FILE_EXTENSION),
   emptyFile(ResponseMessage.Key.EMPTY_FILE, ResponseMessage.Message.EMPTY_FILE),
   fileAttachmentSizeNotConfigured(
       ResponseMessage.Key.FILE_ATTACHMENT_SIZE_NOT_CONFIGURED,
@@ -778,6 +836,7 @@ public enum ResponseCode {
   // HTTP Status Codes & System Codes
   // -------------------------------------------------------------------------
   OK(200),
+  SUCCESS(200),
   CLIENT_ERROR(400),
   SERVER_ERROR(500),
   ERROR(ResponseMessage.Key.ERR_CALLING_EXHAUST_API, ResponseMessage.Message.ERR_CALLING_EXHAUST_API),
@@ -787,7 +846,11 @@ public enum ResponseCode {
   REDIRECTION_REQUIRED(302),
   TOO_MANY_REQUESTS(429),
   SERVICE_UNAVAILABLE(503),
-  PARTIAL_SUCCESS_RESPONSE(206);
+  PARTIAL_SUCCESS_RESPONSE(206),
+  sizeLimitExceed(ResponseMessage.Key.SIZE_LIMIT_EXCEED, ResponseMessage.Message.SIZE_LIMIT_EXCEED),
+  invalidConsentStatus(ResponseMessage.Key.INVALID_CONSENT_STATUS, ResponseMessage.Message.INVALID_CONSENT_STATUS),
+  invalidCaptcha(ResponseMessage.Key.INVALID_CAPTCHA, ResponseMessage.Message.INVALID_CAPTCHA),
+  IM_A_TEAPOT(ResponseMessage.Key.IM_A_TEAPOT, ResponseMessage.Message.IM_A_TEAPOT, 418);
 
   private int responseCode;
   /** error code contains String value */
@@ -874,6 +937,15 @@ public enum ResponseCode {
   }
 
   /**
+   * Gets the HTTP response code.
+   *
+   * @return int - The HTTP status code.
+   */
+  public int getCode() {
+    return responseCode;
+  }
+
+  /**
    * Sets the HTTP response code.
    *
    * @param responseCode int - The HTTP status code to set.
@@ -955,5 +1027,9 @@ public enum ResponseCode {
       }
       return null;
     }
+  }
+
+  public static ResponseCode getResponseCodeByCode(int code) {
+    return getHeaderResponseCode(code);
   }
 }

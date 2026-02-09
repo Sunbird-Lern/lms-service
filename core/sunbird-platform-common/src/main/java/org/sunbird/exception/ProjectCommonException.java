@@ -179,8 +179,8 @@ public class ProjectCommonException extends RuntimeException {
    * @return The integer HTTP response code.
    * @see #getErrorResponseCode()
    */
-  public int getResponseCode() {
-      return errorResponseCode;
+  public ResponseCode getResponseCode() {
+      return responseCode;
   }
   
   /**

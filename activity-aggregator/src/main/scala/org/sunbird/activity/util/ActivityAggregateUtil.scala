@@ -27,11 +27,13 @@ class ActivityAggregateUtil {
         val status = Option(content.get("status")).map(_.asInstanceOf[Number].intValue()).getOrElse(0)
         val progress = Option(content.get("progress")).map(_.asInstanceOf[Number].intValue()).getOrElse(0)
         val viewCount = Option(content.get("viewcount")).map(_.asInstanceOf[Number].intValue()).getOrElse(1)
-        val completedCount = if (status == 2) 1 else 0
-        
+        val completedCount = Option(content.get(JsonKey.COMPLETED_COUNT))
+          .orElse(Option(content.get("completedcount")))
+          .map(_.asInstanceOf[Number].intValue())
+          .getOrElse(if (status == 2) 1 else 0)
+
         val lastAccessTime = parseDate(Option(content.get(JsonKey.LAST_ACCESS_TIME)).getOrElse(content.get(JsonKey.LAST_ACCESS_TIME_KEY)))
         val lastCompletedTime = parseDate(Option(content.get(JsonKey.LAST_COMPLETED_TIME)).getOrElse(content.get("last_completed_time")))
-        
         ContentStatus(contentId, status, completedCount, viewCount, progress, lastAccessTime, lastCompletedTime, fromInput = true)
       }).filter(t => StringUtils.isNotBlank(t.contentId) && t.status > 0)
         .groupBy(_.contentId)

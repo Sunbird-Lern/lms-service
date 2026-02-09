@@ -75,7 +75,7 @@ class ActivityAggregatorActor @Inject()(implicit val cacheUtil: RedisCacheUtil) 
     } catch {
       case ex: Exception =>
         logger.error(requestContext, s"ActivityAggregatorActor failed for userId: $userId, courseId: $courseId", ex)
-        sender().tell(ProjectCommonException.throwServerErrorException(ResponseCode.SERVER_ERROR, ex.getMessage), self)
+        ProjectCommonException.throwServerErrorException(ResponseCode.SERVER_ERROR, ex.getMessage)
     }
   }
 

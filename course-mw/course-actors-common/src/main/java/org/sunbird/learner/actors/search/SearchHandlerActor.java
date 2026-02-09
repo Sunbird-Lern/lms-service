@@ -294,7 +294,7 @@ public class SearchHandlerActor extends BaseActor {
             targetMap.put(key, value);
           }
         } catch (Exception e) {
-          logger.error(null, "Error copying key '" + key + "': " + e.getMessage(), e);
+          logger.error("Error copying key '" + key + "': " + e.getMessage(), e);
         }
       }
       
@@ -312,16 +312,16 @@ public class SearchHandlerActor extends BaseActor {
               }
               targetMap.put(key, value);
             } catch (Exception e) {
-              logger.error(null, "Error copying additional key '" + key + "': " + e.getMessage(), e);
+              logger.error("Error copying additional key '" + key + "': " + e.getMessage(), e);
             }
           }
         }
       } catch (Exception e) {
-        logger.error(null, "Error iterating over map keys: " + e.getMessage(), e);
+        logger.error("Error iterating over map keys: " + e.getMessage(), e);
       }
       
     } catch (Exception e) {
-      logger.error(null, "Error in manual map copy: " + e.getMessage(), e);
+      logger.error("Error in manual map copy: " + e.getMessage(), e);
     }
     
     return targetMap;

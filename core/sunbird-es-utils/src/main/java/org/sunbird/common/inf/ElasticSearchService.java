@@ -2,9 +2,9 @@ package org.sunbird.common.inf;
 
 import java.util.List;
 import java.util.Map;
+import scala.concurrent.Future;
 import org.sunbird.request.RequestContext;
 import org.sunbird.dto.SearchDTO;
-import scala.concurrent.Future;
 
 /**
  * Elasticsearch service interface defining operations for document management and search.

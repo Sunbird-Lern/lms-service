@@ -48,7 +48,7 @@ public class AuthenticationHelper {
         }
       }
     } catch (Exception e) {
-        logger.error(null, "invalid auth token =" + token, e);
+        logger.error("invalid auth token =" + token, e);
     }
     return userId;
   }
@@ -70,7 +70,7 @@ public class AuthenticationHelper {
         validClientId = (String) dataList.get(0).get(JsonKey.ID);
       }
     } catch (Exception e) {
-        logger.error(null, "Validating client token failed due to : ", e);
+        logger.error("Validating client token failed due to : ", e);
     }
     return validClientId;
   }

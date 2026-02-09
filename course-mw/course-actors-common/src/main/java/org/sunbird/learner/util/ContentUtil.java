@@ -65,20 +65,20 @@ public final class ContentUtil {
             JsonKey.AUTHORIZATION,
             PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_AUTHORIZATION));
       }
-      logger.info(null, "making call for content search ==" + params);
+      logger.info("making call for content search ==" + params);
       String response =
           HttpUtil.sendPostRequest(
               baseSearchUrl
                   + PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_CONTENT_SEARCH_URL),
               params,
               headers);
-      logger.info(null, "Content search response", null, new HashMap<>(){{put("response", response);}});
+      logger.info("Content search response" + response);
       Map<String, Object> data = mapper.readValue(response, Map.class);
       if (MapUtils.isNotEmpty(data)) {
         String resmsgId = (String) ((Map<String, Object>) data.get("params")).get("resmsgid");
         String apiId = (String) data.get("id");
         data = (Map<String, Object>) data.get(JsonKey.RESULT);
-        logger.info(null,
+        logger.info(
             "Total number of content fetched from Ekstep while assembling page data : "
                 + data.get("count"));
         if (MapUtils.isNotEmpty(data)) {
@@ -97,10 +97,10 @@ public final class ContentUtil {
           }
         }
       } else {
-        logger.info(null, "EkStepRequestUtil:searchContent No data found");
+        logger.info("EkStepRequestUtil:searchContent No data found");
       }
     } catch (Exception e) {
-      logger.error(null, "Error found during contnet search parse==" + e.getMessage(), e);
+      logger.error("Error found during contnet search parse==" + e.getMessage(), e);
     }
     return resMap;
   }
@@ -115,7 +115,7 @@ public final class ContentUtil {
     headers.put(JsonKey.AUTHORIZATION, authKey);
     HttpUtilResponse response = HttpUtil.doPostRequest(url, body, headers);
     if (response == null || response.getStatusCode() != 200) {
-      logger.info(null,
+      logger.info(
           "BaseMetricsActor:makePostRequest: Status code from analytics is not 200");
       throw new ProjectCommonException(
           ResponseCode.unableToConnect.getErrorCode(),
@@ -137,10 +137,10 @@ public final class ContentUtil {
       headers.put(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
       headers.put(JsonKey.AUTHORIZATION, PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_AUTHORIZATION));
 
-      logger.info(null, "making call for content read ==" + courseId);
+      logger.info("making call for content read ==" + courseId);
       String response = HttpUtil.sendGetRequest(baseContentreadUrl, headers);
 
-      logger.info(null, "Content read response", null, new HashMap<>(){{put("response", response);}});
+      logger.info("Content read response" + response);
       Map<String, Object> data = mapper.readValue(response, Map.class);
       if (MapUtils.isNotEmpty(data)) {
         data = (Map<String, Object>) data.get(JsonKey.RESULT);
@@ -148,15 +148,15 @@ public final class ContentUtil {
           Object content = data.get(JsonKey.CONTENT);
           resMap.put(JsonKey.CONTENT, content);
         }else {
-          logger.info(null, "EkStepRequestUtil:searchContent No data found");
+          logger.info("EkStepRequestUtil:searchContent No data found");
         }
       } else {
-        logger.info(null, "EkStepRequestUtil:searchContent No data found");
+        logger.info("EkStepRequestUtil:searchContent No data found");
       }
     } catch (IOException e) {
-      logger.error(null, "Error found during content search parse==" + e.getMessage(), e);
+      logger.error("Error found during content search parse==" + e.getMessage(), e);
     } catch (UnirestException e) {
-      logger.error(null, "Error found during content search parse==" + e.getMessage(), e);
+      logger.error("Error found during content search parse==" + e.getMessage(), e);
     }
     return resMap;
   }
@@ -164,7 +164,7 @@ public final class ContentUtil {
 
   public static Map<String, Object> getCourseObjectFromEkStep(
           String courseId, Map<String, String> headers) {
-    logger.info(null, "Requested course id is ==" + courseId);
+    logger.info("Requested course id is ==" + courseId);
     if (!StringUtils.isBlank(courseId)) {
       try {
         String query = EKSTEP_COURSE_SEARCH_QUERY.replaceAll("COURSE_ID_PLACEHOLDER", courseId);
@@ -173,12 +173,12 @@ public final class ContentUtil {
           return ((List<Map<String, Object>>) result.get(JsonKey.CONTENTS)).get(0);
           // return (Map<String, Object>) contentObject;
         } else {
-          logger.info(null,
+          logger.info(
                   "CourseEnrollmentActor:getCourseObjectFromEkStep: Content not found for requested courseId "
                           + courseId);
         }
       } catch (Exception e) {
-        logger.error(null, e.getMessage(), e);
+        logger.error(e.getMessage(), e);
       }
     }
     return null;

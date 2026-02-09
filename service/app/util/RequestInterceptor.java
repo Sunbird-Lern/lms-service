@@ -89,7 +89,7 @@ public class RequestInterceptor {
             clientAccessTokenId = null;
           }
         } catch (Exception ex) {
-          logger.error(null, ex.getMessage(), ex);
+          logger.error(ex.getMessage(), ex);
           clientAccessTokenId = null;
         }
         return StringUtils.isNotBlank(clientAccessTokenId)

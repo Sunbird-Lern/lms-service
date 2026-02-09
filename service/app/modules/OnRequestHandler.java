@@ -125,7 +125,7 @@ public class OnRequestHandler implements ActionCreator {
           try {
               requestedForUserID = UUID.fromString(uuidSegment).toString();
           } catch (IllegalArgumentException iae) {
-             logger.info(null, "Perhaps this is another API, like search that doesn't carry user id.");
+             logger.info("Perhaps this is another API, like search that doesn't carry user id.");
           }
       }
       return requestedForUserID;
@@ -141,7 +141,7 @@ public class OnRequestHandler implements ActionCreator {
    */
   public CompletionStage<Result> onDataValidationError(
       Http.Request request, String errorMessage, int responseCode) {
-    logger.info(null, "Data error found--" + errorMessage);
+    logger.info("Data error found--" + errorMessage);
     ResponseCode code = ResponseCode.getResponse(errorMessage);
     ResponseCode headerCode = ResponseCode.CLIENT_ERROR;
     Response resp = BaseController.createFailureResponse(request, code, headerCode);

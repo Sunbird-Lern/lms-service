@@ -66,7 +66,7 @@ public class AccessLogFilter extends EssentialFilter {
                                         TelemetryWriter.write(req);
                                     }
                                 } catch (Exception ex) {
-                                   logger.error(null, "AccessLogFilter:apply Exception in writing telemetry", ex);
+                                   logger.error("AccessLogFilter:apply Exception in writing telemetry", ex);
                                 }
                                 return result;
                             },

@@ -106,7 +106,7 @@ public class RequestMapper {
         
         return javaMap;
       } catch (Exception e) {
-        logger.debug(null, "Failed to convert Scala Map to Java Map: " + e.getMessage() + 
+        logger.debug("Failed to convert Scala Map to Java Map: " + e.getMessage() + 
                      ". Object type: " + obj.getClass().getName() + 
                      ". Returning original object. Exception: " + e.toString());
         return obj;
@@ -140,7 +140,7 @@ public class RequestMapper {
         
         return javaList;
       } catch (Exception e) {
-        logger.debug(null, "Failed to convert Scala Seq to Java List: " + e.getMessage() + 
+        logger.debug("Failed to convert Scala Seq to Java List: " + e.getMessage() + 
                      ". Object type: " + obj.getClass().getName() + 
                      ". Returning original object. Exception: " + e.toString());
         return obj;
@@ -214,7 +214,7 @@ public class RequestMapper {
           return javaList;
           
         } catch (Exception e) {
-          logger.error(null, "Failed to convert Scala collection for field " + fieldName + ": " + e.getMessage(), e);
+          logger.error("Failed to convert Scala collection for field " + fieldName + ": " + e.getMessage(), e);
           return value; // Return original value if conversion fails
         }
       }

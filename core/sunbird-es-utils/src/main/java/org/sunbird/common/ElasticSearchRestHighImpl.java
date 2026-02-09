@@ -14,6 +14,7 @@ import org.apache.pekko.dispatch.Futures;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.DocWriteResponse;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
+import org.elasticsearch.action.support.IndicesOptions;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -455,19 +456,20 @@ public class ElasticSearchRestHighImpl implements ElasticSearchService {
     Promise<Boolean> promise = Futures.promise();
     
     try {
-      // Use a common index for health check (can be made configurable)
-      GetIndexRequest indexRequest = new GetIndexRequest().indices(ProjectUtil.EsType.courseBatch.getTypeName());
+      GetIndexRequest indexRequest = new GetIndexRequest()
+          .indices(ProjectUtil.EsType.courseBatch.getTypeName(), ProjectUtil.EsType.user.getTypeName())
+          .indicesOptions(IndicesOptions.fromOptions(true, true, true, false));
       
       ActionListener<Boolean> listener = new ActionListener<Boolean>() {
         @Override
         public void onResponse(Boolean getResponse) {
           promise.success(getResponse != null ? getResponse : false);
-          logger.info(null, "ElasticSearchRestHighImpl:healthCheck: Health check successful, index exists: " + getResponse);
+          logger.info("ElasticSearchRestHighImpl:healthCheck: Health check successful, index exists: " + getResponse);
         }
 
         @Override
         public void onFailure(Exception e) {
-          logger.error(null, "ElasticSearchRestHighImpl:healthCheck: Health check failed", e);
+          logger.error("ElasticSearchRestHighImpl:healthCheck: Health check failed", e);
           promise.failure(e);
         }
       };
@@ -475,7 +477,7 @@ public class ElasticSearchRestHighImpl implements ElasticSearchService {
       ConnectionManager.getRestClient().indices().existsAsync(indexRequest, RequestOptions.DEFAULT, listener);
       
     } catch (Exception e) {
-      logger.error(null, "ElasticSearchRestHighImpl:healthCheck: Failed to prepare health check request", e);
+      logger.error("ElasticSearchRestHighImpl:healthCheck: Failed to prepare health check request", e);
       promise.failure(e);
     }
 

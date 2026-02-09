@@ -44,13 +44,13 @@ public class OrganisationClientImpl implements OrganisationClient {
 
   @Override
   public String createOrg(ActorRef actorRef, Map<String, Object> orgMap) {
-    logger.info(null, "OrganisationClientImpl: createOrg called");
+    logger.info("OrganisationClientImpl: createOrg called");
     return upsertOrg(actorRef, orgMap, ActorOperations.CREATE_ORG.getValue());
   }
 
   @Override
   public void updateOrg(ActorRef actorRef, Map<String, Object> orgMap) {
-    logger.info(null, "OrganisationClientImpl: updateOrg called");
+    logger.info("OrganisationClientImpl: updateOrg called");
     upsertOrg(actorRef, orgMap, ActorOperations.UPDATE_ORG.getValue());
   }
 
@@ -80,7 +80,7 @@ public class OrganisationClientImpl implements OrganisationClient {
 
   @Override
   public Organisation getOrgById(ActorRef actorRef, String orgId) {
-    logger.info(null, "OrganisationClientImpl: getOrgById called");
+    logger.info("OrganisationClientImpl: getOrgById called");
     Organisation organisation = null;
 
     Request request = new Request();

@@ -182,7 +182,7 @@ public class CourseBatchUtil {
         if (courseBatchMap.containsKey(key))
           courseBatchMap.put(key, setEndOfDay(key, dateTimeFormat.parse(dateTimeFormat.format(courseBatchMap.get(key))), dateFormat));
       } catch (ParseException e) {
-        logger.error(null, "CourseBatchUtil:cassandraCourseMapping: Exception occurred with message = " + e.getMessage(), e);
+        logger.error("CourseBatchUtil:cassandraCourseMapping: Exception occurred with message = " + e.getMessage(), e);
       }
     });
     return courseBatchMap;
@@ -201,7 +201,7 @@ public class CourseBatchUtil {
         return cal.getTime();
       }
     } catch (ParseException e) {
-      logger.error(null, "CourseBatchUtil:setEndOfDay: Exception occurred with message = " + e.getMessage(), e);
+      logger.error("CourseBatchUtil:setEndOfDay: Exception occurred with message = " + e.getMessage(), e);
     }
     return value;
   }

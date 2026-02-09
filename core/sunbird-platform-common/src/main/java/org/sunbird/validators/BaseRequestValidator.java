@@ -96,7 +96,7 @@ public class BaseRequestValidator {
    */
   public ProjectCommonException createExceptionByResponseCode(ResponseCode code, int errorCode) {
     if (code == null) {
-      logger.info(null, "ResponseCode object is coming as null");
+      logger.info("ResponseCode object is coming as null");
       return new ProjectCommonException(
           ResponseCode.invalidData.getErrorCode(),
           ResponseCode.invalidData.getErrorMessage(),
@@ -117,7 +117,7 @@ public class BaseRequestValidator {
   public ProjectCommonException createExceptionByResponseCode(
       ResponseCode code, int errorCode, String errorMsgArgument) {
     if (code == null) {
-      logger.info(null, "ResponseCode object is coming as null");
+      logger.info("ResponseCode object is coming as null");
       return new ProjectCommonException(
           ResponseCode.invalidData.getErrorCode(),
           ResponseCode.invalidData.getErrorMessage(),
@@ -453,7 +453,7 @@ public class BaseRequestValidator {
               validateListValues((List) val, key);
             } else if (val instanceof Map) {
               validateMapValues((Map) val);
-            } else if (val != null && StringUtils.isEmpty((String) val)) {
+            } else if (val instanceof String && StringUtils.isEmpty((String) val)) {
               throw new ProjectCommonException(
                   ResponseCode.invalidParameterValue.getErrorCode(),
                   MessageFormat.format(
@@ -530,5 +530,12 @@ public class BaseRequestValidator {
             ResponseCode.UNAUTHORIZED.getResponseCode());
       }
     }
+  }
+
+  public static void createClientError(ResponseCode responseCode, String field) {
+    throw new ProjectCommonException(
+        responseCode.getErrorCode(),
+        ProjectUtil.formatMessage(responseCode.getErrorMessage(), field),
+        ResponseCode.CLIENT_ERROR.getResponseCode());
   }
 }

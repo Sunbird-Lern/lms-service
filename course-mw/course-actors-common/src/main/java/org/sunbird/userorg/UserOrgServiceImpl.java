@@ -73,21 +73,21 @@ public class UserOrgServiceImpl implements UserOrgService {
     String requestUrl = getConfigValue(SUNBIRD_USER_ORG_API_BASE_URL) + requestAPI;
     HttpResponse<String> httpResponse = null;
     String responseBody = null;
-    logger.info( null,
+    logger.info(
         "UserOrgServiceImpl:getResponse:Sending "
             + requestType
             + " Request, Request URL: "
             + requestUrl);
     try {
       String reqBody = mapper.writeValueAsString(requestMap);
-      logger.info(null, "UserOrgServiceImpl:getResponse:Sending Request Body=" + reqBody);
+      logger.info("UserOrgServiceImpl:getResponse:Sending Request Body=" + reqBody);
       if (HttpMethod.POST.equals(requestType)) {
         httpResponse = Unirest.post(requestUrl).headers(headers).body(reqBody).asString();
       }
       if (HttpMethod.GET.equals(requestType)) {
         httpResponse = Unirest.get(requestUrl).headers(headers).asString();
       }
-      logger.info(null, 
+      logger.info(
           "UserOrgServiceImpl:getResponse Response Status : "
               + (httpResponse != null ? httpResponse.getStatus() : null));
       if (httpResponse == null || StringUtils.isBlank(httpResponse.getBody())) {
@@ -104,7 +104,7 @@ public class UserOrgServiceImpl implements UserOrgService {
             response.getResponseCode().getResponseCode());
       }
     } catch (ProjectCommonException e) {
-      logger.error(null, 
+      logger.error(
           "UserOrgServiceImpl:getResponse ProjectCommonException:"
               + requestType
               + "Request , Status : "
@@ -115,7 +115,7 @@ public class UserOrgServiceImpl implements UserOrgService {
               + responseBody,e);
       throw e;
     } catch (Exception e) {
-      logger.error(null,
+      logger.error(
           "UserOrgServiceImpl:getResponse:Exception occurred with error message = "
               + e.getMessage()
               + ", Response Body : "
@@ -173,7 +173,7 @@ public class UserOrgServiceImpl implements UserOrgService {
     if(StringUtils.isNotBlank(authToken)) {
       headers.put(X_AUTHENTICATED_USER_TOKEN, authToken);
     } else {
-      logger.error(null, "authToken is empty for gerUserById for ID: " + id, null);
+      logger.error("authToken is empty for gerUserById for ID: " + id, null);
     }
     String relativeUrl = getConfigValue(SUNBIRD_GET_SINGLE_USER_API) + FORWARD_SLASH + id;
     Response response = getUserOrgResponse(relativeUrl, HttpMethod.GET, requestMap, headers);
@@ -195,13 +195,13 @@ public class UserOrgServiceImpl implements UserOrgService {
     if(StringUtils.isNotBlank(authToken)) {
       headers.put(X_AUTHENTICATED_USER_TOKEN, authToken);
     } else {
-      logger.error(null, "authToken is empty for sendEmailNotification", null);
+      logger.error("authToken is empty for sendEmailNotification", null);
     }
     Response response =
         getUserOrgResponse(
             getConfigValue(SUNBIRD_SEND_EMAIL_NOTIFICATION_API), HttpMethod.POST, request, headers);
     if (response != null) {
-      logger.info(null,
+      logger.info(
           "UserOrgServiceImpl:sendEmailNotification Response" + response.get(RESPONSE));
     }
   }
@@ -218,7 +218,7 @@ public class UserOrgServiceImpl implements UserOrgService {
     if(StringUtils.isNotBlank(authToken)) {
       headers.put(X_AUTHENTICATED_USER_TOKEN, authToken);
     } else {
-      logger.error(null, "authToken is empty for getUsersResponse() for request : " + requestMap, null);
+      logger.error("authToken is empty for getUsersResponse() for request : " + requestMap, null);
     }
     Response response =
         getUserOrgResponse(

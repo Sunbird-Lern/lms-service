@@ -54,7 +54,7 @@ public class ContentSearchMock {
             try {
                 server.shutdown();
             } catch (IOException e) {
-                logger.info(null,"Error setting up ContentSearchMock:"+e);
+                logger.info("Error setting up ContentSearchMock:"+e);
             }
         }));
     }

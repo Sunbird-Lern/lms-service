@@ -575,7 +575,7 @@ public final class RequestValidator {
       status = checkProgressStatus(Integer.parseInt("" + request.getRequest().get(JsonKey.STATUS)));
 
     } catch (Exception e) {
-        logger.error(null, e.getMessage(), e);
+        logger.error(e.getMessage(), e);
     }
     return status;
   }

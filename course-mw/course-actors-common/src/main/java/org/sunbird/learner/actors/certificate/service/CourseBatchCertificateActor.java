@@ -213,7 +213,7 @@ public class CourseBatchCertificateActor extends BaseActor {
                 }));
       }
     } catch (Exception ex) {
-      logger.error(null, "CourseBatchCertificateActor:mapToObject Exception occurred with error message ==", ex);
+      logger.error("CourseBatchCertificateActor:mapToObject Exception occurred with error message ==", ex);
     }
     return template;
   }

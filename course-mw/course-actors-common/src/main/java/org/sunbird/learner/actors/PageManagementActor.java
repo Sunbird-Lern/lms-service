@@ -908,7 +908,7 @@ public class PageManagementActor extends BaseActor {
         return DATE_FORMAT.parse((String) page.get(JsonKey.OLD_CREATED_DATE));
       }
     } catch (ParseException e) {
-      logger.error(null, "PageManagementActor:createdDateCheck: Exception occurred with error message = " + e.getMessage(), e);
+      logger.error("PageManagementActor:createdDateCheck: Exception occurred with error message = " + e.getMessage(), e);
     }
     return (Date) page.get(JsonKey.CREATED_DATE);
   }

@@ -622,7 +622,7 @@ public class CourseBatchManagementActor extends BaseActor {
         template.put(CourseJsonKey.NOTIFY_TEMPLATE, JsonUtil.deserialize((String) template.get(CourseJsonKey.NOTIFY_TEMPLATE), Map.class));
       }
     } catch (Exception ex) {
-      logger.error(null, "CourseBatchCertificateActor:mapToObject Exception occurred with error message ==", ex);
+      logger.error("CourseBatchCertificateActor:mapToObject Exception occurred with error message ==", ex);
     }
     return template;
   }

@@ -244,7 +244,7 @@ public class BaseController extends Controller {
 
       return actorResponseHandler(actorRef, request, timeout, null, httpRequest);
     } catch (Exception e) {
-      logger.error(null,
+      logger.error(
           "BaseController:handleRequest: Exception occurred with error message = " + e.getMessage(),
           e);
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
@@ -285,7 +285,7 @@ public class BaseController extends Controller {
       }
       return actorResponseHandler(actorRef, request, timeout, null, httpRequest);
     } catch (Exception e) {
-      logger.error(null,
+      logger.error(
           "BaseController:handleRequest: Exception occurred with error message = " + e.getMessage(),
           e);
       return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest));
@@ -378,7 +378,8 @@ public class BaseController extends Controller {
    */
   public static Response createResponseOnException(
       Http.Request request, ProjectCommonException exception) {
-    logger.error(null,
+    logger.error(
+        (org.sunbird.request.RequestContext) null,
         exception != null ? exception.getMessage() : "Message is not coming",
         exception,
         genarateTelemetryInfoForError(request));
@@ -390,7 +391,7 @@ public class BaseController extends Controller {
     response.setId(getApiResponseId(request));
     response.setTs(ProjectUtil.getFormattedDate());
     if (exception != null) {
-      response.setResponseCode(ResponseCode.getHeaderResponseCode(exception.getResponseCode()));
+      response.setResponseCode(ResponseCode.getHeaderResponseCode(exception.getErrorResponseCode()));
       ResponseCode code = ResponseCode.getResponse(exception.getCode());
       if (code == null) {
         code = ResponseCode.SERVER_ERROR;
@@ -422,7 +423,7 @@ public class BaseController extends Controller {
     response.setVer(getApiVersion(path));
     response.setId(getApiResponseId(path, method));
     response.setTs(ProjectUtil.getFormattedDate());
-    response.setResponseCode(ResponseCode.getHeaderResponseCode(exception.getResponseCode()));
+    response.setResponseCode(ResponseCode.getHeaderResponseCode(exception.getErrorResponseCode()));
     ResponseCode code = ResponseCode.getResponse(exception.getCode());
     response.setParams(createResponseParamObj(code, exception.getMessage(), null));
     return response;
@@ -491,7 +492,7 @@ public class BaseController extends Controller {
    */
   public Result createCommonExceptionResponse(Exception e, Http.Request request) {
     Request req = request;
-    logger.error(null, e.getMessage(), e, genarateTelemetryInfoForError(request));
+    logger.error((org.sunbird.request.RequestContext) null, e.getMessage(), e, genarateTelemetryInfoForError(request));
     ProjectCommonException exception = null;
     if (e instanceof ProjectCommonException) {
       exception = (ProjectCommonException) e;
@@ -505,7 +506,7 @@ public class BaseController extends Controller {
     generateExceptionTelemetry(request, exception);
     // cleaning request info ...
     return Results.status(
-        exception.getResponseCode(),
+        exception.getErrorResponseCode(),
         Json.toJson(createResponseOnException(req, exception)));
   }
 
@@ -731,7 +732,7 @@ public class BaseController extends Controller {
     } else {
       OnRequestHandler.isServiceHealthy = false;
     }
-    logger.debug(null,
+    logger.debug(
         "BaseController:setGlobalHealthFlag: isServiceHealthy = "
             + OnRequestHandler.isServiceHealthy);
   }

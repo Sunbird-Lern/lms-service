@@ -57,7 +57,7 @@ public class LocationClientImpl implements LocationClient {
     Request request = new Request();
     request.setOperation(LocationActorOperation.SEARCH_LOCATION.getValue());
     request.getRequest().putAll(searchRequestMap);
-    logger.info(null,"LocationClientImpl : callSearchLocation ");
+    logger.info("LocationClientImpl : callSearchLocation ");
     Object obj = interServiceCommunication.getResponse(actorRef, request);
     if (obj instanceof Response) {
       Response responseObj = (Response) obj;
@@ -92,7 +92,7 @@ public class LocationClientImpl implements LocationClient {
     request.getRequest().putAll(mapper.convertValue(location, Map.class));
     Map<String, Object> resLocation = new HashMap<>();
     request.setOperation(LocationActorOperation.CREATE_LOCATION.getValue());
-    logger.info(null, "LocationClientImpl : callCreateLocation ");
+    logger.info("LocationClientImpl : callCreateLocation ");
     Object obj = interServiceCommunication.getResponse(actorRef, request);
     checkLocationResponseForException(obj);
     if (obj instanceof Response) {
@@ -107,7 +107,7 @@ public class LocationClientImpl implements LocationClient {
     Request request = new Request();
     request.getRequest().putAll(mapper.convertValue(location, Map.class));
     request.setOperation(LocationActorOperation.UPDATE_LOCATION.getValue());
-    logger.info(null, "LocationClientImpl : callUpdateLocation ");
+    logger.info("LocationClientImpl : callUpdateLocation ");
     Object obj = interServiceCommunication.getResponse(actorRef, request);
     checkLocationResponseForException(obj);
   }
@@ -121,7 +121,7 @@ public class LocationClientImpl implements LocationClient {
     request.setOperation(LocationActorOperation.GET_RELATED_LOCATION_IDS.getValue());
     request.getRequest().putAll(requestMap);
 
-    logger.info(null, "LocationClientImpl: getRelatedLocationIds called");
+    logger.info("LocationClientImpl: getRelatedLocationIds called");
     Object obj = interServiceCommunication.getResponse(actorRef, request);
     checkLocationResponseForException(obj);
 

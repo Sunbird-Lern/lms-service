@@ -23,7 +23,7 @@ public class SchedulerManager {
   public static void schedule() {
     service.scheduleWithFixedDelay(new DataCacheHandler(), 0, PAGE_DATA_TTL, TimeUnit.HOURS);
     service.scheduleWithFixedDelay(new PageCacheLoaderService(), 0, PAGE_DATA_TTL, TimeUnit.HOURS);
-    logger.info(null, 
+    logger.info(
         "SchedulerManager:schedule: Started scheduler job for cache refresh.");
   }
 }

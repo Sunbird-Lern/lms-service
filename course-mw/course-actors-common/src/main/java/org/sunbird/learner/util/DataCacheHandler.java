@@ -31,10 +31,10 @@ public class DataCacheHandler implements Runnable {
   
   @Override
   public void run() {
-    logger.info(null, "DataCacheHandler:run: Cache refresh started.");
+    logger.info("DataCacheHandler:run: Cache refresh started.");
     cache(pageMap, TableNameUtil.PAGE_MANAGEMENT_TABLENAME);
     cache(sectionMap, TableNameUtil.PAGE_SECTION_TABLENAME);
-    logger.info(null, "DataCacheHandler:run: Cache refresh completed.");
+    logger.info("DataCacheHandler:run: Cache refresh completed.");
   }
 
   @SuppressWarnings("unchecked")
@@ -56,10 +56,10 @@ public class DataCacheHandler implements Runnable {
           }
         }
       }
-      logger.debug(null, "pagemap keyset " + map.keySet());
-      logger.info(null, tableName + " cache size: " + map.size());
+      logger.debug("pagemap keyset " + map.keySet());
+      logger.info(tableName + " cache size: " + map.size());
     } catch (Exception e) {
-      logger.error(null, "DataCacheHandler:cache: Exception in retrieving page section " + e.getMessage(), e);
+      logger.error("DataCacheHandler:cache: Exception in retrieving page section " + e.getMessage(), e);
     }
   }
 

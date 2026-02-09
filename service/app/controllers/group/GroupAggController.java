@@ -20,7 +20,7 @@ public class GroupAggController extends BaseController {
 
     public CompletionStage<Result> getGroupActivityAggregates(Http.Request httpRequest) {
 
-        logger.debug(null, "Aggregate Group Activity method is called = " + httpRequest.body().asJson());
+        logger.debug("Aggregate Group Activity method is called = " + httpRequest.body().asJson());
         return handleRequest(
                 groupAggregatesActorRef,
                 ActorOperations.GROUP_ACTIVITY_AGGREGATES.getValue(),

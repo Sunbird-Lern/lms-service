@@ -220,7 +220,7 @@ public abstract class BaseBulkUploadActor extends BaseActor {
     try {
       batchSize = Integer.parseInt(ProjectUtil.getConfigValue(key));
     } catch (Exception ex) {
-      logger.error(null, "Failed to read cassandra batch size for:" + key, ex);
+      logger.error("Failed to read cassandra batch size for:" + key, ex);
     }
     return batchSize;
   }

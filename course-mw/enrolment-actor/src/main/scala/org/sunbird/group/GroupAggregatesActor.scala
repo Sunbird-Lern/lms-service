@@ -116,7 +116,7 @@ class GroupAggregatesActor @Inject()(implicit val cacheUtil: RedisCacheUtil) ext
       }).toList
     } else List()
 
-    logger.info(null, "GroupAggregatesAction:populateResponse:finalMemberList :: Group: " + groupId + " :: Activity : " + activityId + " :: Final Member List Count: " + finalMemberList.size)
+    logger.info("GroupAggregatesAction:populateResponse:finalMemberList :: Group: " + groupId + " :: Activity : " + activityId + " :: Final Member List Count: " + finalMemberList.size)
 
     val response: Response = new Response()
     response.put("groupId", groupId)

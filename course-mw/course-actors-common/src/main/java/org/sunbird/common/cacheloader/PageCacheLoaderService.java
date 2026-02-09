@@ -40,7 +40,7 @@ public class PageCacheLoaderService implements Runnable {
         }
       }
     } catch (Exception e) {
-      logger.error(null, "CacheLoaderService:cacheLoader: Exception occurred = " + e.getMessage(), e);
+      logger.error("CacheLoaderService:cacheLoader: Exception occurred = " + e.getMessage(), e);
     }
     return map;
   }
@@ -75,7 +75,7 @@ public class PageCacheLoaderService implements Runnable {
   }
 
   private void updateAllCache() {
-    logger.info(null, "CacheLoaderService: updateAllCache called");
+    logger.info("CacheLoaderService: updateAllCache called");
     updateCache(cacheLoader(JsonKey.PAGE_SECTION), ActorOperations.GET_SECTION.getValue());
     updateCache(cacheLoader(JsonKey.PAGE_MANAGEMENT), ActorOperations.GET_PAGE_DATA.getValue());
   }
@@ -97,7 +97,7 @@ public class PageCacheLoaderService implements Runnable {
         cache.put(mapName, key, cacheMap.get(key));
       }
     } catch (Exception e) {
-      logger.error(null, "CacheLoaderService:updateCache: Error occured = " + e.getMessage(), e);
+      logger.error("CacheLoaderService:updateCache: Error occured = " + e.getMessage(), e);
     }
   }
 

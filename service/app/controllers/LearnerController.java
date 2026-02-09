@@ -115,12 +115,12 @@ public class LearnerController extends BaseController {
       reqObj.setRequest(innerMap);
       CompletionStage<Result> result = actorResponseHandler(contentConsumptionActor, reqObj, timeout, null, httpRequest);
       return result.thenApplyAsync(r -> {
-        logger.info(null,apiDebugLog + ":: ResponseStatus: " + r.status() + " Headers: " + loggingHeaders);
+        logger.info(apiDebugLog + ":: ResponseStatus: " + r.status() + " Headers: " + loggingHeaders);
         return r;
       });
     } catch (Exception e) {
         return CompletableFuture.completedFuture(createCommonExceptionResponse(e, httpRequest)).thenApplyAsync(r -> {
-            logger.info(null,apiDebugLog + ":: ResponseStatus: " + r.status() + " Headers: " + loggingHeaders +  " ErrMessage: " + e.getMessage());
+            logger.info(apiDebugLog + ":: ResponseStatus: " + r.status() + " Headers: " + loggingHeaders +  " ErrMessage: " + e.getMessage());
             return r;
         });
     }

@@ -38,7 +38,7 @@ public class ApplicationStart {
     System.out.println("ApplicationStart:ApplicationStart: Start");
     setEnvironment(environment);
     ssoPublicKey = System.getenv(JsonKey.SSO_PUBLIC_KEY);
-    logger.info(null, "Server started.. with environment: " + env.name());
+    logger.info("Server started.. with environment: " + env.name());
     if (Boolean.parseBoolean(ProjectUtil.getConfigValue(JsonKey.CONTENT_SERVICE_MOCK_ENABLED))) {
       mockServiceSetup();
     }
@@ -58,7 +58,7 @@ public class ApplicationStart {
       try {
         ContentSearchMock.setup();
       } catch (Exception e) {
-        logger.info(null,"Error setting up ContentSearchMock:"+e);
+        logger.info((org.sunbird.request.RequestContext) null,"Error setting up ContentSearchMock:"+e);
       }
   }
 

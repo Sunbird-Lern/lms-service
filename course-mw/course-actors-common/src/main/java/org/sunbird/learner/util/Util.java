@@ -137,7 +137,7 @@ public final class Util {
    */
   public static void checkCassandraDbConnections() {
     if (readConfigFromEnv()) {
-      logger.debug(null, "db connection is created from System env variable.");
+      logger.debug("db connection is created from System env variable.");
       return;
     }
     CassandraConnectionManager cassandraConnectionManager =
@@ -156,13 +156,13 @@ public final class Util {
       // load a properties file
       prop.load(input);
     } catch (IOException ex) {
-      logger.error(null, ex.getMessage(), ex);
+      logger.error(ex.getMessage(), ex);
     } finally {
       if (input != null) {
         try {
           input.close();
         } catch (IOException e) {
-          logger.error(null, e.getMessage(), e);
+          logger.error(e.getMessage(), e);
         }
       }
     }
@@ -180,7 +180,7 @@ public final class Util {
             CassandraConnectionMngrFactory.getInstance();
 
     if (StringUtils.isBlank(ips) || StringUtils.isBlank(envPort)) {
-      logger.debug(null, "Configuration value is not coming form System variable.");
+      logger.debug("Configuration value is not coming form System variable.");
       return false;
     }
     String[] ipList = ips.split(",");

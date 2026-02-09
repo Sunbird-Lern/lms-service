@@ -115,13 +115,13 @@ public class QRCodeDownloadManager {
                         JsonKey.AUTHORIZATION,
                         PropertiesCache.getInstance().getProperty(JsonKey.EKSTEP_AUTHORIZATION));
             }
-            logger.info(null, "QRCodeDownloadManager:: getQRCodeImageUrl:: invoking DIAL service for QR Code Images:: " + params);
+            logger.info("QRCodeDownloadManager:: getQRCodeImageUrl:: invoking DIAL service for QR Code Images:: " + params);
             String response = HttpUtil.sendPostRequest(dialServiceUrl + PropertiesCache.getInstance().getProperty(JsonKey.SUNBIRD_DIAL_SERVICE_SEARCH_URL), params, headers);
             Map<String, Object> data = new ObjectMapper().readValue(response, Map.class);
-            logger.info(null, "QRCodeDownloadManager:: getQRCodeImageUrl:: QR Code List response:: ", null, (Map<String, Object>) data.get(JsonKey.PARAMS));
+            logger.info("QRCodeDownloadManager:: getQRCodeImageUrl:: QR Code List response:: " + (Map<String, Object>) data.get(JsonKey.PARAMS));
             if (MapUtils.isNotEmpty(data)) {
                 Map<String, Object> resultData = (Map<String, Object>) data.get(JsonKey.RESULT);
-                logger.info(null,"QRCodeDownloadManager:: getQRCodeImageUrl:: Total number of images fetched : " + ((List) resultData.get("dialcodes")).size());
+                logger.info("QRCodeDownloadManager:: getQRCodeImageUrl:: Total number of images fetched : " + ((List) resultData.get("dialcodes")).size());
                 if (MapUtils.isNotEmpty(resultData)) {
                     List<Map<String, Object>> qrCodeImagesList = (List) resultData.get("dialcodes");
                     Map<String, String> resMap = new HashMap<>();
@@ -135,10 +135,10 @@ public class QRCodeDownloadManager {
                     return resMap;
                 }
             } else {
-                logger.info(null, "QRCodeDownloadManager:: getQRCodeImageUrl::  No data found");
+                logger.info("QRCodeDownloadManager:: getQRCodeImageUrl::  No data found");
             }
         } catch (Exception e) {
-            logger.error(null, "QRCodeDownloadManager:: getQRCodeImageUrl:: Error found during qr image list:: " + e.getMessage(), e);
+            logger.error("QRCodeDownloadManager:: getQRCodeImageUrl:: Error found during qr image list:: " + e.getMessage(), e);
         }
         return new HashMap<>();
     }

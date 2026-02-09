@@ -62,7 +62,7 @@ public class HealthActor extends BaseActor {
           sender().tell(exception, self());
         }
       } catch (Exception ex) {
-        logger.error(null, ex.getMessage(), ex);
+        logger.error(ex.getMessage(), ex);
         sender().tell(ex, self());
       }
     } else {
@@ -92,7 +92,7 @@ public class HealthActor extends BaseActor {
     } catch (Exception e) {
       responseList.add(ProjectUtil.createCheckResponse(JsonKey.ES_SERVICE, true, e));
       isallHealthy = false;
-      logger.error(null, "Elastic search health Error == ", e);
+      logger.error("Elastic search health Error == ", e);
     }
     finalResponseMap.put(JsonKey.CHECKS, responseList);
     finalResponseMap.put(JsonKey.NAME, "ES health check api");

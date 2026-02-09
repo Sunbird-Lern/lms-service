@@ -45,7 +45,8 @@ public enum ACTOR_NAMES {
   CONTENT_CONSUMPTION_ACTOR(ContentConsumptionActor.class, "content-consumption-actor"),
   GROUP_AGGREGATES_ACTORS(GroupAggregatesActor.class, "group-aggregates-actor"),
   EXHAUST_JOB_ACTOR(ExhaustJobActor.class, "exhaust-job-actor"),
-  ASSESSMENT_AGGREGATOR_ACTOR(AssessmentAggregatorActor.class, "assessment-aggregator-actor");
+  ASSESSMENT_AGGREGATOR_ACTOR(AssessmentAggregatorActor.class, "assessment-aggregator-actor"),
+  ACTIVITY_AGGREGATOR_ACTOR(org.sunbird.activity.actor.ActivityAggregatorActor.class, "activity-aggregator-actor");
   private ACTOR_NAMES(Class clazz, String name) {
     actorClass = clazz;
     actorName = name;

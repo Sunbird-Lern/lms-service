@@ -6,7 +6,8 @@ import org.scalamock.scalatest.MockFactory
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.should.Matchers
-import org.sunbird.activity.util.{ContentSearchUtil, DeDupUtil, RedisUtil}
+import org.sunbird.activity.util.{CertificateUtil, ContentSearchUtil, DeDupUtil, RedisUtil}
+import org.sunbird.activity.domain.{CollectionProgress, TelemetryEvent}
 import org.sunbird.cache.util.RedisCacheUtil
 import org.sunbird.cassandra.CassandraOperation
 import org.sunbird.common.models.response.Response
@@ -34,6 +35,7 @@ class ActivityAggregatorActorTest
     val redisUtil = mock[RedisUtil]
     val deDupUtil = mock[DeDupUtil]
     val contentSearchUtil = mock[ContentSearchUtil]
+    val certificateUtil = mock[CertificateUtil]
     val probe = TestProbe()
 
     val emptyConsumptionResponse = createEmptyResponse()
@@ -49,6 +51,9 @@ class ActivityAggregatorActorTest
     
     // ContentSearchUtil Expectations
     (contentSearchUtil.getCollectionStatus _).expects(*, *).returning("Live").anyNumberOfTimes()
+    
+    // Certificate Util Expectations (Mock Kafka calls)
+    (certificateUtil.publishCertificateIssueEvent _).expects(*, *, *, *).returning(()).anyNumberOfTimes()
     
     // Cassandra Expectations
     (cassandraOperation.getRecordsByProperties(_: String, _: String, _: util.Map[String, Object], _: RequestContext))
@@ -76,7 +81,7 @@ class ActivityAggregatorActorTest
       .returning(new Response())
       .anyNumberOfTimes()
 
-    val actor = system.actorOf(Props(new TestableActivityAggregatorActor(cassandraOperation, redisUtil, deDupUtil, contentSearchUtil)))
+    val actor = system.actorOf(Props(new TestableActivityAggregatorActor(cassandraOperation, redisUtil, deDupUtil, contentSearchUtil, certificateUtil)))
     
     val request = createUpdateRequest(
       userId = "user123",
@@ -94,6 +99,7 @@ class ActivityAggregatorActorTest
     val redisUtil = mock[RedisUtil]
     val deDupUtil = mock[DeDupUtil]
     val contentSearchUtil = mock[ContentSearchUtil]
+    val certificateUtil = mock[CertificateUtil]
     val probe = TestProbe()
 
     val consumptionResponse = createConsumptionResponse()
@@ -122,7 +128,7 @@ class ActivityAggregatorActorTest
       .returning(new Response())
       .anyNumberOfTimes()
 
-    val actor = system.actorOf(Props(new TestableActivityAggregatorActor(cassandraOperation, redisUtil, deDupUtil, contentSearchUtil)))
+    val actor = system.actorOf(Props(new TestableActivityAggregatorActor(cassandraOperation, redisUtil, deDupUtil, contentSearchUtil, certificateUtil)))
     
     val request = createUpdateRequest(
       userId = "user123",
@@ -140,9 +146,10 @@ class ActivityAggregatorActorTest
     val redisUtil = mock[RedisUtil]
     val deDupUtil = mock[DeDupUtil]
     val contentSearchUtil = mock[ContentSearchUtil]
+    val certificateUtil = mock[CertificateUtil]
     val probe = TestProbe()
 
-    val actor = system.actorOf(Props(new TestableActivityAggregatorActor(cassandraOperation, redisUtil, deDupUtil, contentSearchUtil)))
+    val actor = system.actorOf(Props(new TestableActivityAggregatorActor(cassandraOperation, redisUtil, deDupUtil, contentSearchUtil, certificateUtil)))
     
     val request = createUpdateRequest(
       userId = "user123",
@@ -160,6 +167,7 @@ class ActivityAggregatorActorTest
     val redisUtil = mock[RedisUtil]
     val deDupUtil = mock[DeDupUtil]
     val contentSearchUtil = mock[ContentSearchUtil]
+    val certificateUtil = mock[CertificateUtil]
     val probe = TestProbe()
 
     // Redis
@@ -186,7 +194,7 @@ class ActivityAggregatorActorTest
       .returning(new Response())
       .anyNumberOfTimes()
 
-    val actor = system.actorOf(Props(new TestableActivityAggregatorActor(cassandraOperation, redisUtil, deDupUtil, contentSearchUtil)))
+    val actor = system.actorOf(Props(new TestableActivityAggregatorActor(cassandraOperation, redisUtil, deDupUtil, contentSearchUtil, certificateUtil)))
     
     val contentsWithInvalid = new util.ArrayList[util.Map[String, AnyRef]]()
     
@@ -216,6 +224,7 @@ class ActivityAggregatorActorTest
     val redisUtil = mock[RedisUtil]
     val deDupUtil = mock[DeDupUtil]
     val contentSearchUtil = mock[ContentSearchUtil]
+    val certificateUtil = mock[CertificateUtil]
     val probe = TestProbe()
 
     (redisUtil.getLeafNodes _).expects(*, *, *).returning(List("content1", "content2")).anyNumberOfTimes()
@@ -227,7 +236,7 @@ class ActivityAggregatorActorTest
       .returning(createEmptyResponse())
       .once()
 
-    val actor = system.actorOf(Props(new TestableActivityAggregatorActor(cassandraOperation, redisUtil, deDupUtil, contentSearchUtil)))
+    val actor = system.actorOf(Props(new TestableActivityAggregatorActor(cassandraOperation, redisUtil, deDupUtil, contentSearchUtil, certificateUtil)))
     
     val request = createUpdateRequest(
       userId = "user123",
@@ -245,6 +254,7 @@ class ActivityAggregatorActorTest
     val redisUtil = mock[RedisUtil]
     val deDupUtil = mock[DeDupUtil]
     val contentSearchUtil = mock[ContentSearchUtil]
+    val certificateUtil = mock[CertificateUtil]
     val probe = TestProbe()
 
     (redisUtil.getLeafNodes _).expects(*, *, *).returning(List("content1", "content2")).anyNumberOfTimes()
@@ -286,7 +296,7 @@ class ActivityAggregatorActorTest
       .returning(new Response())
       .anyNumberOfTimes()
 
-    val actor = system.actorOf(Props(new TestableActivityAggregatorActor(cassandraOperation, redisUtil, deDupUtil, contentSearchUtil)))
+    val actor = system.actorOf(Props(new TestableActivityAggregatorActor(cassandraOperation, redisUtil, deDupUtil, contentSearchUtil, certificateUtil)))
     
     val inputContents = new util.ArrayList[util.Map[String, AnyRef]]()
     val inputContent = new util.HashMap[String, AnyRef]()
@@ -390,7 +400,8 @@ class ActivityAggregatorActorTest
       cassandraOp: CassandraOperation, 
       redisUtil: RedisUtil,
       deDupUtil: DeDupUtil,
-      contentSearchUtil: ContentSearchUtil
+      contentSearchUtil: ContentSearchUtil,
+      certificateUtil: CertificateUtil
   ) extends ActivityAggregatorActor {
     
     override def onReceive(request: Request): Unit = {
@@ -398,6 +409,7 @@ class ActivityAggregatorActorTest
       setField("redisUtil", redisUtil)
       setField("deDupUtil", deDupUtil)
       setField("contentSearchUtil", contentSearchUtil)
+      setField("certificateUtil", certificateUtil)
       super.onReceive(request)
     }
     
@@ -405,6 +417,17 @@ class ActivityAggregatorActorTest
        val field = classOf[ActivityAggregatorActor].getDeclaredField(fieldName)
        field.setAccessible(true)
        field.set(this, value)
+    }
+    
+    // Override methods that call Kafka to prevent actual Kafka calls
+    override def publishAuditEvent(event: TelemetryEvent, requestContext: RequestContext): Unit = {
+      // Mock implementation - do nothing to avoid Kafka calls
+      logger.info(requestContext, s"Mock: publishAuditEvent called with event: ${event.eid}")
+    }
+    
+    override def publishEnrolmentCompleteAuditEvent(progress: CollectionProgress, requestContext: RequestContext): Unit = {
+      // Mock implementation - do nothing to avoid Kafka calls  
+      logger.info(requestContext, s"Mock: publishEnrolmentCompleteAuditEvent called for userId: ${progress.userId}")
     }
   }
 }

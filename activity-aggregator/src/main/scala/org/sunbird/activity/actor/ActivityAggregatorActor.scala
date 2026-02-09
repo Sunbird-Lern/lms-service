@@ -333,7 +333,7 @@ class ActivityAggregatorActor @Inject()(implicit val cacheUtil: RedisCacheUtil) 
     }
   }
 
-  private def publishEnrolmentCompleteAuditEvent(progress: CollectionProgress, requestContext: RequestContext): Unit = {
+  protected def publishEnrolmentCompleteAuditEvent(progress: CollectionProgress, requestContext: RequestContext): Unit = {
     import org.sunbird.activity.domain._
     
     val auditEvent = TelemetryEvent(
@@ -348,7 +348,7 @@ class ActivityAggregatorActor @Inject()(implicit val cacheUtil: RedisCacheUtil) 
     publishAuditEvent(auditEvent, requestContext)
   }
 
-  private def publishAuditEvent(event: TelemetryEvent, requestContext: RequestContext): Unit = {
+  protected def publishAuditEvent(event: TelemetryEvent, requestContext: RequestContext): Unit = {
     try {
       val eventJson = gson.toJson(event)
       logger.info(requestContext, s"publishAuditEvent: Publishing event to Kafka - topic: $auditEventTopic")

@@ -1,5 +1,6 @@
 package org.sunbird.enrolments
 
+import org.apache.pekko.actor.ActorRef
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.commons.collections4.{CollectionUtils, MapUtils}
 import org.apache.commons.lang3.StringUtils
@@ -22,7 +23,6 @@ import com.datastax.driver.core.{UDTValue, UserType}
 import java.util
 import java.util.{Date, TimeZone, UUID}
 import javax.inject.{Inject, Named}
-import org.apache.pekko.actor.ActorRef
 import scala.collection.JavaConverters._
 import scala.collection.convert.ImplicitConversions._
 
@@ -30,7 +30,10 @@ case class InternalContentConsumption(courseId: String, batchId: String, content
   def validConsumption() = StringUtils.isNotBlank(courseId) && StringUtils.isNotBlank(batchId) && StringUtils.isNotBlank(contentId)
 }
 
-class ContentConsumptionActor @Inject() (@Named("assessment-aggregator-actor") assessmentAggregator: ActorRef) extends BaseEnrolmentActor {
+class ContentConsumptionActor @Inject() (
+    @Named("activity-aggregator-actor") activityAggregatorActor: ActorRef,
+    @Named("assessment-aggregator-actor") assessmentAggregatorActor: ActorRef
+) extends BaseEnrolmentActor {
     private val mapper = new ObjectMapper
     private var cassandraOperation = ServiceFactory.getInstance
     private var pushTokafkaEnabled: Boolean = true //TODO: to be removed once all are in scala
@@ -195,12 +198,18 @@ class ContentConsumptionActor @Inject() (@Named("assessment-aggregator-actor") a
                                 val existingContent = existingContents.getOrElse(inputContent.get("contentId").asInstanceOf[String], new java.util.HashMap[String, AnyRef])
                                 CassandraUtil.changeCassandraColumnMapping(processContentConsumption(inputContent, existingContent, userId))
                             })
-                            // First push the event to kafka and then update cassandra user_content_consumption table
-                            pushInstructionEvent(requestContext, userId, batchId, courseId, contents.asJava)
                             cassandraOperation.batchInsertLogged(consumptionDBInfo.getKeySpace, consumptionDBInfo.getTableName, contents, requestContext)
                             val updateData = getLatestReadDetails(userId, batchId, contents)
                             cassandraOperation.updateRecordV2(enrolmentDBInfo.getKeySpace, enrolmentDBInfo.getTableName, updateData._1, updateData._2, true, requestContext)
                             contentIds.map(id => responseMessage.put(id,JsonKey.SUCCESS))
+                            val useActivityAggregator = ProjectUtil.getConfigValue("enable_activity_aggregator_actor")
+                            if (StringUtils.isNotBlank(useActivityAggregator) && useActivityAggregator.equalsIgnoreCase("true")) {
+                                logger.info(requestContext, s"ContentConsumptionActor: Routing to ActivityAggregatorActor for userId: $userId, batchId: $batchId, courseId: $courseId")
+                                callActivityAggregatorActor(requestContext, userId, batchId, courseId, entry._2.asJava)
+                            } else {
+                                logger.info(requestContext, s"ContentConsumptionActor: Using legacy Kafka workflow for userId: $userId, batchId: $batchId, courseId: $courseId")
+                                pushInstructionEvent(requestContext, userId, batchId, courseId, contents.asJava)
+                            }
 
                         } else {
                             logger.info(requestContext, "ContentConsumptionActor: addContent : User Id is invalid : " + userId)
@@ -244,7 +253,7 @@ class ContentConsumptionActor @Inject() (@Named("assessment-aggregator-actor") a
             val attemptId = AssessmentAuditRecorder.record(assessment, questionUDTType, requestContext)
             assessment.put(JsonKey.ATTEMPT_ID, attemptId)
             val request = createAssessmentRequest(assessment, requestContext)
-            assessmentAggregator ! request
+            assessmentAggregatorActor ! request
             logger.info(requestContext, s"Assessment sent to aggregator (async): attemptId=$attemptId")
         } else {
             logger.info(requestContext, "Using Kafka-based assessment aggregation")
@@ -402,6 +411,20 @@ class ContentConsumptionActor @Inject() (@Named("assessment-aggregator-actor") a
         logger.info(requestContext,"LearnerStateUpdateActor: pushInstructionEvent :Event Data " + data + " and Topic " + topic)
         if(pushTokafkaEnabled)
             InstructionEventGenerator.pushInstructionEvent(userId, topic, data)
+    }
+
+    @throws[Exception]
+    private def callActivityAggregatorActor(requestContext: RequestContext, userId: String, batchId: String, courseId: String, contents: java.util.List[java.util.Map[String, AnyRef]]): Unit = {
+        logger.info(requestContext, s"ContentConsumptionActor: Calling ActivityAggregatorActor for userId: $userId, batchId: $batchId, courseId: $courseId")
+        
+        val activityRequest = new Request()
+        activityRequest.setOperation("updateActivityAggregates")
+        activityRequest.setRequestContext(requestContext)
+        activityRequest.put(JsonKey.USER_ID, userId)
+        activityRequest.put(JsonKey.BATCH_ID, batchId)
+        activityRequest.put(JsonKey.COURSE_ID, courseId)
+        activityRequest.put(JsonKey.CONTENTS, contents)
+        activityAggregatorActor ! activityRequest
     }
 
     def getConsumption(request: Request): Unit = {

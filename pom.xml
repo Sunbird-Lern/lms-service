@@ -169,6 +169,7 @@
   			<module>course-mw</module>
 	  		<module>service</module>
         <module>assessment-aggregator</module>
+        <module>activity-aggregator</module>
   		</modules>
   	</profile>
   	<profile>
@@ -184,6 +185,7 @@
   			<module>core</module>
   			<module>course-mw</module>
 	  		<module>service</module>
+        <module>activity-aggregator</module>
   		</modules>
         <build>
             <plugins>

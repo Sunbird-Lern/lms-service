@@ -64,8 +64,7 @@ public abstract class BaseActor extends UntypedAbstractActor {
         onReceiveException(request, e);
       }
     } else {
-      logger.info( "BaseActor: onReceive called for unsupported message type");
-      unSupportedMessage();
+      logger.error("BaseActor: onReceive called for unsupported message type: " + message.getClass().getCanonicalName(), null);
     }
   }
 
@@ -99,7 +98,7 @@ public abstract class BaseActor extends UntypedAbstractActor {
    * @throws Exception If an error occurs while sending the message.
    */
   public void onReceiveUnsupportedOperation(String callerName) throws Exception {
-    logger.info(callerName + ": unsupported operation");
+    logger.info( callerName + ": unsupported operation");
     unSupportedMessage();
   }
 
@@ -113,7 +112,7 @@ public abstract class BaseActor extends UntypedAbstractActor {
    * @param callerName The name of the caller for logging context.
    */
   public void onReceiveUnsupportedMessage(String callerName) {
-    logger.info(callerName + ": unsupported message");
+    logger.info( callerName + ": unsupported message");
     ProjectCommonException exception =
         new ProjectCommonException(
             ResponseCode.invalidOperationName.getErrorCode(),

@@ -22,7 +22,7 @@ class ContentService(http: Option[HttpUtilWrapper] = None) {
   private val logger = new LoggerUtil(classOf[ContentService])
   private val httpUtil = http.getOrElse(DefaultHttpUtilWrapper)
   private val baseUrl = Option(ProjectUtil.getConfigValue("sunbird_api_base_url")).filter(StringUtils.isNotBlank).getOrElse("http://localhost:9000")
-  private val contentReadPath = Option(ProjectUtil.getConfigValue("sunbird_content_read_api_path")).filter(StringUtils.isNotBlank).getOrElse("/content/v1/read/")
+  private val contentReadPath = Option(ProjectUtil.getConfigValue("sunbird_content_read_api_path")).filter(StringUtils.isNotBlank).getOrElse("/v1/content/read/")
 
   def fetchMetadata(contentId: String, context: RequestContext): ContentMetadata = {
     val url = s"$baseUrl$contentReadPath$contentId"

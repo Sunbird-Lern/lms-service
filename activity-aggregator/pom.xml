@@ -51,11 +51,6 @@
         </dependency>
         <dependency>
             <groupId>org.sunbird</groupId>
-            <artifactId>common-util</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.sunbird</groupId>
             <artifactId>cache-utils</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>

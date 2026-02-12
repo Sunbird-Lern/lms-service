@@ -7,13 +7,15 @@ import org.sunbird.activity.domain.{CollectionProgress, ContentStatus, Telemetry
 import org.sunbird.activity.util.{ActivityAggregateUtil, CertificateUtil, ContentSearchUtil, DeDupUtil, RedisUtil}
 import org.sunbird.cache.util.RedisCacheUtil
 import org.sunbird.cassandra.CassandraOperation
-import org.sunbird.common.exception.ProjectCommonException
-import org.sunbird.common.models.util.{JsonKey, LoggerUtil, ProjectUtil}
-import org.sunbird.common.request.{Request, RequestContext}
-import org.sunbird.common.responsecode.ResponseCode
+import org.sunbird.exception.ProjectCommonException
+import org.sunbird.keys.JsonKey
+import org.sunbird.logging.LoggerUtil
+import org.sunbird.common.ProjectUtil
+import org.sunbird.request.{Request, RequestContext}
+import org.sunbird.response.ResponseCode
 import org.sunbird.enrolments.BaseEnrolmentActor
 import org.sunbird.helper.ServiceFactory
-import org.sunbird.kafka.client.KafkaClient
+import org.sunbird.kafka.KafkaClient
 import org.sunbird.learner.util.Util
 
 import java.util
@@ -223,7 +225,7 @@ class ActivityAggregatorActor @Inject()(implicit val cacheUtil: RedisCacheUtil) 
       cassandraOperation.batchUpdate(consumptionDBInfo.getKeySpace, "user_content_consumption", queries, requestContext)
       logger.info(requestContext, s"updateContentConsumption: Batch update completed successfully")
     } else {
-      logger.warn(requestContext, s"updateContentConsumption: No queries to execute")
+      logger.warn(requestContext, s"updateContentConsumption: No queries to execute", null)
     }
   }
 
@@ -240,7 +242,7 @@ class ActivityAggregatorActor @Inject()(implicit val cacheUtil: RedisCacheUtil) 
       logger.info(requestContext, s"computeCourseAggregations: Course aggregation computed successfully")
       List(courseAggOpt.get)
     } else {
-      logger.warn(requestContext, s"computeCourseAggregations: No course aggregation computed")
+      logger.warn(requestContext, s"computeCourseAggregations: No course aggregation computed", null)
       List()
     }
     
@@ -281,7 +283,7 @@ class ActivityAggregatorActor @Inject()(implicit val cacheUtil: RedisCacheUtil) 
       cassandraOperation.batchUpdate(activityAggDBInfo.getKeySpace, activityAggDBInfo.getTableName, aggQueries, requestContext)
       logger.info(requestContext, s"updateActivityAggregates: Batch update completed successfully")
     } else {
-      logger.warn(requestContext, s"updateActivityAggregates: No queries to execute")
+      logger.warn(requestContext, s"updateActivityAggregates: No queries to execute", null)
     }
   }
 
@@ -393,7 +395,7 @@ class ActivityAggregatorActor @Inject()(implicit val cacheUtil: RedisCacheUtil) 
         logger.info(requestContext, s"getEnrolmentStatus: No enrolment found, returning status 0")
       }
     } else {
-      logger.warn(requestContext, s"getEnrolmentStatus: Null response from Cassandra")
+      logger.warn(requestContext, s"getEnrolmentStatus: Null response from Cassandra", null)
     }
     
     0
@@ -432,7 +434,7 @@ class ActivityAggregatorActor @Inject()(implicit val cacheUtil: RedisCacheUtil) 
             
             Some(contentId -> ContentStatus(contentId, status, completedCount, viewCount, progress, lastAccessTime, lastCompletedTime, lastUpdatedTime, fromInput = false))
           } else {
-            logger.warn(requestContext, s"getContentStatusFromDB: Skipping row with missing contentId. Keys: ${row.keySet()}")
+            logger.warn(requestContext, s"getContentStatusFromDB: Skipping row with missing contentId. Keys: ${row.keySet()}", null)
             None
           }
         }).toMap

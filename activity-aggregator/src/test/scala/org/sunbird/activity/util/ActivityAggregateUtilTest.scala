@@ -3,7 +3,7 @@ package org.sunbird.activity.util
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.sunbird.activity.domain.{ContentStatus, UserContentConsumption}
-import org.sunbird.common.request.RequestContext
+import org.sunbird.request.RequestContext
 
 import java.util
 import java.util.Date

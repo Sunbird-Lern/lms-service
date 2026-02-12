@@ -3,8 +3,10 @@ package org.sunbird.activity.util
 import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang3.StringUtils
 import org.sunbird.activity.domain._
-import org.sunbird.common.models.util.{JsonKey, LoggerUtil, ProjectUtil}
-import org.sunbird.common.request.RequestContext
+import org.sunbird.keys.JsonKey
+import org.sunbird.logging.LoggerUtil
+import org.sunbird.common.ProjectUtil
+import org.sunbird.request.RequestContext
 
 import java.util
 import java.util.Date
@@ -138,7 +140,7 @@ class ActivityAggregateUtil {
     logger.info(requestContext, s"computeCourseActivityAgg: courseId: $courseId, userId: $userId, leafNodes: ${leafNodes.size}, optionalNodes: ${optionalNodes.size}")
 
     if (leafNodes.isEmpty) {
-      logger.warn(requestContext, s"computeCourseActivityAgg: Leaf nodes are not available for courseId: $courseId")
+      logger.warn(requestContext, s"computeCourseActivityAgg: Leaf nodes are not available for courseId: $courseId", null)
       None
     } else {
       val updatedLeafNodes = leafNodes.diff(optionalNodes)

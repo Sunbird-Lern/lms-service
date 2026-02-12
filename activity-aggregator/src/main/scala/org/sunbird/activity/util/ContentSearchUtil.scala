@@ -1,8 +1,9 @@
 package org.sunbird.activity.util
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.sunbird.common.models.util.{HttpUtil, ProjectUtil}
-import org.sunbird.common.request.RequestContext
+import org.sunbird.http.HttpUtil
+import org.sunbird.common.ProjectUtil
+import org.sunbird.request.RequestContext
 
 import java.util
 import scala.collection.JavaConverters._

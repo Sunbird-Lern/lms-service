@@ -3,8 +3,8 @@ package controllers.activityaggregate;
 import controllers.BaseController;
 import controllers.activityaggregate.validator.ActivityAggregateRequestValidator;
 import org.apache.pekko.actor.ActorRef;
-import org.sunbird.common.models.util.ActorOperations;
-import org.sunbird.common.request.Request;
+import org.sunbird.operations.lms.ActorOperations;
+import org.sunbird.request.Request;
 import play.mvc.Http;
 import play.mvc.Result;
 

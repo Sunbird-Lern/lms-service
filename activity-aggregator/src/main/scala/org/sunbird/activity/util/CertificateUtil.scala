@@ -1,9 +1,9 @@
 package org.sunbird.activity.util
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.sunbird.common.models.util.ProjectUtil
-import org.sunbird.common.request.RequestContext
-import org.sunbird.kafka.client.KafkaClient
+import org.sunbird.common.ProjectUtil
+import org.sunbird.request.RequestContext
+import org.sunbird.kafka.KafkaClient
 
 import java.util.UUID
 

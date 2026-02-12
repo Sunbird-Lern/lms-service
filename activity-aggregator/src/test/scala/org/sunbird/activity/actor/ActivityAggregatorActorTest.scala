@@ -10,9 +10,9 @@ import org.sunbird.activity.util.{CertificateUtil, ContentSearchUtil, DeDupUtil,
 import org.sunbird.activity.domain.{CollectionProgress, TelemetryEvent}
 import org.sunbird.cache.util.RedisCacheUtil
 import org.sunbird.cassandra.CassandraOperation
-import org.sunbird.common.models.response.Response
-import org.sunbird.common.models.util.JsonKey
-import org.sunbird.common.request.{Request, RequestContext}
+import org.sunbird.response.Response
+import org.sunbird.keys.JsonKey
+import org.sunbird.request.{Request, RequestContext}
 
 import java.util
 import scala.concurrent.duration._

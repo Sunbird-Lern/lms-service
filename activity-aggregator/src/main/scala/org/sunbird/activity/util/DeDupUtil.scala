@@ -1,8 +1,8 @@
 package org.sunbird.activity.util
 
 import org.sunbird.cache.util.RedisCacheUtil
-import org.sunbird.common.models.util.ProjectUtil
-import org.sunbird.common.request.RequestContext
+import org.sunbird.common.ProjectUtil
+import org.sunbird.request.RequestContext
 
 import java.security.MessageDigest
 

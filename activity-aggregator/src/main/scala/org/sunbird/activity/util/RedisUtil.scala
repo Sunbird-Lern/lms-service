@@ -2,8 +2,9 @@ package org.sunbird.activity.util
 
 import org.apache.commons.collections.CollectionUtils
 import org.sunbird.cache.util.RedisCacheUtil
-import org.sunbird.common.models.util.{LoggerUtil, ProjectUtil}
-import org.sunbird.common.request.RequestContext
+import org.sunbird.logging.LoggerUtil
+import org.sunbird.common.ProjectUtil
+import org.sunbird.request.RequestContext
 
 import scala.collection.JavaConverters._
 

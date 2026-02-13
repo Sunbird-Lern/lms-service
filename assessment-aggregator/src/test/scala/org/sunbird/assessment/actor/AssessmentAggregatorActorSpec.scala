@@ -30,7 +30,7 @@ class AssessmentAggregatorActorSpec extends TestKit(ActorSystem("AssessmentAggre
     TestKit.shutdownActorSystem(system)
   }
 
-  def getActorRef = TestActorRef(new AssessmentAggregatorActor(Some(mRedis), Some(mContent), Some(mCassandra), Some(mKafka)))
+  def getActorRef = TestActorRef(new AssessmentAggregatorActor())
 
   "AssessmentAggregatorActor" should "silently ignore unknown message types (standard BaseActor behavior)" in {
     val actorRef = getActorRef

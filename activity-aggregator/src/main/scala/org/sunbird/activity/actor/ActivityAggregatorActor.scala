@@ -271,17 +271,12 @@ class ActivityAggregatorActor @Inject()(implicit val cacheUtil: RedisCacheUtil) 
   }
 
   private def updateActivityAggregates(courseAggregations: List[UserEnrolmentAgg], requestContext: RequestContext): Unit = {
-    logger.info(requestContext, s"updateActivityAggregates: Creating batch update queries for ${courseAggregations.size} aggregations")
     val aggQueries = courseAggregations.map { agg =>
       activityAggUtil.createActivityAggUpdateMap(agg.activityAgg)
     }.asJava
     
     if (!aggQueries.isEmpty) {
-      logger.info(requestContext, s"updateActivityAggregates: Executing batch update with ${aggQueries.size()} queries to ${activityAggDBInfo.getTableName}")
-      cassandraOperation.batchUpdate(activityAggDBInfo.getKeySpace, activityAggDBInfo.getTableName, aggQueries, requestContext)
-      logger.info(requestContext, s"updateActivityAggregates: Batch update completed successfully")
-    } else {
-      logger.warn(requestContext, s"updateActivityAggregates: No queries to execute")
+      cassandraOperation.batchUpdateWithPutAll(activityAggDBInfo.getKeySpace, activityAggDBInfo.getTableName, aggQueries, requestContext)
     }
   }
 

@@ -318,6 +318,23 @@ public interface CassandraOperation {
       RequestContext requestContext);
 
   /**
+   * Updates a record in a Cassandra table using a composite primary key and putAll strategy for map columns.
+   *
+   * @param keyspaceName The Cassandra keyspace name.
+   * @param tableName The table name where the record will be updated.
+   * @param updateAttributes A map of column names to their updated values.
+   * @param compositeKey A map representing the composite primary key.
+   * @param requestContext The request context for tracking and logging.
+   * @return Response object containing the operation result.
+   */
+  Response updateRecordWithPutAll(
+      String keyspaceName,
+      String tableName,
+      Map<String, Object> updateAttributes,
+      Map<String, Object> compositeKey,
+      RequestContext requestContext);
+
+  /**
    * Retrieves a record by its identifier with specified fields.
    *
    * @param keyspaceName The Cassandra keyspace name.
@@ -526,6 +543,22 @@ public interface CassandraOperation {
       String keyspaceName,
       String tableName,
       List<Map<String, Object>> records,
+      RequestContext requestContext);
+
+  /**
+   * Performs a batch update operation on multiple records in a Cassandra table.
+   * For map type columns, it uses 'putAll' behavior (merging) instead of 'set' (replacing).
+   *
+   * @param keyspaceName The Cassandra keyspace name.
+   * @param tableName The table name where records will be updated.
+   * @param list A list of maps containing the update specifications.
+   * @param requestContext The request context for tracking and logging.
+   * @return Response object containing the operation result.
+   */
+  Response batchUpdateWithPutAll(
+      String keyspaceName,
+      String tableName,
+      List<Map<String, Map<String, Object>>> list,
       RequestContext requestContext);
 
   /**

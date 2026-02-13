@@ -48,16 +48,18 @@ class CassandraService(optionalDao: Option[CassandraOperation] = None) {
     try {
       if (agg.aggregates.nonEmpty || agg.aggregateDetails.nonEmpty) {
         val lastUpdated = agg.aggregates.map { case (k, _) => k -> new java.util.Date() }
-        val data = Map(
+        val compositeKey = Map(
           "activity_id" -> cid, 
           "activity_type" -> "Course", 
           "context_id" -> s"cb:$bid", 
-          "user_id" -> uid, 
+          "user_id" -> uid
+        ).asJava.asInstanceOf[java.util.Map[String, AnyRef]]
+        val updateAttributes = Map(
           "aggregates" -> agg.aggregates.asJava, 
           "agg_details" -> agg.aggregateDetails.map(_.toJson).asJava, 
           "agg_last_updated" -> lastUpdated.asJava
         ).asJava.asInstanceOf[java.util.Map[String, AnyRef]]
-        dao.upsertRecord(keyspace, activityTable, data, ctx)
+        dao.updateRecordWithPutAll(keyspace, activityTable, updateAttributes, compositeKey, ctx)
       }
     } catch { case e: Exception => logger.error(s"Activity update failed for $uid", e); throw e }
   }

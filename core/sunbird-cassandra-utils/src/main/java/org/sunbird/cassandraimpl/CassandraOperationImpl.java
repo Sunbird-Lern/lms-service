@@ -1535,6 +1535,18 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
     Response response = new Response();
     Statement updateQuery = null;
 
+    if (updateAttributes == null || updateAttributes.isEmpty()) {
+      response.put(Constants.RESPONSE, Constants.SUCCESS);
+      return response;
+    }
+
+    if (compositeKey == null || compositeKey.isEmpty()) {
+      throw new ProjectCommonException(
+          ResponseCode.invalidPropertyError.getErrorCode(),
+          "Composite key cannot be null or empty for update operation",
+          ResponseCode.CLIENT_ERROR.getResponseCode());
+    }
+
     try {
       Session session = connectionManager.getSession(keyspaceName);
       updateQuery = CassandraUtil.createUpdateQueryWithPutAll(compositeKey, updateAttributes, keyspaceName, tableName);
@@ -2643,6 +2655,11 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
     Response response = new Response();
     BatchStatement batchStatement = new BatchStatement();
 
+    if (list == null || list.isEmpty()) {
+      response.put(Constants.RESPONSE, Constants.SUCCESS);
+      return response;
+    }
+
     try {
       Session session = connectionManager.getSession(keyspaceName);
       for (Map<String, Map<String, Object>> record : list) {
@@ -2670,6 +2687,11 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
         }
         batchStatement.add(
             CassandraUtil.createUpdateQueryWithPutAll(primaryKey, nonPKRecord, keyspaceName, tableName));
+      }
+      if (batchStatement.size() == 0) {
+        logInfo(requestContext, "No valid records to update in batch");
+        response.put(Constants.RESPONSE, Constants.SUCCESS);
+        return response;
       }
       ResultSet resultSet = session.execute(batchStatement);
       response.put(Constants.RESPONSE, Constants.SUCCESS);

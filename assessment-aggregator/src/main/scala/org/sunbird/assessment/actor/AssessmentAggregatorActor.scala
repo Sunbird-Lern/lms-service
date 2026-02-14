@@ -13,11 +13,9 @@ import org.apache.commons.lang3.StringUtils
 
 class AssessmentAggregatorActor extends BaseActor {
 
-  private val redisService = new RedisService()
-  private val contentService = new ContentService()
-  private val cassandraService = new CassandraService()
-  private val kafkaService = new KafkaService()
-  private val assessmentService = new AssessmentService(redisService, contentService)
+  protected lazy val cassandraService = new CassandraService()
+  protected lazy val kafkaService = new KafkaService()
+  protected lazy val assessmentService = new AssessmentService()
   
   override def onReceive(request: Request): Unit = {
     request.getOperation match {

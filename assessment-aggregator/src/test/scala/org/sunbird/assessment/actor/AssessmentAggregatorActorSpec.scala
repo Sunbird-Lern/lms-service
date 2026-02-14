@@ -15,7 +15,7 @@ import org.sunbird.common.models.response.Response
 import java.util.HashMap
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
-import org.sunbird.assessment.service.{CassandraService, ContentMetadata, ContentService, KafkaService, RedisService}
+import org.sunbird.assessment.service.{AssessmentService, CassandraService, ContentMetadata, ContentService, KafkaService, RedisService}
 import org.sunbird.common.responsecode.ResponseCode
 
 class AssessmentAggregatorActorSpec extends TestKit(ActorSystem("AssessmentAggregatorActorSpec"))
@@ -30,7 +30,16 @@ class AssessmentAggregatorActorSpec extends TestKit(ActorSystem("AssessmentAggre
     TestKit.shutdownActorSystem(system)
   }
 
-  def getActorRef = TestActorRef(new AssessmentAggregatorActor())
+  def getActorRef = {
+    TestActorRef(new AssessmentAggregatorActor() {
+      override protected lazy val cassandraService = mCassandra
+      override protected lazy val kafkaService = mKafka
+      override protected lazy val assessmentService = new AssessmentService() {
+        override protected lazy val redisService = mRedis
+        override protected lazy val contentService = mContent
+      }
+    })
+  }
 
   "AssessmentAggregatorActor" should "silently ignore unknown message types (standard BaseActor behavior)" in {
     val actorRef = getActorRef
@@ -48,6 +57,7 @@ class AssessmentAggregatorActorSpec extends TestKit(ActorSystem("AssessmentAggre
 
     val actorRef = getActorRef
     val request = new Request()
+    request.setOperation("aggregateAssessment")
     request.setRequestContext(mock[RequestContext])
     val body = new HashMap[String, AnyRef]()
     body.put(JsonKey.USER_ID, "u1")
@@ -83,6 +93,7 @@ class AssessmentAggregatorActorSpec extends TestKit(ActorSystem("AssessmentAggre
 
     val actorRef = getActorRef
     val request = new Request()
+    request.setOperation("aggregateAssessment")
     request.setRequestContext(mock[RequestContext])
     val body = new HashMap[String, AnyRef]()
     body.put(JsonKey.USER_ID, "u1")
@@ -109,6 +120,7 @@ class AssessmentAggregatorActorSpec extends TestKit(ActorSystem("AssessmentAggre
 
     val actorRef = getActorRef
     val request = new Request()
+    request.setOperation("aggregateAssessment")
     request.setRequestContext(mock[RequestContext])
     val body = new HashMap[String, AnyRef]()
     
@@ -140,6 +152,7 @@ class AssessmentAggregatorActorSpec extends TestKit(ActorSystem("AssessmentAggre
     reset(mRedis, mContent, mCassandra, mKafka)
     val actorRef = getActorRef
     val request = new Request()
+    request.setOperation("aggregateAssessment")
     request.setRequestContext(mock[RequestContext])
     val body = new HashMap[String, AnyRef]()
     
@@ -178,6 +191,7 @@ class AssessmentAggregatorActorSpec extends TestKit(ActorSystem("AssessmentAggre
     
     val actorRef = getActorRef
     val request = new Request()
+    request.setOperation("aggregateAssessment")
     request.setRequestContext(mock[RequestContext])
     val body = new HashMap[String, AnyRef]()
     body.put(JsonKey.USER_ID, "u1")
@@ -196,6 +210,7 @@ class AssessmentAggregatorActorSpec extends TestKit(ActorSystem("AssessmentAggre
     reset(mRedis, mContent, mCassandra, mKafka)
     val actorRef = getActorRef
     val request = new Request()
+    request.setOperation("aggregateAssessment")
     request.setRequestContext(mock[RequestContext])
     val body = new HashMap[String, AnyRef]()
     body.put(JsonKey.COURSE_ID, "c1")
@@ -218,6 +233,7 @@ class AssessmentAggregatorActorSpec extends TestKit(ActorSystem("AssessmentAggre
 
     val actorRef = getActorRef
     val request = new Request()
+    request.setOperation("aggregateAssessment")
     request.setRequestContext(mock[RequestContext])
     val body = new HashMap[String, AnyRef]()
     body.put(JsonKey.USER_ID, "u1")
@@ -239,6 +255,7 @@ class AssessmentAggregatorActorSpec extends TestKit(ActorSystem("AssessmentAggre
     reset(mRedis, mContent, mCassandra, mKafka)
     val actorRef = getActorRef
     val request = new Request()
+    request.setOperation("aggregateAssessment")
     request.setRequestContext(mock[RequestContext])
     val body = new HashMap[String, AnyRef]()
     body.put("userId", "u1")
@@ -270,6 +287,7 @@ class AssessmentAggregatorActorSpec extends TestKit(ActorSystem("AssessmentAggre
     PropertiesCache.getInstance().saveConfigProperty("assessment_enable_content_validation", "true")
     val actorRef = getActorRef
     val request = new Request()
+    request.setOperation("aggregateAssessment")
     request.setRequestContext(mock[RequestContext])
     val body = new HashMap[String, AnyRef]()
     body.put("userId", "u1")
@@ -291,6 +309,7 @@ class AssessmentAggregatorActorSpec extends TestKit(ActorSystem("AssessmentAggre
     // Passing a message that might cause an internal exception (e.g., if a mandatory field is missing in Request)
     val actorRef = getActorRef
     val request = new Request()
+    request.setOperation("aggregateAssessment")
     request.setRequest(null) // This should cause a NPE in processAggregation
     actorRef ! request
     expectMsgType[ProjectCommonException].getResponseCode should be (500)
@@ -305,6 +324,7 @@ class AssessmentAggregatorActorSpec extends TestKit(ActorSystem("AssessmentAggre
     
     val actorRef = getActorRef
     val request = new Request()
+    request.setOperation("aggregateAssessment")
     request.setRequestContext(mock[RequestContext])
     val body = new HashMap[String, AnyRef]()
     body.put("userId", "u1")

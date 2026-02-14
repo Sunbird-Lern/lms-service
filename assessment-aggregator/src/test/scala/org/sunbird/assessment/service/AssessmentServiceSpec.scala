@@ -12,7 +12,10 @@ class AssessmentServiceSpec extends AnyFlatSpec with Matchers with MockitoSugar 
 
   val mockRedis = mock[RedisService]
   val mockContent = mock[ContentService]
-  val assessmentService = new AssessmentService(mockRedis, mockContent)
+  val assessmentService = new AssessmentService() {
+    override protected lazy val redisService = mockRedis
+    override protected lazy val contentService = mockContent
+  }
 
   "AssessmentService" should "filter unique questions keeping the latest" in {
     val events = List(

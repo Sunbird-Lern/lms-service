@@ -3,7 +3,10 @@ import org.sunbird.assessment.models._
 import org.sunbird.common.models.util.ProjectUtil
 import java.text.DecimalFormat
 
-class AssessmentService(redisService: RedisService, contentService: ContentService) {
+class AssessmentService {
+
+  protected lazy val redisService = new RedisService()
+  protected lazy val contentService = new ContentService()
 
   private val decimalFormat = new DecimalFormat("0.0#")
   private val aggType = Option(org.sunbird.common.models.util.ProjectUtil.getConfigValue("user_activity_agg_type")).getOrElse("assessment")

@@ -81,6 +81,11 @@ class ActivityAggregatorActorTest
       .returning(new Response())
       .anyNumberOfTimes()
 
+    (cassandraOperation.batchUpdateWithPutAll(_: String, _: String, _: util.List[util.Map[String, util.Map[String, Object]]], _: RequestContext))
+      .expects(*, "user_activity_agg", *, *)
+      .returning(new Response())
+      .anyNumberOfTimes()
+
     val actor = system.actorOf(Props(new TestableActivityAggregatorActor(cassandraOperation, redisUtil, deDupUtil, contentSearchUtil, certificateUtil)))
     
     val request = createUpdateRequest(
@@ -125,6 +130,11 @@ class ActivityAggregatorActorTest
 
     (cassandraOperation.updateRecordV2(_: String, _: String, _: util.Map[String, Object], _: util.Map[String, Object], _: Boolean, _: RequestContext))
       .expects(*, *, *, *, *, *)
+      .returning(new Response())
+      .anyNumberOfTimes()
+
+    (cassandraOperation.batchUpdateWithPutAll(_: String, _: String, _: util.List[util.Map[String, util.Map[String, Object]]], _: RequestContext))
+      .expects(*, "user_activity_agg", *, *)
       .returning(new Response())
       .anyNumberOfTimes()
 
@@ -191,6 +201,11 @@ class ActivityAggregatorActorTest
 
     (cassandraOperation.updateRecordV2(_: String, _: String, _: util.Map[String, Object], _: util.Map[String, Object], _: Boolean, _: RequestContext))
       .expects(*, *, *, *, *, *)
+      .returning(new Response())
+      .anyNumberOfTimes()
+
+    (cassandraOperation.batchUpdateWithPutAll(_: String, _: String, _: util.List[util.Map[String, util.Map[String, Object]]], _: RequestContext))
+      .expects(*, "user_activity_agg", *, *)
       .returning(new Response())
       .anyNumberOfTimes()
 
@@ -293,6 +308,11 @@ class ActivityAggregatorActorTest
 
     (cassandraOperation.updateRecordV2(_: String, _: String, _: util.Map[String, Object], _: util.Map[String, Object], _: Boolean, _: RequestContext))
       .expects(*, *, *, *, *, *)
+      .returning(new Response())
+      .anyNumberOfTimes()
+
+    (cassandraOperation.batchUpdateWithPutAll(_: String, _: String, _: util.List[util.Map[String, util.Map[String, Object]]], _: RequestContext))
+      .expects(*, "user_activity_agg", *, *)
       .returning(new Response())
       .anyNumberOfTimes()
 

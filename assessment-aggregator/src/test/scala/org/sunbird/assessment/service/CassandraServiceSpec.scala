@@ -37,7 +37,7 @@ class CassandraServiceSpec extends AnyFlatSpec with Matchers with MockitoSugar {
     val service = new CassandraService(Some(mDao))
     val agg = UserActivityAggregate("u1", "c1", "b1", scala.collection.immutable.Map("score:cont1" -> 10.0), List.empty)
     service.updateUserActivity("u1", "c1", "b1", agg, mock[RequestContext])
-    verify(mDao).upsertRecord(anyString, anyString, any[java.util.Map[String, Object]], any[RequestContext])
+    verify(mDao).updateRecordWithPutAll(anyString, anyString, any[java.util.Map[String, Object]], any[java.util.Map[String, Object]], any[RequestContext])
   }
 
   it should "not update user activity if aggregates are empty" in {
@@ -45,7 +45,7 @@ class CassandraServiceSpec extends AnyFlatSpec with Matchers with MockitoSugar {
     val service = new CassandraService(Some(mDao))
     val agg = UserActivityAggregate("u1", "c1", "b1", scala.collection.immutable.Map.empty[String, Double], List.empty)
     service.updateUserActivity("u1", "c1", "b1", agg, mock[RequestContext])
-    verify(mDao, never).upsertRecord(anyString, anyString, any, any)
+    verify(mDao, never).updateRecordWithPutAll(anyString, anyString, any, any, any)
   }
 
   it should "get timestamp from row correctly" in {

@@ -31,14 +31,7 @@ class AssessmentAggregatorActorSpec extends TestKit(ActorSystem("AssessmentAggre
   }
 
   def getActorRef = {
-    TestActorRef(new AssessmentAggregatorActor() {
-      override protected lazy val cassandraService = mCassandra
-      override protected lazy val kafkaService = mKafka
-      override protected lazy val assessmentService = new AssessmentService() {
-        override protected lazy val redisService = mRedis
-        override protected lazy val contentService = mContent
-      }
-    })
+    TestActorRef(new AssessmentAggregatorActor(Some(mCassandra), Some(mKafka), Some(mRedis), Some(mContent)))
   }
 
   "AssessmentAggregatorActor" should "silently ignore unknown message types (standard BaseActor behavior)" in {
@@ -226,8 +219,10 @@ class AssessmentAggregatorActorSpec extends TestKit(ActorSystem("AssessmentAggre
     val existing = ExistingAssessment("a1", "cont1", System.currentTimeMillis(), System.currentTimeMillis(), 10.0, 10.0, List.empty)
     when(mRedis.isValidContent(anyString, anyString)).thenReturn(true)
     when(mRedis.getTotalQuestionsCount(anyString)).thenReturn(Some(10))
-    when(mCassandra.getAssessment(anyString, anyString, anyString, anyString, anyString, any[RequestContext])).thenReturn(Some(existing))
-    when(mCassandra.getUserAssessments(anyString, anyString, anyString, anyString, any[RequestContext])).thenReturn(List(existing))
+    when(mCassandra.getAssessment(anyString, anyString, anyString, anyString, anyString, any[RequestContext]))
+      .thenReturn(Some(existing))
+    when(mCassandra.getUserAssessments(anyString, anyString, anyString, anyString, any[RequestContext]))
+      .thenReturn(List(existing))
     
     PropertiesCache.getInstance().saveConfigProperty("assessment_aggregator_publish_certificate", "true")
 
@@ -272,14 +267,31 @@ class AssessmentAggregatorActorSpec extends TestKit(ActorSystem("AssessmentAggre
     body.put("events", events)
     request.setRequest(body)
     
-    when(mRedis.isValidContent(anyString, anyString)).thenReturn(true)
-    when(mRedis.getTotalQuestionsCount(anyString)).thenReturn(Some(10))
-    when(mCassandra.getAssessment(anyString, anyString, anyString, anyString, anyString, any[RequestContext]))
-      .thenReturn(Some(ExistingAssessment("att1", "cont1", 2000L, 1000L, 5.0, 10.0, List.empty)))
+    org.mockito.Mockito.doReturn(true).when(mRedis).isValidContent(org.mockito.ArgumentMatchers.anyString, org.mockito.ArgumentMatchers.anyString)
+    org.mockito.Mockito.doReturn(Some(10)).when(mRedis).getTotalQuestionsCount(org.mockito.ArgumentMatchers.anyString)
     
+    org.mockito.Mockito.doReturn(Some(ExistingAssessment("att1", "cont1", 2000L, 1000L, 5.0, 10.0, List.empty)))
+      .when(mCassandra).getAssessment(
+        org.mockito.ArgumentMatchers.anyString, 
+        org.mockito.ArgumentMatchers.anyString, 
+        org.mockito.ArgumentMatchers.anyString, 
+        org.mockito.ArgumentMatchers.anyString, 
+        org.mockito.ArgumentMatchers.anyString, 
+        org.mockito.ArgumentMatchers.any(classOf[RequestContext])
+      )
+      
+    org.mockito.Mockito.doReturn(List(ExistingAssessment("att1", "cont1", 2000L, 1000L, 5.0, 10.0, List.empty)))
+      .when(mCassandra).getUserAssessments(
+        org.mockito.ArgumentMatchers.anyString, 
+        org.mockito.ArgumentMatchers.anyString, 
+        org.mockito.ArgumentMatchers.anyString, 
+        org.mockito.ArgumentMatchers.anyString, 
+        org.mockito.ArgumentMatchers.any(classOf[RequestContext])
+      )
+
     actorRef ! request
     expectMsgType[Response]
-    verify(mCassandra, never).saveAssessment(any[AssessmentResult], any[RequestContext])
+    verify(mCassandra, never).saveAssessment(org.mockito.ArgumentMatchers.any(classOf[AssessmentResult]), org.mockito.ArgumentMatchers.any(classOf[RequestContext]))
   }
 
   it should "throw exception when content validation fails" in {
@@ -319,8 +331,10 @@ class AssessmentAggregatorActorSpec extends TestKit(ActorSystem("AssessmentAggre
     reset(mRedis, mContent, mCassandra, mKafka)
     when(mRedis.isValidContent(any[String], any[String])).thenReturn(true)
     when(mRedis.getTotalQuestionsCount(any[String])).thenReturn(Some(1))
-    when(mCassandra.getAssessment(any[String], any[String], any[String], any[String], any[String], any[RequestContext])).thenReturn(None)
-    when(mCassandra.getUserAssessments(any[String], any[String], any[String], any[String], any[RequestContext])).thenReturn(List.empty)
+    when(mCassandra.getAssessment(any[String], any[String], any[String], any[String], any[String], any[RequestContext]))
+      .thenReturn(None)
+    when(mCassandra.getUserAssessments(any[String], any[String], any[String], any[String], any[RequestContext]))
+      .thenReturn(List.empty)
     
     val actorRef = getActorRef
     val request = new Request()

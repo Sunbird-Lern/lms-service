@@ -10,12 +10,22 @@ import org.sunbird.assessment.util.AssessmentParser
 import org.sunbird.common.models.util.{JsonKey, LoggerUtil, ProjectUtil}
 import scala.collection.JavaConverters._
 import org.apache.commons.lang3.StringUtils
+import javax.inject.Inject
 
-class AssessmentAggregatorActor extends BaseActor {
+class AssessmentAggregatorActor @Inject()(
+  _cassandraService: Option[CassandraService],
+  _kafkaService: Option[KafkaService],
+  _redisService: Option[RedisService],
+  _contentService: Option[ContentService]
+) extends BaseActor {
 
-  protected lazy val cassandraService = new CassandraService()
-  protected lazy val kafkaService = new KafkaService()
-  protected lazy val assessmentService = new AssessmentService()
+  def this() = this(None, None, None, None)
+
+  private lazy val cassandraService = _cassandraService.getOrElse(AssessmentAggregatorActor.cassandraService)
+  private lazy val kafkaService = _kafkaService.getOrElse(AssessmentAggregatorActor.kafkaService)
+  private lazy val redisService = _redisService.getOrElse(AssessmentAggregatorActor.redisService)
+  private lazy val contentService = _contentService.getOrElse(AssessmentAggregatorActor.contentService)
+  private lazy val assessmentService = new AssessmentService(redisService, contentService)
   
   override def onReceive(request: Request): Unit = {
     request.getOperation match {
@@ -228,5 +238,15 @@ class AssessmentAggregatorActor extends BaseActor {
 }
 
 object AssessmentAggregatorActor {
-  def props(): Props = Props(new AssessmentAggregatorActor())
+  lazy val cassandraService = new CassandraService()
+  lazy val kafkaService = new KafkaService()
+  lazy val redisService = new RedisService()
+  lazy val contentService = new ContentService()
+
+  def props(): Props = Props(new AssessmentAggregatorActor(
+    Some(cassandraService),
+    Some(kafkaService),
+    Some(redisService),
+    Some(contentService)
+  ))
 }

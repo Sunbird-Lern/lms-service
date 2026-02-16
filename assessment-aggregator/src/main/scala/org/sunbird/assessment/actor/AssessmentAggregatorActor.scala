@@ -10,9 +10,8 @@ import org.sunbird.assessment.util.AssessmentParser
 import org.sunbird.common.models.util.{JsonKey, LoggerUtil, ProjectUtil}
 import scala.collection.JavaConverters._
 import org.apache.commons.lang3.StringUtils
-import javax.inject.Inject
 
-class AssessmentAggregatorActor @Inject()(
+class AssessmentAggregatorActor(
   _cassandraService: Option[CassandraService],
   _kafkaService: Option[KafkaService],
   _redisService: Option[RedisService],

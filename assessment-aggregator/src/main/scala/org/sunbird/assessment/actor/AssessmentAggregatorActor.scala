@@ -1,6 +1,5 @@
 package org.sunbird.assessment.actor
 import org.sunbird.actor.core.BaseActor
-import javax.inject.Inject
 import org.apache.pekko.actor.Props
 import org.sunbird.common.exception.ProjectCommonException
 import org.sunbird.common.request.{Request, RequestContext}
@@ -12,23 +11,35 @@ import org.sunbird.common.models.util.{JsonKey, LoggerUtil, ProjectUtil}
 import scala.collection.JavaConverters._
 import org.apache.commons.lang3.StringUtils
 
-class AssessmentAggregatorActor @Inject()(_redisService: Option[RedisService],_contentService: Option[ContentService],_cassandraService: Option[CassandraService],_kafkaService: Option[KafkaService]) extends BaseActor {
+class AssessmentAggregatorActor(
+  _cassandraService: Option[CassandraService],
+  _kafkaService: Option[KafkaService],
+  _redisService: Option[RedisService],
+  _contentService: Option[ContentService]
+) extends BaseActor {
 
   def this() = this(None, None, None, None)
 
-  private lazy val redisService = _redisService.getOrElse(new RedisService())
-  private lazy val contentService = _contentService.getOrElse(new ContentService())
+  private lazy val cassandraService = _cassandraService.getOrElse(AssessmentAggregatorActor.cassandraService)
+  private lazy val kafkaService = _kafkaService.getOrElse(AssessmentAggregatorActor.kafkaService)
+  private lazy val redisService = _redisService.getOrElse(AssessmentAggregatorActor.redisService)
+  private lazy val contentService = _contentService.getOrElse(AssessmentAggregatorActor.contentService)
   private lazy val assessmentService = new AssessmentService(redisService, contentService)
-  private lazy val cassandraService = _cassandraService.getOrElse(new CassandraService())
-  private lazy val kafkaService = _kafkaService.getOrElse(new KafkaService())
-
+  
   override def onReceive(request: Request): Unit = {
+    request.getOperation match {
+      case "aggregateAssessment" => aggregateAssessment(request)
+      case _ => onReceiveUnsupportedOperation(request.getOperation)
+    }
+  }
+
+  private def aggregateAssessment(request: Request): Unit = {
     val replyTo = sender()
-    try { 
-      processAggregation(request, replyTo) 
+    try {
+      processAggregation(request, replyTo)
     } catch {
       case ex: Exception =>
-        logger.error(request.getRequestContext, "Request failed", ex)
+        logger.error(request.getRequestContext, s"Assessment aggregation failed: ${ex.getMessage}", ex)
         replyTo ! createErrorResponse("SERVER_ERROR", ex.getMessage, ResponseCode.SERVER_ERROR.getResponseCode)
     }
   }
@@ -64,7 +75,7 @@ class AssessmentAggregatorActor @Inject()(_redisService: Option[RedisService],_c
       replyTo ! createSuccess(assessment.attemptId)
     } catch {
       case ex: Exception =>
-        logger.error(context, s"Assessment request failed. Reason: ${ex.getMessage} | Data: $body", ex)
+        logger.error(context, s"[ASSESSMENT_ACTOR] Request failed: ${ex.getMessage}", ex)
         replyTo ! createErrorResponse("CLIENT_ERROR", ex.getMessage, ResponseCode.CLIENT_ERROR.getResponseCode)
     }
   }
@@ -89,7 +100,6 @@ class AssessmentAggregatorActor @Inject()(_redisService: Option[RedisService],_c
       logger.warn(context, s"Sync Flow: No stored events found for userId=${request.userId}, contentId=${request.contentId}, attemptId=${request.attemptId}")
       return List(request)
     }
-    logger.info(context, s"Sync Flow: Recovered ${existing.size} attempt(s) for userId=${request.userId}, contentId=${request.contentId}")
     existing.map(toSyncRequest(request, _))
   }
 
@@ -125,16 +135,15 @@ class AssessmentAggregatorActor @Inject()(_redisService: Option[RedisService],_c
     if (skipMissing) {
       val totalQuestions = metadata.totalQuestions
       if (totalQuestions > 0 && uniqueEvents.size > totalQuestions) {
-        logger.warn(context, s"Skipping assessment ${req.attemptId}: unique events (${uniqueEvents.size}) exceed total questions ($totalQuestions)")
+        logger.warn(context, s"[ASSESSMENT_ACTOR] SKIPPED: unique events (${uniqueEvents.size}) exceed total questions ($totalQuestions) for attemptId=${req.attemptId}")
         return
       }
     }
     val scoreMetrics = assessmentService.computeScoreMetrics(uniqueEvents)
     val existing = cassandraService.getAssessment(req.attemptId, req.userId, req.courseId, req.batchId, req.contentId, context)
     val existingTs = existing.map(_.lastAttemptedOn).getOrElse(0L)
-    logger.info(context, s"AssessmentAggregatorActor: Comparing timestamps for attemptId=${req.attemptId} | Incoming=${req.assessmentTimestamp} | Existing=$existingTs")
     if (!req.ignoreTimestampValidation && existingTs > req.assessmentTimestamp) {
-      logger.info(context, s"Skipping stale assessment: ${req.attemptId}")
+      logger.warn(context, s"[ASSESSMENT_ACTOR] SKIPPED: Stale assessment attemptId=${req.attemptId}")
       return
     }
     val result = AssessmentResult(req.attemptId, req.userId, req.courseId, req.batchId, req.contentId, scoreMetrics.totalScore, scoreMetrics.totalMaxScore, scoreMetrics.grandTotal, scoreMetrics.questions, existing.map(_.createdOn).getOrElse(System.currentTimeMillis()), req.assessmentTimestamp)
@@ -150,7 +159,10 @@ class AssessmentAggregatorActor @Inject()(_redisService: Option[RedisService],_c
       val attemptId = assessmentService.getLatestAttemptId(agg)
       if (ProjectUtil.getConfigValue("assessment_aggregator_publish_certificate") == "true") {
         kafkaService.publishCertificateEvent(userId, courseId, batchId, attemptId)
+        logger.info(context, s"[ASSESSMENT_ACTOR] Published certificate event for attemptId=$attemptId")
       }
+    } else {
+      logger.warn(context, s"[ASSESSMENT_ACTOR] No assessments found for userId=$userId, courseId=$courseId, batchId=$batchId, contentId=$contentId")
     }
   }
 
@@ -225,5 +237,15 @@ class AssessmentAggregatorActor @Inject()(_redisService: Option[RedisService],_c
 }
 
 object AssessmentAggregatorActor {
-  def props(): Props = Props(new AssessmentAggregatorActor())
+  lazy val cassandraService = new CassandraService()
+  lazy val kafkaService = new KafkaService()
+  lazy val redisService = new RedisService()
+  lazy val contentService = new ContentService()
+
+  def props(): Props = Props(new AssessmentAggregatorActor(
+    Some(cassandraService),
+    Some(kafkaService),
+    Some(redisService),
+    Some(contentService)
+  ))
 }

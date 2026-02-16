@@ -392,6 +392,46 @@ public final class CassandraUtil {
   }
 
   /**
+   * Constructs a Cassandra UPDATE statement using QueryBuilder with putAll for Map types.
+   * This handles merging of map columns.
+   *
+   * @param primaryKey A map of primary key column names to their values (for WHERE clause).
+   * @param nonPKRecord A map of non-primary key column names to their new values (for SET clause).
+   * @param keyspaceName The Cassandra keyspace name.
+   * @param tableName The table name to update.
+   * @return A RegularStatement representing the UPDATE query.
+   */
+  public static RegularStatement createUpdateQueryWithPutAll(
+      Map<String, Object> primaryKey,
+      Map<String, Object> nonPKRecord,
+      String keyspaceName,
+      String tableName) {
+
+    Update update = QueryBuilder.update(keyspaceName, tableName);
+    Assignments assignments = update.with();
+    Update.Where where = update.where();
+    nonPKRecord
+        .entrySet()
+        .stream()
+        .forEach(
+            x -> {
+              if (x.getValue() instanceof Map) {
+                assignments.and(QueryBuilder.putAll(x.getKey(), (Map) x.getValue()));
+              } else {
+                assignments.and(QueryBuilder.set(x.getKey(), x.getValue()));
+              }
+            });
+    primaryKey
+        .entrySet()
+        .stream()
+        .forEach(
+            x -> {
+              where.and(QueryBuilder.eq(x.getKey(), x.getValue()));
+            });
+    return where;
+  }
+
+  /**
    * Constructs a Cassandra DELETE statement using QueryBuilder.
    * The statement deletes rows matching the specified primary key.
    *

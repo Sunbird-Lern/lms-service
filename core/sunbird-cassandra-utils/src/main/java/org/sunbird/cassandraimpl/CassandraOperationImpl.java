@@ -1521,6 +1521,76 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
     return response;
   }
 
+  @Override
+  public Response updateRecordWithPutAll(
+      String keyspaceName,
+      String tableName,
+      Map<String, Object> updateAttributes,
+      Map<String, Object> compositeKey,
+      RequestContext requestContext) {
+
+    long startTime = System.currentTimeMillis();
+
+
+    Response response = new Response();
+    Statement updateQuery = null;
+
+    if (updateAttributes == null || updateAttributes.isEmpty()) {
+      response.put(Constants.RESPONSE, Constants.SUCCESS);
+      return response;
+    }
+
+    if (compositeKey == null || compositeKey.isEmpty()) {
+      throw new ProjectCommonException(
+          ResponseCode.invalidPropertyError.getErrorCode(),
+          "Composite key cannot be null or empty for update operation",
+          ResponseCode.CLIENT_ERROR.getResponseCode());
+    }
+
+    try {
+      Session session = connectionManager.getSession(keyspaceName);
+      updateQuery = CassandraUtil.createUpdateQueryWithPutAll(compositeKey, updateAttributes, keyspaceName, tableName);
+      session.execute(updateQuery);
+      response.put(Constants.RESPONSE, Constants.SUCCESS);
+    } catch (Exception e) {
+      if (e.getMessage() != null && e.getMessage().contains(JsonKey.UNKNOWN_IDENTIFIER)) {
+        String errorMsg = CassandraUtil.processExceptionForUnknownIdentifier(e);
+        logError(
+            requestContext, "Invalid column/property error during composite key update with putAll - keyspace: {}, table: {}, error: {}",
+            keyspaceName,
+            tableName,
+            errorMsg,
+            e);
+
+        throw new ProjectCommonException(
+            ResponseCode.invalidPropertyError.getErrorCode(),
+            errorMsg,
+            ResponseCode.CLIENT_ERROR.getResponseCode());
+      }
+      logError(
+          requestContext, "Database update operation with putAll failed (composite key) - keyspace: {}, table: {}, error: {}",
+          keyspaceName,
+          tableName,
+          e.getMessage(),
+          e);
+
+      throw new ProjectCommonException(
+          ResponseCode.dbUpdateError.getErrorCode(),
+          ResponseCode.dbUpdateError.getErrorMessage(),
+          ResponseCode.SERVER_ERROR.getResponseCode());
+
+    } finally {
+      if (updateQuery != null) {
+        logQueryElapseTime(
+            "updateRecordWithPutAll", startTime, updateQuery.toString(), requestContext);
+      } else {
+        logQueryElapseTime("updateRecordWithPutAll", startTime);
+      }
+    }
+
+    return response;
+  }
+
 
 
   /**
@@ -2558,6 +2628,97 @@ public abstract class CassandraOperationImpl implements CassandraOperation {
             requestContext);
       } else {
         logQueryElapseTime("batchUpdate", startTime);
+      }
+    }
+
+    return response;
+  }
+
+  @Override
+  public Response batchUpdateWithPutAll(
+      String keyspaceName,
+      String tableName,
+      List<Map<String, Map<String, Object>>> list,
+      RequestContext requestContext) {
+
+    long startTime = System.currentTimeMillis();
+    int recordCount = list != null ? list.size() : 0;
+
+    if (recordCount > 1000) {
+      logWarn(
+          requestContext, formatLogMessage("Large batch update detected - keyspace: {}, table: {}, records: {} - Consider splitting into smaller batches for better performance",
+          keyspaceName,
+          tableName,
+          recordCount));
+    }
+
+    Response response = new Response();
+    BatchStatement batchStatement = new BatchStatement();
+
+    if (list == null || list.isEmpty()) {
+      response.put(Constants.RESPONSE, Constants.SUCCESS);
+      return response;
+    }
+
+    try {
+      Session session = connectionManager.getSession(keyspaceName);
+      for (Map<String, Map<String, Object>> record : list) {
+        if (record == null) {
+          logWarn(requestContext, "Skipping null record in batch update");
+          continue;
+        }
+        Map<String, Object> primaryKey = record.get(JsonKey.PRIMARY_KEY);
+        Map<String, Object> nonPKRecord = record.get(JsonKey.NON_PRIMARY_KEY);
+        if (primaryKey == null || primaryKey.isEmpty()) {
+          logError(
+              requestContext, "Invalid record in batch update - missing or empty PRIMARY_KEY for table: {}",
+              tableName);
+          throw new ProjectCommonException(
+              ResponseCode.SERVER_ERROR.getErrorCode(),
+              "Invalid record structure: PRIMARY_KEY is required",
+              ResponseCode.SERVER_ERROR.getResponseCode());
+        }
+
+        if (nonPKRecord == null || nonPKRecord.isEmpty()) {
+          logWarn(
+              requestContext, formatLogMessage("Skipping record with empty NON_PRIMARY_KEY - no fields to update for table: {}",
+              tableName));
+          continue;
+        }
+        batchStatement.add(
+            CassandraUtil.createUpdateQueryWithPutAll(primaryKey, nonPKRecord, keyspaceName, tableName));
+      }
+      if (batchStatement.size() == 0) {
+        logInfo(requestContext, "No valid records to update in batch");
+        response.put(Constants.RESPONSE, Constants.SUCCESS);
+        return response;
+      }
+      ResultSet resultSet = session.execute(batchStatement);
+      response.put(Constants.RESPONSE, Constants.SUCCESS);
+    } catch (ProjectCommonException e) {
+      throw e;
+    } catch (Exception e) {
+      logError(
+          requestContext, "Batch update failed - keyspace: {}, table: {}, records: {}, error: {}",
+          keyspaceName,
+          tableName,
+          recordCount,
+          e.getMessage(),
+          e);
+
+      throw new ProjectCommonException(
+          ResponseCode.SERVER_ERROR.getErrorCode(),
+          ResponseCode.SERVER_ERROR.getErrorMessage(),
+          ResponseCode.SERVER_ERROR.getResponseCode());
+    } finally {
+      if (batchStatement != null && batchStatement.size() > 0) {
+        logQueryElapseTime(
+            "batchUpdateWithPutAll",
+            startTime,
+            batchStatement.getStatements().toString(),
+            requestContext);
+      } else {
+        logQueryElapseTime("batchUpdateWithPutAll", startTime);
       }
     }
 
